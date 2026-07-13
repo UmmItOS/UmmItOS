@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Check the distribution name and print the package manager
 # with a custom face and message :)
@@ -16,7 +16,6 @@ case "$(grep ^ID= /etc/os-release)" in
     ID=fedora*) print_message "dnf upgrade" ;;
     ID=gentoo*) print_message "emerge" ;;
     ID=ubuntu*|ID=debian*) print_message "apt upgrade" ;;
-    ID=opensuse*) print_message "zypper" ;;
     ID=parrot*) print_message "apt upgrade" ;;
     ID=void*) print_message "xbps-install" ;;
     ID=alpine*) print_message "apk add" ;;
@@ -32,8 +31,7 @@ case "$(grep ^ID= /etc/os-release)" in
     ID=linuxmint*) print_message "apt upgrade" ;;
     ID=mx*) print_message "apt upgrade" ;;
     ID=elementary*) print_message "apt upgrade" ;;
-    ID=opensuse-leap*) print_message "zypper" ;;
-    ID=opensuse-tumbleweed*) print_message "zypper" ;;
+    ID=opensuse-leap*|ID=opensuse-tumbleweed*) print_message "zypper" ;;
     ID=slackware*) print_message "slackpkg" ;;
     ID=rhino*) print_message "nala upgrade" ;;
 

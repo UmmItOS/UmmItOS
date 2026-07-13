@@ -1,16 +1,16 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # ANSI color codes
-readonly COLOR_LIGHT_BLUE='\e[94m'
-readonly COLOR_GREEN='\e[32m'
-readonly COLOR_DARK_RED='\e[31m'
-readonly COLOR_RESET='\e[0m'
+COLOR_LIGHT_BLUE='\e[94m'
+COLOR_GREEN='\e[32m'
+COLOR_DARK_RED='\e[31m'
+COLOR_RESET='\e[0m'
 
 # Function to print systemd-style status messages
 print_status() {
     local status="$1"
     local message="$2"
-    if [ "${status}" == "SUCESS" ]; then
+    if [[ "${status}" == "SUCESS" ]]; then
         echo -e "[ ${COLOR_GREEN}SUCESS${COLOR_RESET} ] ${message}"
     else
         echo -e "[ ${COLOR_DARK_RED}FAILED${COLOR_RESET} ] ${message}"
@@ -19,9 +19,9 @@ print_status() {
 
 # Function to execute commands and check for errors
 execute_command() {
-    local cmd="$1"
-    local description="$2"
-    if eval "${cmd}"; then
+    local description="$1"
+    shift
+    if "$@"; then
         print_status "SUCESS" "${description}"
         return 0
     else
@@ -31,8 +31,8 @@ execute_command() {
 }
 
 run_history() {
-  # Execute history script first
-  execute_command "bash ~/script/waybar/history.sh" "History script been executed :)"
+    # Execute history script first
+    execute_command "History script been executed :)" bash "$HOME/script/waybar/history.sh"
 }
 
 # Run history script
@@ -66,7 +66,7 @@ echo -e "n/N/NO = Exit program"
 # Get user's choice
 while true; do
     echo -e "${COLOR_GREEN}"
-    read -p "Enter your choice (0-3 or n/N/NO to exit): " update_choice
+    read -rp "Enter your choice (0-3 or n/N/NO to exit): " update_choice
     echo -e "${COLOR_RESET}"
     
     case $update_choice in
@@ -83,7 +83,7 @@ done
 # Prompt user to confirm system upgrade
 while true; do
     echo -e "${COLOR_GREEN}"
-    read -p "Do you want to proceed with the system upgrade? (y/n): " choice
+    read -rp "Do you want to proceed with the system upgrade? (y/n): " choice
     echo -e "${COLOR_RESET}"
     case $choice in
         [Yy]* )
@@ -96,45 +96,45 @@ while true; do
                 case $update_choice in
                     0)  # Update ALL
                         echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Full system upgrade via paru"
-                        execute_command "paru" "Processed full system upgrade via paru"
+                        execute_command "Processed full system upgrade via paru" paru
 
-                        if [ -f "$HOME/.oh-my-zsh/tools/upgrade.sh" ]; then
+                        if [[ -f "$HOME/.oh-my-zsh/tools/upgrade.sh" ]]; then
                             echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Upgrading oh my zsh"
-                            execute_command "~/.oh-my-zsh/tools/upgrade.sh" "Processed oh-my-zsh upgrade script"
+                            execute_command "Processed oh-my-zsh upgrade script" "$HOME/.oh-my-zsh/tools/upgrade.sh"
                         else
                             print_status "SKIP" "oh-my-zsh upgrade script not found"
                         fi
 
-                        if [ -d "$HOME/powerlevel10k/.git" ]; then
+                        if [[ -d "$HOME/powerlevel10k/.git" ]]; then
                             echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Upgrading Powerlevel10k"
-                            execute_command "git -C $HOME/powerlevel10k pull" "Processed Powerlevel10k upgrade"
+                            execute_command "Processed Powerlevel10k upgrade" git -C "$HOME/powerlevel10k" pull
                         else
                             print_status "SKIP" "Powerlevel10k repository not found"
                         fi
 
                         if command -v flatpak &> /dev/null; then
                             echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Upgrading Flatpak packages"
-                            execute_command "flatpak update" "Processed Flatpak package upgrade"
+                            execute_command "Processed Flatpak package upgrade" flatpak update
                         else
                             print_status "SKIP" "flatpak is not installed"
                         fi
                         ;;
                     1)  # Paru only
                         echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Full system upgrade via paru"
-                        execute_command "paru" "Processed full system upgrade via paru"
+                        execute_command "Processed full system upgrade via paru" paru
                         ;;
                     2)  # Flatpak only
                         if command -v flatpak &> /dev/null; then
                             echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Upgrading Flatpak packages"
-                            execute_command "flatpak update" "Processed Flatpak package upgrade"
+                            execute_command "Processed Flatpak package upgrade" flatpak update
                         else
                             print_status "SKIP" "flatpak is not installed"
                         fi
                         ;;
                     3)  # Oh my zsh only
-                        if [ -f "$HOME/.oh-my-zsh/tools/upgrade.sh" ]; then
+                        if [[ -f "$HOME/.oh-my-zsh/tools/upgrade.sh" ]]; then
                             echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Upgrading oh my zsh"
-                            execute_command "~/.oh-my-zsh/tools/upgrade.sh" "Processed oh-my-zsh upgrade script"
+                            execute_command "Processed oh-my-zsh upgrade script" "$HOME/.oh-my-zsh/tools/upgrade.sh"
                         else
                             print_status "SKIP" "oh-my-zsh upgrade script not found"
                         fi
@@ -149,18 +149,18 @@ while true; do
             # Print total update time
             echo -e "[${COLOR_GREEN} SUCESS ${COLOR_RESET}] System upgrade completed successfully.\nTotal duration: ${COLOR_GREEN}${total_duration}${COLOR_RESET} seconds"
 
-            hyprctl notify 5 5000 "rgb(00ff00)" """fontsize:35   Upgrade completed successfully. Total duration: ${total_duration} seconds"
+            hyprctl notify 5 5000 "rgb(00ff00)" "fontsize:35   Upgrade completed successfully. Total duration: ${total_duration} seconds"
             
             echo "<NOTICE> $(date +"%Y-%m-%d %H:%M:%S"): System upgrade completed successfully. Total duration: ${total_duration} seconds" >> ~/script/waybar/update.log
 
             # Prompt user to reboot the system
             while true; do
                 echo -e "${COLOR_GREEN}"
-                read -p "All operations have been completed. Would you like to reboot the system now? (y/n/r for reload): " reboot_choice
+                read -rp "All operations have been completed. Would you like to reboot the system now? (y/n/r for reload): " reboot_choice
                 echo -e "${COLOR_RESET}"
                 case $reboot_choice in
                     [Yy]* )
-                        hyprctl notify 2 5000 "rgb(433878)" """fontsize:35   System will reboot in 5 seconds"
+                        hyprctl notify 2 5000 "rgb(433878)" "fontsize:35   System will reboot in 5 seconds"
                         sleep 5
                         systemctl reboot
                         break;;
@@ -172,45 +172,45 @@ while true; do
                             case $update_choice in
                                 0)  # Update ALL
                                     echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Full system upgrade via paru"
-                                    execute_command "paru" "Processed full system upgrade via paru"
+                                    execute_command "Processed full system upgrade via paru" paru
 
-                                    if [ -f "$HOME/.oh-my-zsh/tools/upgrade.sh" ]; then
+                                    if [[ -f "$HOME/.oh-my-zsh/tools/upgrade.sh" ]]; then
                                         echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Upgrading oh my zsh"
-                                        execute_command "~/.oh-my-zsh/tools/upgrade.sh" "Processed oh-my-zsh upgrade script"
+                                        execute_command "Processed oh-my-zsh upgrade script" "$HOME/.oh-my-zsh/tools/upgrade.sh"
                                     else
                                         print_status "SKIP" "oh-my-zsh upgrade script not found"
                                     fi
 
-                                    if [ -d "$HOME/powerlevel10k/.git" ]; then
+                                    if [[ -d "$HOME/powerlevel10k/.git" ]]; then
                                         echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Upgrading Powerlevel10k"
-                                        execute_command "git -C $HOME/powerlevel10k pull" "Processed Powerlevel10k upgrade"
+                                        execute_command "Processed Powerlevel10k upgrade" git -C "$HOME/powerlevel10k" pull
                                     else
                                         print_status "SKIP" "Powerlevel10k repository not found"
                                     fi
 
                                     if command -v flatpak &> /dev/null; then
                                         echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Upgrading Flatpak packages"
-                                        execute_command "flatpak update" "Processed Flatpak package upgrade"
+                                        execute_command "Processed Flatpak package upgrade" flatpak update
                                     else
                                         print_status "SKIP" "flatpak is not installed"
                                     fi
                                     ;;
                                 1)  # Paru only
                                     echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Full system upgrade via paru"
-                                    execute_command "paru" "Processed full system upgrade via paru"
+                                    execute_command "Processed full system upgrade via paru" paru
                                     ;;
                                 2)  # Flatpak only
                                     if command -v flatpak &> /dev/null; then
                                         echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Upgrading Flatpak packages"
-                                        execute_command "flatpak update" "Processed Flatpak package upgrade"
+                                        execute_command "Processed Flatpak package upgrade" flatpak update
                                     else
                                         print_status "SKIP" "flatpak is not installed"
                                     fi
                                     ;;
                                 3)  # Oh my zsh only
-                                    if [ -f "$HOME/.oh-my-zsh/tools/upgrade.sh" ]; then
+                                    if [[ -f "$HOME/.oh-my-zsh/tools/upgrade.sh" ]]; then
                                         echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Upgrading oh my zsh"
-                                        execute_command "~/.oh-my-zsh/tools/upgrade.sh" "Processed oh-my-zsh upgrade script"
+                                        execute_command "Processed oh-my-zsh upgrade script" "$HOME/.oh-my-zsh/tools/upgrade.sh"
                                     else
                                         print_status "SKIP" "oh-my-zsh upgrade script not found"
                                     fi
@@ -221,7 +221,7 @@ while true; do
                         end_time=$(date +%s)
                         total_duration=$((end_time - start_time))
                         echo -e "[${COLOR_GREEN} SUCESS ${COLOR_RESET}] System upgrade completed successfully.\nTotal duration: ${COLOR_GREEN}${total_duration}${COLOR_RESET} seconds"
-                        hyprctl notify 5 5000 "rgb(00ff00)" """fontsize:35   Upgrade completed successfully. Total duration: ${total_duration} seconds"
+                        hyprctl notify 5 5000 "rgb(00ff00)" "fontsize:35   Upgrade completed successfully. Total duration: ${total_duration} seconds"
                         echo "<NOTICE> $(date +"%Y-%m-%d %H:%M:%S"): System upgrade completed successfully. Total duration: ${total_duration} seconds" >> ~/script/waybar/update.log
                         continue;;
                     [Nn]* )

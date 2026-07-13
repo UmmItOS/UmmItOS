@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# shellcheck disable=SC1091
 
 # Frame rate
 FPS=185
@@ -15,7 +16,7 @@ same_wallpaper=1
 filenames=$(find "$WALLPAPER_DIR" -type f -regex '.*\.\(jpg\|png\|jpeg\)' -printf "%P\n")
 
 # Check if wallpaper directory exists and contains files
-if [ ! -d "$WALLPAPER_DIR" ]; then
+if [[ ! -d "$WALLPAPER_DIR" ]]; then
     hyprctl notify 3 2500 "rgb(C62E2E)" "fontsize:35   Wallpaper directory not found! 😵"
     echo "<ERROR> $(date +"%Y-%m-%d %H:%M:%S"): Wallpaper directory not found - Random Wallpaper" >> ~/script/awww/awww.log
     exit 1
@@ -24,11 +25,11 @@ fi
 # Convert filenames to array
 wallpapers_array=()
 while IFS= read -r filename; do
-    [ -n "$filename" ] && wallpapers_array+=("$filename")
+    [[ -n "$filename" ]] && wallpapers_array+=("$filename")
 done <<< "$filenames"
 
 # Check if any wallpapers found
-if [ ${#wallpapers_array[@]} -eq 0 ]; then
+if [[ ${#wallpapers_array[@]} -eq 0 ]]; then
     hyprctl notify 3 2500 "rgb(C62E2E)" "fontsize:35   No wallpapers found! 😵"
     echo "<ERROR> $(date +"%Y-%m-%d %H:%M:%S"): No wallpapers found - Random Wallpaper" >> ~/script/awww/awww.log
     exit 1
@@ -43,7 +44,7 @@ selected_filename=$(basename "$selected")
 
 # Get the directory name from the selected path
 selected_dir=$(dirname "$selected")
-if [ "$selected_dir" = "." ]; then
+if [[ "$selected_dir" == "." ]]; then
     directory_name="root directory"
 else
     directory_name=$(basename "$selected_dir")
@@ -57,16 +58,17 @@ transition_options=(
 
 # Choose a random index
 selected_transition=${transition_options[RANDOM % ${#transition_options[@]}]}
+read -ra transition_args <<< "$selected_transition"
 
 # Apply wallpaper with awww using the selected transition
 awww img \
     --transition-fps "$FPS" \
-    $selected_transition \
+    "${transition_args[@]}" \
     "$selected_path"
 
-if [ $same_wallpaper -eq 1 ]; then
-    if [ -f "$HOME/script/awww/detect.sh" ]; then
-        source $HOME/script/awww/detect.sh
+if (( same_wallpaper == 1 )); then
+    if [[ -f "$HOME/script/awww/detect.sh" ]]; then
+        source "$HOME"/script/awww/detect.sh
     fi
 fi
 

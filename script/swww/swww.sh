@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# shellcheck disable=SC1091
 
 # Frame rate
 FPS=185
@@ -24,7 +25,7 @@ fi
 # Build entries differently
 entries=""
 while IFS= read -r filename; do
-    [ -n "$filename" ] && entries+="${filename}\x00icon\x1f${WALLPAPER_DIR}/${filename}\n"
+    [[ -n "$filename" ]] && entries+="${filename}\x00icon\x1f${WALLPAPER_DIR}/${filename}\n"
 done <<< "$filenames"
 
 # Remove the last newline character before passing to rofi
@@ -32,9 +33,9 @@ entries=${entries%\\n}
 selected=$(printf "%b" "$entries" | rofi -dmenu -p "Wallpaper Picker" -theme ~/.config/rofi/wallpaper-picker.rasi)
 
 # Check if user selected a wallpaper
-if [ -n "$selected" ]; then
-    selected=$(echo "$selected" | sed 's/\x00icon\x1f.*//')
-    
+if [[ -n "$selected" ]]; then
+    selected=${selected%%$'\x00icon\x1f'*}
+
     selected_path="$WALLPAPER_DIR/$selected"
 
     # Get the filename from the selected path
@@ -48,15 +49,16 @@ if [ -n "$selected" ]; then
 
     # Choose a random index
     selected_transition=${transition_options[RANDOM % ${#transition_options[@]}]}
+    read -ra transition_args <<< "$selected_transition"
 
     # Wallpaper picker with Swww using the selected transition
     swww img \
         --transition-fps "$FPS" \
-        $selected_transition \
+        "${transition_args[@]}" \
         "$selected_path"
 
-    if [ $same_wallpaper -eq 1 ]; then
-        source $HOME/script/swww/detect.sh
+    if (( same_wallpaper == 1 )); then
+        source "$HOME"/script/swww/detect.sh
     fi
 
     hyprctl notify 5 2500 "rgb(86D293)" "fontsize:35   Ayo, Wallpaper changed to $selected_filename 🚀"

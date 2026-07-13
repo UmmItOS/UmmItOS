@@ -1,8 +1,10 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
+# shellcheck disable=SC2034
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+# shellcheck disable=SC2034
 BLUE='\033[0;34m'
 MAGENTA='\033[0;35m'
 CYAN='\033[0;36m'
@@ -44,6 +46,7 @@ declare -A categories=(
 )
 
 # Window Management keybinds
+# shellcheck disable=SC2034
 window_keybinds=(
     "SUPER + C|Close active window"
     "SUPER + V|Toggle window floating"
@@ -60,6 +63,7 @@ window_keybinds=(
 )
 
 # Workspace Control keybinds
+# shellcheck disable=SC2034
 workspace_keybinds=(
     "SUPER + <Number 1,2,3,4,5,6,7,8,9,0>| Switch to workspace 1-10"
     "SUPER + SHIFT + <Number 1,2,3,4,5,6,7,8,9,0>| Move active window to workspace 1-10"
@@ -69,6 +73,7 @@ workspace_keybinds=(
 )
 
 # Applications & Launchers keybinds
+# shellcheck disable=SC2034
 apps_keybinds=(
     "SUPER + T|Launch terminal (kitty)"
     "SUPER + E|Launch file manager (yazi)"
@@ -84,6 +89,7 @@ apps_keybinds=(
 )
 
 # Hardware Controls keybinds
+# shellcheck disable=SC2034
 hardware_keybinds=(
     "Brightness Up|Increase screen brightness"
     "Brightness Down|Decrease screen brightness"
@@ -96,6 +102,7 @@ hardware_keybinds=(
 )
 
 # System Actions keybinds
+# shellcheck disable=SC2034
 system_keybinds=(
     "SUPER + L|Lock screen"
     "SUPER + M|Exit Hyprland"
@@ -103,6 +110,7 @@ system_keybinds=(
 )
 
 # Screenshots & Media keybinds
+# shellcheck disable=SC2034
 media_keybinds=(
     "SUPER + Printsrc|Screenshot active window"
     "Printsrc|Screenshot full screen"
@@ -127,16 +135,16 @@ show_keybinds() {
             local key="${keybind%%|*}"
             local desc="${keybind##*|}"
             
-            if [ $i -eq $selected ]; then
+            if (( i == selected )); then
                 echo -e "${WHITE}${BOLD}► ${YELLOW}${key}${WHITE} - ${desc}${NC}"
             else
                 echo -e "  ${GREEN}${key}${GRAY} - ${desc}${NC}"
             fi
         done
-        
+
         echo ""
         draw_footer
-        
+
         # Read user input
         read -rsn1 input
         case "$input" in
@@ -145,21 +153,21 @@ show_keybinds() {
                 case "$input" in
                     '[A'|'[k') # Up arrow
                         ((selected--))
-                        [ $selected -lt 0 ] && selected=$((total-1))
+                        (( selected < 0 )) && selected=$((total-1))
                         ;;
                     '[B'|'[j') # Down arrow
                         ((selected++))
-                        [ $selected -ge $total ] && selected=0
+                        (( selected >= total )) && selected=0
                         ;;
                 esac
                 ;;
             'j'|'J') # Down (vim style)
                 ((selected++))
-                [ $selected -ge $total ] && selected=0
+                (( selected >= total )) && selected=0
                 ;;
             'k'|'K') # Up (vim style)
                 ((selected--))
-                [ $selected -lt 0 ] && selected=$((total-1))
+                (( selected < 0 )) && selected=$((total-1))
                 ;;
             'q'|'Q'|$'\e') # Quit
                 exit 0
@@ -178,24 +186,26 @@ show_keybinds() {
 show_main_menu() {
     local selected=0
     local total=${#categories[@]}
-    
+
     while true; do
         clear_screen
         draw_header
         echo -e "${CYAN}${BOLD}Select a category:${NC}\n"
-        
+
         # Display categories
-        for key in $(printf '%s\n' "${!categories[@]}" | sort); do
+        local sorted_keys
+        mapfile -t sorted_keys < <(printf '%s\n' "${!categories[@]}" | sort)
+        for key in "${sorted_keys[@]}"; do
             local index=$((key-1))
-            if [ $index -eq $selected ]; then
+            if (( index == selected )); then
                 echo -e "${WHITE}${BOLD}► ${YELLOW}${key}. ${categories[$key]}${NC}"
             else
                 echo -e "  ${GREEN}${key}. ${categories[$key]}${NC}"
             fi
         done
-        
+
         draw_footer
-        
+
         # Read user input
         read -rsn1 input
         case "$input" in
@@ -204,21 +214,21 @@ show_main_menu() {
                 case "$input" in
                     '[A'|'[k') # Up arrow
                         ((selected--))
-                        [ $selected -lt 0 ] && selected=$((total-1))
+                        (( selected < 0 )) && selected=$((total-1))
                         ;;
                     '[B'|'[j') # Down arrow
                         ((selected++))
-                        [ $selected -ge $total ] && selected=0
+                        (( selected >= total )) && selected=0
                         ;;
                 esac
                 ;;
             'j'|'J') # Down (vim style)
                 ((selected++))
-                [ $selected -ge $total ] && selected=0
+                (( selected >= total )) && selected=0
                 ;;
             'k'|'K') # Up (vim style)
                 ((selected--))
-                [ $selected -lt 0 ] && selected=$((total-1))
+                (( selected < 0 )) && selected=$((total-1))
                 ;;
             'q'|'Q'|$'\e') # Quit
                 clear_screen
@@ -250,18 +260,25 @@ show_main_menu() {
     done
 }
 
+# Cleanup handler for Ctrl+C
+cleanup() {
+    clear_screen
+    echo -e "\n${GREEN}Thanks for using UmmITOS Hotkey Cheatsheet :)${NC}"
+    exit 0
+}
+
 # Trap to handle Ctrl+C
-trap 'clear_screen; echo -e "\n${GREEN}Thanks for using UmmITOS Hotkey Cheatsheet :){NC}"; exit 0' INT
+trap cleanup INT
 
 # Main execution
 main() {
 
     # Check if running in terminal
-    if [ ! -t 1 ]; then
+    if [[ ! -t 1 ]]; then
         echo "This script must be run in a terminal."
         exit 1
     fi
-    
+
     show_main_menu
 }
 

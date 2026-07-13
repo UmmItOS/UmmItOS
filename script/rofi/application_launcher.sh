@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Check if rofi is already running
 if pgrep -x "rofi" > /dev/null; then
@@ -10,7 +10,7 @@ if pgrep -x "rofi" > /dev/null; then
 fi
 
 # Run the rofi command
-rofi \
+if ! rofi \
     -show drun \
     -modi drun \
     -drun-match-fields all \
@@ -18,13 +18,11 @@ rofi \
     -no-drun-show-actions \
     -terminal kitty \
     -kb-cancel Escape \
-    -theme ~/.config/rofi/application-launcher.rasi
+    -theme ~/.config/rofi/application-launcher.rasi; then
 
-echo "<NOTICE> $(date +"%Y-%m-%d %H:%M:%S"): Rofi ran successfully - Application Launcher" >> ~/script/rofi/application_launcher.log
-
-# Check the exit status of the rofi command
-if [ $? -ne 0 ]; then
     hyprctl notify 3 2500 "rgb(EF6D6D)" "fontsize:35   Error: rofi did not run correctly 🫠"
     echo "<NOTICE> $(date +"%Y-%m-%d %H:%M:%S"): Rofi did not run correctly 🫠 - Application Launcher" >> ~/script/rofi/application_launcher.log
     exit 1
 fi
+
+echo "<NOTICE> $(date +"%Y-%m-%d %H:%M:%S"): Rofi ran successfully - Application Launcher" >> ~/script/rofi/application_launcher.log

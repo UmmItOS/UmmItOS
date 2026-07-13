@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# shellcheck disable=SC1091
 
 # Get the directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -44,7 +45,7 @@ run_interactive_configuration() {
     fi
 
     local selected_monitor_name
-    if [ -n "$default_monitor_name" ]; then
+    if [[  -n "$default_monitor_name"  ]]; then
         echo "${COLOR_BLUE}We detected '${default_monitor_name}' as a likely candidate (your currently focused monitor).${COLOR_RESET}"
         show_monitor_info
         selected_monitor_name=$(prompt_with_default "Enter monitor name for Hyprlock (or press Enter for default '${default_monitor_name}'): " "$default_monitor_name")
@@ -55,13 +56,13 @@ run_interactive_configuration() {
         selected_monitor_name=$(prompt_with_default "Enter monitor name for Hyprlock (e.g., DP-1): " "")
     fi
 
-    if [ -n "$selected_monitor_name" ]; then
+    if [[  -n "$selected_monitor_name"  ]]; then
         echo ""
         echo "${COLOR_GREEN}You entered: ${COLOR_CYAN}$selected_monitor_name${COLOR_RESET}"
         echo "${COLOR_YELLOW}Attempting to update ${COLOR_GREEN}~/.config/hypr/hyprlock.conf${COLOR_YELLOW} with monitor '${COLOR_CYAN}$selected_monitor_name${COLOR_CYAN}'...${COLOR_RESET}"
         
         local hyprlock_conf_file_path="$HOME/.config/hypr/hyprlock.conf"
-        if [ -f "$hyprlock_conf_file_path" ]; then
+        if [[  -f "$hyprlock_conf_file_path"  ]]; then
             backup_file "$hyprlock_conf_file_path"
             sed -i -E "s/^[[:space:]]*monitor[[:space:]]*=.*$/    monitor = $selected_monitor_name/" "$hyprlock_conf_file_path"
             if grep -q "^[[:space:]]*monitor[[:space:]]*= $selected_monitor_name" "$hyprlock_conf_file_path"; then
@@ -98,12 +99,12 @@ run_interactive_configuration() {
         local num_interfaces=${#interfaces[@]}
         local selected_interface_name=""
 
-        if [ "$num_interfaces" -eq 0 ]; then
+        if (( num_interfaces == 0 )); then
             echo "${COLOR_DARK_RED}No network interfaces found.${COLOR_RESET}"
         else
             while true; do
                 read -r -p "${COLOR_GREEN}Enter the number for the network interface you want to use (1-$num_interfaces): ${COLOR_RESET}" choice
-                if [[ "$choice" =~ ^[0-9]+$ ]] && [ "$choice" -ge 1 ] && [ "$choice" -le "$num_interfaces" ]; then
+                if [[ "$choice" =~ ^[0-9]+$ ]] && (( choice >= 1 && choice <= num_interfaces )); then
                     selected_interface_name="${interfaces[$((choice-1))]}"
                     break
                 else
@@ -112,11 +113,11 @@ run_interactive_configuration() {
             done
         fi
 
-        if [ -n "$selected_interface_name" ]; then
+        if [[  -n "$selected_interface_name"  ]]; then
             echo ""
             echo "${COLOR_GREEN}You selected interface: ${COLOR_CYAN}$selected_interface_name${COLOR_RESET}"
             local waybar_conf_file_path="$HOME/.config/waybar/config.jsonc"
-            if [ -f "$waybar_conf_file_path" ]; then
+            if [[  -f "$waybar_conf_file_path"  ]]; then
                 if ! command_exists jq; then
                     echo "${COLOR_DARK_RED}❌ 'jq' command not found. This script uses jq to modify JSON files.${COLOR_RESET}"
                     echo "${COLOR_YELLOW}Please install jq (e.g., 'sudo pacman -S jq') and run this section again${COLOR_RESET}"
@@ -126,7 +127,7 @@ run_interactive_configuration() {
                     jq --arg new_iface "$selected_interface_name" '.network.interface = $new_iface' "$waybar_conf_file_path" > "${waybar_conf_file_path}.tmp" && mv "${waybar_conf_file_path}.tmp" "$waybar_conf_file_path"
                     local current_waybar_iface
                     current_waybar_iface=$(jq -r '.network.interface' "$waybar_conf_file_path")
-                    if [ "$current_waybar_iface" == "$selected_interface_name" ]; then
+                    if [[  "$current_waybar_iface" == "$selected_interface_name"  ]]; then
                         echo "${COLOR_GREEN}✅ Successfully updated network interface in ${waybar_conf_file_path} to '${selected_interface_name}'${COLOR_RESET}"
                     else
                         echo "${COLOR_DARK_RED}❌ Failed to update network interface in ${waybar_conf_file_path}. Current value: '${current_waybar_iface}'. Please check manually.${COLOR_RESET}"
@@ -151,7 +152,7 @@ run_interactive_configuration() {
     local hyprland_conf_file_path="$HOME/.config/hypr/hyprland.conf"
     echo "${COLOR_GREY}   Configuration file: ${COLOR_GREEN}${hyprland_conf_file_path}${COLOR_RESET}"
     echo ""
-    if [ ! -f "$hyprland_conf_file_path" ]; then
+    if [[  ! -f "$hyprland_conf_file_path"  ]]; then
         echo "${COLOR_DARK_RED}❌ ${hyprland_conf_file_path} not found. Skipping this step.${COLOR_RESET}"
     else
         if ! command_exists jq; then
@@ -170,7 +171,7 @@ run_interactive_configuration() {
                 local focused_monitor_json
                 focused_monitor_json=$(hyprctl -j monitors | jq -c 'map(select(.focused == true)) | .[0]')
 
-                if [ -n "$focused_monitor_json" ] && [ "$focused_monitor_json" != "null" ]; then
+                if [[ -n "$focused_monitor_json" && "$focused_monitor_json" != "null" ]]; then
                     local name width height refresh_rate x y scale
                     name=$(echo "$focused_monitor_json" | jq -r '.name')
                     width=$(echo "$focused_monitor_json" | jq -r '.width')
@@ -191,7 +192,7 @@ run_interactive_configuration() {
                 fi
             fi
             
-            if [ -z "$new_monitor_line_val" ]; then
+            if [[  -z "$new_monitor_line_val"  ]]; then
                 echo "${COLOR_DARK_RED}Could not automatically determine new monitor configuration.${COLOR_RESET}"
                 echo "${COLOR_YELLOW}Skipping automatic update for monitor line.${COLOR_RESET}"
             else
@@ -203,7 +204,7 @@ run_interactive_configuration() {
                     sed -i "3s/.*/$new_monitor_line_val/" "$hyprland_conf_file_path"
                     local updated_line_val
                     updated_line_val=$(sed -n '3p' "$hyprland_conf_file_path")
-                    if [ "$updated_line_val" == "$new_monitor_line_val" ]; then
+                    if [[  "$updated_line_val" == "$new_monitor_line_val"  ]]; then
                         echo "${COLOR_GREEN}   ✅ Successfully updated monitor line in ${hyprland_conf_file_path}.${COLOR_RESET}"
                     else
                         echo "${COLOR_DARK_RED}   ❌ Failed to verify monitor line update. Current line 3 is:${COLOR_RESET}"
@@ -224,7 +225,10 @@ run_interactive_configuration() {
     # User Path Adjustments (exec.conf) - inline implementation
     local exec_conf_file="$HOME/.config/hypr/hyprland/exec.conf"
     local current_user_home_real="$HOME"
-    current_user_home_real=$(echo "$current_user_home_real" | sed 's#/*$##') # Ensure no trailing slash
+    # Ensure no trailing slash
+    while [[ $current_user_home_real == */ ]]; do
+        current_user_home_real=${current_user_home_real%/}
+    done
 
     print_header "🔧 User Path Adjustments (exec.conf)"
     echo "${COLOR_YELLOW}This section will check for user-specific paths in your Hyprland exec config.${COLOR_RESET}"
@@ -232,7 +236,7 @@ run_interactive_configuration() {
     echo "${COLOR_GREY}Current user home directory: ${COLOR_CYAN}${current_user_home_real}${COLOR_RESET}"
     echo ""
 
-    if [ ! -f "$exec_conf_file" ]; then
+    if [[  ! -f "$exec_conf_file"  ]]; then
         echo "${COLOR_DARK_RED}   ❌ ${exec_conf_file} not found. Skipping this step.${COLOR_RESET}"
         pause_and_continue "Press Enter to continue..."
         clear
@@ -256,11 +260,12 @@ run_interactive_configuration() {
             # extract a /home/someuser path prefix from the line
             local existing_path_prefix
             existing_path_prefix=$(echo "$original_line" | grep -o -E '/home/[^/]+/' | head -n 1)
-            existing_path_prefix=$(echo "$existing_path_prefix" | sed 's#/*$##') # Remove trailing slash
+            # Remove trailing slash
+            existing_path_prefix=${existing_path_prefix%/}
 
-            if [ -z "$existing_path_prefix" ]; then
+            if [[  -z "$existing_path_prefix"  ]]; then
                 echo "   ${COLOR_YELLOW}No '/home/username/' path prefix found on this line. No changes needed.${COLOR_RESET}"
-            elif [ "$existing_path_prefix" == "$current_user_home_real" ]; then
+            elif [[  "$existing_path_prefix" == "$current_user_home_real"  ]]; then
                 echo "   ${COLOR_GREEN}Path prefix '${existing_path_prefix}' matches current user home. No changes needed.${COLOR_RESET}"
             else
                 # Path prefix exists and is different from current user's home
@@ -296,11 +301,11 @@ run_interactive_configuration() {
         done
         rm -f "${exec_conf_file}.sedtmp" # Clean up temp file if it exists
 
-        if [ "$any_line_updated_successfully" = true ] && [ "$overall_success" = true ]; then
+        if [[ "$any_line_updated_successfully" = true && "$overall_success" = true ]]; then
             echo "${COLOR_GREEN}All confirmed path changes in ${exec_conf_file} applied successfully.${COLOR_RESET}"
-        elif [ "$any_line_updated_successfully" = true ]; then
+        elif [[ "$any_line_updated_successfully" = true ]]; then
             echo "${COLOR_YELLOW}Some path changes in ${exec_conf_file} were applied. Others were skipped or had issues. Please review.${COLOR_RESET}"
-        elif [ "$changes_made_or_needed" = true ] && [ "$overall_success" = false ]; then
+        elif [[ "$changes_made_or_needed" = true && "$overall_success" = false ]]; then
             echo "${COLOR_DARK_RED}Needed path changes in ${exec_conf_file} were skipped or failed. Manual check advised.${COLOR_RESET}"
         else
             echo "${COLOR_BLUE}No user-specific path changes were needed or made in ${exec_conf_file}.${COLOR_RESET}"
@@ -321,22 +326,22 @@ run_interactive_configuration() {
     # Get current HYPRSHOT_DIR value directly
     local current_hyprshot_dir_val=""
     local env_file="$HOME/.config/hypr/hyprland/env.conf"
-    if [ -f "$env_file" ]; then
+    if [[  -f "$env_file"  ]]; then
         # Extracts the path from a line like "env = HYPRSHOT_DIR, /path/to/dir"
         current_hyprshot_dir_val=$(grep -E "^[[:space:]]*env[[:space:]]*=[[:space:]]*HYPRSHOT_DIR[[:space:]]*,.*" "$env_file" | sed -E 's/^[[:space:]]*env[[:space:]]*=[[:space:]]*HYPRSHOT_DIR[[:space:]]*,[[:space:]]*(.*)[[:space:]]*$/\1/' | head -n 1)
     fi
     
     local desired_hyprshot_dir
-    if [ -n "$current_hyprshot_dir_val" ]; then
+    if [[  -n "$current_hyprshot_dir_val"  ]]; then
         desired_hyprshot_dir=$(prompt_with_default "Enter the full absolute path for HYPRSHOT_DIR (or press Enter for current '${current_hyprshot_dir_val}'): " "$current_hyprshot_dir_val")
     else
         desired_hyprshot_dir=$(prompt_with_default "Enter the full absolute path for HYPRSHOT_DIR (e.g., /home/your_user/Pictures/Screenshots): " "$HOME/Pictures/Screenshots")
     fi
-    if [ -z "$desired_hyprshot_dir" ]; then
+    if [[  -z "$desired_hyprshot_dir"  ]]; then
         echo "${COLOR_DARK_RED}No path entered for HYPRSHOT_DIR. Skipping modification.${COLOR_RESET}"
     else
         echo "${COLOR_GREEN}You chose HYPRSHOT_DIR as: ${COLOR_CYAN}$desired_hyprshot_dir${COLOR_RESET}"
-        if [ ! -d "$desired_hyprshot_dir" ]; then
+        if [[  ! -d "$desired_hyprshot_dir"  ]]; then
             echo "${COLOR_YELLOW}Directory '${desired_hyprshot_dir}' does not exist. Attempting to create it...${COLOR_RESET}"
             if mkdir -p "$desired_hyprshot_dir"; then
                 echo "${COLOR_GREEN}   ✅ Successfully created directory '${desired_hyprshot_dir}'.${COLOR_RESET}"
@@ -348,12 +353,12 @@ run_interactive_configuration() {
         fi
         
         local env_conf_file_path="$HOME/.config/hypr/hyprland/env.conf"
-        if [ -f "$env_conf_file_path" ]; then
+        if [[  -f "$env_conf_file_path"  ]]; then
             backup_file "$env_conf_file_path"
             sed -i -E "s|^([[:space:]]*env[[:space:]]*=[[:space:]]*HYPRSHOT_DIR[[:space:]]*,)[[:space:]]*.*$|\1 $desired_hyprshot_dir|" "$env_conf_file_path"
             local updated_hyprshot_dir_val
             updated_hyprshot_dir_val=$(grep -E "^[[:space:]]*env[[:space:]]*=[[:space:]]*HYPRSHOT_DIR[[:space:]]*,.*" "$env_conf_file_path" | sed -E 's/^[[:space:]]*env[[:space:]]*=[[:space:]]*HYPRSHOT_DIR[[:space:]]*,[[:space:]]*(.*)[[:space:]]*$/\1/' | head -n 1)
-            if [ "$updated_hyprshot_dir_val" == "$desired_hyprshot_dir" ]; then
+            if [[  "$updated_hyprshot_dir_val" == "$desired_hyprshot_dir"  ]]; then
                 echo "${COLOR_GREEN}✅ Successfully updated HYPRSHOT_DIR in ${env_conf_file_path} to '${desired_hyprshot_dir}'${COLOR_RESET}"
             else
                 echo "${COLOR_DARK_RED}❌ Failed to update HYPRSHOT_DIR in ${env_conf_file_path}. Current value: '${updated_hyprshot_dir_val}'. Please check manually.${COLOR_RESET}"
@@ -399,7 +404,7 @@ show_current_settings() {
 
     echo "${COLOR_MAGENTA}🔒 Hyprlock Monitor(s):${COLOR_RESET}"
     local hyprlock_conf_file="$HOME/.config/hypr/hyprlock.conf"
-    if [ -f "$hyprlock_conf_file" ]; then
+    if [[  -f "$hyprlock_conf_file"  ]]; then
         if grep -q -E "^[[:space:]]*monitor[[:space:]]*=" "$hyprlock_conf_file"; then
             grep -E "^[[:space:]]*monitor[[:space:]]*=" "$hyprlock_conf_file" | awk '!seen[$0]++' | sed 's/^/   /'
         else
@@ -412,11 +417,11 @@ show_current_settings() {
 
     echo "${COLOR_MAGENTA}📊 Waybar Network Interface:${COLOR_RESET}"
     local waybar_conf_file="$HOME/.config/waybar/config.jsonc"
-    if [ -f "$waybar_conf_file" ]; then
+    if [[  -f "$waybar_conf_file"  ]]; then
         if command_exists jq; then
             local current_iface
             current_iface=$(jq -r '.network.interface' "$waybar_conf_file" 2>/dev/null)
-            if [ -n "$current_iface" ] && [ "$current_iface" != "null" ]; then
+            if [[ -n "$current_iface" && "$current_iface" != "null" ]]; then
                 echo "   ${COLOR_CYAN}$current_iface${COLOR_RESET}"
             else
                 echo "   ${COLOR_YELLOW}Network interface not set or 'network' block/key not found in $waybar_conf_file.${COLOR_RESET}"
@@ -431,7 +436,7 @@ show_current_settings() {
 
     echo "${COLOR_MAGENTA}🖥️  Hyprland Main Monitor (hyprland.conf line 3):${COLOR_RESET}"
     local hyprland_conf_file="$HOME/.config/hypr/hyprland.conf"
-    if [ -f "$hyprland_conf_file" ]; then
+    if [[  -f "$hyprland_conf_file"  ]]; then
         local current_monitor_line
         current_monitor_line=$(sed -n '3p' "$hyprland_conf_file")
         echo "   ${COLOR_CYAN}$current_monitor_line${COLOR_RESET}"
@@ -443,13 +448,13 @@ show_current_settings() {
     echo "${COLOR_MAGENTA}📸 Hyprshot Screenshot Directory (env.conf):${COLOR_RESET}"
     local current_hyprshot_dir=""
     local env_file="$HOME/.config/hypr/hyprland/env.conf"
-    if [ -f "$env_file" ]; then
+    if [[  -f "$env_file"  ]]; then
         current_hyprshot_dir=$(grep -E "^[[:space:]]*env[[:space:]]*=[[:space:]]*HYPRSHOT_DIR[[:space:]]*,.*" "$env_file" | sed -E 's/^[[:space:]]*env[[:space:]]*=[[:space:]]*HYPRSHOT_DIR[[:space:]]*,[[:space:]]*(.*)[[:space:]]*$/\1/' | head -n 1)
     fi
-    if [ -n "$current_hyprshot_dir" ]; then
+    if [[  -n "$current_hyprshot_dir"  ]]; then
         echo "   ${COLOR_CYAN}$current_hyprshot_dir${COLOR_RESET}"
     else
-        if [ -f "$env_file" ]; then
+        if [[  -f "$env_file"  ]]; then
              echo "   ${COLOR_YELLOW}HYPRSHOT_DIR line not found or value not extracted from $env_file.${COLOR_RESET}"
         else
              echo "   ${COLOR_DARK_RED}$env_file not found.${COLOR_RESET}"
@@ -459,7 +464,7 @@ show_current_settings() {
 
     echo "${COLOR_MAGENTA}🔧 User Paths in exec.conf (Lines 3 & 7):${COLOR_RESET}"
     local exec_conf_file="$HOME/.config/hypr/hyprland/exec.conf"
-    if [ -f "$exec_conf_file" ]; then
+    if [[  -f "$exec_conf_file"  ]]; then
         local line3
         local line7
         line3=$(sed -n '3p' "$exec_conf_file")
@@ -473,7 +478,7 @@ show_current_settings() {
 }
 
 # Script execution / Argument parsing
-if [ -z "$1" ]; then
+if [[  -z "$1"  ]]; then
     display_usage "$(basename "$0")"
     exit 0
 fi

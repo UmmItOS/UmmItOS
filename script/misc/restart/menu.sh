@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Define color codes
 DARK_RED='\033[0;31m'    # Dark Red
@@ -22,19 +22,23 @@ while true; do
     echo -e "${YELLOW}5) Exit${NC}"
     echo -e "${CYAN}$(printf '%.0s-' {1..40})${NC}"
 
-    read -p "$(echo -e ${DARK_RED}Enter your choice: ${NC})" choice
+    read -rp "${DARK_RED}Enter your choice: ${NC}" choice
 
     case $choice in
         1)
+            # shellcheck disable=SC1091
             source ./swaync-restart.sh
             ;;
         2)
+            # shellcheck disable=SC1091
             source ./waybar-restart.sh
             ;;
         3)
+            # shellcheck disable=SC1091
             source ./waybar-restart.sh && source ./swaync-restart.sh
             ;;
         4)
+            # shellcheck disable=SC1091
             source ./kill.sh
             ;;
         5)

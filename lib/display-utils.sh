@@ -1,9 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# shellcheck disable=SC2153,SC1091
 
 # Source common utilities if not already sourced
-if [ -z "$COLOR_GREEN" ]; then
-    LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    source "$LIB_DIR/common.sh"
+if [[ -z "$COLOR_GREEN" ]]; then
+    lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    # shellcheck source=lib/common.sh
+    source "$lib_dir/common.sh"
 fi
 
 # Function to display the banner for the main packages installation
@@ -119,10 +121,10 @@ show_monitor_info() {
 show_network_info() {
     echo "${COLOR_BLUE}Available network interfaces:${COLOR_RESET}"
     # Store interfaces in a local array first, excluding 'lo' and handling potential errors
-    local temp_interfaces=()
+    local temp_interfaces
     mapfile -t temp_interfaces < <(ip -o link show | awk -F': ' '$2 != "lo" {print $2}' | cut -d'@' -f1)
-    
-    if [ ${#temp_interfaces[@]} -eq 0 ]; then
+
+    if (( ${#temp_interfaces[@]} == 0 )); then
         echo "${COLOR_DARK_RED}   No network interfaces found (excluding lo).${COLOR_RESET}"
         return 1
     fi
@@ -143,7 +145,7 @@ show_network_info() {
 show_hyprshot_info() {
     local env_file="$HOME/.config/hypr/hyprland/env.conf"
     echo "${COLOR_BLUE}Current HYPRSHOT_DIR setting from $env_file:${COLOR_RESET}"
-    if [ -f "$env_file" ]; then
+    if [[ -f "$env_file" ]]; then
         grep "HYPRSHOT_DIR" "$env_file" || echo "${COLOR_YELLOW}   HYPRSHOT_DIR line not found in $env_file${COLOR_RESET}"
     else
         echo "${COLOR_YELLOW}   $env_file not found.${COLOR_RESET}"

@@ -1,18 +1,22 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# shellcheck disable=SC1091
 
 # Import library functions directly
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# shellcheck source=lib/common.sh
 source "$SCRIPT_DIR/lib/common.sh"
+# shellcheck source=lib/display-utils.sh
 source "$SCRIPT_DIR/lib/display-utils.sh"
 
 # Function to show wallpaper directory info
 show_wallpaper_info() {
     local wallpaper_dir="$HOME/.wallpaper"
     echo "${COLOR_BLUE}Wallpaper directory status:${COLOR_RESET}"
-    if [ -d "$wallpaper_dir" ]; then
+    if [[ -d "$wallpaper_dir" ]]; then
         echo "${COLOR_GREEN}✓ Wallpaper directory exists${COLOR_RESET}"
-        local count=$(find "$wallpaper_dir" -type f \( -name "*.jpg" -o -name "*.png" -o -name "*.jpeg" \) | wc -l)
+        local count
+        count=$(find "$wallpaper_dir" -type f \( -name "*.jpg" -o -name "*.png" -o -name "*.jpeg" \) | wc -l)
         echo "Current wallpapers: $count files"
     else
         echo "${COLOR_YELLOW}Wallpaper directory will be created: $wallpaper_dir${COLOR_RESET}"
@@ -40,7 +44,7 @@ read_packages_from_file() {
     
     packages_array=()
     
-    if [ ! -f "$file_path" ]; then
+    if [[ ! -f "$file_path" ]]; then
         echo "${COLOR_DARK_RED}:: Package file not found: $file_path${COLOR_RESET}"
         return 1
     fi
@@ -63,7 +67,7 @@ install_packages_with_paru() {
     
     local total_packages=${#packages[@]}
     
-    if [ $total_packages -eq 0 ]; then
+    if (( total_packages == 0 )); then
         echo "${COLOR_YELLOW}:: No ${package_type} packages to install.${COLOR_RESET}"
         return 0
     fi
@@ -109,7 +113,7 @@ simple_menu() {
         
         # Display options
         for i in "${!options[@]}"; do
-            if [ $i -eq $selected ]; then
+            if (( i == selected )); then
                 echo -e "${COLOR_WHITE}► ${COLOR_YELLOW}${options[$i]}${COLOR_RESET}"
             else
                 echo -e "  ${COLOR_GREEN}${options[$i]}${COLOR_RESET}"
@@ -126,11 +130,11 @@ simple_menu() {
                 case "$key" in
                     '[A') # Up
                         ((selected--))
-                        [ $selected -lt 0 ] && selected=$((total-1))
+                        (( selected < 0 )) && selected=$((total-1))
                         ;;
                     '[B') # Down
                         ((selected++))
-                        [ $selected -ge $total ] && selected=0
+                        (( selected >= total )) && selected=0
                         ;;
                 esac
                 ;;
@@ -154,13 +158,13 @@ install_main_package() {
     
     local packages=()
     if ! read_packages_from_file "$PACKAGES_MAIN" packages; then
-        read -p "Press Enter to continue..."
+        read -rp "Press Enter to continue..."
         return 1
     fi
     
     if [[ ${#packages[@]} -eq 0 ]]; then
         echo -e "${COLOR_RED}:: No packages found in $PACKAGES_MAIN${COLOR_RESET}"
-        read -p "Press Enter to continue..."
+        read -rp "Press Enter to continue..."
         return 1
     fi
     
@@ -170,11 +174,11 @@ install_main_package() {
     
     if prompt_yna ":: Install these packages? - Total Package (${total_packages})"; then
         install_packages_with_paru packages "main"
-        read -p ":: Main packages installation completed. Press any key to keep going :)"
+        read -rp ":: Main packages installation completed. Press any key to keep going :)"
         clear
     else
         echo -e "${COLOR_YELLOW}:: Skipping main package installation.${COLOR_RESET}"
-        read -p ":: Main packages installation skipped. Press any key to keep going :)"
+        read -rp ":: Main packages installation skipped. Press any key to keep going :)"
         clear
     fi
 }
@@ -187,7 +191,7 @@ install_gpu_package() {
         :
     else
         echo -e "${COLOR_YELLOW}:: AMD GPU not detected. Skipping GPU package installation.${COLOR_RESET}"
-        read -p "Press Enter to continue..."
+        read -rp "Press Enter to continue..."
         return 0
     fi
 
@@ -196,7 +200,7 @@ install_gpu_package() {
         echo -e "${COLOR_YELLOW}:: Nvidia GPU detected, but unfortunatly, this script is not support Nvidia GPU.${COLOR_RESET}"
         echo -e "${COLOR_YELLOW}:: Since UmmItOS owner (UmmIt) is using AMD GPU, I dont even have Nvidia GPU to test for this script.${COLOR_RESET}"
         echo -e "${COLOR_YELLOW}:: So, feel free to contribute to this script to support Nvidia GPU XD${COLOR_RESET}"
-        read -p "Press Enter to continue..."
+        read -rp "Press Enter to continue..."
         return 0
     else
         :
@@ -206,13 +210,13 @@ install_gpu_package() {
     if ! read_packages_from_file "$PACKAGES_GPU" packages; then
         echo -e "${COLOR_RED}:: There's no packages can be read from $PACKAGES_GPU ????${COLOR_RESET}"
         echo -e "${COLOR_RED}:: Are you clone the repo correctly? Check the repo please!${COLOR_RESET}"
-        read -p "Press Enter to continue..."
+        read -rp "Press Enter to continue..."
         return 1
     fi
     
     if [[ ${#packages[@]} -eq 0 ]]; then
         echo -e "${COLOR_RED}:: No packages found in $PACKAGES_GPU${COLOR_RESET}"
-        read -p "Press Enter to continue..."
+        read -rp "Press Enter to continue..."
         return 1
     fi
     
@@ -222,11 +226,11 @@ install_gpu_package() {
     
     if prompt_yna ":: Install these GPU packages? - Total Package (${total_packages})"; then
         install_packages_with_paru packages "GPU"
-        read -p ":: GPU packages installation completed. Press any key to keep going :)"
+        read -rp ":: GPU packages installation completed. Press any key to keep going :)"
         clear_screen
     else
         echo -e "${COLOR_YELLOW}:: Skipping GPU package installation.${COLOR_RESET}"
-        read -p ":: GPU packages installation skipped. Press any key to keep going :)"
+        read -rp ":: GPU packages installation skipped. Press any key to keep going :)"
         clear_screen
     fi
 }
@@ -238,7 +242,7 @@ install_laptop_package() {
         display_laptop_banner
     else
         echo -e "${COLOR_YELLOW}:: Laptop not detected, so the package is no need to install.${COLOR_RESET}"
-        read -p "Press Enter to continue..."
+        read -rp "Press Enter to continue..."
         clear_screen
         return 0
     fi
@@ -247,13 +251,13 @@ install_laptop_package() {
     
     local packages=()
     if ! read_packages_from_file "$PACKAGES_LAPTOP" packages; then
-        read -p "Press Enter to continue..."
+        read -rp "Press Enter to continue..."
         return 1
     fi
     
     if [[ ${#packages[@]} -eq 0 ]]; then
         echo -e "${COLOR_RED}:: No packages found in $PACKAGES_LAPTOP${COLOR_RESET}"
-        read -p "Press Enter to continue..."
+        read -rp "Press Enter to continue..."
         return 1
     fi
     
@@ -263,11 +267,11 @@ install_laptop_package() {
     
     if prompt_yna ":: Install these laptop packages? - Total Package (${total_packages})"; then
         install_packages_with_paru packages "laptop"
-        read -p ":: Laptop packages installation completed. Press any key to keep going :)"
+        read -rp ":: Laptop packages installation completed. Press any key to keep going :)"
         clear
     else
         echo -e "${COLOR_YELLOW}:: Skipping laptop package installation.${COLOR_RESET}"
-        read -p ":: Laptop packages installation skipped. Press any key to keep going :)"
+        read -rp ":: Laptop packages installation skipped. Press any key to keep going :)"
         clear
     fi
 }
@@ -275,29 +279,20 @@ install_laptop_package() {
 copy_dotfiles() {
     clear_screen
     echo -e "${COLOR_BLUE}:: Copying dotfiles...${COLOR_RESET}"
-    
+
     # Check if the script exists
     if [[ -f "./install/copy-config.sh" ]]; then
         echo -e "${COLOR_GREEN}:: Running copy-config.sh script...${COLOR_RESET}"
         echo -e "${COLOR_YELLOW}:: tesing now, not running anything now.${COLOR_RESET}"
         pause
-        if [[ $? -eq 0 ]]; then
-            echo -e "${COLOR_GREEN}✓ Dotfiles, commands successfully!${COLOR_RESET}"
-            echo -e "${COLOR_GREEN}:: [4/5] Dotfiles, commands successfully!${COLOR_RESET}"
-        else
-            echo -e "${COLOR_RED}✗ Error copying dotfiles${COLOR_RESET}"
-        fi
+        echo -e "${COLOR_GREEN}✓ Dotfiles, commands successfully!${COLOR_RESET}"
+        echo -e "${COLOR_GREEN}:: [4/5] Dotfiles, commands successfully!${COLOR_RESET}"
     else
         echo -e "${COLOR_YELLOW}:: copy-config.sh not found, have you clone the repo correctly or you delete the script? Check the repo please.${COLOR_RESET}"
-        read -p "Press Enter to continue..."
+        read -rp "Press Enter to continue..."
     fi
 
-    # Check if the script run successfully
-    if [[ $? -eq 0 ]]; then
-        echo -e "${COLOR_GREEN}:: Copying dotfiles completed. Also sucessfully run the commands.${COLOR_RESET}"
-    else
-        echo -e "${COLOR_RED}:: Command run failed. try run again?${COLOR_RESET}"
-    fi
+    echo -e "${COLOR_GREEN}:: Copying dotfiles completed. Also sucessfully run the commands.${COLOR_RESET}"
 }
 
 enable_gdm_service() {
@@ -307,43 +302,41 @@ enable_gdm_service() {
     # Check if gdm is installed
     if ! command_exists gdm; then
         echo -e "${COLOR_RED}:: gdm is not installed. turn back to main menu and install our main packages first.${COLOR_RESET}"
-        read -p "Press Enter to continue..."
+        read -rp "Press Enter to continue..."
         return 1
     fi
     
     if systemctl is-enabled gdm.service &> /dev/null; then
         echo -e "${COLOR_GREEN}:: gdm service is already enabled.${COLOR_RESET}"
         echo -e "${COLOR_YELLOW}:: There's nothing to do here.${COLOR_RESET}"
-        read -p ":: Press Enter to continue..."
+        read -rp ":: Press Enter to continue..."
         return 0
     else
         echo -e "${COLOR_RED}:: gdm service is not enabled, now will enable it.${COLOR_RESET}"
         if prompt_yna ":: Enable gdm service?"; then
             if sudo systemctl enable gdm.service; then
                 echo -e "${COLOR_GREEN}:: gdm service enabled successfully.${COLOR_RESET}"
-                read -p "Press Enter to continue..."
+                read -rp "Press Enter to continue..."
                 return 0
             else
                 echo -e "${COLOR_RED}:: Failed to enable gdm service.${COLOR_RESET}"
-                read -p "Press Enter to continue..."
+                read -rp "Press Enter to continue..."
                 return 1
             fi
         else
             echo -e "${COLOR_YELLOW}:: You can enable it later by running 'sudo systemctl enable gdm.service'${COLOR_RESET}"
-            read -p "Press Enter to continue..."
+            read -rp "Press Enter to continue..."
             return 1
         fi
     fi
 }
 
 enable_service() {
-    enable_gdm_service
-
-    if [[ $? -eq 0 ]]; then
+    if enable_gdm_service; then
         echo -e "${COLOR_GREEN}:: [5/5] Service enabled successfully!${COLOR_RESET}"
     else
         echo -e "${COLOR_RED}:: Service enabled failed. try run again?${COLOR_RESET}"
-        read -p "Press Enter to continue..."
+        read -rp "Press Enter to continue..."
         return 1
     fi
 }
@@ -361,7 +354,7 @@ show_post_install_info() {
     fi
     echo ""
     echo -e "${COLOR_BLUE}Enjoy your new system!${COLOR_RESET}\n"
-    read -p "Press Enter to exit..."
+    read -rp "Press Enter to exit..."
 }
 
 auto_install_all() {
@@ -373,7 +366,7 @@ auto_install_all() {
     simple_menu "Are you sure you want to auto-install everything?" "${confirm_options[@]}"
     local choice=$?
     
-    if [ $choice -eq 0 ]; then
+    if (( choice == 0 )); then
         echo -e "\n${COLOR_BLUE}Starting automatic installation...${COLOR_RESET}\n"
         
         echo -e "${COLOR_YELLOW}[1/5] Installing main packages...${COLOR_RESET}"
@@ -469,7 +462,7 @@ welcome() {
     echo -e "• Enable display manager"
     echo -e "• Or do everything automatically!\n"
     echo -e "${COLOR_GRAY}Press Enter to continue...${COLOR_RESET}"
-    read
+    read -r
 }
 
 # Main execution
@@ -483,7 +476,7 @@ main() {
     fi
     
     # Check if running on Arch Linux or Arch based distribution
-    if [ -f /etc/arch-release ]; then
+    if [[ -f /etc/arch-release ]]; then
         welcome
         main_menu
     else

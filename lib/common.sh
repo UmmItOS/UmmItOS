@@ -1,15 +1,16 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Define colors (only if not already defined)
-if [ -z "$COLOR_YELLOW" ]; then
-    readonly COLOR_YELLOW=$(tput setaf 3)
-    readonly COLOR_GREEN=$(tput setaf 2)
-    readonly COLOR_GREY=$(tput setaf 8)
-    readonly COLOR_DARK_RED=$(tput setaf 1)
-    readonly COLOR_BLUE=$(tput setaf 4)
-    readonly COLOR_CYAN=$(tput setaf 6)
-    readonly COLOR_MAGENTA=$(tput setaf 5)
-    readonly COLOR_RESET=$(tput sgr0)
+# shellcheck disable=SC2034
+if [[ -z "$COLOR_YELLOW" ]]; then
+    COLOR_YELLOW=$(tput setaf 3)
+    COLOR_GREEN=$(tput setaf 2)
+    COLOR_GREY=$(tput setaf 8)
+    COLOR_DARK_RED=$(tput setaf 1)
+    COLOR_BLUE=$(tput setaf 4)
+    COLOR_CYAN=$(tput setaf 6)
+    COLOR_MAGENTA=$(tput setaf 5)
+    COLOR_RESET=$(tput sgr0)
 fi
 
 # Function to check if git is installed and offer to install it
@@ -18,7 +19,7 @@ check_git() {
         echo -e "${COLOR_YELLOW}:: git is not installed.${COLOR_RESET}"
         if prompt_yna ":: Would you like to install git?"; then
             echo -e "${COLOR_GREEN}:: Installing git...${COLOR_RESET}"
-            if ! (sudo pacman -S git --noconfirm); then
+            if ! sudo pacman -S git --noconfirm; then
                 echo -e "${COLOR_DARK_RED}:: Failed to install git.${COLOR_RESET}"
                 exit 1
             fi
@@ -35,7 +36,11 @@ check_paru() {
         echo -e "${COLOR_YELLOW}:: paru is not installed.${COLOR_RESET}"
         if prompt_yna ":: Would you like to install paru?"; then
             echo -e "${COLOR_GREEN}:: Installing paru...${COLOR_RESET}"
-            if ! (git clone https://aur.archlinux.org/paru.git && cd paru && makepkg -si); then
+            if ! (
+                git clone https://aur.archlinux.org/paru.git &&
+                cd paru || exit 1
+                makepkg -si
+            ); then
                 echo -e "${COLOR_DARK_RED}:: Failed to install paru.${COLOR_RESET}"
                 exit 1
             fi
@@ -85,7 +90,7 @@ print_header() {
 # Function to check if configuration files exist
 check_config_exists() {
     local file="$1"
-    if [ -f "$file" ]; then
+    if [[ -f "$file" ]]; then
         echo "${COLOR_GREEN}   ✅ Configuration file exists${COLOR_RESET}"
         echo ""
     else
@@ -109,8 +114,9 @@ prompt_with_default() {
 # Function to backup a file with timestamp
 backup_file() {
     local file="$1"
-    if [ -f "$file" ]; then
-        local backup_name="${file}.bak.$(date +%Y%m%d-%H%M%S)"
+    if [[ -f "$file" ]]; then
+        local backup_name
+        backup_name="${file}.bak.$(date +%Y%m%d-%H%M%S)"
         cp "$file" "$backup_name"
         echo "${COLOR_GREY}Backed up original file to ${backup_name}...${COLOR_RESET}"
         return 0
@@ -127,7 +133,7 @@ pause_and_continue() {
 
 # Function to clear screen with optional pause
 clear_with_pause() {
-    if [ "$1" = "pause" ]; then
+    if [[ "$1" == "pause" ]]; then
         pause_and_continue
     fi
     clear
@@ -139,7 +145,7 @@ clear_screen() {
 }
 
 pause() {
-    read -p "Press Enter to continue..."
+    read -rp "Press Enter to continue..."
 }
 
 # Function to check if running on a laptop

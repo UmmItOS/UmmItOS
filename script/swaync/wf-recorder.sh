@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Define the directory where recordings will be saved
 recording_dir="/home/$USER/Videos/wf-recorder"
@@ -13,8 +13,8 @@ record_or_stop() {
     # Check if recording should start or stop
     if [[ $SWAYNC_TOGGLE_STATE == true ]]; then
         # Start recording
-        local filename="$recording_dir/wf-recorder-$(date +'%Y-%m-%d-%H-%M-%S').mp4"
-            --app-name="wf-recorder" --icon="wf-recorder"
+        local filename
+        filename="$recording_dir/wf-recorder-$(date +'%Y-%m-%d-%H-%M-%S').mp4"
         hyprctl notify 1 5000 "rgb(00FF00)" "fontsize:35   Video recording started with wf-recorder 📹"
         echo "<NOTICE> $(date +"%Y-%m-%d %H:%M:%S"): Video recording started with wf-recorder - $filename" >> ~/script/swaync/wf-recorder.log
 
@@ -31,8 +31,7 @@ record_or_stop() {
 
             # Get the most recent recording file
             local filename
-            filename=$(ls -t "$recording_dir" | head -n1)
-                --app-name="wf-recorder" --icon="wf-recorder"
+            filename=$(find "$recording_dir" -maxdepth 1 -type f -printf '%T@ %p\n' | sort -rn | head -n1 | cut -d' ' -f2-)
             echo "Video recording ended and saved to $filename"
             hyprctl notify 5 5000 "rgb(00FF00)" "fontsize:35   Video recording ended and saved to: $recording_dir/$filename 📹"
             echo "<NOTICE> $(date +"%Y-%m-%d %H:%M:%S"): Video recording ended and saved to: $recording_dir/$filename - wf-recorder" >> ~/script/swaync/wf-recorder.log

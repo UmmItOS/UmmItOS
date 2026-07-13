@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # ----------------------------------------------------------
 # Clipboard Cleaner Script
@@ -12,10 +12,10 @@ is_wl_paste_running() {
 }
 
 # ANSI color codes
-readonly COLOR_LIGHT_BLUE='\e[94m'
-readonly COLOR_GREEN='\e[32m'
-readonly COLOR_DARK_RED='\e[31m'
-readonly COLOR_RESET='\e[0m'
+COLOR_LIGHT_BLUE='\e[94m'
+COLOR_GREEN='\e[32m'
+COLOR_DARK_RED='\e[31m'
+COLOR_RESET='\e[0m'
 
 # Banner for clipboard Cleaner
 ascii_art="\
@@ -29,7 +29,7 @@ if is_wl_paste_running; then
     echo -e "${COLOR_GREEN}This script will clear your clipboard history.\nYou saw this message because wl-paste is currently running.\nWould you like to proceed?\n\nIf you want to proceed, please press y to continue.\nIf you want to cancel, please press n to exit.${COLOR_RESET}"
     while true; do
         echo -e "${COLOR_LIGHT_BLUE}"
-        read -p "[ACTION] Would you like to proceed? (y/n): " choice
+        read -rp "[ACTION] Would you like to proceed? (y/n): " choice
         echo -e "${COLOR_RESET}"
         
         case "$choice" in

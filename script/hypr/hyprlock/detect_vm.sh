@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # This script is designed for scenarios where gaming with a KVM (Keyboard, Video, Mouse switch),
 # activating hypridle, and using hyprlock to lock your screen may conflict with the KVM setup.
@@ -25,7 +25,7 @@ check_hyprlock_running() {
 # Function to check QEMU status
 check_qemu_and_lock() {
     # Check if qemu-system-x86_64 is running
-    if ps aux | grep -v grep | grep qemu-system-x86_64 > /dev/null; then
+    if pgrep -x "qemu-system-x86_64" > /dev/null; then
         echo -e "${BLUE}:: QEMU is running.${RESET}"
 
         # Display notification about QEMU running
@@ -66,7 +66,7 @@ else
     # Check if hyprlock is running
     if check_hyprlock_running; then
         # Hyprlock is running, so do nothing
-        return
+        exit 0
     fi
 
     # Hyprlock is not running, so lock the system

@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# shellcheck disable=SC1091
 
 # Get the directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -9,18 +10,17 @@ source "$SCRIPT_DIR/lib/display-utils.sh"
 
 # Main function
 main() {
-
-    if ! check_git && check_paru; then
+    if ! check_git || ! check_paru; then
         echo "${COLOR_BLUE}:: Checking dependencies...${COLOR_RESET}"
-        echo "${COLOR_RED}:: Dependencies not verified!${COLOR_RESET}"
-        echo "${COLOR_RED}:: That seems like you dont have git or paru installed.${COLOR_RESET}"
-        echo "${COLOR_RED}:: you will need to install them to continue.${COLOR_RESET}"
+        echo "${COLOR_DARK_RED}:: Dependencies not verified!${COLOR_RESET}"
+        echo "${COLOR_DARK_RED}:: That seems like you dont have git or paru installed.${COLOR_RESET}"
+        echo "${COLOR_DARK_RED}:: you will need to install them to continue.${COLOR_RESET}"
         exit 1
     fi
-    
+
     # Install packages from install-packages.sh
     source ./install/install-packages.sh
-    
+
     # Install oh-my-zsh from oh-my-zsh.sh
     source ./install/oh-my-zsh.sh
 
@@ -36,9 +36,9 @@ main() {
 
 # Main script execution, only run if the script is executed directly, not sourced
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    
+
     # Only allow Arch Linux to run the script
-    if [ -f /etc/arch-release ]; then
+    if [[ -f /etc/arch-release ]]; then
         clear_screen
         draw_header_cli
         prompt_installation

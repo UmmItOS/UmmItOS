@@ -1,11 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Define colors
-readonly COLOR_YELLOW=$(tput setaf 3)
-readonly COLOR_GREEN=$(tput setaf 2)
-readonly COLOR_GREY=$(tput setaf 8)
-readonly COLOR_DARK_RED=$(tput setaf 1)
-readonly COLOR_RESET=$(tput sgr0)
+COLOR_YELLOW=$(tput setaf 3)
+COLOR_GREEN=$(tput setaf 2)
+COLOR_GREY=$(tput setaf 8)
+COLOR_DARK_RED=$(tput setaf 1)
+COLOR_RESET=$(tput sgr0)
 
 # Function to check if a command is available
 command_exists() {
@@ -32,7 +32,7 @@ check_git() {
         echo -e "${COLOR_YELLOW}:: git is not installed.${COLOR_RESET}"
         if prompt_yna ":: Would you like to install git?"; then
             echo -e "${COLOR_GREEN}:: Installing git...${COLOR_RESET}"
-            if ! (sudo pacman -S git --noconfirm); then
+            if ! sudo pacman -S git --noconfirm; then
                 echo -e "${COLOR_DARK_RED}:: Failed to install git.${COLOR_RESET}"
                 exit 1
             fi
@@ -49,7 +49,11 @@ check_paru() {
         echo -e "${COLOR_YELLOW}:: paru is not installed.${COLOR_RESET}"
         if prompt_yna ":: Would you like to install paru?"; then
             echo -e "${COLOR_GREEN}:: Installing paru...${COLOR_RESET}"
-            if ! (git clone https://aur.archlinux.org/paru.git && cd paru && makepkg -si); then
+            if ! (
+                git clone https://aur.archlinux.org/paru.git &&
+                cd paru || exit 1
+                makepkg -si
+            ); then
                 echo -e "${COLOR_DARK_RED}:: Failed to install paru.${COLOR_RESET}"
                 exit 1
             fi
@@ -61,8 +65,8 @@ check_paru() {
 }
 
 # Repository configuration
-repo_url=https://github.com/UmmItOS/UmmItOS.git
-repo=UmmItOS
+repo_url='https://github.com/UmmItOS/UmmItOS.git'
+repo='UmmItOS'
 
 # Check if user wants to run the script
 if prompt_yna "Do you want to run the script?"; then
@@ -78,12 +82,11 @@ check_paru
 # Check if user wants to clone the repository
 if prompt_yna "Do you want to clone the repository?"; then
     echo -e "${COLOR_GREEN}[+] Cloning repository...${COLOR_RESET}"
-    git clone --depth 1 --shallow-submodules --recursive $repo_url
-    if [ $? -eq 0 ]; then
+    if git clone --depth 1 --shallow-submodules --recursive "$repo_url"; then
         echo -e "${COLOR_GREEN}[+] Repository cloned successfully.${COLOR_RESET}"
-        cd $repo
+        cd "$repo" || exit 1
         if prompt_yna "Do you want to run the install script?"; then
-            if [ -f "install.sh" ]; then
+            if [[ -f install.sh ]]; then
                 echo -e "${COLOR_GREEN}[+] Running install script...${COLOR_RESET}"
                 bash install.sh
             else

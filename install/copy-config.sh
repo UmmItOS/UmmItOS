@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# shellcheck disable=SC1091
 
 # Get the directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -24,11 +25,11 @@ safe_copy() {
     # Ensure the parent directory exists
     mkdir -p "$(dirname "$dest")"
     
-    if [ -d "$dest" ] || [ -f "$dest" ]; then
+    if [[ -d "$dest" ]] || [[ -f "$dest" ]]; then
         echo "${COLOR_YELLOW}:: $name already exists at $dest${COLOR_RESET}"
         if prompt_yna ":: Do you want to overwrite existing $name configuration?"; then
             echo "${COLOR_GREEN}:: [$current/$total] Overwriting $name configuration...${COLOR_RESET}"
-            if [ -d "$src" ]; then
+            if [[ -d "$src" ]]; then
                 mkdir -p "$dest"
                 cp -rv "$src/." "$dest"
             else
@@ -41,7 +42,7 @@ safe_copy() {
         fi
     else
         echo "${COLOR_GREEN}:: [$current/$total] Copying $name configuration...${COLOR_RESET}"
-        if [ -d "$src" ]; then
+        if [[ -d "$src" ]]; then
             mkdir -p "$dest"
             cp -rv "$src/." "$dest"
         else
@@ -52,17 +53,16 @@ safe_copy() {
 
 # Function to set zsh as default shell
 set_zsh_default() {
-    if [ "$SHELL" = "/usr/bin/zsh" ]; then
+    if [[ "$SHELL" == "/usr/bin/zsh" ]]; then
         echo "${COLOR_GREEN}:: We're detected that ZSH is already set as default shell!${COLOR_RESET}"
         return 0
     else
         echo "${COLOR_YELLOW}:: Setting zsh as default shell...${COLOR_RESET}"
-        chsh -s /usr/bin/zsh
-        if [ $? -eq 0 ]; then
+        if chsh -s /usr/bin/zsh; then
             echo "${COLOR_GREEN}:: zsh set as default shell.${COLOR_RESET}"
             return 0
         else
-            echo "${COLOR_RED}:: Failed to set zsh as default shell.${COLOR_RESET}"
+            echo "${COLOR_DARK_RED}:: Failed to set zsh as default shell.${COLOR_RESET}"
             echo "${COLOR_YELLOW}:: You can manually set zsh as default shell later with: chsh -s /usr/bin/nu${COLOR_RESET}"
             return 1
         fi
