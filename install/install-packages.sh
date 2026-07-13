@@ -71,7 +71,8 @@ display_packages() {
         return 1
     fi
 
-    printf "${COLOR_GREY}%s${COLOR_RESET}\n" "${packages[@]}" | column
+    mapfile -t formatted_packages < <(printf "%s\n" "${packages[@]}" | column)
+    printf "${COLOR_GREY}%s${COLOR_RESET}\n" "${formatted_packages[@]}"
 
     return 0
 }
