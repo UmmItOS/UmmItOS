@@ -1,7 +1,7 @@
 # UmmItOS
 
-[![Arch Linux](https://img.shields.io/badge/Arch_Linux-1793D1?logo=arch-linux&logoColor=fff)](https://archlinux.org)
-[![Hyprland](https://img.shields.io/badge/Hyprland-1A1B26?logo=hyprland&logoColor=fff)](https://hyprland.org)
+<a href="https://archlinux.org"><img height="64" src="https://img.shields.io/badge/Arch-1793D1?logo=arch-linux&logoColor=fff" alt="Arch Linux"></a>
+<a href="https://hyprland.org"><img height="64" src="https://img.shields.io/badge/Hypr-1A1B26?logo=hyprland&logoColor=fff" alt="Hyprland"></a>
 
 An Arch Linux + Hyprland desktop, packaged as an installer and dotfiles bundle.
 
