@@ -1,5 +1,5 @@
 ---
-name: 🐛 Bug Report
+name: Bug Report
 about: Something broken? Report it here
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: ✨ Feature Request
+name: Feature Request
 about: Want something new? Ask here
 ---
 

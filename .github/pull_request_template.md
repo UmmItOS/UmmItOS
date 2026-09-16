@@ -3,10 +3,10 @@
 <!-- Describe what you changed and why -->
 
 ## Type of change
-- [ ] 🐛 Bug fix
-- [ ] ✨ New feature  
-- [ ] 📚 Documentation
-- [ ] 🔧 Configuration change
+- [ ] Bug fix
+- [ ] New feature  
+- [ ] Documentation
+- [ ] Configuration change
 - [ ] Other: 
 
 ## Testing
