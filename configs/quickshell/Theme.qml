@@ -1,0 +1,87 @@
+pragma Singleton
+
+import Quickshell
+import QtQuick
+
+Singleton {
+    // Palette taken from configs/waybar/style.css so both bars look the same
+    // while they run side by side.
+    readonly property color bg: Qt.rgba(20 / 255, 20 / 255, 35 / 255, 0.9)
+    readonly property color bgAlt: Qt.rgba(30 / 255, 25 / 255, 45 / 255, 0.95)
+    readonly property color border: Qt.rgba(108 / 255, 48 / 255, 204 / 255, 0.35)
+    readonly property color accent: "#e4b1f0"
+    readonly property color accent2: "#f0c1f5"
+    readonly property color fg: "#e8e8f0"
+    readonly property color dim: Qt.rgba(1, 1, 1, 0.45)
+    readonly property color urgent: "#ff6b6b"
+
+    readonly property string font: "JetBrainsMono Nerd Font"
+
+    // Material 3 scales, values from caelestia-dots/shell
+    // (plugin/src/Caelestia/Config/tokens.hpp).
+    readonly property QtObject rounding: QtObject {
+        readonly property int extraSmall: 4
+        readonly property int small: 8
+        readonly property int medium: 12
+        readonly property int large: 16
+        readonly property int largeIncreased: 20
+        readonly property int extraLarge: 28
+        readonly property int extraLargeIncreased: 32
+        readonly property int extraExtraLarge: 48
+        readonly property int full: 1000
+    }
+
+    readonly property QtObject spacing: QtObject {
+        readonly property int extraSmall: 4
+        readonly property int small: 8
+        readonly property int medium: 12
+        readonly property int large: 16
+        readonly property int largeIncreased: 20
+        readonly property int extraLarge: 28
+        readonly property int extraLargeIncreased: 32
+    }
+
+    readonly property QtObject padding: QtObject {
+        readonly property int extraSmall: 4
+        readonly property int small: 8
+        readonly property int medium: 12
+        readonly property int large: 16
+        readonly property int largeIncreased: 20
+        readonly property int extraLarge: 28
+    }
+
+    readonly property QtObject fontSize: QtObject {
+        readonly property int small: 11
+        readonly property int smaller: 12
+        readonly property int normal: 13
+        readonly property int larger: 15
+        readonly property int large: 18
+        readonly property int extraLarge: 28
+    }
+
+    readonly property QtObject duration: QtObject {
+        readonly property int small: 200
+        readonly property int normal: 400
+        readonly property int large: 600
+        readonly property int extraLarge: 1000
+        readonly property int expressiveFastSpatial: 350
+        readonly property int expressiveDefaultSpatial: 500
+        readonly property int expressiveFastEffects: 150
+        readonly property int expressiveDefaultEffects: 200
+        readonly property int expressiveSlowEffects: 300
+    }
+
+    // Bezier control points for Easing.BezierSpline.
+    readonly property QtObject curve: QtObject {
+        readonly property list<real> standard: [0.2, 0, 0, 1, 1, 1]
+        readonly property list<real> standardAccel: [0.3, 0, 1, 1, 1, 1]
+        readonly property list<real> standardDecel: [0, 0, 0, 1, 1, 1]
+        readonly property list<real> emphasized: [0.05, 0, 2 / 15, 0.06, 1 / 6, 0.4, 5 / 24, 0.82, 0.25, 1, 1, 1]
+        readonly property list<real> emphasizedAccel: [0.3, 0, 0.8, 0.15, 1, 1]
+        readonly property list<real> emphasizedDecel: [0.05, 0.7, 0.1, 1, 1, 1]
+        readonly property list<real> expressiveFastSpatial: [0.42, 1.67, 0.21, 0.9, 1, 1]
+        readonly property list<real> expressiveDefaultSpatial: [0.38, 1.21, 0.22, 1, 1, 1]
+        readonly property list<real> expressiveDefaultEffects: [0.34, 0.8, 0.34, 1, 1, 1]
+        readonly property list<real> expressiveSlowEffects: [0.34, 0.88, 0.34, 1, 1, 1]
+    }
+}
