@@ -1,7 +1,7 @@
 # License: GPL-3.0
 MAJOR = 0
 MINOR = 7
-PATCH = 0
+PATCH = 1
 RC = 
-NAME = UmmItOS v0.6.0
+NAME = UmmItOS v0.7.1
 Description = Ready for the first Hong Kong Linux distribution :D
