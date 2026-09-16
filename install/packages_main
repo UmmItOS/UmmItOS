@@ -16,11 +16,13 @@ extra/hyprpicker
 extra/xdg-desktop-portal-hyprland
 extra/ttf-jetbrains-mono
 extra/ttf-jetbrains-mono-nerd
+extra/ttf-material-symbols-variable
 extra/ttf-overpass
 extra/gnu-free-fonts
 extra/papirus-icon-theme
 extra/orchis-theme
 extra/waybar
+extra/quickshell
 extra/rofi
 extra/fastfetch
 extra/wf-recorder

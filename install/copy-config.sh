@@ -79,27 +79,28 @@ set_zsh_default() {
 # Function to copy all configuration files
 copy_all_configs() {
     if prompt_yna ":: Copy configuration files?"; then
-        safe_copy "$PARENT_DIR/configs/hypr" "$config_dir/hypr" "Hyprland" "1" "13"
-        safe_copy "$PARENT_DIR/configs/kitty" "$config_dir/kitty" "Kitty" "2" "13"
-        safe_copy "$PARENT_DIR/configs/fastfetch" "$config_dir/fastfetch" "Fastfetch" "3" "13"
-        safe_copy "$PARENT_DIR/configs/waybar" "$config_dir/waybar" "Waybar" "4" "13"
-        safe_copy "$PARENT_DIR/configs/rofi" "$config_dir/rofi" "Rofi" "5" "13"
-        safe_copy "$PARENT_DIR/configs/swaync" "$config_dir/swaync" "SwayNC" "6" "13"
-        safe_copy "$PARENT_DIR/configs/wlogout" "$config_dir/wlogout" "Wlogout" "7" "13"
-        safe_copy "$PARENT_DIR/configs/mpv" "$config_dir/mpv" "MPV" "8" "13"
-        safe_copy "$PARENT_DIR/configs/yazi" "$config_dir/yazi" "Yazi" "9" "13"
+        safe_copy "$PARENT_DIR/configs/hypr" "$config_dir/hypr" "Hyprland" "1" "14"
+        safe_copy "$PARENT_DIR/configs/kitty" "$config_dir/kitty" "Kitty" "2" "14"
+        safe_copy "$PARENT_DIR/configs/fastfetch" "$config_dir/fastfetch" "Fastfetch" "3" "14"
+        safe_copy "$PARENT_DIR/configs/waybar" "$config_dir/waybar" "Waybar" "4" "14"
+        safe_copy "$PARENT_DIR/configs/rofi" "$config_dir/rofi" "Rofi" "5" "14"
+        safe_copy "$PARENT_DIR/configs/swaync" "$config_dir/swaync" "SwayNC" "6" "14"
+        safe_copy "$PARENT_DIR/configs/wlogout" "$config_dir/wlogout" "Wlogout" "7" "14"
+        safe_copy "$PARENT_DIR/configs/mpv" "$config_dir/mpv" "MPV" "8" "14"
+        safe_copy "$PARENT_DIR/configs/yazi" "$config_dir/yazi" "Yazi" "9" "14"
+        safe_copy "$PARENT_DIR/configs/quickshell" "$config_dir/quickshell/ummitos" "Quickshell" "10" "14"
 
-        safe_copy "$PARENT_DIR/script" "$HOME/script" "Scripts" "10" "13"
+        safe_copy "$PARENT_DIR/script" "$HOME/script" "Scripts" "11" "14"
         record_repo_path
-        safe_copy "$PARENT_DIR/.wallpaper" "$HOME/.wallpaper" "Wallpapers" "11" "13"
+        safe_copy "$PARENT_DIR/.wallpaper" "$HOME/.wallpaper" "Wallpapers" "12" "14"
         
         echo "${COLOR_GREEN}:: Basic Configuration files copied successfully.${COLOR_RESET}"
         echo "${COLOR_GREEN}:: Now setting zsh as default shell...${COLOR_RESET}"
 
         set_zsh_default
         
-        safe_copy "$PARENT_DIR/configs/.zshrc" "$HOME/.zshrc" "zsh" "12" "13"
-        safe_copy "$PARENT_DIR/configs/starship.toml" "$config_dir/starship.toml" "Starship" "13" "13"
+        safe_copy "$PARENT_DIR/configs/.zshrc" "$HOME/.zshrc" "zsh" "13" "14"
+        safe_copy "$PARENT_DIR/configs/starship.toml" "$config_dir/starship.toml" "Starship" "14" "14"
 
         echo "${COLOR_GREEN}:: All the files copied successfully.${COLOR_RESET}"
         pause_and_continue
