@@ -348,7 +348,10 @@ show_post_install_info() {
     echo -e "${COLOR_GREEN}Installation Complete!${COLOR_RESET}\n"
     echo -e "${COLOR_YELLOW}Post-installation notes:${COLOR_RESET}"
     echo -e "• Reboot your system to ensure all changes take effect"
-    echo -e "After reboot, run our settings script to finalize the setup of your system by executing: ${COLOR_GREEN}./post-install.sh --start-config${COLOR_RESET}"
+    echo -e "• After reboot you can log in and start using the desktop"
+    echo -e "• Your first login offers an optional tuning step for the monitor mode, the Waybar"
+    echo -e "  network interface and the screenshot folder. Run it later with:"
+    echo -e "  ${COLOR_GREEN}./post-install.sh --start-config${COLOR_RESET}"
     if has_amdgpu; then
         echo -e "• Verify AMD GPU drivers are working properly"
     fi
@@ -439,7 +442,7 @@ main_menu() {
             4) auto_install_all && exit 0 ;;
             5|255) 
                 clear_screen
-                echo -e "${COLOR_GREEN}Thanks for using the installer! 👋${COLOR_RESET}"
+                echo -e "${COLOR_GREEN}Thanks for using the installer!${COLOR_RESET}"
                 exit 0 
                 ;;
         esac
@@ -447,7 +450,7 @@ main_menu() {
 }
 
 # Trap Ctrl+C
-trap 'clear_screen; echo -e "\n${COLOR_GREEN}Installation cancelled. Goodbye! 👋${COLOR_RESET}"; exit 0' INT
+trap 'clear_screen; echo -e "\n${COLOR_GREEN}Installation cancelled. Goodbye!${COLOR_RESET}"; exit 0' INT
 
 # Welcome message
 welcome() {

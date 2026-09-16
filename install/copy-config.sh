@@ -51,6 +51,13 @@ safe_copy() {
     fi
 }
 
+# Record where this repo lives so script/misc/first-run.sh can find post-install.sh
+record_repo_path() {
+    local state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/ummitos"
+    mkdir -p "$state_dir"
+    echo "$PARENT_DIR" > "$state_dir/repo-path"
+}
+
 # Function to set zsh as default shell
 set_zsh_default() {
     if [[ "$SHELL" == "/usr/bin/zsh" ]]; then
@@ -83,6 +90,7 @@ copy_all_configs() {
         safe_copy "$PARENT_DIR/configs/yazi" "$config_dir/yazi" "Yazi" "9" "13"
 
         safe_copy "$PARENT_DIR/script" "$HOME/script" "Scripts" "10" "13"
+        record_repo_path
         safe_copy "$PARENT_DIR/.wallpaper" "$HOME/.wallpaper" "Wallpapers" "11" "13"
         
         echo "${COLOR_GREEN}:: Basic Configuration files copied successfully.${COLOR_RESET}"

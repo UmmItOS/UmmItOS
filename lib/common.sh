@@ -91,10 +91,10 @@ print_header() {
 check_config_exists() {
     local file="$1"
     if [[ -f "$file" ]]; then
-        echo "${COLOR_GREEN}   ✅ Configuration file exists${COLOR_RESET}"
+        echo "${COLOR_GREEN}   Configuration file exists${COLOR_RESET}"
         echo ""
     else
-        echo "${COLOR_DARK_RED}   ❌ Configuration file not found${COLOR_RESET}"
+        echo "${COLOR_DARK_RED}   Configuration file not found${COLOR_RESET}"
         echo ""
     fi
 }

@@ -88,7 +88,9 @@ EOF
 display_completion_message() {
     echo "${COLOR_GREEN}:: Installation completed successfully.${COLOR_RESET}"
     echo "${COLOR_GREEN}:: Please reboot your system to apply all changes!${COLOR_RESET}"
-    echo "${COLOR_GREEN}:: After reboot, run our settings script to finalize the setup of your system by executing: ${COLOR_RESET}"
+    echo "${COLOR_GREEN}:: After reboot you can log in and start using the desktop.${COLOR_RESET}"
+    echo "${COLOR_YELLOW}:: Your first login offers an optional tuning step for the monitor mode,${COLOR_RESET}"
+    echo "${COLOR_YELLOW}:: the Waybar network interface and the screenshot folder. You can also run it later:${COLOR_RESET}"
     echo ""
     echo "${COLOR_GREEN}:: ./post-install.sh --start-config${COLOR_RESET}"
 }

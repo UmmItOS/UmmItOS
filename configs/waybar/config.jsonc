@@ -34,7 +34,6 @@
   },
 
   "network": {
-    "interface": "enp6s0",
     "tooltip-format-ethernet": "{ifname}: {ipaddr}",
     "interval": 1,
     "format": " {bandwidthDownBytes}   {bandwidthUpBytes}",
