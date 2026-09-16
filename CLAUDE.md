@@ -32,3 +32,7 @@ There are no tests, lint config, or CI. Verify changes by reading the scripts an
 ## Shared library
 
 `lib/common.sh` and `lib/display-utils.sh` hold reusable bash helpers — check there before writing new logging/prompt/display logic.
+
+## Two installer paths (duplicated logic)
+
+`install.sh` **sources** `install/*.sh` in order, so sub-steps share shell state and a failure aborts everything. `install-menu.sh` only reuses `lib/` and `install/copy-config.sh` — package installation is reimplemented inline (`read_packages_from_file`, `install_packages_with_paru`, `install_{main,gpu,laptop}_package`). Changes to how packages are read or installed must be made in **both** `install/install-packages.sh` and `install-menu.sh`, or the TUI path drifts out of sync.
