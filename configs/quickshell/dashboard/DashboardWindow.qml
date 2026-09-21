@@ -57,8 +57,6 @@ PanelWindow {
         height: 520
         radius: Theme.rounding.extraExtraLarge
         color: Theme.bg
-        border.color: Theme.border
-        border.width: 1
 
         // Swallow clicks so they do not reach the dismiss handler.
         MouseArea {
@@ -139,11 +137,6 @@ PanelWindow {
                 }
             }
 
-            Rectangle {
-                Layout.fillWidth: true
-                implicitHeight: 1
-                color: Theme.border
-            }
 
             StackLayout {
                 Layout.fillWidth: true

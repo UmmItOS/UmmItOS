@@ -24,9 +24,7 @@ GridView {
             anchors.fill: parent
             anchors.margins: Theme.spacing.small
             radius: Theme.rounding.large
-            color: cell.modelData.focused ? Theme.accent : Theme.bgAlt
-            border.color: cell.modelData.urgent ? Theme.urgent : "transparent"
-            border.width: 1
+            color: cell.modelData.urgent ? Theme.urgent : cell.modelData.focused ? Theme.accent : Theme.bgAlt
 
             Behavior on color {
                 ColorAnimation {

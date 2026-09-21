@@ -4,6 +4,9 @@ import QtQuick
 import QtQuick.Layouts
 import ".."
 
+// Three clusters, not one stream: identity on the left, the clock as the
+// typographic anchor, status on the right. Grouping is carried by elevation
+// and space; nothing is outlined.
 PanelWindow {
     id: bar
 
@@ -18,12 +21,29 @@ PanelWindow {
         left: true
         right: true
     }
-    implicitHeight: 38
+    implicitHeight: 40
     color: Theme.bg
 
     SystemClock {
         id: clock
         precision: SystemClock.Seconds
+    }
+
+    // A rounded, slightly raised group. Used for the two icon clusters so they
+    // read as one object each rather than four loose glyphs.
+    component Cluster: Rectangle {
+        default property alias content: inner.data
+
+        implicitWidth: inner.implicitWidth + Theme.padding.large * 2
+        implicitHeight: 28
+        radius: Theme.rounding.full
+        color: Theme.bgTray
+
+        RowLayout {
+            id: inner
+            anchors.centerIn: parent
+            spacing: Theme.spacing.large
+        }
     }
 
     RowLayout {
@@ -36,80 +56,85 @@ PanelWindow {
             Layout.alignment: Qt.AlignVCenter
         }
 
-        BarButton {
-            icon: "terminal"
-            onClicked: Quickshell.execDetached(["kitty"])
-        }
+        Cluster {
+            Layout.alignment: Qt.AlignVCenter
 
-        BarButton {
-            icon: "system_update_alt"
-            onClicked: Quickshell.execDetached(["kitty", "--execute", bar.home + "/script/waybar/update.sh"])
-        }
+            BarButton {
+                icon: "terminal"
+                onClicked: Quickshell.execDetached(["kitty"])
+            }
 
-        BarButton {
-            icon: "wallpaper"
-            onClicked: Wallpapers.setRandom()
-        }
+            BarButton {
+                icon: "system_update_alt"
+                onClicked: Quickshell.execDetached(["kitty", "--execute", bar.home + "/script/waybar/update.sh"])
+            }
 
-        BarButton {
-            icon: "grid_view"
-            onClicked: Wallpapers.pickerOpen = !Wallpapers.pickerOpen
-        }
+            BarButton {
+                icon: "wallpaper"
+                onClicked: Wallpapers.setRandom()
+            }
 
-        BarButton {
-            icon: "keyboard"
-            onClicked: Quickshell.execDetached(["kitty", "--execute", bar.home + "/script/hotkey-tui.sh"])
+            BarButton {
+                icon: "grid_view"
+                onClicked: Wallpapers.pickerOpen = !Wallpapers.pickerOpen
+            }
+
+            BarButton {
+                icon: "keyboard"
+                onClicked: Quickshell.execDetached(["kitty", "--execute", bar.home + "/script/hotkey-tui.sh"])
+            }
         }
 
         Item {
             Layout.fillWidth: true
         }
 
-        RowLayout {
-            spacing: Theme.spacing.small
-
-            // The clock is the dashboard's handle.
-            TapHandler {
-                onTapped: Dashboard.toggle()
-            }
-
-            MaterialIcon {
-                Layout.alignment: Qt.AlignVCenter
-                text: "schedule"
-                color: Theme.accentText
-                size: Theme.fontSize.larger
-            }
+        // The anchor. A clock does not need an icon telling you it is a clock.
+        ColumnLayout {
+            Layout.alignment: Qt.AlignVCenter
+            spacing: -2
 
             Text {
-                Layout.alignment: Qt.AlignVCenter
-                text: Qt.formatDateTime(clock.date, "yyyy-MM-dd HH:mm:ss")
+                Layout.alignment: Qt.AlignHCenter
+                text: Qt.formatDateTime(clock.date, "HH:mm:ss")
                 color: Theme.fg
-                font.family: Theme.font
-                font.pixelSize: Theme.fontSize.normal
-                // Tabular figures: proportional digits make the seconds jitter.
+                font.family: Theme.fontDisplay
+                font.pixelSize: Theme.fontSize.larger
+                font.bold: true
                 font.features: ({
                         tnum: 1
                     })
             }
+
+            Text {
+                Layout.alignment: Qt.AlignHCenter
+                text: Qt.formatDateTime(clock.date, "ddd d MMM")
+                color: Theme.dim
+                font.family: Theme.font
+                font.pixelSize: Theme.fontSize.small
+            }
+
+            TapHandler {
+                onTapped: Dashboard.toggle()
+            }
         }
 
         Item {
             Layout.fillWidth: true
         }
 
-        Tray {
+        Cluster {
             Layout.alignment: Qt.AlignVCenter
-        }
 
-        Volume {
-            Layout.alignment: Qt.AlignVCenter
-        }
+            Tray {}
 
-        Battery {
-            Layout.alignment: Qt.AlignVCenter
+            Volume {}
+
+            Battery {}
         }
 
         BarButton {
+            Layout.alignment: Qt.AlignVCenter
             icon: "power_settings_new"
             baseColor: Theme.accentText
             onClicked: Quickshell.execDetached(["bash", bar.home + "/script/wlogout/blur-background.sh"])

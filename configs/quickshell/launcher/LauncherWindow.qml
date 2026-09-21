@@ -67,8 +67,6 @@ PanelWindow {
         height: 480
         radius: Theme.rounding.extraLargeIncreased
         color: Theme.bg
-        border.color: Theme.border
-        border.width: 1
 
         // Swallow clicks so they do not reach the dismiss handler.
         MouseArea {

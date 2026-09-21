@@ -61,8 +61,6 @@ PanelWindow {
             }
             radius: Theme.rounding.extraLargeIncreased
             color: Theme.bg
-            border.color: Theme.border
-            border.width: 1
 
             PathView {
                 id: list

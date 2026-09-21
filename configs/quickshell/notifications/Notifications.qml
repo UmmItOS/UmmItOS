@@ -64,9 +64,9 @@ Scope {
                     Layout.preferredWidth: 390
                     implicitHeight: body.implicitHeight + Theme.padding.large * 2
                     radius: Theme.rounding.extraLarge
+                    // Critical reads through its summary colour and its own
+                    // longer timeout, not an outline.
                     color: Theme.bgAlt
-                    border.color: critical ? Theme.urgent : Theme.border
-                    border.width: 1
 
                     // Slide in from the right rather than appearing.
                     x: 0
@@ -239,8 +239,6 @@ Scope {
                                     implicitHeight: 30
                                     radius: Theme.rounding.full
                                     color: actionHover.hovered ? Theme.accent : Theme.bg
-                                    border.color: Theme.border
-                                    border.width: 1
 
                                     Behavior on color {
                                         ColorAnimation {

@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import Quickshell
 import Quickshell.Services.SystemTray
 import Quickshell.Widgets
@@ -6,7 +8,7 @@ import QtQuick.Layouts
 import ".."
 
 RowLayout {
-    spacing: 10
+    spacing: Theme.spacing.medium
 
     Repeater {
         model: SystemTray.items
@@ -17,6 +19,7 @@ RowLayout {
 
             implicitWidth: 18
             implicitHeight: 18
+            Layout.alignment: Qt.AlignVCenter
             acceptedButtons: Qt.LeftButton | Qt.RightButton
 
             IconImage {
@@ -29,13 +32,12 @@ RowLayout {
 
             // Apps whose icon name is missing from the current icon theme
             // (fcitx5 asks for input-keyboard-symbolic, which Adwaita lacks).
-            Text {
+            MaterialIcon {
                 anchors.centerIn: parent
                 visible: !icon.visible
-                text: ""
+                text: "help_center"
                 color: Theme.dim
-                font.family: Theme.font
-                font.pixelSize: Theme.fontSize.normal
+                size: Theme.fontSize.larger
             }
 
             onClicked: event => {
