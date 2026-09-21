@@ -79,15 +79,20 @@ PanelWindow {
             }
             spacing: 0
 
-            // A plain Row with explicit equal widths: Layout.fillWidth on the
-            // delegates left them sized to their own text and bunched up left.
-            Item {
-                Layout.fillWidth: true
-                implicitHeight: 62
+            // One continuous cluster holding all four tabs, the same shape the
+            // bar uses for its icon group, rather than four tabs floating
+            // separately with only the active one carrying a background.
+            Surface {
+                Layout.alignment: Qt.AlignHCenter
+                Layout.bottomMargin: Theme.padding.large
+                implicitWidth: tabRow.implicitWidth + Theme.padding.small * 2
+                implicitHeight: 68
+                radius: Theme.rounding.extraLarge
+                tone: Theme.bgTray
 
                 Row {
                     id: tabRow
-                    anchors.fill: parent
+                    anchors.centerIn: parent
 
                     Repeater {
                         model: win.tabs
@@ -99,15 +104,16 @@ PanelWindow {
 
                             readonly property bool current: Dashboard.tab === index
 
-                            width: tabRow.width / win.tabs.length
-                            height: tabRow.height
+                            width: 156
+                            height: 56
 
+                            // The selected segment, inset so the cluster stays
+                            // continuous around it.
                             Rectangle {
-                                anchors.centerIn: parent
-                                width: parent.width - Theme.spacing.small
-                                height: parent.height
+                                anchors.fill: parent
+                                anchors.margins: 3
                                 radius: Theme.rounding.large
-                                color: tab.current ? Theme.bgTray : "transparent"
+                                color: tab.current ? Theme.accent : "transparent"
 
                                 Behavior on color {
                                     ColorAnimation {
@@ -123,7 +129,7 @@ PanelWindow {
                                 MaterialIcon {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     text: tab.modelData.icon
-                                    color: tab.current ? Theme.accentText : Theme.dim
+                                    color: tab.current ? Theme.fg : Theme.dim
                                     fill: tab.current ? 1 : 0
                                     size: Theme.icon.large
                                 }
@@ -131,10 +137,10 @@ PanelWindow {
                                 Text {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     text: tab.modelData.label
-                                    color: tab.current ? Theme.accentText : Theme.dim
+                                    color: tab.current ? Theme.fg : Theme.dim
                                     font.family: Theme.font
-                                    font.pixelSize: Theme.fontSize.normal
-                                    font.bold: tab.current
+                                    font.pixelSize: Theme.fontSize.smaller
+                                    font.weight: tab.current ? Theme.weight.medium : Theme.weight.regular
                                 }
                             }
 
@@ -145,7 +151,6 @@ PanelWindow {
                     }
                 }
             }
-
 
             StackLayout {
                 Layout.fillWidth: true
