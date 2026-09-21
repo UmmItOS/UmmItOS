@@ -129,20 +129,25 @@ RowLayout {
                         font.weight: Theme.weight.bold
                     }
 
-                    MaterialIcon {
+                    Item {
                         Layout.fillWidth: true
-                        horizontalAlignment: Text.AlignLeft
-                        visible: root.scanning && root.networks.length > 0
-                        text: "progress_activity"
-                        color: Theme.dim
-                        size: Theme.icon.small
+                        implicitHeight: 1
 
-                        RotationAnimation on rotation {
-                            running: root.scanning
-                            loops: Animation.Infinite
-                            from: 0
-                            to: 360
-                            duration: 900
+                        MaterialIcon {
+                            anchors.left: parent.left
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: root.scanning && root.networks.length > 0
+                            text: "progress_activity"
+                            color: Theme.dim
+                            size: Theme.icon.small
+
+                            RotationAnimation on rotation {
+                                running: parent.visible
+                                loops: Animation.Infinite
+                                from: 0
+                                to: 360
+                                duration: 900
+                            }
                         }
                     }
 
@@ -183,54 +188,64 @@ RowLayout {
                     }
                 }
 
-                // Every empty case says which one it is.
-                ColumnLayout {
+                // Every empty case says which one it is. The spinner is its
+                // own element: a RotationAnimation leaves `rotation` at the
+                // angle it stopped on, so reusing one item for both states
+                // renders the static icon tilted.
+                Item {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     visible: !Networking.wifiEnabled || !root.wifi || root.networks.length === 0
-                    spacing: Theme.spacing.medium
 
-                    Item {
-                        Layout.fillHeight: true
-                    }
+                    readonly property bool searching: Networking.wifiEnabled && root.wifi && root.scanning
 
-                    MaterialIcon {
-                        Layout.alignment: Qt.AlignHCenter
-                        text: {
-                            if (!root.wifi)
-                                return "wifi_off";
-                            if (!Networking.wifiEnabled)
-                                return "wifi_off";
-                            return root.scanning ? "progress_activity" : "wifi_find";
+                    Column {
+                        anchors.centerIn: parent
+                        width: parent.width
+                        spacing: Theme.spacing.medium
+
+                        MaterialIcon {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            visible: !parent.parent.searching
+                            text: {
+                                if (!root.wifi || !Networking.wifiEnabled)
+                                    return "wifi_off";
+                                return "wifi_find";
+                            }
+                            color: Theme.dim
+                            size: Theme.icon.large
                         }
-                        color: Theme.dim
-                        size: Theme.icon.large
 
-                        RotationAnimation on rotation {
-                            running: root.scanning && Networking.wifiEnabled && root.wifi && root.networks.length === 0
-                            loops: Animation.Infinite
-                            from: 0
-                            to: 360
-                            duration: 900
+                        MaterialIcon {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            visible: parent.parent.searching
+                            text: "progress_activity"
+                            color: Theme.dim
+                            size: Theme.icon.large
+
+                            RotationAnimation on rotation {
+                                running: parent.visible
+                                loops: Animation.Infinite
+                                from: 0
+                                to: 360
+                                duration: 900
+                            }
                         }
-                    }
 
-                    Text {
-                        Layout.alignment: Qt.AlignHCenter
-                        text: {
-                            if (!root.wifi)
-                                return "No Wi-Fi adapter";
-                            if (!Networking.wifiEnabled)
-                                return "Wi-Fi is off";
-                            return root.scanning ? "Searching for networks" : "No networks found";
+                        Text {
+                            width: parent.width
+                            horizontalAlignment: Text.AlignHCenter
+                            text: {
+                                if (!root.wifi)
+                                    return "No Wi-Fi adapter";
+                                if (!Networking.wifiEnabled)
+                                    return "Wi-Fi is off";
+                                return root.scanning ? "Searching for networks" : "No networks found";
+                            }
+                            color: Theme.dim
+                            font.family: Theme.font
+                            font.pixelSize: Theme.fontSize.normal
                         }
-                        color: Theme.dim
-                        font.family: Theme.font
-                        font.pixelSize: Theme.fontSize.normal
-                    }
-
-                    Item {
-                        Layout.fillHeight: true
                     }
                 }
 
