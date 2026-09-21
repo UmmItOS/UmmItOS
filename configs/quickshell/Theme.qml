@@ -9,13 +9,21 @@ Singleton {
     readonly property color bg: Qt.rgba(20 / 255, 20 / 255, 35 / 255, 0.9)
     readonly property color bgAlt: Qt.rgba(30 / 255, 25 / 255, 45 / 255, 0.95)
     readonly property color border: Qt.rgba(108 / 255, 48 / 255, 204 / 255, 0.35)
-    readonly property color accent: "#e4b1f0"
-    readonly property color accent2: "#f0c1f5"
+    // Brand purple. It is dark (L 38%), so it is used for fills, borders and
+    // solid shapes; `accentText` is the same hue lifted to stay readable as
+    // text on the dark background.
+    readonly property color accent: "#5003c0"
+    readonly property color accentText: "#a97bf5"
+    readonly property color accent2: "#c9a3ff"
     readonly property color fg: "#e8e8f0"
     readonly property color dim: Qt.rgba(1, 1, 1, 0.45)
     readonly property color urgent: "#ff6b6b"
 
-    readonly property string font: "JetBrainsMono Nerd Font"
+    // Proportional for prose, monospace for anything that should not jitter as
+    // it updates (clock, percentages, counters). SF Pro ships with apple-fonts,
+    // already in install/packages_main.
+    readonly property string font: "SF Pro Text"
+    readonly property string fontDisplay: "SF Pro Display"
 
     // Material 3 scales, values from caelestia-dots/shell
     // (plugin/src/Caelestia/Config/tokens.hpp).

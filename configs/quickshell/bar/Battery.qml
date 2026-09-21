@@ -26,6 +26,9 @@ RowLayout {
         text: Math.round(root.pct * 100) + " %"
         color: root.low ? Theme.urgent : Theme.fg
         font.family: Theme.font
+        font.features: ({
+                tnum: 1
+            })
         font.pixelSize: Theme.fontSize.normal
     }
 }

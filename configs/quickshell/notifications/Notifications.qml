@@ -1,5 +1,8 @@
+pragma ComponentBehavior: Bound
+
 import Quickshell
 import Quickshell.Wayland
+import Quickshell.Widgets
 import Quickshell.Services.Notifications
 import QtQuick
 import QtQuick.Layouts
@@ -30,8 +33,8 @@ Scope {
         // Do not reserve screen space, and stay out of the way when empty.
         exclusionMode: ExclusionMode.Ignore
         visible: server.trackedNotifications.values.length > 0
-        implicitWidth: 380
-        implicitHeight: Math.max(1, column.implicitHeight + 20)
+        implicitWidth: 420
+        implicitHeight: Math.max(1, column.implicitHeight + Theme.padding.largeIncreased)
         color: "transparent"
 
         ColumnLayout {
@@ -39,7 +42,7 @@ Scope {
             anchors {
                 top: parent.top
                 right: parent.right
-                margins: 10
+                margins: Theme.padding.medium
             }
             spacing: Theme.spacing.small
 
@@ -51,52 +54,209 @@ Scope {
                     required property Notification modelData
 
                     readonly property bool critical: modelData.urgency === NotificationUrgency.Critical
+                    readonly property string appIcon: modelData.appIcon ? Quickshell.iconPath(modelData.appIcon, true) : ""
+                    // Delegates are created on arrival, so this is the arrival time.
+                    readonly property string time: Qt.formatDateTime(new Date(), "HH:mm")
 
-                    Layout.preferredWidth: 360
-                    implicitHeight: body.implicitHeight + 24
+                    Layout.preferredWidth: 390
+                    implicitHeight: body.implicitHeight + Theme.padding.large * 2
                     radius: Theme.rounding.extraLarge
                     color: Theme.bgAlt
                     border.color: critical ? Theme.urgent : Theme.border
                     border.width: 1
 
+                    // Slide in from the right rather than appearing.
+                    x: 0
+                    opacity: 0
+                    Component.onCompleted: {
+                        x = 60;
+                        enter.start();
+                    }
+                    ParallelAnimation {
+                        id: enter
+                        NumberAnimation {
+                            target: card
+                            property: "x"
+                            to: 0
+                            duration: Theme.duration.expressiveDefaultSpatial
+                            easing.type: Easing.BezierSpline
+                            easing.bezierCurve: Theme.curve.emphasizedDecel
+                        }
+                        NumberAnimation {
+                            target: card
+                            property: "opacity"
+                            to: 1
+                            duration: Theme.duration.expressiveDefaultEffects
+                        }
+                    }
+
+                    HoverHandler {
+                        id: hover
+                    }
+
+                    // Reading a notification should not race its own timer.
+                    Timer {
+                        running: !hover.hovered
+                        interval: card.critical ? 15000 : 6000
+                        onTriggered: card.modelData.expire()
+                    }
+
                     ColumnLayout {
                         id: body
                         anchors {
-                            fill: parent
-                            margins: 12
+                            left: parent.left
+                            right: parent.right
+                            verticalCenter: parent.verticalCenter
+                            margins: Theme.padding.large
                         }
-                        spacing: 4
+                        spacing: Theme.spacing.extraSmall
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: Theme.spacing.small
+
+                            IconImage {
+                                id: icon
+                                implicitSize: 16
+                                source: card.appIcon
+                                visible: status === Image.Ready
+                            }
+
+                            MaterialIcon {
+                                visible: !icon.visible
+                                text: "notifications"
+                                color: Theme.dim
+                                size: Theme.fontSize.normal
+                            }
+
+                            Text {
+                                Layout.fillWidth: true
+                                text: card.modelData.appName
+                                color: Theme.dim
+                                font.family: Theme.font
+                                font.pixelSize: Theme.fontSize.small
+                                elide: Text.ElideRight
+                            }
+
+                            Text {
+                                text: card.time
+                                color: Theme.dim
+                                font.family: Theme.font
+                                font.features: ({
+                                        tnum: 1
+                                    })
+                                font.pixelSize: Theme.fontSize.small
+                            }
+
+                            MaterialIcon {
+                                text: "close"
+                                color: Theme.dim
+                                size: Theme.fontSize.normal
+                                opacity: hover.hovered ? 1 : 0
+
+                                Behavior on opacity {
+                                    NumberAnimation {
+                                        duration: Theme.duration.expressiveFastEffects
+                                    }
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    anchors.margins: -4
+                                    onClicked: card.modelData.dismiss()
+                                }
+                            }
+                        }
 
                         Text {
+                            Layout.fillWidth: true
+                            Layout.topMargin: Theme.spacing.extraSmall
                             text: card.modelData.summary
-                            color: card.critical ? Theme.urgent : Theme.accent
-                            font.family: Theme.font
-                            font.pixelSize: Theme.fontSize.normal
+                            color: card.critical ? Theme.urgent : Theme.accentText
+                            font.family: Theme.fontDisplay
+                            font.pixelSize: Theme.fontSize.larger
                             font.bold: true
                             elide: Text.ElideRight
-                            Layout.fillWidth: true
                         }
 
                         Text {
+                            Layout.fillWidth: true
                             text: card.modelData.body
                             color: Theme.fg
                             font.family: Theme.font
-                            font.pixelSize: Theme.fontSize.normal.smaller
+                            font.pixelSize: Theme.fontSize.normal
+                            textFormat: Text.StyledText
                             wrapMode: Text.Wrap
+                            maximumLineCount: 6
+                            elide: Text.ElideRight
                             visible: text !== ""
-                            Layout.fillWidth: true
+                            onLinkActivated: link => Qt.openUrlExternally(link)
                         }
-                    }
 
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: card.modelData.dismiss()
-                    }
+                        // Album art, screenshot previews, and the like.
+                        ClippingRectangle {
+                            Layout.topMargin: Theme.spacing.small
+                            implicitWidth: 120
+                            implicitHeight: 68
+                            radius: Theme.rounding.medium
+                            color: "transparent"
+                            visible: card.modelData.image !== ""
 
-                    Timer {
-                        running: true
-                        interval: card.critical ? 15000 : 5000
-                        onTriggered: card.modelData.expire()
+                            Image {
+                                anchors.fill: parent
+                                source: card.modelData.image
+                                fillMode: Image.PreserveAspectCrop
+                                asynchronous: true
+                                sourceSize.width: 240
+                                sourceSize.height: 136
+                            }
+                        }
+
+                        RowLayout {
+                            Layout.topMargin: Theme.spacing.small
+                            spacing: Theme.spacing.small
+                            visible: card.modelData.actions.length > 0
+
+                            Repeater {
+                                model: card.modelData.actions
+
+                                Rectangle {
+                                    id: action
+                                    required property var modelData
+
+                                    implicitWidth: label.implicitWidth + Theme.padding.large * 2
+                                    implicitHeight: 30
+                                    radius: Theme.rounding.full
+                                    color: actionHover.hovered ? Theme.accent : Theme.bg
+                                    border.color: Theme.border
+                                    border.width: 1
+
+                                    Behavior on color {
+                                        ColorAnimation {
+                                            duration: Theme.duration.expressiveFastEffects
+                                        }
+                                    }
+
+                                    HoverHandler {
+                                        id: actionHover
+                                    }
+
+                                    Text {
+                                        id: label
+                                        anchors.centerIn: parent
+                                        text: action.modelData.text
+                                        color: actionHover.hovered ? Theme.bg : Theme.fg
+                                        font.family: Theme.font
+                                        font.pixelSize: Theme.fontSize.smaller
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        onClicked: action.modelData.invoke()
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }

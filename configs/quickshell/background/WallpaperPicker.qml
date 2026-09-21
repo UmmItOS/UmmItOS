@@ -169,7 +169,7 @@ PanelWindow {
                             horizontalAlignment: Text.AlignHCenter
                             elide: Text.ElideRight
                             text: Wallpapers.name(cell.modelData)
-                            color: cell.focused ? Theme.fg : cell.confirmed ? Theme.accent : Theme.dim
+                            color: cell.focused ? Theme.fg : cell.confirmed ? Theme.accentText : Theme.dim
                             font.family: Theme.font
                             font.pixelSize: cell.focused ? Theme.fontSize.normal : Theme.fontSize.small
                             font.bold: cell.focused
@@ -278,6 +278,9 @@ PanelWindow {
                     text: picker.shown.length + " / " + Wallpapers.list.length
                     color: Theme.dim
                     font.family: Theme.font
+                    font.features: ({
+                            tnum: 1
+                        })
                     font.pixelSize: Theme.fontSize.small
                 }
             }

@@ -18,100 +18,96 @@ PanelWindow {
         left: true
         right: true
     }
-    implicitHeight: 42
-    color: "transparent"
+    implicitHeight: 38
+    color: Theme.bg
 
     SystemClock {
         id: clock
         precision: SystemClock.Seconds
     }
 
-    Rectangle {
+    RowLayout {
         anchors.fill: parent
-        anchors.margins: Theme.spacing.small
-        radius: Theme.rounding.largeIncreased
-        color: Theme.bg
-        border.color: Theme.border
-        border.width: 1
+        anchors.leftMargin: Theme.padding.large
+        anchors.rightMargin: Theme.padding.large
+        spacing: Theme.spacing.large
+
+        Workspaces {
+            Layout.alignment: Qt.AlignVCenter
+        }
+
+        BarButton {
+            icon: "terminal"
+            onClicked: Quickshell.execDetached(["kitty"])
+        }
+
+        BarButton {
+            icon: "system_update_alt"
+            onClicked: Quickshell.execDetached(["kitty", "--execute", bar.home + "/script/waybar/update.sh"])
+        }
+
+        BarButton {
+            icon: "wallpaper"
+            onClicked: Wallpapers.setRandom()
+        }
+
+        BarButton {
+            icon: "grid_view"
+            onClicked: Wallpapers.pickerOpen = !Wallpapers.pickerOpen
+        }
+
+        BarButton {
+            icon: "keyboard"
+            onClicked: Quickshell.execDetached(["kitty", "--execute", bar.home + "/script/hotkey-tui.sh"])
+        }
+
+        Item {
+            Layout.fillWidth: true
+        }
 
         RowLayout {
-            anchors.fill: parent
-            anchors.leftMargin: 14
-            anchors.rightMargin: 14
-            spacing: 14
+            spacing: Theme.spacing.small
 
-            Workspaces {
+            MaterialIcon {
                 Layout.alignment: Qt.AlignVCenter
+                text: "schedule"
+                color: Theme.accentText
+                size: Theme.fontSize.larger
             }
 
-            BarButton {
-                icon: "terminal"
-                onClicked: Quickshell.execDetached(["kitty"])
-            }
-
-            BarButton {
-                icon: "system_update_alt"
-                onClicked: Quickshell.execDetached(["kitty", "--execute", bar.home + "/script/waybar/update.sh"])
-            }
-
-            BarButton {
-                icon: "wallpaper"
-                onClicked: Wallpapers.setRandom()
-            }
-
-            BarButton {
-                icon: "grid_view"
-                onClicked: Wallpapers.pickerOpen = !Wallpapers.pickerOpen
-            }
-
-            BarButton {
-                icon: "keyboard"
-                onClicked: Quickshell.execDetached(["kitty", "--execute", bar.home + "/script/hotkey-tui.sh"])
-            }
-
-            Item {
-                Layout.fillWidth: true
-            }
-
-            RowLayout {
-                spacing: Theme.spacing.small
-
-                MaterialIcon {
-                    Layout.alignment: Qt.AlignVCenter
-                    text: "schedule"
-                    color: Theme.accent
-                }
-
-                Text {
-                    Layout.alignment: Qt.AlignVCenter
-                    text: Qt.formatDateTime(clock.date, "yyyy-MM-dd HH:mm:ss")
-                    color: Theme.fg
-                    font.family: Theme.font
-                    font.pixelSize: Theme.fontSize.normal
-                }
-            }
-
-            Item {
-                Layout.fillWidth: true
-            }
-
-            Tray {
+            Text {
                 Layout.alignment: Qt.AlignVCenter
+                text: Qt.formatDateTime(clock.date, "yyyy-MM-dd HH:mm:ss")
+                color: Theme.fg
+                font.family: Theme.font
+                font.pixelSize: Theme.fontSize.normal
+                // Tabular figures: proportional digits make the seconds jitter.
+                font.features: ({
+                        tnum: 1
+                    })
             }
+        }
 
-            Volume {
-                Layout.alignment: Qt.AlignVCenter
-            }
+        Item {
+            Layout.fillWidth: true
+        }
 
-            Battery {
-                Layout.alignment: Qt.AlignVCenter
-            }
+        Tray {
+            Layout.alignment: Qt.AlignVCenter
+        }
 
-            BarButton {
-                icon: "power_settings_new"
-                baseColor: Theme.accent
-                onClicked: Quickshell.execDetached(["bash", bar.home + "/script/wlogout/blur-background.sh"])
-            }
+        Volume {
+            Layout.alignment: Qt.AlignVCenter
+        }
+
+        Battery {
+            Layout.alignment: Qt.AlignVCenter
+        }
+
+        BarButton {
+            icon: "power_settings_new"
+            baseColor: Theme.accentText
+            onClicked: Quickshell.execDetached(["bash", bar.home + "/script/wlogout/blur-background.sh"])
         }
     }
 }

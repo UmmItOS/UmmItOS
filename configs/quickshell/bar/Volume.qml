@@ -29,6 +29,9 @@ RowLayout {
         text: !root.audio ? "" : root.audio.muted ? "muted" : Math.round(root.audio.volume * 100) + " %"
         color: Theme.fg
         font.family: Theme.font
+        font.features: ({
+                tnum: 1
+            })
         font.pixelSize: Theme.fontSize.normal
     }
 

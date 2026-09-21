@@ -17,7 +17,9 @@ PanelWindow {
         if (clipMode)
             return f === "" ? Launcher.clipboard : Launcher.clipboard.filter(c => c.preview.toLowerCase().includes(f));
         const apps = [...DesktopEntries.applications.values].filter(a => !a.noDisplay);
-        const hits = f === "" ? apps : apps.filter(a => a.name.toLowerCase().includes(f) || (a.genericName ?? "").toLowerCase().includes(f) || (a.keywords ?? "").toLowerCase().includes(f));
+        // keywords and categories are lists, not strings: calling toLowerCase()
+        // on one throws and takes the whole binding down, emptying the list.
+        const hits = f === "" ? apps : apps.filter(a => [a.name, a.genericName ?? "", ...(a.keywords ?? [])].join(" ").toLowerCase().includes(f));
         return hits.sort((a, b) => a.name.localeCompare(b.name));
     }
 
@@ -94,7 +96,7 @@ PanelWindow {
                     verticalCenter: parent.verticalCenter
                 }
                 text: win.clipMode ? "content_paste" : "search"
-                color: Theme.accent
+                color: Theme.accentText
                 size: Theme.fontSize.larger
             }
 
@@ -143,6 +145,9 @@ PanelWindow {
                 text: win.results.length
                 color: Theme.dim
                 font.family: Theme.font
+                font.features: ({
+                        tnum: 1
+                    })
                 font.pixelSize: Theme.fontSize.small
             }
         }
