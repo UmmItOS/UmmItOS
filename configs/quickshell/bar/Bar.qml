@@ -136,6 +136,8 @@ PanelWindow {
 
             Tray {}
 
+            Network {}
+
             BarButton {
                 icon: Notifs.dnd ? "notifications_off" : Notifs.history.length > 0 ? "notifications_active" : "notifications"
                 baseColor: Notifs.dnd ? Theme.dim : Theme.fg
