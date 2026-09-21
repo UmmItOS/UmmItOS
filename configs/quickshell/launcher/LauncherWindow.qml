@@ -89,7 +89,7 @@ PanelWindow {
                 }
                 text: "search"
                 color: Theme.accentText
-                size: Theme.fontSize.larger
+                size: Theme.icon.normal
             }
 
             TextInput {
@@ -188,7 +188,7 @@ PanelWindow {
                         leftMargin: Theme.padding.medium
                         verticalCenter: parent.verticalCenter
                     }
-                    implicitSize: 28
+                    implicitSize: Theme.icon.large
                     visible: status === Image.Ready
                     source: Quickshell.iconPath(row.modelData.icon, true)
                 }
@@ -198,7 +198,7 @@ PanelWindow {
                     visible: !appIcon.visible
                     text: "widgets"
                     color: Theme.dim
-                    size: Theme.fontSize.large
+                    size: Theme.icon.normal
                     verticalAlignment: Text.AlignVCenter
                 }
 

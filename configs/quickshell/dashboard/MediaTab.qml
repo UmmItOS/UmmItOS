@@ -66,7 +66,7 @@ Item {
                 visible: !(root.player?.trackArtUrl ?? "")
                 text: "music_note"
                 color: Theme.dim
-                size: 64
+                size: Theme.icon.extraLarge
             }
         }
 
@@ -115,7 +115,7 @@ Item {
                 MaterialIcon {
                     text: "skip_previous"
                     color: (root.player?.canGoPrevious ?? false) ? Theme.fg : Theme.dim
-                    size: Theme.fontSize.extraLarge
+                    size: Theme.icon.large
 
                     MouseArea {
                         anchors.fill: parent
@@ -134,7 +134,7 @@ Item {
                         text: (root.player?.isPlaying ?? false) ? "pause" : "play_arrow"
                         color: Theme.fg
                         fill: 1
-                        size: Theme.fontSize.extraLarge
+                        size: Theme.icon.large
                     }
 
                     MouseArea {
@@ -146,7 +146,7 @@ Item {
                 MaterialIcon {
                     text: "skip_next"
                     color: (root.player?.canGoNext ?? false) ? Theme.fg : Theme.dim
-                    size: Theme.fontSize.extraLarge
+                    size: Theme.icon.large
 
                     MouseArea {
                         anchors.fill: parent

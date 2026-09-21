@@ -116,7 +116,7 @@ PanelWindow {
                                     text: tab.modelData.icon
                                     color: tab.current ? Theme.accentText : Theme.dim
                                     fill: tab.current ? 1 : 0
-                                    size: 26
+                                    size: Theme.icon.large
                                 }
 
                                 Text {

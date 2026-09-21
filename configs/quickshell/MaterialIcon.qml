@@ -10,7 +10,7 @@ Text {
     property int grade: -25
     // Own property rather than font.pixelSize: feeding font.pixelSize back into
     // font.variableAxes is a binding loop.
-    property int size: Theme.fontSize.large
+    property int size: Theme.icon.normal
 
     font.family: "Material Symbols Rounded"
     font.pixelSize: root.size

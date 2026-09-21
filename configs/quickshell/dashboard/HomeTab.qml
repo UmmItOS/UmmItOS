@@ -118,7 +118,7 @@ ColumnLayout {
                                 anchors.centerIn: parent
                                 text: fact.modelData.icon
                                 color: Theme.accentText
-                                size: 24
+                                size: Theme.icon.normal
                             }
                         }
 
@@ -195,7 +195,7 @@ ColumnLayout {
                         MaterialIcon {
                             text: meter.modelData.icon
                             color: Theme.accentText
-                            size: 22
+                            size: Theme.icon.small
                         }
 
                         Text {

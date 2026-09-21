@@ -137,7 +137,7 @@ Scope {
                                 visible: !icon.visible
                                 text: "notifications"
                                 color: Theme.dim
-                                size: Theme.fontSize.normal
+                                size: Theme.icon.small
                             }
 
                             Text {
@@ -162,7 +162,7 @@ Scope {
                             MaterialIcon {
                                 text: "close"
                                 color: Theme.dim
-                                size: Theme.fontSize.normal
+                                size: Theme.icon.small
                                 opacity: hover.hovered ? 1 : 0
 
                                 Behavior on opacity {

@@ -99,7 +99,7 @@ PanelWindow {
                             text: tile.modelData.icon
                             color: Theme.fg
                             fill: tile.active ? 1 : 0
-                            size: 46
+                            size: Theme.icon.extraLarge
                         }
 
                         Text {

@@ -17,15 +17,15 @@ RowLayout {
             id: entry
             required property SystemTrayItem modelData
 
-            implicitWidth: 18
-            implicitHeight: 18
+            implicitWidth: 22
+            implicitHeight: 22
             Layout.alignment: Qt.AlignVCenter
             acceptedButtons: Qt.LeftButton | Qt.RightButton
 
             IconImage {
                 id: icon
                 anchors.fill: parent
-                implicitSize: 18
+                implicitSize: 22
                 source: entry.modelData.icon
                 visible: status === Image.Ready
             }
@@ -37,7 +37,7 @@ RowLayout {
                 visible: !icon.visible
                 text: "help_center"
                 color: Theme.dim
-                size: Theme.fontSize.larger
+                size: Theme.icon.small
             }
 
             onClicked: event => {

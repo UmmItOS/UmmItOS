@@ -35,7 +35,7 @@ PanelWindow {
         default property alias content: inner.data
 
         implicitWidth: inner.implicitWidth + Theme.padding.large * 2
-        implicitHeight: 28
+        implicitHeight: 32
         radius: Theme.rounding.full
         color: Theme.bgTray
 

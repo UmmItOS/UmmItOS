@@ -70,6 +70,15 @@ Singleton {
         readonly property int extraLarge: 32
     }
 
+    // Icons do not follow the text scale: a glyph needs more room than a
+    // letter at the same nominal size.
+    readonly property QtObject icon: QtObject {
+        readonly property int small: 20
+        readonly property int normal: 24
+        readonly property int large: 30
+        readonly property int extraLarge: 46
+    }
+
     readonly property QtObject duration: QtObject {
         readonly property int small: 200
         readonly property int normal: 400

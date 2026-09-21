@@ -180,7 +180,7 @@ PanelWindow {
                                 MaterialIcon {
                                     text: row.modelData.image ? "image" : "notes"
                                     color: row.active ? Theme.accentText : Theme.dim
-                                    size: Theme.fontSize.larger
+                                    size: Theme.icon.normal
                                 }
 
                                 Text {
