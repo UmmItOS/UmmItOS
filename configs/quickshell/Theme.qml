@@ -25,6 +25,13 @@ Singleton {
     // Proportional for prose, monospace for anything that should not jitter as
     // it updates (clock, percentages, counters). SF Pro ships with apple-fonts,
     // already in install/packages_main.
+    // Overlay backdrops take the ink colour, never pure black: black reads as
+    // a hole punched in the desktop rather than the shell dimming it, and it
+    // kills the compositor blur behind the surface.
+    function scrim(alpha: real): color {
+        return Qt.rgba(bg.r, bg.g, bg.b, alpha);
+    }
+
     readonly property string font: "SF Pro Text"
     readonly property string fontDisplay: "SF Pro Display"
 

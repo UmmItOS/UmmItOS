@@ -57,7 +57,7 @@ PanelWindow {
         left: true
         right: true
     }
-    color: Qt.rgba(0, 0, 0, 0.45)
+    color: Theme.scrim(0.45)
 
     function accept(): void {
         if (focusedEntry)

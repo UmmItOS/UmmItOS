@@ -26,7 +26,7 @@ PanelWindow {
         left: true
         right: true
     }
-    color: Qt.rgba(0, 0, 0, 0.55)
+    color: Theme.scrim(0.45)
 
     onVisibleChanged: {
         if (visible)
@@ -114,7 +114,7 @@ PanelWindow {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
                             radius: Theme.rounding.medium
-                            color: Qt.rgba(0, 0, 0, 0.35)
+                            color: Theme.scrim(0.45)
 
                             Grid {
                                 id: tiles

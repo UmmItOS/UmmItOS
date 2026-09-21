@@ -33,7 +33,7 @@ PanelWindow {
         left: true
         right: true
     }
-    color: Qt.rgba(0, 0, 0, 0.55)
+    color: Theme.scrim(0.5)
 
     MouseArea {
         anchors.fill: parent

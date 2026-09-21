@@ -46,7 +46,7 @@ PanelWindow {
         left: true
         right: true
     }
-    color: Qt.rgba(Theme.bg.r, Theme.bg.g, Theme.bg.b, 0.82)
+    color: Theme.scrim(0.78)
 
     function accept(): void {
         const item = results[grid.currentIndex];
