@@ -23,15 +23,24 @@ RowLayout {
     property real lastRx: -1
     property real lastTx: -1
 
+    // One decimal below ten, none above, so the string length barely moves and
+    // the two readouts stay the same visual weight.
     function human(bytes: real): string {
-        if (bytes >= 1048576)
-            return (bytes / 1048576).toFixed(1) + "M";
-        if (bytes >= 1024)
-            return (bytes / 1024).toFixed(0) + "k";
-        return Math.round(bytes) + "B";
+        if (bytes >= 1048576) {
+            const m = bytes / 1048576;
+            return (m < 10 ? m.toFixed(1) : Math.round(m)) + " M";
+        }
+        if (bytes >= 1024) {
+            const k = bytes / 1024;
+            return (k < 10 ? k.toFixed(1) : Math.round(k)) + " k";
+        }
+        return Math.round(bytes) + " B";
     }
 
-    spacing: Theme.spacing.small
+    // A threshold rather than zero, so the arrows do not flicker on idle chatter.
+    readonly property real busyAt: 2048
+
+    spacing: 0
 
     Timer {
         running: root.device !== ""
@@ -75,41 +84,54 @@ RowLayout {
         upRate = 0;
     }
 
-    MaterialIcon {
-        Layout.alignment: Qt.AlignVCenter
-        text: "south"
-        color: root.downRate > 0 ? Theme.accentText : Theme.dim
-        size: Theme.icon.small
+    // Each arrow sits with its own number and the pair is spaced apart from the
+    // other, so it reads as two readouts rather than four loose items.
+    component Rate: RowLayout {
+        required property string glyph
+        required property real value
+
+        // Fixed overall width keeps the bar from shuffling, and the slack sits
+        // after the number rather than between the arrow and its value.
+        Layout.preferredWidth: 84
+        spacing: Theme.spacing.extraSmall
+
+        MaterialIcon {
+            Layout.alignment: Qt.AlignVCenter
+            text: parent.glyph
+            color: parent.value > root.busyAt ? Theme.accentText : Theme.dim
+            size: Theme.icon.small
+
+            Behavior on color {
+                ColorAnimation {
+                    duration: Theme.duration.expressiveDefaultEffects
+                }
+            }
+        }
+
+        Text {
+            Layout.alignment: Qt.AlignVCenter
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignLeft
+            text: root.human(parent.value)
+            color: Theme.fg
+            font.family: Theme.font
+            font.pixelSize: Theme.fontSize.smaller
+            font.features: ({
+                    tnum: 1
+                })
+        }
     }
 
-    Text {
+    Rate {
         Layout.alignment: Qt.AlignVCenter
-        Layout.preferredWidth: 46
-        text: root.human(root.downRate)
-        color: Theme.fg
-        font.family: Theme.font
-        font.pixelSize: Theme.fontSize.small
-        font.features: ({
-                tnum: 1
-            })
+        glyph: "south"
+        value: root.downRate
     }
 
-    MaterialIcon {
+    Rate {
         Layout.alignment: Qt.AlignVCenter
-        text: "north"
-        color: root.upRate > 0 ? Theme.accentText : Theme.dim
-        size: Theme.icon.small
-    }
-
-    Text {
-        Layout.alignment: Qt.AlignVCenter
-        Layout.preferredWidth: 46
-        text: root.human(root.upRate)
-        color: Theme.fg
-        font.family: Theme.font
-        font.pixelSize: Theme.fontSize.small
-        font.features: ({
-                tnum: 1
-            })
+        Layout.leftMargin: Theme.spacing.small
+        glyph: "north"
+        value: root.upRate
     }
 }
