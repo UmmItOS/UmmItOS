@@ -53,8 +53,8 @@ PanelWindow {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
         anchors.topMargin: 52
-        width: 900
-        height: 470
+        width: 940
+        height: 520
         radius: Theme.rounding.extraExtraLarge
         color: Theme.bg
         border.color: Theme.border
@@ -72,64 +72,68 @@ PanelWindow {
             }
             spacing: 0
 
-            RowLayout {
+            // A plain Row with explicit equal widths: Layout.fillWidth on the
+            // delegates left them sized to their own text and bunched up left.
+            Item {
                 Layout.fillWidth: true
-                Layout.bottomMargin: Theme.spacing.small
-                spacing: 0
+                implicitHeight: 62
 
-                Repeater {
-                    model: win.tabs
+                Row {
+                    id: tabRow
+                    anchors.fill: parent
 
-                    ColumnLayout {
-                        id: tab
-                        required property var modelData
-                        required property int index
+                    Repeater {
+                        model: win.tabs
 
-                        readonly property bool current: Dashboard.tab === index
+                        Item {
+                            id: tab
+                            required property var modelData
+                            required property int index
 
-                        Layout.fillWidth: true
-                        // Equal columns: without a preferred width they size to
-                        // their own text and bunch up on the left.
-                        Layout.preferredWidth: 1
-                        spacing: Theme.spacing.extraSmall
+                            readonly property bool current: Dashboard.tab === index
 
-                        MaterialIcon {
-                            Layout.alignment: Qt.AlignHCenter
-                            text: tab.modelData.icon
-                            color: tab.current ? Theme.accentText : Theme.dim
-                            fill: tab.current ? 1 : 0
-                            size: Theme.fontSize.large
-                        }
+                            width: tabRow.width / win.tabs.length
+                            height: tabRow.height
 
-                        Text {
-                            Layout.alignment: Qt.AlignHCenter
-                            text: tab.modelData.label
-                            color: tab.current ? Theme.accentText : Theme.dim
-                            font.family: Theme.font
-                            font.pixelSize: Theme.fontSize.smaller
-                        }
+                            Rectangle {
+                                anchors.centerIn: parent
+                                width: parent.width - Theme.spacing.small
+                                height: parent.height
+                                radius: Theme.rounding.large
+                                color: tab.current ? Theme.bgAlt : "transparent"
 
-                        Rectangle {
-                            Layout.alignment: Qt.AlignHCenter
-                            Layout.topMargin: Theme.spacing.extraSmall
-                            implicitWidth: tab.current ? 54 : 0
-                            implicitHeight: 3
-                            radius: Theme.rounding.full
-                            color: Theme.accentText
-
-                            Behavior on implicitWidth {
-                                NumberAnimation {
-                                    duration: Theme.duration.expressiveDefaultSpatial
-                                    easing.type: Easing.BezierSpline
-                                    easing.bezierCurve: Theme.curve.expressiveDefaultSpatial
+                                Behavior on color {
+                                    ColorAnimation {
+                                        duration: Theme.duration.expressiveFastEffects
+                                    }
                                 }
                             }
-                        }
 
-                        // A handler, not a MouseArea: anchoring an Item inside
-                        // a Layout is undefined behavior.
-                        TapHandler {
-                            onTapped: Dashboard.tab = tab.index
+                            Column {
+                                anchors.centerIn: parent
+                                spacing: Theme.spacing.extraSmall
+
+                                MaterialIcon {
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    text: tab.modelData.icon
+                                    color: tab.current ? Theme.accentText : Theme.dim
+                                    fill: tab.current ? 1 : 0
+                                    size: 26
+                                }
+
+                                Text {
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    text: tab.modelData.label
+                                    color: tab.current ? Theme.accentText : Theme.dim
+                                    font.family: Theme.font
+                                    font.pixelSize: Theme.fontSize.normal
+                                    font.bold: tab.current
+                                }
+                            }
+
+                            TapHandler {
+                                onTapped: Dashboard.tab = tab.index
+                            }
                         }
                     }
                 }
