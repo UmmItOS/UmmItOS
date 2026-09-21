@@ -19,6 +19,8 @@ Singleton {
     readonly property color fg: "#e8e8f0"
     readonly property color dim: Qt.rgba(1, 1, 1, 0.45)
     readonly property color urgent: "#ff6b6b"
+    readonly property color warn: "#ffc46b"
+    readonly property color good: "#6bdf9a"
 
     // Proportional for prose, monospace for anything that should not jitter as
     // it updates (clock, percentages, counters). SF Pro ships with apple-fonts,
