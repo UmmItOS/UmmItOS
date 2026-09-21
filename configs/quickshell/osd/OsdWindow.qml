@@ -23,8 +23,8 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
     exclusionMode: ExclusionMode.Ignore
-    implicitWidth: 196
-    implicitHeight: 196
+    implicitWidth: 208
+    implicitHeight: 208
     color: "transparent"
     mask: Region {}
 
@@ -52,46 +52,58 @@ PanelWindow {
             }
         }
 
-        MaterialIcon {
-            anchors {
-                horizontalCenter: parent.horizontalCenter
-                top: parent.top
-                topMargin: 44
+        // The number is what gets read, so it is the anchor; the icon says
+        // which control you are holding and the segments give the shape of it.
+        Column {
+            anchors.centerIn: parent
+            spacing: Theme.spacing.medium
+
+            MaterialIcon {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: {
+                    if (Osd.kind === "brightness")
+                        return Osd.value > 0.6 ? "brightness_high" : Osd.value > 0.25 ? "brightness_medium" : "brightness_low";
+                    if (Osd.muted)
+                        return "volume_off";
+                    return Osd.value > 0.5 ? "volume_up" : Osd.value > 0 ? "volume_down" : "volume_mute";
+                }
+                color: Osd.muted ? Theme.dim : Theme.fg
+                fill: 1
+                size: 52
             }
-            text: {
-                if (Osd.kind === "brightness")
-                    return Osd.value > 0.6 ? "brightness_high" : Osd.value > 0.25 ? "brightness_medium" : "brightness_low";
-                if (Osd.muted)
-                    return "volume_off";
-                return Osd.value > 0.5 ? "volume_up" : Osd.value > 0 ? "volume_down" : "volume_mute";
+
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: Osd.muted ? "Muted" : Math.round(Osd.value * 100) + "%"
+                color: Osd.muted ? Theme.dim : Theme.fg
+                font.family: Theme.fontDisplay
+                font.pixelSize: Osd.muted ? 26 : 38
+                font.weight: Theme.weight.bold
+                // Tabular, or the square twitches as the digits change.
+                font.features: ({
+                        tnum: 1
+                    })
             }
-            color: Theme.fg
-            fill: 1
-            size: 68
-        }
 
-        Row {
-            anchors {
-                horizontalCenter: parent.horizontalCenter
-                bottom: parent.bottom
-                bottomMargin: 38
-            }
-            spacing: 3
+            Row {
+                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: 3
 
-            Repeater {
-                model: win.segments
+                Repeater {
+                    model: win.segments
 
-                Rectangle {
-                    required property int index
+                    Rectangle {
+                        required property int index
 
-                    implicitWidth: 6
-                    implicitHeight: 10
-                    radius: 1.5
-                    color: index < win.filled ? (Osd.muted ? Theme.dim : Theme.accentText) : Theme.bgTray
+                        implicitWidth: 6
+                        implicitHeight: 10
+                        radius: 1.5
+                        color: index < win.filled ? (Osd.muted ? Theme.dim : Theme.accentText) : Theme.bgTray
 
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: Theme.duration.expressiveFastEffects
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: Theme.duration.expressiveFastEffects
+                            }
                         }
                     }
                 }
