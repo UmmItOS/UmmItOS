@@ -7,6 +7,14 @@ Item {
     id: root
 
     property real value: 0          // 0-1
+    // Snap to the first reading; animate only subsequent changes. Otherwise
+    // every open sweeps the arc up from zero.
+    property bool animated: false
+
+    onValueChanged: {
+        if (value > 0 && !animated)
+            Qt.callLater(() => animated = true);
+    }
     property string primary: ""
     property string label: ""
     property color fill: Theme.accentText
@@ -53,6 +61,7 @@ Item {
                 sweepAngle: 280 * Math.max(0, Math.min(1, root.value))
 
                 Behavior on sweepAngle {
+                    enabled: root.animated
                     NumberAnimation {
                         duration: Theme.duration.expressiveDefaultSpatial
                         easing.type: Easing.BezierSpline

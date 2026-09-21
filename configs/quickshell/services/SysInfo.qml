@@ -38,15 +38,17 @@ Singleton {
         return (bytes / (1024 * 1024)).toFixed(0) + "MiB";
     }
 
-    // Only poll while something is actually showing the numbers.
+    // `active` means a panel is on screen and wants live numbers. When nothing
+    // is showing them the poll drops to a trickle rather than stopping, so the
+    // dashboard opens with real values instead of empty meters.
     property bool active: false
 
     property real lastIdle: 0
     property real lastTotal: 0
 
     Timer {
-        running: root.active
-        interval: 2000
+        running: true
+        interval: root.active ? 2000 : 30000
         repeat: true
         triggeredOnStart: true
         onTriggered: {

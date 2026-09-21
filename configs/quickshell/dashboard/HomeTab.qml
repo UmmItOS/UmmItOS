@@ -227,12 +227,26 @@ ColumnLayout {
                         color: Theme.bg
 
                         Rectangle {
-                            width: parent.width * Math.max(0, Math.min(1, meter.modelData.ratio))
+                            id: fill
+
+                            readonly property real ratio: Math.max(0, Math.min(1, meter.modelData.ratio))
+                            // The first reading arrives after the panel opens. Without
+                            // this the bar animates up from zero every time, which
+                            // reads as a value changing rather than being shown.
+                            property bool animated: false
+
+                            onRatioChanged: {
+                                if (ratio > 0 && !animated)
+                                    Qt.callLater(() => animated = true);
+                            }
+
+                            width: parent.width * ratio
                             height: parent.height
                             radius: height / 2
-                            color: meter.modelData.ratio > 0.9 ? Theme.urgent : Theme.accentText
+                            color: fill.ratio > 0.9 ? Theme.urgent : Theme.accentText
 
                             Behavior on width {
+                                enabled: fill.animated
                                 NumberAnimation {
                                     duration: Theme.duration.expressiveDefaultSpatial
                                     easing.type: Easing.BezierSpline
