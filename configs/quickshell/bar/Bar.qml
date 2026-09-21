@@ -62,6 +62,10 @@ PanelWindow {
             Layout.alignment: Qt.AlignVCenter
         }
 
+        Bandwidth {
+            Layout.alignment: Qt.AlignVCenter
+        }
+
         Cluster {
             Layout.alignment: Qt.AlignVCenter
 

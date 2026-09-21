@@ -16,6 +16,24 @@ RowLayout {
     readonly property var active: wifi ? wifi.networks.values.find(n => n.connected) ?? null : null
 
     property bool popupOpen: false
+    // A scan takes a few seconds. Without this the flyout shows an empty box
+    // and reads as broken rather than as working.
+    property bool scanning: false
+
+    readonly property var networks: wifi ? [...wifi.networks.values].sort((a, b) => (b.connected - a.connected) || (b.signalStrength - a.signalStrength)) : []
+
+    onPopupOpenChanged: {
+        if (popupOpen) {
+            scanning = true;
+            scanGrace.restart();
+        }
+    }
+
+    Timer {
+        id: scanGrace
+        interval: 12000
+        onTriggered: root.scanning = false
+    }
 
     function bars(strength: real): string {
         // NetworkManager reports 0-100; some backends hand back 0-1.
@@ -104,12 +122,28 @@ RowLayout {
                     spacing: Theme.spacing.medium
 
                     Text {
-                        Layout.fillWidth: true
                         text: "Wi-Fi"
                         color: Theme.fg
                         font.family: Theme.fontDisplay
                         font.pixelSize: Theme.fontSize.larger
                         font.weight: Theme.weight.bold
+                    }
+
+                    MaterialIcon {
+                        Layout.fillWidth: true
+                        horizontalAlignment: Text.AlignLeft
+                        visible: root.scanning && root.networks.length > 0
+                        text: "progress_activity"
+                        color: Theme.dim
+                        size: Theme.icon.small
+
+                        RotationAnimation on rotation {
+                            running: root.scanning
+                            loops: Animation.Infinite
+                            from: 0
+                            to: 360
+                            duration: 900
+                        }
                     }
 
                     // A switch, because the radio is a state rather than an action.
@@ -149,16 +183,55 @@ RowLayout {
                     }
                 }
 
-                Text {
+                // Every empty case says which one it is.
+                ColumnLayout {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    visible: !Networking.wifiEnabled || !root.wifi
-                    text: !root.wifi ? "No Wi-Fi adapter" : "Wi-Fi is off"
-                    color: Theme.dim
-                    font.family: Theme.font
-                    font.pixelSize: Theme.fontSize.normal
+                    visible: !Networking.wifiEnabled || !root.wifi || root.networks.length === 0
+                    spacing: Theme.spacing.medium
+
+                    Item {
+                        Layout.fillHeight: true
+                    }
+
+                    MaterialIcon {
+                        Layout.alignment: Qt.AlignHCenter
+                        text: {
+                            if (!root.wifi)
+                                return "wifi_off";
+                            if (!Networking.wifiEnabled)
+                                return "wifi_off";
+                            return root.scanning ? "progress_activity" : "wifi_find";
+                        }
+                        color: Theme.dim
+                        size: Theme.icon.large
+
+                        RotationAnimation on rotation {
+                            running: root.scanning && Networking.wifiEnabled && root.wifi && root.networks.length === 0
+                            loops: Animation.Infinite
+                            from: 0
+                            to: 360
+                            duration: 900
+                        }
+                    }
+
+                    Text {
+                        Layout.alignment: Qt.AlignHCenter
+                        text: {
+                            if (!root.wifi)
+                                return "No Wi-Fi adapter";
+                            if (!Networking.wifiEnabled)
+                                return "Wi-Fi is off";
+                            return root.scanning ? "Searching for networks" : "No networks found";
+                        }
+                        color: Theme.dim
+                        font.family: Theme.font
+                        font.pixelSize: Theme.fontSize.normal
+                    }
+
+                    Item {
+                        Layout.fillHeight: true
+                    }
                 }
 
                 ListView {
@@ -166,12 +239,12 @@ RowLayout {
 
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    visible: Networking.wifiEnabled && root.wifi
+                    visible: Networking.wifiEnabled && root.wifi && root.networks.length > 0
                     clip: true
                     spacing: Theme.spacing.extraSmall
                     boundsBehavior: Flickable.StopAtBounds
                     // Connected first, then strongest.
-                    model: root.wifi ? [...root.wifi.networks.values].sort((a, b) => (b.connected - a.connected) || (b.signalStrength - a.signalStrength)) : []
+                    model: root.networks
 
                     delegate: Rectangle {
                         id: row
