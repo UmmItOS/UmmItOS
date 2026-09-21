@@ -6,3 +6,4 @@ singleton SysInfo 1.0 services/SysInfo.qml
 singleton Dashboard 1.0 dashboard/Dashboard.qml
 singleton Session 1.0 session/Session.qml
 Surface 1.0 Surface.qml
+singleton Osd 1.0 osd/Osd.qml

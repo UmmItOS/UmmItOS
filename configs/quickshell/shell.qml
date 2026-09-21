@@ -6,6 +6,7 @@ import "dashboard"
 import "bar"
 import "launcher"
 import "notifications"
+import "osd"
 import "session"
 
 ShellRoot {
@@ -27,6 +28,8 @@ ShellRoot {
     DashboardWindow {}
 
     SessionWindow {}
+
+    OsdWindow {}
 
     Notifications {}
 }
