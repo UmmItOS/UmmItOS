@@ -21,7 +21,7 @@ PanelWindow {
         left: true
         right: true
     }
-    implicitHeight: 44
+    implicitHeight: Theme.barHeight
     color: Theme.bg
 
     SystemClock {

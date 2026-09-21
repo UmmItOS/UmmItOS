@@ -86,6 +86,10 @@ Singleton {
         readonly property int bold: 700
     }
 
+    // Anything that positions itself under the bar reads this rather than
+    // repeating the number.
+    readonly property int barHeight: 44
+
     readonly property QtObject icon: QtObject {
         readonly property int small: 20
         readonly property int normal: 24

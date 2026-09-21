@@ -4,8 +4,14 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Widgets
 import QtQuick
+import QtQuick.Effects
+import QtQuick.Layouts
 import ".."
 
+// Full-bleed grid rather than a centred panel: at this size the icons do the
+// identifying, so the apps are the content and the chrome is one query line.
+// Tiles are bare — only the focused one takes a surface, so the grid reads as
+// content instead of a wall of buttons.
 PanelWindow {
     id: win
 
@@ -25,7 +31,7 @@ PanelWindow {
         if (visible) {
             filter = "";
             search.text = "";
-            list.currentIndex = 0;
+            grid.currentIndex = 0;
             search.forceActiveFocus();
         }
     }
@@ -40,194 +46,204 @@ PanelWindow {
         left: true
         right: true
     }
-    color: Qt.rgba(0, 0, 0, 0.45)
+    color: Qt.rgba(Theme.bg.r, Theme.bg.g, Theme.bg.b, 0.82)
 
     function accept(): void {
-        const item = results[list.currentIndex];
-        if (!item)
-            return;
-        Launcher.launch(item);
+        const item = results[grid.currentIndex];
+        if (item)
+            Launcher.launch(item);
     }
 
-    // Click outside to dismiss.
     MouseArea {
         anchors.fill: parent
         onClicked: Launcher.open = false
     }
 
-    Surface {
-        anchors.centerIn: parent
-        width: 620
-        height: 480
-        radius: Theme.rounding.extraLargeIncreased
-        tone: Theme.bg
-        lift: 1.12
+    FocusScope {
+        anchors.fill: parent
+        focus: true
 
-        // Swallow clicks so they do not reach the dismiss handler.
-        MouseArea {
-            anchors.fill: parent
-        }
-
-        Rectangle {
-            id: searchRow
+        // The query line. Oversized and left-anchored, so the eye starts at the
+        // same place whether you are typing or scanning.
+        ColumnLayout {
+            id: head
 
             anchors {
                 top: parent.top
                 left: parent.left
                 right: parent.right
-                margins: Theme.padding.large
+                topMargin: Theme.padding.extraLarge * 2
+                leftMargin: Theme.padding.extraLarge * 3
+                rightMargin: Theme.padding.extraLarge * 3
             }
-            height: 48
-            radius: Theme.rounding.full
-            color: "transparent"
-
-            Surface {
-                anchors.fill: parent
-                radius: parent.radius
-                tone: Theme.bgTray
-            }
-
-            MaterialIcon {
-                id: icon
-                anchors {
-                    left: parent.left
-                    leftMargin: Theme.padding.large
-                    verticalCenter: parent.verticalCenter
-                }
-                text: "search"
-                color: Theme.accentText
-                size: Theme.icon.normal
-            }
+            spacing: Theme.spacing.small
 
             TextInput {
                 id: search
 
-                anchors {
-                    left: icon.right
-                    right: count.left
-                    verticalCenter: parent.verticalCenter
-                    leftMargin: Theme.spacing.medium
-                    rightMargin: Theme.spacing.medium
-                }
+                Layout.fillWidth: true
                 color: Theme.fg
-                font.family: Theme.font
-                font.pixelSize: Theme.fontSize.larger
+                font.family: Theme.fontDisplay
+                font.pixelSize: 54
+                font.weight: Theme.weight.bold
                 focus: true
 
                 onTextChanged: {
                     win.filter = text;
-                    list.currentIndex = 0;
+                    grid.currentIndex = 0;
                 }
 
                 Keys.onEscapePressed: Launcher.open = false
-                Keys.onUpPressed: list.decrementCurrentIndex()
-                Keys.onDownPressed: list.incrementCurrentIndex()
+                Keys.onLeftPressed: grid.moveCurrentIndexLeft()
+                Keys.onRightPressed: grid.moveCurrentIndexRight()
+                Keys.onUpPressed: grid.moveCurrentIndexUp()
+                Keys.onDownPressed: grid.moveCurrentIndexDown()
                 Keys.onReturnPressed: win.accept()
 
                 Text {
                     anchors.fill: parent
                     verticalAlignment: Text.AlignVCenter
                     visible: search.text === ""
-                    text: "Search applications"
+                    text: "Search"
                     color: Theme.dim
                     font: search.font
                 }
             }
 
-            Text {
-                id: count
-                anchors {
-                    right: parent.right
-                    rightMargin: Theme.padding.large
-                    verticalCenter: parent.verticalCenter
-                }
-                text: win.results.length
-                color: Theme.dim
-                font.family: Theme.font
-                font.features: ({
-                        tnum: 1
-                    })
-                font.pixelSize: Theme.fontSize.small
-            }
-        }
-
-        ListView {
-            id: list
-
-            anchors {
-                top: searchRow.bottom
-                left: parent.left
-                right: parent.right
-                bottom: parent.bottom
-                margins: Theme.padding.small
-                leftMargin: Theme.padding.large
-                rightMargin: Theme.padding.large
-                bottomMargin: Theme.padding.large
-            }
-            clip: true
-            spacing: Theme.spacing.extraSmall
-            model: win.results
-            currentIndex: 0
-            highlightMoveDuration: Theme.duration.expressiveFastEffects
-
-            delegate: Rectangle {
-                id: row
-                required property var modelData
-                required property int index
-
-                readonly property bool active: ListView.isCurrentItem
-
-                width: list.width
-                height: 54
-                radius: Theme.rounding.full
-                color: active ? Theme.bgTray : "transparent"
+            // A drawn rule that follows the query rather than a boxed input.
+            Rectangle {
+                Layout.fillWidth: true
+                implicitHeight: 2
+                radius: 1
+                color: search.text === "" ? Theme.bgTray : Theme.accentText
 
                 Behavior on color {
                     ColorAnimation {
-                        duration: Theme.duration.expressiveFastEffects
+                        duration: Theme.duration.expressiveDefaultEffects
                     }
                 }
+            }
 
-                IconImage {
-                    id: appIcon
+            Text {
+                Layout.topMargin: Theme.spacing.extraSmall
+                text: win.results.length === 0 ? "Nothing matches" : win.results.length + (win.results.length === 1 ? " application" : " applications")
+                color: Theme.dim
+                font.family: Theme.font
+                font.pixelSize: Theme.fontSize.smaller
+                font.weight: Theme.weight.medium
+                font.letterSpacing: Theme.tracking.wide
+            }
+        }
+
+        GridView {
+            id: grid
+
+            anchors {
+                top: head.bottom
+                left: parent.left
+                right: parent.right
+                bottom: parent.bottom
+                topMargin: Theme.padding.extraLarge * 2
+                leftMargin: Theme.padding.extraLarge * 3 - Theme.spacing.medium
+                rightMargin: Theme.padding.extraLarge * 3 - Theme.spacing.medium
+                bottomMargin: Theme.padding.extraLarge
+            }
+            clip: true
+            cellWidth: Math.floor(width / Math.max(4, Math.floor(width / 190)))
+            cellHeight: 168
+            model: win.results
+            currentIndex: 0
+            // Keep the focused tile in view when arrowing past the fold.
+            highlightMoveDuration: Theme.duration.expressiveFastEffects
+            highlightRangeMode: GridView.ApplyRange
+            preferredHighlightBegin: cellHeight
+            preferredHighlightEnd: height - cellHeight * 2
+
+            delegate: Item {
+                id: cell
+                required property var modelData
+                required property int index
+
+                readonly property bool active: GridView.isCurrentItem
+
+                width: grid.cellWidth
+                height: grid.cellHeight
+
+                Surface {
                     anchors {
-                        left: parent.left
-                        leftMargin: Theme.padding.medium
-                        verticalCenter: parent.verticalCenter
+                        fill: parent
+                        margins: Theme.spacing.medium
                     }
-                    implicitSize: Theme.icon.large
-                    visible: status === Image.Ready
-                    source: Quickshell.iconPath(row.modelData.icon, true)
+                    radius: Theme.rounding.extraLarge
+                    tone: Theme.bgTray
+                    opacity: cell.active ? 1 : 0
+
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: Theme.duration.expressiveFastEffects
+                        }
+                    }
+
+                    layer.enabled: cell.active
+                    layer.effect: MultiEffect {
+                        shadowEnabled: true
+                        shadowColor: Theme.accent
+                        shadowBlur: 1
+                        shadowOpacity: 0.5
+                        shadowVerticalOffset: 0
+                        shadowHorizontalOffset: 0
+                    }
                 }
 
-                MaterialIcon {
-                    anchors.fill: appIcon
-                    visible: !appIcon.visible
-                    text: "widgets"
-                    color: Theme.dim
-                    size: Theme.icon.normal
-                    verticalAlignment: Text.AlignVCenter
+                ColumnLayout {
+                    anchors.centerIn: parent
+                    width: parent.width - Theme.spacing.extraLargeIncreased
+                    spacing: Theme.spacing.medium
+
+                    IconImage {
+                        id: appIcon
+                        Layout.alignment: Qt.AlignHCenter
+                        implicitSize: 60
+                        visible: status === Image.Ready
+                        source: Quickshell.iconPath(cell.modelData.icon, true)
+                    }
+
+                    MaterialIcon {
+                        Layout.alignment: Qt.AlignHCenter
+                        visible: !appIcon.visible
+                        text: "widgets"
+                        color: Theme.dim
+                        size: 60
+                    }
+
+                    Text {
+                        Layout.fillWidth: true
+                        horizontalAlignment: Text.AlignHCenter
+                        text: cell.modelData.name
+                        color: cell.active ? Theme.fg : Theme.dim
+                        font.family: Theme.font
+                        font.pixelSize: Theme.fontSize.smaller
+                        font.weight: cell.active ? Theme.weight.medium : Theme.weight.regular
+                        elide: Text.ElideRight
+                        maximumLineCount: 2
+                        wrapMode: Text.Wrap
+                    }
                 }
 
-                Text {
-                    anchors {
-                        left: appIcon.right
-                        right: parent.right
-                        leftMargin: Theme.spacing.large
-                        rightMargin: Theme.padding.medium
-                        verticalCenter: parent.verticalCenter
+                scale: cell.active ? 1.04 : 1
+
+                Behavior on scale {
+                    NumberAnimation {
+                        duration: Theme.duration.expressiveFastSpatial
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curve.expressiveDefaultSpatial
                     }
-                    text: row.modelData.name
-                    color: row.active ? Theme.fg : Theme.dim
-                    font.family: Theme.font
-                    font.pixelSize: Theme.fontSize.normal
-                    elide: Text.ElideRight
                 }
 
                 MouseArea {
                     anchors.fill: parent
                     hoverEnabled: true
-                    onEntered: list.currentIndex = row.index
+                    onEntered: grid.currentIndex = cell.index
                     onClicked: win.accept()
                 }
             }

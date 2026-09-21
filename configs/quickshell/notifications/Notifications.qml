@@ -32,6 +32,10 @@ Scope {
         }
         // Do not reserve screen space, and stay out of the way when empty.
         exclusionMode: ExclusionMode.Ignore
+        // Clear the bar. Ignoring the exclusion zone means this window starts
+        // at y=0 and would otherwise sit on top of the tray and the clock.
+        margins.top: Theme.barHeight + Theme.spacing.small
+        margins.right: Theme.spacing.small
         visible: server.trackedNotifications.values.length > 0
         implicitWidth: 420
         implicitHeight: Math.max(1, column.implicitHeight + Theme.padding.largeIncreased)
