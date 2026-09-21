@@ -82,17 +82,18 @@ PanelWindow {
             // One continuous cluster holding all four tabs, the same shape the
             // bar uses for its icon group, rather than four tabs floating
             // separately with only the active one carrying a background.
+            // Spans the content width so its edges line up with the cards
+            // below; a hugging cluster centred in a panel aligns with nothing.
             Surface {
-                Layout.alignment: Qt.AlignHCenter
+                Layout.fillWidth: true
                 Layout.bottomMargin: Theme.padding.large
-                implicitWidth: tabRow.implicitWidth + Theme.padding.small * 2
                 implicitHeight: 68
                 radius: Theme.rounding.extraLarge
                 tone: Theme.bgTray
 
                 Row {
                     id: tabRow
-                    anchors.centerIn: parent
+                    anchors.fill: parent
 
                     Repeater {
                         model: win.tabs
@@ -104,8 +105,8 @@ PanelWindow {
 
                             readonly property bool current: Dashboard.tab === index
 
-                            width: 156
-                            height: 56
+                            width: tabRow.width / win.tabs.length
+                            height: tabRow.height
 
                             // The selected segment, inset so the cluster stays
                             // continuous around it.
