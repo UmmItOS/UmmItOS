@@ -57,6 +57,9 @@ Scope {
                     readonly property string appIcon: modelData.appIcon ? Quickshell.iconPath(modelData.appIcon, true) : ""
                     // Delegates are created on arrival, so this is the arrival time.
                     readonly property string time: Qt.formatDateTime(new Date(), "HH:mm")
+                    // Clicking the body invokes the "default" action, which is
+                    // how an app asks to be raised on the relevant view.
+                    readonly property var defaultAction: modelData.actions.find(a => a.identifier === "default") ?? null
 
                     Layout.preferredWidth: 390
                     implicitHeight: body.implicitHeight + Theme.padding.large * 2
@@ -92,6 +95,14 @@ Scope {
 
                     HoverHandler {
                         id: hover
+                    }
+
+                    TapHandler {
+                        onTapped: {
+                            if (card.defaultAction)
+                                card.defaultAction.invoke();
+                            card.modelData.dismiss();
+                        }
                     }
 
                     // Reading a notification should not race its own timer.
@@ -215,10 +226,10 @@ Scope {
                         RowLayout {
                             Layout.topMargin: Theme.spacing.small
                             spacing: Theme.spacing.small
-                            visible: card.modelData.actions.length > 0
+                            visible: card.modelData.actions.some(a => a.identifier !== "default")
 
                             Repeater {
-                                model: card.modelData.actions
+                                model: card.modelData.actions.filter(a => a.identifier !== "default")
 
                                 Rectangle {
                                     id: action

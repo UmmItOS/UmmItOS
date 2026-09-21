@@ -68,6 +68,11 @@ PanelWindow {
         RowLayout {
             spacing: Theme.spacing.small
 
+            // The clock is the dashboard's handle.
+            TapHandler {
+                onTapped: Dashboard.toggle()
+            }
+
             MaterialIcon {
                 Layout.alignment: Qt.AlignVCenter
                 text: "schedule"

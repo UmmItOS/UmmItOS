@@ -2,6 +2,7 @@
 
 import Quickshell
 import "background"
+import "dashboard"
 import "bar"
 import "launcher"
 import "notifications"
@@ -19,6 +20,8 @@ ShellRoot {
     WallpaperPicker {}
 
     LauncherWindow {}
+
+    DashboardWindow {}
 
     Notifications {}
 }
