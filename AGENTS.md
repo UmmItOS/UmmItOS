@@ -56,10 +56,9 @@ Lists are plain text, one `repo/pkgname` per line, and are read into arrays by t
 ## post-install.sh gotchas
 
 - Must run inside a Hyprland session because it calls `hyprctl`.
-- Requires `jq` to modify `waybar/config.jsonc` and parse monitor JSON.
+- Requires `jq` to parse monitor JSON.
 - Modifies specific files/lines:
   - `~/.config/hypr/hyprlock.conf` — `monitor = ...`
-  - `~/.config/waybar/config.jsonc` — `.network.interface`
   - `~/.config/hypr/hyprland.conf` — line 3 (`monitor=...`)
   - `~/.config/hypr/hyprland/exec.conf` — lines 3 and 7 (home-directory paths)
   - `~/.config/hypr/hyprland/env.conf` — `HYPRSHOT_DIR`
@@ -67,7 +66,7 @@ Lists are plain text, one `repo/pkgname` per line, and are read into arrays by t
 
 ## Scripts in `script/`
 
-- Helper scripts for cliphist, hyprlock, swaync, swww, waybar, hyprpicker, etc.
+- Helper scripts for cliphist, hyprlock and hyprpicker, plus the update and screen-recording helpers the bar and keybinds call.
 - Use a logger pattern that writes `.log` files; check logs rather than relying only on notifications.
 
 ## Commit conventions

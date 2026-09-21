@@ -57,10 +57,7 @@ Please make sure to backup your existing configuration files before copying.
 - Nushell
 - kitty
 - fastfetch
-- waybar
-- rofi
-- swaync
-- wlogout
+- quickshell
 - mpv
 - yazi
 - script
@@ -89,8 +86,8 @@ display_completion_message() {
     echo "${COLOR_GREEN}:: Installation completed successfully.${COLOR_RESET}"
     echo "${COLOR_GREEN}:: Please reboot your system to apply all changes!${COLOR_RESET}"
     echo "${COLOR_GREEN}:: After reboot you can log in and start using the desktop.${COLOR_RESET}"
-    echo "${COLOR_YELLOW}:: Your first login offers an optional tuning step for the monitor mode,${COLOR_RESET}"
-    echo "${COLOR_YELLOW}:: the Waybar network interface and the screenshot folder. You can also run it later:${COLOR_RESET}"
+    echo "${COLOR_YELLOW}:: Your first login offers an optional tuning step for the monitor mode${COLOR_RESET}"
+    echo "${COLOR_YELLOW}:: and the screenshot folder. You can also run it later:${COLOR_RESET}"
     echo ""
     echo "${COLOR_GREEN}:: ./post-install.sh --start-config${COLOR_RESET}"
 }
@@ -117,30 +114,6 @@ show_monitor_info() {
     else
         echo "${COLOR_YELLOW}   Hyprctl not available. Please run 'hyprctl monitors' after logging into Hyprland.${COLOR_RESET}"
     fi
-}
-
-# Function to show network interface info and populate interfaces array
-show_network_info() {
-    echo "${COLOR_BLUE}Available network interfaces:${COLOR_RESET}"
-    # Store interfaces in a local array first, excluding 'lo' and handling potential errors
-    local temp_interfaces
-    mapfile -t temp_interfaces < <(ip -o link show | awk -F': ' '$2 != "lo" {print $2}' | cut -d'@' -f1)
-
-    if (( ${#temp_interfaces[@]} == 0 )); then
-        echo "${COLOR_DARK_RED}   No network interfaces found (excluding lo).${COLOR_RESET}"
-        return 1
-    fi
-
-    # Copy to global interfaces array if it exists
-    if declare -p interfaces &>/dev/null; then
-        interfaces=("${temp_interfaces[@]}")
-    fi
-
-    for i in "${!temp_interfaces[@]}"; do
-        printf "   ${COLOR_GREEN}%s) ${COLOR_CYAN}%s${COLOR_RESET}\n" "$((i+1))" "${temp_interfaces[i]}"
-    done
-    echo ""
-    return 0
 }
 
 # Function to show current HYPRSHOT_DIR

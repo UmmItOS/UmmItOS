@@ -21,13 +21,9 @@ extra/ttf-overpass
 extra/gnu-free-fonts
 extra/papirus-icon-theme
 extra/orchis-theme
-extra/waybar
 extra/quickshell
-extra/rofi
 extra/fastfetch
 extra/wf-recorder
-extra/swaync
-extra/swww
 extra/pipewire-jack
 extra/pipewire-alsa
 extra/pipewire-pulse
@@ -42,7 +38,6 @@ extra/zoxide
 
 aur/hyprshot
 aur/hyprswitch
-aur/wlogout
 aur/smile
 aur/woomer
 aur/bibata-cursor-theme

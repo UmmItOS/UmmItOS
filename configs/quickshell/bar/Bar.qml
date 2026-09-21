@@ -76,7 +76,7 @@ PanelWindow {
 
             BarButton {
                 icon: "system_update_alt"
-                onClicked: Quickshell.execDetached(["kitty", "--execute", bar.home + "/script/waybar/update.sh"])
+                onClicked: Quickshell.execDetached(["kitty", "--execute", bar.home + "/script/misc/update.sh"])
             }
 
             BarButton {

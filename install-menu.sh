@@ -120,7 +120,7 @@ simple_menu() {
             fi
         done
         
-        echo -e "\n${COLOR_GRAY}↑/↓ Navigate │ Enter Select │ b Back │ q Quit${COLOR_RESET}"
+        echo -e "\n${COLOR_GREY}↑/↓ Navigate │ Enter Select │ b Back │ q Quit${COLOR_RESET}"
         
         # Read input
         read -rsn1 key
@@ -163,7 +163,7 @@ install_main_package() {
     fi
     
     if [[ ${#packages[@]} -eq 0 ]]; then
-        echo -e "${COLOR_RED}:: No packages found in $PACKAGES_MAIN${COLOR_RESET}"
+        echo -e "${COLOR_DARK_RED}:: No packages found in $PACKAGES_MAIN${COLOR_RESET}"
         read -rp "Press Enter to continue..."
         return 1
     fi
@@ -208,14 +208,14 @@ install_gpu_package() {
     
     local packages=()
     if ! read_packages_from_file "$PACKAGES_GPU" packages; then
-        echo -e "${COLOR_RED}:: There's no packages can be read from $PACKAGES_GPU ????${COLOR_RESET}"
-        echo -e "${COLOR_RED}:: Are you clone the repo correctly? Check the repo please!${COLOR_RESET}"
+        echo -e "${COLOR_DARK_RED}:: There's no packages can be read from $PACKAGES_GPU ????${COLOR_RESET}"
+        echo -e "${COLOR_DARK_RED}:: Are you clone the repo correctly? Check the repo please!${COLOR_RESET}"
         read -rp "Press Enter to continue..."
         return 1
     fi
     
     if [[ ${#packages[@]} -eq 0 ]]; then
-        echo -e "${COLOR_RED}:: No packages found in $PACKAGES_GPU${COLOR_RESET}"
+        echo -e "${COLOR_DARK_RED}:: No packages found in $PACKAGES_GPU${COLOR_RESET}"
         read -rp "Press Enter to continue..."
         return 1
     fi
@@ -256,7 +256,7 @@ install_laptop_package() {
     fi
     
     if [[ ${#packages[@]} -eq 0 ]]; then
-        echo -e "${COLOR_RED}:: No packages found in $PACKAGES_LAPTOP${COLOR_RESET}"
+        echo -e "${COLOR_DARK_RED}:: No packages found in $PACKAGES_LAPTOP${COLOR_RESET}"
         read -rp "Press Enter to continue..."
         return 1
     fi
@@ -301,7 +301,7 @@ enable_gdm_service() {
 
     # Check if gdm is installed
     if ! command_exists gdm; then
-        echo -e "${COLOR_RED}:: gdm is not installed. turn back to main menu and install our main packages first.${COLOR_RESET}"
+        echo -e "${COLOR_DARK_RED}:: gdm is not installed. turn back to main menu and install our main packages first.${COLOR_RESET}"
         read -rp "Press Enter to continue..."
         return 1
     fi
@@ -312,14 +312,14 @@ enable_gdm_service() {
         read -rp ":: Press Enter to continue..."
         return 0
     else
-        echo -e "${COLOR_RED}:: gdm service is not enabled, now will enable it.${COLOR_RESET}"
+        echo -e "${COLOR_DARK_RED}:: gdm service is not enabled, now will enable it.${COLOR_RESET}"
         if prompt_yna ":: Enable gdm service?"; then
             if sudo systemctl enable gdm.service; then
                 echo -e "${COLOR_GREEN}:: gdm service enabled successfully.${COLOR_RESET}"
                 read -rp "Press Enter to continue..."
                 return 0
             else
-                echo -e "${COLOR_RED}:: Failed to enable gdm service.${COLOR_RESET}"
+                echo -e "${COLOR_DARK_RED}:: Failed to enable gdm service.${COLOR_RESET}"
                 read -rp "Press Enter to continue..."
                 return 1
             fi
@@ -335,7 +335,7 @@ enable_service() {
     if enable_gdm_service; then
         echo -e "${COLOR_GREEN}:: [5/5] Service enabled successfully!${COLOR_RESET}"
     else
-        echo -e "${COLOR_RED}:: Service enabled failed. try run again?${COLOR_RESET}"
+        echo -e "${COLOR_DARK_RED}:: Service enabled failed. try run again?${COLOR_RESET}"
         read -rp "Press Enter to continue..."
         return 1
     fi
@@ -349,8 +349,8 @@ show_post_install_info() {
     echo -e "${COLOR_YELLOW}Post-installation notes:${COLOR_RESET}"
     echo -e "• Reboot your system to ensure all changes take effect"
     echo -e "• After reboot you can log in and start using the desktop"
-    echo -e "• Your first login offers an optional tuning step for the monitor mode, the Waybar"
-    echo -e "  network interface and the screenshot folder. Run it later with:"
+    echo -e "• Your first login offers an optional tuning step for the monitor mode"
+    echo -e "  and the screenshot folder. Run it later with:"
     echo -e "  ${COLOR_GREEN}./post-install.sh --start-config${COLOR_RESET}"
     if has_amdgpu; then
         echo -e "• Verify AMD GPU drivers are working properly"
@@ -362,7 +362,7 @@ show_post_install_info() {
 
 auto_install_all() {
     clear_screen
-    echo -e "\n${COLOR_RED}AUTOMATIC INSTALLATION MODE${COLOR_RESET}"
+    echo -e "\n${COLOR_DARK_RED}AUTOMATIC INSTALLATION MODE${COLOR_RESET}"
     echo -e "${COLOR_YELLOW}This will install everything automatically...${COLOR_RESET}\n"
     
     local confirm_options=("Yes, proceed" "No, go back")
@@ -464,7 +464,7 @@ welcome() {
     echo -e "• Copy your dotfiles"
     echo -e "• Enable display manager"
     echo -e "• Or do everything automatically!\n"
-    echo -e "${COLOR_GRAY}Press Enter to continue...${COLOR_RESET}"
+    echo -e "${COLOR_GREY}Press Enter to continue...${COLOR_RESET}"
     read -r
 }
 
@@ -473,8 +473,8 @@ main() {
 
     # Check if running as root
     if [[ $EUID -eq 0 ]]; then
-        echo -e "${COLOR_RED}:: Running this script as root is not a good idea, just like running Hyprland as root. Are you unaware of this?${COLOR_RESET}"
-        echo -e "${COLOR_RED}:: Please switch to normal user.${COLOR_RESET}"
+        echo -e "${COLOR_DARK_RED}:: Running this script as root is not a good idea, just like running Hyprland as root. Are you unaware of this?${COLOR_RESET}"
+        echo -e "${COLOR_DARK_RED}:: Please switch to normal user.${COLOR_RESET}"
         exit 1
     fi
     

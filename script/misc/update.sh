@@ -32,7 +32,7 @@ execute_command() {
 
 run_history() {
     # Execute history script first
-    execute_command "History script been executed :)" bash "$HOME/script/waybar/history.sh"
+    execute_command "History script been executed :)" bash "$HOME/script/misc/clipboard-history.sh"
 }
 
 # Run history script
@@ -151,7 +151,7 @@ while true; do
 
             hyprctl notify 5 5000 "rgb(00ff00)" "fontsize:35   Upgrade completed successfully. Total duration: ${total_duration} seconds"
             
-            echo "<NOTICE> $(date +"%Y-%m-%d %H:%M:%S"): System upgrade completed successfully. Total duration: ${total_duration} seconds" >> ~/script/waybar/update.log
+            echo "<NOTICE> $(date +"%Y-%m-%d %H:%M:%S"): System upgrade completed successfully. Total duration: ${total_duration} seconds" >> ~/script/misc/update.log
 
             # Prompt user to reboot the system
             while true; do
@@ -222,7 +222,7 @@ while true; do
                         total_duration=$((end_time - start_time))
                         echo -e "[${COLOR_GREEN} SUCESS ${COLOR_RESET}] System upgrade completed successfully.\nTotal duration: ${COLOR_GREEN}${total_duration}${COLOR_RESET} seconds"
                         hyprctl notify 5 5000 "rgb(00ff00)" "fontsize:35   Upgrade completed successfully. Total duration: ${total_duration} seconds"
-                        echo "<NOTICE> $(date +"%Y-%m-%d %H:%M:%S"): System upgrade completed successfully. Total duration: ${total_duration} seconds" >> ~/script/waybar/update.log
+                        echo "<NOTICE> $(date +"%Y-%m-%d %H:%M:%S"): System upgrade completed successfully. Total duration: ${total_duration} seconds" >> ~/script/misc/update.log
                         continue;;
                     [Nn]* )
                         break;;

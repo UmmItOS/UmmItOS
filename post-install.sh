@@ -81,68 +81,6 @@ run_interactive_configuration() {
     fi
     
     # Add a pause after Hyprlock section
-    pause_and_continue "Press Enter to continue to Waybar Configuration..."
-    clear
-    
-    # Waybar Configuration
-    print_header "Waybar Configuration"
-    echo "${COLOR_YELLOW}Waybar needs to know which network interface to monitor.${COLOR_RESET}"
-    echo "${COLOR_GREY}The configuration file is: ${COLOR_GREEN}~/.config/waybar/config.jsonc${COLOR_RESET}"
-    echo ""
-    check_config_exists "$HOME/.config/waybar/config.jsonc"
-    declare -a interfaces
-    if ! show_network_info; then
-        echo "${COLOR_DARK_RED}Could not list network interfaces. Skipping Waybar network setup.${COLOR_RESET}"
-    else
-        # Prompt user to select interface directly
-        local choice
-        local num_interfaces=${#interfaces[@]}
-        local selected_interface_name=""
-
-        if (( num_interfaces == 0 )); then
-            echo "${COLOR_DARK_RED}No network interfaces found.${COLOR_RESET}"
-        else
-            while true; do
-                read -r -p "${COLOR_GREEN}Enter the number for the network interface you want to use (1-$num_interfaces): ${COLOR_RESET}" choice
-                if [[ "$choice" =~ ^[0-9]+$ ]] && (( choice >= 1 && choice <= num_interfaces )); then
-                    selected_interface_name="${interfaces[$((choice-1))]}"
-                    break
-                else
-                    echo "${COLOR_DARK_RED}Invalid selection. Please enter a number between 1 and $num_interfaces.${COLOR_RESET}"
-                fi
-            done
-        fi
-
-        if [[  -n "$selected_interface_name"  ]]; then
-            echo ""
-            echo "${COLOR_GREEN}You selected interface: ${COLOR_CYAN}$selected_interface_name${COLOR_RESET}"
-            local waybar_conf_file_path="$HOME/.config/waybar/config.jsonc"
-            if [[  -f "$waybar_conf_file_path"  ]]; then
-                if ! command_exists jq; then
-                    echo "${COLOR_DARK_RED}'jq' command not found. This script uses jq to modify JSON files.${COLOR_RESET}"
-                    echo "${COLOR_YELLOW}Please install jq (e.g., 'sudo pacman -S jq') and run this section again${COLOR_RESET}"
-                    echo "${COLOR_YELLOW}You need to set: ${COLOR_CYAN}\"interface\": \"$selected_interface_name\"${COLOR_YELLOW} in the network module.${COLOR_RESET}"
-                else
-                    backup_file "$waybar_conf_file_path"
-                    jq --arg new_iface "$selected_interface_name" '.network.interface = $new_iface' "$waybar_conf_file_path" > "${waybar_conf_file_path}.tmp" && mv "${waybar_conf_file_path}.tmp" "$waybar_conf_file_path"
-                    local current_waybar_iface
-                    current_waybar_iface=$(jq -r '.network.interface' "$waybar_conf_file_path")
-                    if [[  "$current_waybar_iface" == "$selected_interface_name"  ]]; then
-                        echo "${COLOR_GREEN}Successfully updated network interface in ${waybar_conf_file_path} to '${selected_interface_name}'${COLOR_RESET}"
-                    else
-                        echo "${COLOR_DARK_RED}Failed to update network interface in ${waybar_conf_file_path}. Current value: '${current_waybar_iface}'. Please check manually.${COLOR_RESET}"
-                        echo "${COLOR_YELLOW}Original file backed up. You might need to restore it or edit manually.${COLOR_RESET}"
-                    fi
-                fi
-            else 
-                echo "${COLOR_DARK_RED}Waybar configuration file not found at ${waybar_conf_file_path}. Cannot apply changes.${COLOR_RESET}"
-            fi
-        else
-            echo "${COLOR_DARK_RED}No network interface selected. You will need to configure Waybar manually.${COLOR_RESET}"
-        fi
-    fi
-    echo ""
-    # Add a pause after Waybar section
     pause_and_continue "Press Enter to continue to Hyprland Main Configuration..."
     clear
 
@@ -317,25 +255,6 @@ show_current_settings() {
         fi
     else
         echo "   ${COLOR_DARK_RED}${hyprlock_conf_file} not found.${COLOR_RESET}"
-    fi
-    echo ""
-
-    echo "${COLOR_MAGENTA}Waybar Network Interface:${COLOR_RESET}"
-    local waybar_conf_file="$HOME/.config/waybar/config.jsonc"
-    if [[  -f "$waybar_conf_file"  ]]; then
-        if command_exists jq; then
-            local current_iface
-            current_iface=$(jq -r '.network.interface' "$waybar_conf_file" 2>/dev/null)
-            if [[ -n "$current_iface" && "$current_iface" != "null" ]]; then
-                echo "   ${COLOR_CYAN}$current_iface${COLOR_RESET}"
-            else
-                echo "   ${COLOR_YELLOW}Network interface not set or 'network' block/key not found in $waybar_conf_file.${COLOR_RESET}"
-            fi
-        else
-            echo "   ${COLOR_YELLOW}'jq' not found. Cannot automatically read Waybar config.${COLOR_RESET}"
-        fi
-    else
-        echo "   ${COLOR_DARK_RED}${waybar_conf_file} not found.${COLOR_RESET}"
     fi
     echo ""
 

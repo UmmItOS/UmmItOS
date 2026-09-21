@@ -14,7 +14,6 @@ about: Want something new? Ask here
 
 ## Which part needs changes?
 - [ ] Hyprland
-- [ ] Waybar  
-- [ ] Rofi
+- [ ] Quickshell (bar, launcher, notifications)
 - [ ] Install scripts
 - [ ] Other: 

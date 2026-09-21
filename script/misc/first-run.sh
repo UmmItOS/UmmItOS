@@ -21,7 +21,7 @@ if [[ "$1" == "--prompt" ]]; then
     echo "Welcome to UmmItOS. Your desktop is ready to use."
     echo ""
     echo "You can tune it further if you want to: lock the exact monitor mode, pick a"
-    echo "specific network interface for Waybar, or change the screenshot folder."
+
     echo ""
     read -rp "Run the optional tuning now? [y/N] " answer
     if [[ "$answer" =~ ^[Yy]$ ]]; then
