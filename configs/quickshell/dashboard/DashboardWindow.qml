@@ -98,7 +98,7 @@ PanelWindow {
                                 width: parent.width - Theme.spacing.small
                                 height: parent.height
                                 radius: Theme.rounding.large
-                                color: tab.current ? Theme.bgAlt : "transparent"
+                                color: tab.current ? Theme.bgTray : "transparent"
 
                                 Behavior on color {
                                     ColorAnimation {

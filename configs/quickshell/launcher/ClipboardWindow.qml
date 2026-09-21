@@ -14,7 +14,6 @@ PanelWindow {
     id: win
 
     property string filter: ""
-    property string previewPath: ""
 
     readonly property var results: {
         const f = filter.toLowerCase();
@@ -41,7 +40,10 @@ PanelWindow {
         interval: 120
         onTriggered: {
             const entry = win.focusedEntry;
-            win.previewPath = entry && entry.image ? Launcher.decode(entry.id) : "";
+            if (entry && entry.image)
+                Launcher.decode(entry.id);
+            else
+                Launcher.clearDecode();
         }
     }
 
@@ -69,8 +71,8 @@ PanelWindow {
 
     FocusScope {
         anchors.centerIn: parent
-        width: 900
-        height: 540
+        width: 980
+        height: 600
         focus: true
 
         Keys.onEscapePressed: Launcher.open = false
@@ -85,7 +87,7 @@ PanelWindow {
 
             // Left: the index. Narrow on purpose — it is for scanning, not reading.
             Rectangle {
-                Layout.preferredWidth: 330
+                Layout.preferredWidth: 360
                 Layout.fillHeight: true
                 topLeftRadius: Theme.rounding.extraLargeIncreased
                 bottomLeftRadius: Theme.rounding.extraLargeIncreased
@@ -98,32 +100,44 @@ PanelWindow {
                     }
                     spacing: Theme.spacing.medium
 
-                    TextInput {
-                        id: search
-
+                    Rectangle {
                         Layout.fillWidth: true
-                        color: Theme.fg
-                        font.family: Theme.font
-                        font.pixelSize: Theme.fontSize.larger
-                        focus: true
+                        implicitHeight: 44
+                        radius: Theme.rounding.full
+                        color: Theme.bgTray
 
-                        onTextChanged: {
-                            win.filter = text;
-                            list.currentIndex = 0;
-                        }
+                        TextInput {
+                            id: search
 
-                        Keys.onEscapePressed: Launcher.open = false
-                        Keys.onUpPressed: list.decrementCurrentIndex()
-                        Keys.onDownPressed: list.incrementCurrentIndex()
-                        Keys.onReturnPressed: win.accept()
+                            anchors {
+                                fill: parent
+                                leftMargin: Theme.padding.large
+                                rightMargin: Theme.padding.large
+                            }
+                            verticalAlignment: TextInput.AlignVCenter
+                            color: Theme.fg
+                            font.family: Theme.font
+                            font.pixelSize: Theme.fontSize.normal
+                            focus: true
 
-                        Text {
-                            anchors.fill: parent
-                            verticalAlignment: Text.AlignVCenter
-                            visible: search.text === ""
-                            text: win.results.length + " in history"
-                            color: Theme.dim
-                            font: search.font
+                            onTextChanged: {
+                                win.filter = text;
+                                list.currentIndex = 0;
+                            }
+
+                            Keys.onEscapePressed: Launcher.open = false
+                            Keys.onUpPressed: list.decrementCurrentIndex()
+                            Keys.onDownPressed: list.incrementCurrentIndex()
+                            Keys.onReturnPressed: win.accept()
+
+                            Text {
+                                anchors.fill: parent
+                                verticalAlignment: Text.AlignVCenter
+                                visible: search.text === ""
+                                text: win.results.length + " in history"
+                                color: Theme.dim
+                                font: search.font
+                            }
                         }
                     }
 
@@ -145,8 +159,8 @@ PanelWindow {
                             readonly property bool active: ListView.isCurrentItem
 
                             width: list.width
-                            height: 40
-                            radius: Theme.rounding.medium
+                            height: 46
+                            radius: Theme.rounding.full
                             color: active ? Theme.bgTray : "transparent"
 
                             Behavior on color {
@@ -219,7 +233,7 @@ PanelWindow {
 
                     Image {
                         anchors.fill: parent
-                        source: win.previewPath === "" ? "" : "file://" + win.previewPath
+                        source: Launcher.decodedPath === "" ? "" : "file://" + Launcher.decodedPath
                         fillMode: Image.PreserveAspectFit
                         asynchronous: true
                         cache: false

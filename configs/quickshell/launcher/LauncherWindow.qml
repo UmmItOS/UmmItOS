@@ -76,9 +76,9 @@ PanelWindow {
                 right: parent.right
                 margins: Theme.padding.large
             }
-            height: 44
+            height: 48
             radius: Theme.rounding.full
-            color: Theme.bgAlt
+            color: Theme.bgTray
 
             MaterialIcon {
                 id: icon
@@ -171,9 +171,9 @@ PanelWindow {
                 readonly property bool active: ListView.isCurrentItem
 
                 width: list.width
-                height: 48
-                radius: Theme.rounding.medium
-                color: active ? Theme.bgAlt : "transparent"
+                height: 54
+                radius: Theme.rounding.full
+                color: active ? Theme.bgTray : "transparent"
 
                 Behavior on color {
                     ColorAnimation {

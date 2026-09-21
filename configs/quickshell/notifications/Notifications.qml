@@ -236,9 +236,9 @@ Scope {
                                     required property var modelData
 
                                     implicitWidth: label.implicitWidth + Theme.padding.large * 2
-                                    implicitHeight: 30
+                                    implicitHeight: 34
                                     radius: Theme.rounding.full
-                                    color: actionHover.hovered ? Theme.accent : Theme.bg
+                                    color: actionHover.hovered ? Theme.accent : Theme.bgTray
 
                                     Behavior on color {
                                         ColorAnimation {

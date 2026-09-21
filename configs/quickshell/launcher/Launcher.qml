@@ -12,6 +12,12 @@ Singleton {
     property bool open: false
     property list<var> clipboard: []
 
+    // Set only after the decode process exits, so the Image never points at a
+    // file that is still being written. Binding it synchronously made the
+    // preview fail whenever the decode had not finished first.
+    property string decodedPath
+    property string decodingId
+
     function show(newMode: string): void {
         mode = newMode;
         if (newMode === "clipboard")
@@ -32,11 +38,20 @@ Singleton {
     }
 
     // Decodes one image entry into the cache so the preview pane can show it.
-    function decode(id: string): string {
-        const path = Quickshell.cachePath("clipboard/" + id + ".png");
-        decodeProc.command = ["sh", "-c", `mkdir -p "$(dirname '${path}')" && cliphist decode ${id} > '${path}'`];
+    function decode(id: string): void {
+        if (decodingId === id)
+            return;
+        decodingId = id;
+        decodedPath = "";
+        const target = Quickshell.cachePath("clipboard/" + id + ".png");
+        decodeProc.running = false;
+        decodeProc.command = ["sh", "-c", `mkdir -p "$(dirname '${target}')" && cliphist decode ${id} > '${target}'`];
         decodeProc.running = true;
-        return path;
+    }
+
+    function clearDecode(): void {
+        decodingId = "";
+        decodedPath = "";
     }
 
     function copy(id: string): void {
@@ -74,6 +89,11 @@ Singleton {
 
     Process {
         id: decodeProc
+
+        onExited: (code, status) => {
+            if (code === 0)
+                root.decodedPath = Quickshell.cachePath("clipboard/" + root.decodingId + ".png");
+        }
     }
 
     IpcHandler {
