@@ -52,6 +52,15 @@ Singleton {
         onPressed: root.step(1)
     }
 
+    // Hyprland's bind layer consumes Alt+Tab, so the Alt release may never
+    // reach the surface. A release bind from the compositor is authoritative.
+    GlobalShortcut {
+        appid: "quickshell"
+        name: "switcherCommit"
+        description: "Commit the workspace switch"
+        onPressed: root.commit()
+    }
+
     GlobalShortcut {
         appid: "quickshell"
         name: "switcherPrev"
