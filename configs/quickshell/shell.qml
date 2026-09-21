@@ -21,6 +21,8 @@ ShellRoot {
 
     LauncherWindow {}
 
+    ClipboardWindow {}
+
     DashboardWindow {}
 
     Notifications {}

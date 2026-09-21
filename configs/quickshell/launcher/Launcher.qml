@@ -31,6 +31,14 @@ Singleton {
         entry.execute();
     }
 
+    // Decodes one image entry into the cache so the preview pane can show it.
+    function decode(id: string): string {
+        const path = Quickshell.cachePath("clipboard/" + id + ".png");
+        decodeProc.command = ["sh", "-c", `mkdir -p "$(dirname '${path}')" && cliphist decode ${id} > '${path}'`];
+        decodeProc.running = true;
+        return path;
+    }
+
     function copy(id: string): void {
         open = false;
         copyProc.command = ["sh", "-c", `cliphist decode ${id} | wl-copy`];
@@ -45,9 +53,15 @@ Singleton {
             onStreamFinished: {
                 root.clipboard = text.split("\n").filter(l => l !== "").map(line => {
                     const tab = line.indexOf("\t");
+                    const preview = line.slice(tab + 1);
+                    // cliphist renders images as "[[ binary data 2 MiB png 1920x1200 ]]"
+                    const binary = preview.match(/^\[\[ binary data (.+?) (\w+) (\d+x\d+) \]\]$/);
                     return {
                         id: line.slice(0, tab),
-                        preview: line.slice(tab + 1)
+                        preview: preview,
+                        image: binary !== null,
+                        kind: binary ? binary[2] : "text",
+                        detail: binary ? binary[3] + "  ·  " + binary[1] : ""
                     };
                 });
             }
@@ -56,6 +70,10 @@ Singleton {
 
     Process {
         id: copyProc
+    }
+
+    Process {
+        id: decodeProc
     }
 
     IpcHandler {

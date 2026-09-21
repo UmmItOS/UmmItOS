@@ -9,13 +9,10 @@ import ".."
 PanelWindow {
     id: win
 
-    readonly property bool clipMode: Launcher.mode === "clipboard"
     property string filter: ""
 
     readonly property var results: {
         const f = filter.toLowerCase();
-        if (clipMode)
-            return f === "" ? Launcher.clipboard : Launcher.clipboard.filter(c => c.preview.toLowerCase().includes(f));
         const apps = [...DesktopEntries.applications.values].filter(a => !a.noDisplay);
         // keywords and categories are lists, not strings: calling toLowerCase()
         // on one throws and takes the whole binding down, emptying the list.
@@ -23,7 +20,7 @@ PanelWindow {
         return hits.sort((a, b) => a.name.localeCompare(b.name));
     }
 
-    visible: Launcher.open
+    visible: Launcher.open && Launcher.mode === "apps"
     onVisibleChanged: {
         if (visible) {
             filter = "";
@@ -49,10 +46,7 @@ PanelWindow {
         const item = results[list.currentIndex];
         if (!item)
             return;
-        if (clipMode)
-            Launcher.copy(item.id);
-        else
-            Launcher.launch(item);
+        Launcher.launch(item);
     }
 
     // Click outside to dismiss.
@@ -93,7 +87,7 @@ PanelWindow {
                     leftMargin: Theme.padding.large
                     verticalCenter: parent.verticalCenter
                 }
-                text: win.clipMode ? "content_paste" : "search"
+                text: "search"
                 color: Theme.accentText
                 size: Theme.fontSize.larger
             }
@@ -127,7 +121,7 @@ PanelWindow {
                     anchors.fill: parent
                     verticalAlignment: Text.AlignVCenter
                     visible: search.text === ""
-                    text: win.clipMode ? "Search clipboard history" : "Search applications"
+                    text: "Search applications"
                     color: Theme.dim
                     font: search.font
                 }
@@ -195,14 +189,14 @@ PanelWindow {
                         verticalCenter: parent.verticalCenter
                     }
                     implicitSize: 28
-                    visible: !win.clipMode && status === Image.Ready
-                    source: win.clipMode ? "" : Quickshell.iconPath(row.modelData.icon, true)
+                    visible: status === Image.Ready
+                    source: Quickshell.iconPath(row.modelData.icon, true)
                 }
 
                 MaterialIcon {
                     anchors.fill: appIcon
-                    visible: win.clipMode || !appIcon.visible
-                    text: win.clipMode ? "content_copy" : "widgets"
+                    visible: !appIcon.visible
+                    text: "widgets"
                     color: Theme.dim
                     size: Theme.fontSize.large
                     verticalAlignment: Text.AlignVCenter
@@ -216,7 +210,7 @@ PanelWindow {
                         rightMargin: Theme.padding.medium
                         verticalCenter: parent.verticalCenter
                     }
-                    text: win.clipMode ? row.modelData.preview : row.modelData.name
+                    text: row.modelData.name
                     color: row.active ? Theme.fg : Theme.dim
                     font.family: Theme.font
                     font.pixelSize: Theme.fontSize.normal
