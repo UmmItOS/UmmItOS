@@ -8,6 +8,7 @@ import "launcher"
 import "notifications"
 import "osd"
 import "session"
+import "switcher"
 
 ShellRoot {
     // One bar per connected screen. Plugging a monitor in adds one.
@@ -28,6 +29,8 @@ ShellRoot {
     DashboardWindow {}
 
     SessionWindow {}
+
+    SwitcherWindow {}
 
     OsdWindow {}
 
