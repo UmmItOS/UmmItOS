@@ -7,3 +7,4 @@ singleton Dashboard 1.0 dashboard/Dashboard.qml
 singleton Session 1.0 session/Session.qml
 Surface 1.0 Surface.qml
 singleton Osd 1.0 osd/Osd.qml
+singleton Notifs 1.0 notifications/Notifs.qml

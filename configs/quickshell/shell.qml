@@ -32,4 +32,6 @@ ShellRoot {
     OsdWindow {}
 
     Notifications {}
+
+    NotificationPanel {}
 }

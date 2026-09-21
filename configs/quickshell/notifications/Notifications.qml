@@ -19,8 +19,11 @@ Scope {
         keepOnReload: false
 
         // Without tracked = true the notification is dropped immediately.
+        // The record is taken here because the object itself does not survive
+        // expiry, and the panel needs something that does.
         onNotification: notification => {
-            notification.tracked = true;
+            Notifs.record(notification);
+            notification.tracked = !Notifs.dnd;
         }
     }
 
