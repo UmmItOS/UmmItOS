@@ -90,9 +90,9 @@ RowLayout {
         required property string glyph
         required property real value
 
-        // Fixed overall width keeps the bar from shuffling, and the slack sits
-        // after the number rather than between the arrow and its value.
-        Layout.preferredWidth: 84
+        // Nothing here may fill: a child that wants to grow makes this whole
+        // row growable, which propagates up and eats the bar's centring
+        // spacers. The number carries a fixed width instead.
         spacing: Theme.spacing.extraSmall
 
         MaterialIcon {
@@ -110,7 +110,7 @@ RowLayout {
 
         Text {
             Layout.alignment: Qt.AlignVCenter
-            Layout.fillWidth: true
+            Layout.preferredWidth: 58
             horizontalAlignment: Text.AlignLeft
             text: root.human(parent.value)
             color: Theme.fg
