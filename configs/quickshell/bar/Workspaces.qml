@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import Quickshell.Hyprland
 import QtQuick
+import QtQuick.Effects
 import QtQuick.Layouts
 import ".."
 
@@ -60,6 +61,18 @@ RowLayout {
                         duration: Theme.duration.expressiveFastEffects
                     }
                 }
+            }
+
+            // The focused workspace is the one thing in the bar that should
+            // read as lit rather than filled.
+            layer.enabled: pill.focused
+            layer.effect: MultiEffect {
+                shadowEnabled: true
+                shadowColor: Theme.accent
+                shadowBlur: 0.9
+                shadowOpacity: 0.55
+                shadowVerticalOffset: 0
+                shadowHorizontalOffset: 0
             }
 
             MouseArea {

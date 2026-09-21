@@ -131,6 +131,8 @@ ColumnLayout {
                                 color: Theme.dim
                                 font.family: Theme.font
                                 font.pixelSize: Theme.fontSize.small
+                                font.weight: Theme.weight.medium
+                                font.letterSpacing: Theme.tracking.wide
                             }
 
                             Text {
@@ -203,6 +205,8 @@ ColumnLayout {
                             color: Theme.dim
                             font.family: Theme.font
                             font.pixelSize: Theme.fontSize.smaller
+                            font.weight: Theme.weight.medium
+                            font.letterSpacing: Theme.tracking.wide
                         }
 
                         Item {

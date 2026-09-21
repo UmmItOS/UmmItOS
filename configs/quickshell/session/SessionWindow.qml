@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import Quickshell.Wayland
 import QtQuick
+import QtQuick.Effects
 import QtQuick.Layouts
 import ".."
 
@@ -73,9 +74,49 @@ PanelWindow {
 
                     implicitWidth: 156
                     implicitHeight: 156
+
+                    opacity: 0
+                    y: 18
+
+                    // A stagger reads as the menu assembling itself; everything
+                    // arriving on the same frame reads as a screenshot.
+                    ParallelAnimation {
+                        id: entry
+
+                        NumberAnimation {
+                            target: tile
+                            property: "opacity"
+                            to: 1
+                            duration: Theme.duration.expressiveDefaultEffects
+                        }
+                        NumberAnimation {
+                            target: tile
+                            property: "y"
+                            to: 0
+                            duration: Theme.duration.expressiveDefaultSpatial
+                            easing.type: Easing.BezierSpline
+                            easing.bezierCurve: Theme.curve.emphasizedDecel
+                        }
+                    }
+
+                    Timer {
+                        running: true
+                        interval: tile.index * 40
+                        onTriggered: entry.start()
+                    }
                     radius: Theme.rounding.extraLargeIncreased
                     color: active ? Theme.accent : Theme.bgTray
                     scale: active ? 1.06 : 1
+
+                    layer.enabled: tile.active
+                    layer.effect: MultiEffect {
+                        shadowEnabled: true
+                        shadowColor: Theme.accent
+                        shadowBlur: 1
+                        shadowOpacity: 0.6
+                        shadowVerticalOffset: 0
+                        shadowHorizontalOffset: 0
+                    }
 
                     Behavior on color {
                         ColorAnimation {

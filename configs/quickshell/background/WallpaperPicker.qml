@@ -156,6 +156,8 @@ PanelWindow {
                     color: Theme.dim
                     font.family: Theme.font
                     font.pixelSize: Theme.fontSize.smaller
+                    font.weight: Theme.weight.medium
+                    font.letterSpacing: Theme.tracking.wide
 
                     Behavior on opacity {
                         NumberAnimation {

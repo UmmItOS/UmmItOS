@@ -72,6 +72,20 @@ Singleton {
 
     // Icons do not follow the text scale: a glyph needs more room than a
     // letter at the same nominal size.
+    // Type is set, not just sized: small labels want air between letters and a
+    // little more weight, or they read as shrunken body copy.
+    readonly property QtObject tracking: QtObject {
+        readonly property real normal: 0
+        readonly property real wide: 0.4
+        readonly property real wider: 0.8
+    }
+
+    readonly property QtObject weight: QtObject {
+        readonly property int regular: 400
+        readonly property int medium: 500
+        readonly property int bold: 700
+    }
+
     readonly property QtObject icon: QtObject {
         readonly property int small: 20
         readonly property int normal: 24

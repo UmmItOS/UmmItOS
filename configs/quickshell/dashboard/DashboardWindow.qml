@@ -56,7 +56,16 @@ PanelWindow {
         width: 940
         height: 520
         radius: Theme.rounding.extraExtraLarge
-        color: Theme.bg
+        gradient: Gradient {
+            GradientStop {
+                position: 0
+                color: Qt.lighter(Theme.bg, 1.12)
+            }
+            GradientStop {
+                position: 0.6
+                color: Theme.bg
+            }
+        }
 
         // Swallow clicks so they do not reach the dismiss handler.
         MouseArea {

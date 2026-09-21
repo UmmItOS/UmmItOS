@@ -55,12 +55,13 @@ PanelWindow {
         onClicked: Launcher.open = false
     }
 
-    Rectangle {
+    Surface {
         anchors.centerIn: parent
         width: 620
         height: 480
         radius: Theme.rounding.extraLargeIncreased
-        color: Theme.bg
+        tone: Theme.bg
+        lift: 1.12
 
         // Swallow clicks so they do not reach the dismiss handler.
         MouseArea {
@@ -78,7 +79,13 @@ PanelWindow {
             }
             height: 48
             radius: Theme.rounding.full
-            color: Theme.bgTray
+            color: "transparent"
+
+            Surface {
+                anchors.fill: parent
+                radius: parent.radius
+                tone: Theme.bgTray
+            }
 
             MaterialIcon {
                 id: icon

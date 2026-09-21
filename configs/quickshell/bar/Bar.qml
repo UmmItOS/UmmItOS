@@ -37,7 +37,13 @@ PanelWindow {
         implicitWidth: inner.implicitWidth + Theme.padding.large * 2
         implicitHeight: 32
         radius: Theme.rounding.full
-        color: Theme.bgTray
+        color: "transparent"
+
+        Surface {
+            anchors.fill: parent
+            radius: parent.radius
+            tone: Theme.bgTray
+        }
 
         RowLayout {
             id: inner
@@ -112,6 +118,8 @@ PanelWindow {
                 color: Theme.dim
                 font.family: Theme.font
                 font.pixelSize: Theme.fontSize.small
+                font.weight: Theme.weight.medium
+                font.letterSpacing: Theme.tracking.wide
             }
 
             TapHandler {

@@ -91,7 +91,16 @@ PanelWindow {
                 Layout.fillHeight: true
                 topLeftRadius: Theme.rounding.extraLargeIncreased
                 bottomLeftRadius: Theme.rounding.extraLargeIncreased
-                color: Theme.bg
+                gradient: Gradient {
+                    GradientStop {
+                        position: 0
+                        color: Qt.lighter(Theme.bg, 1.12)
+                    }
+                    GradientStop {
+                        position: 0.6
+                        color: Theme.bg
+                    }
+                }
 
                 ColumnLayout {
                     anchors {
@@ -104,7 +113,13 @@ PanelWindow {
                         Layout.fillWidth: true
                         implicitHeight: 44
                         radius: Theme.rounding.full
-                        color: Theme.bgTray
+                        color: "transparent"
+
+                        Surface {
+                            anchors.fill: parent
+                            radius: parent.radius
+                            tone: Theme.bgTray
+                        }
 
                         TextInput {
                             id: search

@@ -146,6 +146,8 @@ Scope {
                                 color: Theme.dim
                                 font.family: Theme.font
                                 font.pixelSize: Theme.fontSize.small
+                                font.weight: Theme.weight.medium
+                                font.letterSpacing: Theme.tracking.wide
                                 elide: Text.ElideRight
                             }
 
