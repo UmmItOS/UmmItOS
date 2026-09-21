@@ -6,10 +6,10 @@ import QtQuick
 Singleton {
     // Palette taken from configs/waybar/style.css so both bars look the same
     // while they run side by side.
-    readonly property color bg: Qt.rgba(20 / 255, 20 / 255, 35 / 255, 0.9)
-    readonly property color bgAlt: Qt.rgba(30 / 255, 25 / 255, 45 / 255, 0.95)
+    readonly property color bg: Qt.rgba(20 / 255, 20 / 255, 35 / 255, 0.72)
+    readonly property color bgAlt: Qt.rgba(30 / 255, 25 / 255, 45 / 255, 0.82)
     // One step brighter than bgAlt, for a tray sitting on top of a panel.
-    readonly property color bgTray: Qt.rgba(44 / 255, 37 / 255, 62 / 255, 0.95)
+    readonly property color bgTray: Qt.rgba(44 / 255, 37 / 255, 62 / 255, 0.78)
     // Brand purple. It is dark (L 38%), so it is used for fills, borders and
     // solid shapes; `accentText` is the same hue lifted to stay readable as
     // text on the dark background.
