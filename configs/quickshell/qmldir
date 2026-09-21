@@ -4,3 +4,4 @@ MaterialIcon 1.0 MaterialIcon.qml
 singleton Launcher 1.0 launcher/Launcher.qml
 singleton SysInfo 1.0 services/SysInfo.qml
 singleton Dashboard 1.0 dashboard/Dashboard.qml
+singleton Session 1.0 session/Session.qml

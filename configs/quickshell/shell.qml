@@ -6,6 +6,7 @@ import "dashboard"
 import "bar"
 import "launcher"
 import "notifications"
+import "session"
 
 ShellRoot {
     // One bar per connected screen. Plugging a monitor in adds one.
@@ -24,6 +25,8 @@ ShellRoot {
     ClipboardWindow {}
 
     DashboardWindow {}
+
+    SessionWindow {}
 
     Notifications {}
 }

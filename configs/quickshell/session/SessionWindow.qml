@@ -1,0 +1,139 @@
+pragma ComponentBehavior: Bound
+
+import Quickshell
+import Quickshell.Wayland
+import QtQuick
+import QtQuick.Layouts
+import ".."
+
+// One row of tiles rather than wlogout's 3x2 grid: six actions read faster in a
+// line, and the row matches the bar's cluster language. Focus starts on Lock,
+// the only action here you cannot regret.
+PanelWindow {
+    id: win
+
+    property int current: 0
+
+    visible: Session.open
+    onVisibleChanged: {
+        if (visible) {
+            current = 0;
+            scope.forceActiveFocus();
+        }
+    }
+
+    WlrLayershell.namespace: "ummitos-session"
+    WlrLayershell.layer: WlrLayer.Overlay
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+    exclusionMode: ExclusionMode.Ignore
+    anchors {
+        top: true
+        bottom: true
+        left: true
+        right: true
+    }
+    color: Qt.rgba(0, 0, 0, 0.55)
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: Session.open = false
+    }
+
+    FocusScope {
+        id: scope
+        anchors.fill: parent
+        focus: true
+
+        Keys.onEscapePressed: Session.open = false
+        Keys.onLeftPressed: win.current = (win.current - 1 + Session.actions.length) % Session.actions.length
+        Keys.onRightPressed: win.current = (win.current + 1) % Session.actions.length
+        Keys.onReturnPressed: Session.run(win.current)
+        Keys.onPressed: event => {
+            const hit = Session.indexForKey(event.text);
+            if (hit >= 0) {
+                win.current = hit;
+                Session.run(hit);
+                event.accepted = true;
+            }
+        }
+
+        RowLayout {
+            anchors.centerIn: parent
+            spacing: Theme.spacing.largeIncreased
+
+            Repeater {
+                model: Session.actions
+
+                Rectangle {
+                    id: tile
+                    required property var modelData
+                    required property int index
+
+                    readonly property bool active: win.current === index
+
+                    implicitWidth: 156
+                    implicitHeight: 156
+                    radius: Theme.rounding.extraLargeIncreased
+                    color: active ? Theme.accent : Theme.bgTray
+                    scale: active ? 1.06 : 1
+
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: Theme.duration.expressiveFastEffects
+                        }
+                    }
+                    Behavior on scale {
+                        NumberAnimation {
+                            duration: Theme.duration.expressiveFastSpatial
+                            easing.type: Easing.BezierSpline
+                            easing.bezierCurve: Theme.curve.expressiveDefaultSpatial
+                        }
+                    }
+
+                    ColumnLayout {
+                        anchors.centerIn: parent
+                        spacing: Theme.spacing.medium
+
+                        MaterialIcon {
+                            Layout.alignment: Qt.AlignHCenter
+                            text: tile.modelData.icon
+                            color: Theme.fg
+                            fill: tile.active ? 1 : 0
+                            size: 46
+                        }
+
+                        Text {
+                            Layout.alignment: Qt.AlignHCenter
+                            text: tile.modelData.label
+                            color: Theme.fg
+                            font.family: Theme.font
+                            font.pixelSize: Theme.fontSize.normal
+                            font.bold: tile.active
+                        }
+                    }
+
+                    // The key that runs it, so the menu teaches its own shortcuts.
+                    Text {
+                        anchors {
+                            top: parent.top
+                            right: parent.right
+                            margins: Theme.padding.medium
+                        }
+                        text: tile.modelData.key.toUpperCase()
+                        color: tile.active ? Theme.fg : Theme.dim
+                        font.family: Theme.font
+                        font.pixelSize: Theme.fontSize.small
+                        font.bold: true
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onEntered: win.current = tile.index
+                        onClicked: Session.run(tile.index)
+                    }
+                }
+            }
+        }
+    }
+}

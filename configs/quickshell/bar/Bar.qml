@@ -137,7 +137,7 @@ PanelWindow {
             Layout.alignment: Qt.AlignVCenter
             icon: "power_settings_new"
             baseColor: Theme.accentText
-            onClicked: Quickshell.execDetached(["bash", bar.home + "/script/wlogout/blur-background.sh"])
+            onClicked: Session.open = !Session.open
         }
     }
 }
