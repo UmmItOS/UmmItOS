@@ -85,6 +85,14 @@ PanelWindow {
             // Spans the content width so its edges line up with the cards
             // below; a hugging cluster centred in a panel aligns with nothing.
             Surface {
+                id: tabCluster
+
+                // Concentric radii: an inner corner only nests inside an outer
+                // one when its radius is the outer radius minus the inset.
+                // A fixed inner radius makes the first and last tab collide
+                // with the cluster's own corner.
+                readonly property int inset: Theme.spacing.extraSmall
+
                 Layout.fillWidth: true
                 Layout.bottomMargin: Theme.padding.large
                 implicitHeight: 68
@@ -112,8 +120,8 @@ PanelWindow {
                             // continuous around it.
                             Rectangle {
                                 anchors.fill: parent
-                                anchors.margins: 3
-                                radius: Theme.rounding.large
+                                anchors.margins: tabCluster.inset
+                                radius: tabCluster.radius - tabCluster.inset
                                 color: tab.current ? Theme.accent : "transparent"
 
                                 Behavior on color {
