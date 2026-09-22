@@ -2,11 +2,9 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Read `AGENTS.md` first.** It is the authoritative guide to the installer: install flow, package lists, config-copy behaviour, `post-install.sh` line edits and commit conventions. This file covers what `AGENTS.md` does not: the Quickshell desktop shell, plus cross-file traps on both halves.
-
 ## What this is
 
-UmmItOS is Arch Linux plus Hyprland, shipped as a bash installer and a dotfiles bundle. The repo has two halves:
+UmmItOS is Arch Linux plus Hyprland, shipped as a bash installer and a dotfiles bundle. It is billed as the "first Hong Kong Linux distribution", but the OS underneath is Arch; this repo is the installer and the config bundle ([UmmItOS/UmmItOS](https://github.com/UmmItOS/UmmItOS)). It has two halves:
 
 - **Installer** (bash): `setup.sh` → `install.sh` / `install-menu.sh` → `install/*.sh`, with shared helpers in `lib/common.sh` (`is_laptop`, `has_amdgpu`, `enable_bluetooth`, `prompt_yna`, `backup_file`, and so on).
 - **Desktop shell**: `configs/quickshell/`, a QML application for Quickshell 0.3.1. It provides the bar, notification toasts and centre, wallpaper and picker, launcher and clipboard, dashboard, session menu, volume/brightness OSD, and the Wi-Fi, Bluetooth and audio flyouts. It also includes an Alt+Tab switcher. It replaces waybar, swaync, rofi, wlogout and swww. hyprlock and hypridle remain (`configs/hypr/`).
@@ -29,7 +27,43 @@ There are no tests, no lint config and no CI. Verification means running `shellc
 
 **Never start a second `qs -c ummitos` while one is running**, not even with `timeout` as a syntax check. When it exits, it takes the running instance down with it. To check something in isolation, symlink the config under a different name (`~/.config/quickshell/ummitos-test`) or run a standalone file with `qs -p file.qml`, and remove it afterwards.
 
-## Two installer paths duplicate logic
+## The installer
+
+### Layout and flow
+
+| Path | Purpose |
+|------|---------|
+| `setup.sh` | Bootstrap: installs `git`/`paru` if missing, clones the repo, runs `install.sh` |
+| `install/` | Installer sub-steps and plain-text package lists |
+| `lib/` | Shared bash library (`common.sh`, `display-utils.sh`) |
+| `configs/` | Dotfiles copied to `~/.config/` (and `configs/.zshrc` to `~/.zshrc`) |
+| `script/` | Helpers for cliphist, hyprlock, hyprpicker, updates and screen recording; copied to `~/script` |
+| `.wallpaper/` | Git submodule (`UmmItOS/wallpaper`), copied to `~/.wallpaper` |
+
+The order matters: `setup.sh` → `install.sh` → `install/install-packages.sh` → `install/oh-my-zsh.sh` → `install/copy-config.sh` → `install/setup-dm.sh` → reboot → `post-install.sh --start-config`.
+
+### Package lists
+
+Each list is plain text, one `repo/pkgname` per line, and the installer reads it into an array.
+
+- `install/packages_main`: core desktop packages (Arch repos and AUR).
+- `install/packages_gpu`: AMD only. NVIDIA is unsupported, and GPU packages are skipped when NVIDIA is detected.
+- `install/packages_laptop`: `brightnessctl` and `playerctl`, installed only when a battery is detected.
+- `install/packages_daily`: **not used by either installer**. It is a manual reference list.
+
+### Config copy
+
+`install/copy-config.sh` copies with `cp -rv`, **prompts before overwriting**, and runs `chsh -s /usr/bin/zsh`.
+
+### post-install.sh
+
+It must run inside a Hyprland session (it calls `hyprctl`) and needs `jq`. Before editing a file, it writes a `.bak.YYYYMMDD-HHMMSS` backup. It edits these by position or pattern, so moving these lines breaks it:
+
+- `~/.config/hypr/hyprlock.conf`: the `monitor = …` line.
+- `~/.config/hypr/hyprland.conf`: **line 3** (`monitor=…`).
+- `~/.config/hypr/hyprland/env.conf`: `env = HYPRSHOT_DIR, …`.
+
+### Two installer paths duplicate logic
 
 `install.sh` **sources** `install/*.sh` in order, so the sub-steps share shell state and one failure aborts the whole run. `install-menu.sh` reuses only `lib/` and `install/copy-config.sh`, and reimplements package installation inline (`read_packages_from_file`, `install_packages_with_paru`, `install_{main,gpu,laptop}_package`). Any change to how packages are read or installed, or to what gets enabled afterwards (for example `enable_bluetooth`), must be made in **both** `install/install-packages.sh` and `install-menu.sh`.
 
@@ -96,7 +130,8 @@ Before theorising about why a surface misbehaves, read its actual state. Add a t
 
 - Arch Linux only. Scripts gate on `/etc/arch-release`.
 - Use `paru` in new install code, never `pacman` directly. NVIDIA is unsupported, and GPU packages are AMD-only.
-- Never run or assume root. `install-menu.sh` rejects EUID 0.
-- Wallpapers are a git submodule (`.wallpaper`), so clone with `--recursive`.
+- Never run or assume root. `install-menu.sh` rejects EUID 0; `install.sh` does not check, but it isn't meant to run as root either.
+- Wallpapers are a git submodule (`.wallpaper`). Clone with `--recursive`, or run `git submodule update --init`.
 - Installer scripts run from the repo root and use relative paths (`./install/...`).
-- Conventional Commits are required, and PRs need the "Tested on my system" checkbox ticked.
+- The helpers in `script/` write `.log` files, so read those rather than relying on notifications alone.
+- Conventional Commits are required, for example `fix(battery-display): disable test mode in battery display script`. PRs need the "Tested on my system" checkbox ticked.
