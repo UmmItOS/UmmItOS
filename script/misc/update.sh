@@ -39,6 +39,49 @@ run_history() {
 run_history
 
 
+update_paru() {
+    echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Full system upgrade via paru"
+    execute_command "Processed full system upgrade via paru" paru
+}
+
+update_oh_my_zsh() {
+    if [[ -f "$HOME/.oh-my-zsh/tools/upgrade.sh" ]]; then
+        echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Upgrading oh my zsh"
+        execute_command "Processed oh-my-zsh upgrade script" "$HOME/.oh-my-zsh/tools/upgrade.sh"
+    else
+        print_status "SKIP" "oh-my-zsh upgrade script not found"
+    fi
+}
+
+update_flatpak() {
+    if command -v flatpak &> /dev/null; then
+        echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Upgrading Flatpak packages"
+        execute_command "Processed Flatpak package upgrade" flatpak update
+    else
+        print_status "SKIP" "flatpak is not installed"
+    fi
+}
+
+# Run the selected update option, then report and log the duration
+run_updates() {
+    local start_time end_time total_duration
+    start_time=$(date +%s)
+
+    case $update_choice in
+        0) update_paru; update_oh_my_zsh; update_flatpak ;;
+        1) update_paru ;;
+        2) update_flatpak ;;
+        3) update_oh_my_zsh ;;
+    esac
+
+    end_time=$(date +%s)
+    total_duration=$((end_time - start_time))
+
+    echo -e "[${COLOR_GREEN} SUCESS ${COLOR_RESET}] System upgrade completed successfully.\nTotal duration: ${COLOR_GREEN}${total_duration}${COLOR_RESET} seconds"
+    hyprctl notify 5 5000 "rgb(00ff00)" "fontsize:35   Upgrade completed successfully. Total duration: ${total_duration} seconds"
+    echo "<NOTICE> $(date +"%Y-%m-%d %H:%M:%S"): System upgrade completed successfully. Total duration: ${total_duration} seconds" >> ~/script/misc/update.log
+}
+
 # Banner for upgrade system
 echo -e "${COLOR_LIGHT_BLUE}"
 cat << "EOF"
@@ -50,7 +93,6 @@ This script will upgrade your system with the following features, which automati
 
 - Full system upgrade via paru
 - Upgrade oh-my-zsh
-- Upgrade Powerlevel10k
 - Upgrade Flatpak packages
 EOF
 echo -e "${COLOR_RESET}"
@@ -87,71 +129,7 @@ while true; do
     echo -e "${COLOR_RESET}"
     case $choice in
         [Yy]* )
-            # Start time for total update duration calculation
-            start_time=$(date +%s)
-
-            # Using () for command blocks
-            (
-                # Execute selected update options
-                case $update_choice in
-                    0)  # Update ALL
-                        echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Full system upgrade via paru"
-                        execute_command "Processed full system upgrade via paru" paru
-
-                        if [[ -f "$HOME/.oh-my-zsh/tools/upgrade.sh" ]]; then
-                            echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Upgrading oh my zsh"
-                            execute_command "Processed oh-my-zsh upgrade script" "$HOME/.oh-my-zsh/tools/upgrade.sh"
-                        else
-                            print_status "SKIP" "oh-my-zsh upgrade script not found"
-                        fi
-
-                        if [[ -d "$HOME/powerlevel10k/.git" ]]; then
-                            echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Upgrading Powerlevel10k"
-                            execute_command "Processed Powerlevel10k upgrade" git -C "$HOME/powerlevel10k" pull
-                        else
-                            print_status "SKIP" "Powerlevel10k repository not found"
-                        fi
-
-                        if command -v flatpak &> /dev/null; then
-                            echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Upgrading Flatpak packages"
-                            execute_command "Processed Flatpak package upgrade" flatpak update
-                        else
-                            print_status "SKIP" "flatpak is not installed"
-                        fi
-                        ;;
-                    1)  # Paru only
-                        echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Full system upgrade via paru"
-                        execute_command "Processed full system upgrade via paru" paru
-                        ;;
-                    2)  # Flatpak only
-                        if command -v flatpak &> /dev/null; then
-                            echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Upgrading Flatpak packages"
-                            execute_command "Processed Flatpak package upgrade" flatpak update
-                        else
-                            print_status "SKIP" "flatpak is not installed"
-                        fi
-                        ;;
-                    3)  # Oh my zsh only
-                        if [[ -f "$HOME/.oh-my-zsh/tools/upgrade.sh" ]]; then
-                            echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Upgrading oh my zsh"
-                            execute_command "Processed oh-my-zsh upgrade script" "$HOME/.oh-my-zsh/tools/upgrade.sh"
-                        else
-                            print_status "SKIP" "oh-my-zsh upgrade script not found"
-                        fi
-                        ;;
-                esac
-            )
-
-            # Calculate total update duration
-            end_time=$(date +%s)
-            total_duration=$((end_time - start_time))
-            
-            # Print total update time
-            echo -e "[${COLOR_GREEN} SUCESS ${COLOR_RESET}] System upgrade completed successfully.\nTotal duration: ${COLOR_GREEN}${total_duration}${COLOR_RESET} seconds"
-
-            hyprctl notify 5 5000 "rgb(00ff00)" "fontsize:35   Upgrade completed successfully. Total duration: ${total_duration} seconds"
-            
-            echo "<NOTICE> $(date +"%Y-%m-%d %H:%M:%S"): System upgrade completed successfully. Total duration: ${total_duration} seconds" >> ~/script/misc/update.log
+            run_updates
 
             # Prompt user to reboot the system
             while true; do
@@ -166,63 +144,7 @@ while true; do
                         break;;
                     [Rr]* )
                         echo -e "${COLOR_GREEN}Reloading the selected update operation...${COLOR_RESET}"
-                        # Start time for total update duration calculation
-                        start_time=$(date +%s)
-                        (
-                            case $update_choice in
-                                0)  # Update ALL
-                                    echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Full system upgrade via paru"
-                                    execute_command "Processed full system upgrade via paru" paru
-
-                                    if [[ -f "$HOME/.oh-my-zsh/tools/upgrade.sh" ]]; then
-                                        echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Upgrading oh my zsh"
-                                        execute_command "Processed oh-my-zsh upgrade script" "$HOME/.oh-my-zsh/tools/upgrade.sh"
-                                    else
-                                        print_status "SKIP" "oh-my-zsh upgrade script not found"
-                                    fi
-
-                                    if [[ -d "$HOME/powerlevel10k/.git" ]]; then
-                                        echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Upgrading Powerlevel10k"
-                                        execute_command "Processed Powerlevel10k upgrade" git -C "$HOME/powerlevel10k" pull
-                                    else
-                                        print_status "SKIP" "Powerlevel10k repository not found"
-                                    fi
-
-                                    if command -v flatpak &> /dev/null; then
-                                        echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Upgrading Flatpak packages"
-                                        execute_command "Processed Flatpak package upgrade" flatpak update
-                                    else
-                                        print_status "SKIP" "flatpak is not installed"
-                                    fi
-                                    ;;
-                                1)  # Paru only
-                                    echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Full system upgrade via paru"
-                                    execute_command "Processed full system upgrade via paru" paru
-                                    ;;
-                                2)  # Flatpak only
-                                    if command -v flatpak &> /dev/null; then
-                                        echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Upgrading Flatpak packages"
-                                        execute_command "Processed Flatpak package upgrade" flatpak update
-                                    else
-                                        print_status "SKIP" "flatpak is not installed"
-                                    fi
-                                    ;;
-                                3)  # Oh my zsh only
-                                    if [[ -f "$HOME/.oh-my-zsh/tools/upgrade.sh" ]]; then
-                                        echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Upgrading oh my zsh"
-                                        execute_command "Processed oh-my-zsh upgrade script" "$HOME/.oh-my-zsh/tools/upgrade.sh"
-                                    else
-                                        print_status "SKIP" "oh-my-zsh upgrade script not found"
-                                    fi
-                                    ;;
-                            esac
-                        )
-                        # Calculate total update duration
-                        end_time=$(date +%s)
-                        total_duration=$((end_time - start_time))
-                        echo -e "[${COLOR_GREEN} SUCESS ${COLOR_RESET}] System upgrade completed successfully.\nTotal duration: ${COLOR_GREEN}${total_duration}${COLOR_RESET} seconds"
-                        hyprctl notify 5 5000 "rgb(00ff00)" "fontsize:35   Upgrade completed successfully. Total duration: ${total_duration} seconds"
-                        echo "<NOTICE> $(date +"%Y-%m-%d %H:%M:%S"): System upgrade completed successfully. Total duration: ${total_duration} seconds" >> ~/script/misc/update.log
+                        run_updates
                         continue;;
                     [Nn]* )
                         break;;
