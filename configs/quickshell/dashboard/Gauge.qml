@@ -20,7 +20,9 @@ Item {
     property color fill: Theme.accentText
 
     readonly property real ring: 10
-    readonly property real radius: Math.min(width, height) / 2 - ring / 2
+    // Clamped: a layout that squeezes the gauge below the ring width would
+    // otherwise hand Shape a negative radius, which takes the whole shell down.
+    readonly property real radius: Math.max(1, Math.min(width, height) / 2 - ring / 2)
 
     implicitWidth: 170
     implicitHeight: 170

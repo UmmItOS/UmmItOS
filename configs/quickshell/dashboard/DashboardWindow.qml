@@ -15,12 +15,8 @@ PanelWindow {
             label: "Dashboard"
         },
         {
-            icon: "queue_music",
-            label: "Media"
-        },
-        {
-            icon: "speed",
-            label: "Performance"
+            icon: "monitoring",
+            label: "System"
         },
         {
             icon: "workspaces",
@@ -169,9 +165,7 @@ PanelWindow {
 
                 HomeTab {}
 
-                MediaTab {}
-
-                PerformanceTab {}
+                SystemTab {}
 
                 WorkspacesTab {}
             }

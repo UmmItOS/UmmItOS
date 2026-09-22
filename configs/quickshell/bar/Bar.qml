@@ -163,10 +163,8 @@ PanelWindow {
             }
         }
 
-        // The clock opens what the clock is about: what is playing now.
-        // The machine's own numbers hang off the bandwidth readout instead.
         TapHandler {
-            onTapped: Dashboard.toggleTab(1)
+            onTapped: Dashboard.toggleTab(0)
         }
     }
 }
