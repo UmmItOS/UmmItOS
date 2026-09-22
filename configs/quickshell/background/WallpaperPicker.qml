@@ -32,14 +32,22 @@ OverlayWindow {
 
         function onListChanged(): void {
             if (picker.shown && picker.filter === "")
-                list.currentIndex = Math.max(0, picker.matches.indexOf(Wallpapers.actual));
+                picker.land();
         }
+    }
+
+    // Snaps to the current wallpaper rather than travelling there: setting
+    // currentIndex alone animates the carousel through every card between.
+    function land(): void {
+        const i = Math.max(0, matches.indexOf(Wallpapers.actual));
+        list.currentIndex = i;
+        list.positionViewAtIndex(i, PathView.Center);
     }
 
     onOpened: {
         filter = "";
         search.text = "";
-        list.currentIndex = Math.max(0, matches.indexOf(Wallpapers.actual));
+        land();
         search.forceActiveFocus();
     }
     // Closing without pressing Enter restores the confirmed wallpaper. On the

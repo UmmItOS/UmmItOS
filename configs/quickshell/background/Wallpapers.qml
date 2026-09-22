@@ -101,7 +101,11 @@ Singleton {
         command: ["find", root.dir, "-type", "f", "-regex", ".*\\.\\(jpg\\|png\\|jpeg\\)"]
         stdout: StdioCollector {
             onStreamFinished: {
-                root.list = text.trim().split("\n").filter(l => l !== "");
+                // Only a real change replaces the list: a new array resets
+                // every view on it, even when it holds the same files.
+                const found = text.trim().split("\n").filter(l => l !== "");
+                if (found.join("\n") !== root.list.join("\n"))
+                    root.list = found;
                 if (root.pendingRandom || !root.actual || !root.list.includes(root.actual)) {
                     root.pendingRandom = false;
                     root.pickRandom();
