@@ -49,7 +49,6 @@ Each list is plain text, one `repo/pkgname` per line, and the installer reads it
 - `install/packages_main`: core desktop packages (Arch repos and AUR).
 - `install/packages_gpu`: AMD only. NVIDIA is unsupported, and GPU packages are skipped when NVIDIA is detected.
 - `install/packages_laptop`: `brightnessctl` and `playerctl`, installed only when a battery is detected.
-- `install/packages_daily`: **not used by either installer**. It is a manual reference list.
 
 ### Config copy
 
@@ -63,11 +62,11 @@ It must run inside a Hyprland session (it calls `hyprctl`) and needs `jq`. Befor
 - `~/.config/hypr/hyprland.conf`: **line 3** (`monitor=…`).
 - `~/.config/hypr/hyprland/env.conf`: `env = HYPRSHOT_DIR, …`.
 
-### Two installer paths duplicate logic
+### Two installer entry points, one implementation
 
-`install.sh` **sources** `install/*.sh` in order, so the sub-steps share shell state and one failure aborts the whole run. `install-menu.sh` reuses only `lib/` and `install/copy-config.sh`, and reimplements package installation inline (`read_packages_from_file`, `install_packages_with_paru`, `install_{main,gpu,laptop}_package`). Any change to how packages are read or installed, or to what gets enabled afterwards (for example `enable_bluetooth`), must be made in **both** `install/install-packages.sh` and `install-menu.sh`.
+`install.sh` **sources** `install/*.sh` in order, so the sub-steps share shell state and one failure aborts the whole run. `install/install-packages.sh` only runs `install_all_packages` when executed directly; `install.sh` calls it after sourcing. `install-menu.sh` sources the same file and calls `install_{main,gpu,laptop}_packages` per menu entry, and runs `install/copy-config.sh` and `install/setup-dm.sh` as child scripts. Change package handling in `install-packages.sh` only; do not copy it into the menu again.
 
-`copy-config.sh` numbers its `safe_copy` steps by hand (`"n" "total"`). Adding a step means renumbering every call.
+Keybinds carry their own descriptions (`bindd`, `bindeld`, …), and `script/hotkey-tui.sh` lists them from `hyprctl binds`. A new bind without a description is missing from the cheatsheet. Descriptions cannot contain commas.
 
 ## The shell
 
