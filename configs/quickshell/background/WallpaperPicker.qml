@@ -21,7 +21,71 @@ OverlayWindow {
     readonly property real shrink: 0.5
 
     property string filter: ""
-    readonly property var matches: filter === "" ? Wallpapers.list : Wallpapers.list.filter(p => Wallpapers.name(p).toLowerCase().includes(filter.toLowerCase()))
+
+    // The folder being browsed. Entries are that folder's subfolders (paths
+    // ending in "/"), then its images; ".." leads back up. A search looks
+    // through every folder at once, so it needs no browsing.
+    property string folder: Wallpapers.dir
+    readonly property bool atRoot: folder === Wallpapers.dir
+    readonly property var matches: {
+        if (filter !== "")
+            return Wallpapers.list.filter(p => Wallpapers.name(p).toLowerCase().includes(filter.toLowerCase()));
+        const base = folder + "/";
+        const dirs = new Set();
+        const files = [];
+        for (const p of Wallpapers.list) {
+            if (!p.startsWith(base))
+                continue;
+            const rest = p.slice(base.length);
+            const slash = rest.indexOf("/");
+            if (slash < 0)
+                files.push(p);
+            else
+                dirs.add(base + rest.slice(0, slash) + "/");
+        }
+        const byName = (a, b) => a.localeCompare(b, undefined, {
+                numeric: true
+            });
+        return [...(atRoot ? [] : [".."]), ...[...dirs].sort(byName), ...files.sort(byName)];
+    }
+
+    function isFolder(entry: string): bool {
+        return entry.endsWith("/");
+    }
+
+    // The image a folder card shows: the first one anywhere inside it.
+    function coverOf(entry: string): string {
+        if (entry === "..")
+            return "";
+        return isFolder(entry) ? (Wallpapers.list.find(p => p.startsWith(entry)) ?? "") : entry;
+    }
+
+    function labelOf(entry: string): string {
+        if (entry === "")
+            return "No match";
+        if (entry === "..")
+            return "Back";
+        if (isFolder(entry))
+            return entry.slice(0, -1).slice(entry.slice(0, -1).lastIndexOf("/") + 1);
+        return Wallpapers.name(entry);
+    }
+
+    function enter(entry: string): void {
+        folder = entry.slice(0, -1);
+        list.currentIndex = 0;
+        list.positionViewAtIndex(0, PathView.Center);
+    }
+
+    // Back up one level, landing on the folder just left.
+    function up(): void {
+        if (atRoot)
+            return;
+        const left = folder + "/";
+        folder = folder.slice(0, folder.lastIndexOf("/"));
+        const i = Math.max(0, matches.indexOf(left));
+        list.currentIndex = i;
+        list.positionViewAtIndex(i, PathView.Center);
+    }
 
     readonly property string focusedPath: matches[list.currentIndex] ?? ""
 
@@ -39,7 +103,9 @@ OverlayWindow {
     // Snaps to the current wallpaper rather than travelling there: setting
     // currentIndex alone animates the carousel through every card between.
     function land(): void {
-        const i = Math.max(0, matches.indexOf(Wallpapers.actual));
+        const actual = Wallpapers.actual;
+        folder = actual.startsWith(Wallpapers.dir + "/") ? actual.slice(0, actual.lastIndexOf("/")) : Wallpapers.dir;
+        const i = Math.max(0, matches.indexOf(actual));
         list.currentIndex = i;
         list.positionViewAtIndex(i, PathView.Center);
     }
@@ -62,6 +128,11 @@ OverlayWindow {
     color: "transparent"
 
     function apply(index: int): void {
+        const entry = matches[index] ?? "";
+        if (entry === "..")
+            return up();
+        if (isFolder(entry))
+            return enter(entry);
         if (shown && index >= 0 && index < matches.length) {
             previewDebounce.stop();
             Wallpapers.set(matches[index]);
@@ -125,7 +196,7 @@ OverlayWindow {
 
                 width: parent.width
                 visible: search.text === ""
-                text: picker.focusedPath === "" ? "No match" : Wallpapers.name(picker.focusedPath)
+                text: picker.labelOf(picker.focusedPath)
                 color: Theme.fg
                 font.family: Theme.fontDisplay
                 font.pixelSize: Theme.fontSize.extraLarge
@@ -153,6 +224,13 @@ OverlayWindow {
                 Keys.onLeftPressed: list.decrementCurrentIndex()
                 Keys.onRightPressed: list.incrementCurrentIndex()
                 Keys.onReturnPressed: picker.apply(list.currentIndex)
+                // With no query to delete, Backspace goes up a folder.
+                Keys.onPressed: event => {
+                    if (event.key === Qt.Key_Backspace && text === "" && !picker.atRoot) {
+                        picker.up();
+                        event.accepted = true;
+                    }
+                }
             }
 
             Row {
@@ -166,6 +244,16 @@ OverlayWindow {
                     font.features: ({
                             tnum: 1
                         })
+                }
+
+                // Where you are, when it is not the top.
+                Text {
+                    visible: search.text === "" && !picker.atRoot
+                    text: picker.folder.slice(Wallpapers.dir.length + 1) + "  ·  Backspace to go up"
+                    color: Theme.accentText
+                    font.family: Theme.font
+                    font.pixelSize: Theme.fontSize.smaller
+                    font.weight: Theme.weight.medium
                 }
 
                 Text {
@@ -218,7 +306,7 @@ OverlayWindow {
                 interval: 140
                 onTriggered: {
                     const path = picker.matches[list.currentIndex];
-                    if (path)
+                    if (path && path !== ".." && !picker.isFolder(path))
                         Wallpapers.preview(path);
                 }
             }
@@ -267,7 +355,10 @@ OverlayWindow {
                 required property int index
 
                 readonly property bool focused: PathView.isCurrentItem
-                readonly property bool confirmed: modelData === Wallpapers.actual
+                readonly property bool isUp: modelData === ".."
+                readonly property bool isFolder: picker.isFolder(modelData)
+                // A folder counts as confirmed when the wallpaper is inside it.
+                readonly property bool confirmed: isFolder ? Wallpapers.actual.startsWith(modelData) : modelData === Wallpapers.actual
 
                 width: picker.focusedWidth
                 height: list.height
@@ -285,7 +376,7 @@ OverlayWindow {
                     implicitWidth: picker.focusedWidth
                     implicitHeight: picker.focusedHeight
                     radius: Theme.rounding.large
-                    color: "transparent"
+                    color: cell.isUp ? Theme.bgTray : "transparent"
                     opacity: cell.focused ? 1 : 0.62
 
                     Behavior on opacity {
@@ -296,11 +387,38 @@ OverlayWindow {
 
                     Image {
                         anchors.fill: parent
-                        source: "file://" + cell.modelData
+                        visible: !cell.isUp
+                        opacity: cell.isFolder ? 0.45 : 1
+                        source: cell.isUp ? "" : "file://" + picker.coverOf(cell.modelData)
                         fillMode: Image.PreserveAspectCrop
                         asynchronous: true
                         sourceSize.width: picker.focusedWidth
                         sourceSize.height: picker.focusedHeight
+                    }
+
+                    // A folder reads as one: its cover dimmed under a glyph
+                    // and its name.
+                    Column {
+                        anchors.centerIn: parent
+                        visible: cell.isFolder || cell.isUp
+                        spacing: Theme.spacing.small
+
+                        MaterialIcon {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: cell.isUp ? "arrow_upward" : "folder"
+                            color: Theme.fg
+                            fill: 1
+                            size: Theme.icon.huge
+                        }
+
+                        Text {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: picker.labelOf(cell.modelData)
+                            color: Theme.fg
+                            font.family: Theme.fontDisplay
+                            font.pixelSize: Theme.fontSize.large
+                            font.bold: true
+                        }
                     }
 
                     // The wallpaper currently applied, so you can find your way
