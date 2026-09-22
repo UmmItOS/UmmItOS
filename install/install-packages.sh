@@ -135,6 +135,8 @@ main() {
         display_laptop_banner
         install_laptop_packages
     fi
+
+    enable_bluetooth
 }
 
 main

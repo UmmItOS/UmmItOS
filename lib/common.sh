@@ -162,3 +162,28 @@ has_amdgpu() {
 has_nvidiagpu() {
     lsmod | grep -q '^nvidia\s'
 }
+
+# Function to enable the Bluetooth stack
+# bluez only ships the unit; nothing starts it, and the shell's Bluetooth menu
+# has no adapter to talk to until it runs.
+enable_bluetooth() {
+    if ! command_exists bluetoothctl; then
+        return 0
+    fi
+
+    if systemctl is-enabled bluetooth.service &> /dev/null; then
+        echo "${COLOR_GREEN}:: Bluetooth is already enabled.${COLOR_RESET}"
+        return 0
+    fi
+
+    if prompt_yna ":: Enable Bluetooth at boot?"; then
+        if sudo systemctl enable --now bluetooth.service; then
+            echo "${COLOR_GREEN}:: Bluetooth enabled.${COLOR_RESET}"
+        else
+            echo "${COLOR_DARK_RED}:: Failed to enable Bluetooth.${COLOR_RESET}"
+            echo "${COLOR_YELLOW}:: You can enable it later with 'sudo systemctl enable --now bluetooth'${COLOR_RESET}"
+        fi
+    else
+        echo "${COLOR_YELLOW}:: Skipping Bluetooth. Enable it later with 'sudo systemctl enable --now bluetooth'${COLOR_RESET}"
+    fi
+}

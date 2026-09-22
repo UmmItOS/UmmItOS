@@ -174,6 +174,7 @@ install_main_package() {
     
     if prompt_yna ":: Install these packages? - Total Package (${total_packages})"; then
         install_packages_with_paru packages "main"
+        enable_bluetooth
         read -rp ":: Main packages installation completed. Press any key to keep going :)"
         clear
     else

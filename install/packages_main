@@ -35,6 +35,8 @@ extra/imagemagick
 extra/grim
 extra/jq
 extra/zoxide
+extra/bluez
+extra/bluez-utils
 
 aur/hyprshot
 aur/hyprswitch
