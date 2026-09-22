@@ -26,7 +26,7 @@ RowLayout {
             radius: height / 2
             // Inactive dots are the accent's light tone, faded: bgTray was a
             // near-match for the bar and vanished, plain white shouted.
-            color: focused ? Theme.accent : modelData?.urgent ? Theme.urgent : Qt.rgba(Theme.accentText.r, Theme.accentText.g, Theme.accentText.b, 0.4)
+            color: focused ? Theme.accent : modelData?.urgent ? Theme.urgent : Qt.rgba(Theme.accentText.r, Theme.accentText.g, Theme.accentText.b, 0.28)
 
             Behavior on implicitWidth {
                 NumberAnimation {
