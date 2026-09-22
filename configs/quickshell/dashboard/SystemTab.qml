@@ -12,40 +12,51 @@ ColumnLayout {
 
     spacing: Theme.spacing.medium
 
-    // The gauges keep their own size; the slack goes to the space around them,
-    // not into squashing the rings.
-    RowLayout {
+    // On a card, like the facts below it: gauges floating on the panel while
+    // everything else sat on a surface was two languages on one tab. The card
+    // takes the slack, so the tab fills instead of trailing off into a third
+    // of a screen of nothing.
+    Rectangle {
         Layout.fillWidth: true
         Layout.fillHeight: true
-        Layout.minimumHeight: 170
-        spacing: Theme.spacing.extraLargeIncreased
+        Layout.minimumHeight: 170 + Theme.padding.extraLarge * 2
+        radius: Theme.rounding.extraLarge
+        color: Theme.bgAlt
 
-        Gauge {
-            Layout.alignment: Qt.AlignCenter
-            value: SysInfo.gpuTemp / 100
-            primary: Math.round(SysInfo.gpuTemp) + "°C"
-            label: "GPU temp"
-        }
+        RowLayout {
+            anchors {
+                fill: parent
+                margins: Theme.padding.extraLarge
+            }
+            spacing: Theme.spacing.extraLargeIncreased
 
-        Gauge {
-            Layout.alignment: Qt.AlignCenter
-            value: SysInfo.cpuUsage
-            primary: Math.round(SysInfo.cpuTemp) + "°C"
-            label: Math.round(SysInfo.cpuUsage * 100) + "% CPU"
-        }
+            Gauge {
+                Layout.alignment: Qt.AlignCenter
+                value: SysInfo.gpuTemp / 100
+                primary: Math.round(SysInfo.gpuTemp) + "°C"
+                label: "GPU temp"
+            }
 
-        Gauge {
-            Layout.alignment: Qt.AlignCenter
-            value: SysInfo.memRatio
-            primary: SysInfo.formatBytes(SysInfo.memUsed)
-            label: "of " + SysInfo.formatBytes(SysInfo.memTotal)
-        }
+            Gauge {
+                Layout.alignment: Qt.AlignCenter
+                value: SysInfo.cpuUsage
+                primary: Math.round(SysInfo.cpuTemp) + "°C"
+                label: Math.round(SysInfo.cpuUsage * 100) + "% CPU"
+            }
 
-        Gauge {
-            Layout.alignment: Qt.AlignCenter
-            value: SysInfo.storageRatio
-            primary: SysInfo.formatBytes(SysInfo.storageUsed)
-            label: "of " + SysInfo.formatBytes(SysInfo.storageTotal)
+            Gauge {
+                Layout.alignment: Qt.AlignCenter
+                value: SysInfo.memRatio
+                primary: SysInfo.formatBytes(SysInfo.memUsed)
+                label: "of " + SysInfo.formatBytes(SysInfo.memTotal)
+            }
+
+            Gauge {
+                Layout.alignment: Qt.AlignCenter
+                value: SysInfo.storageRatio
+                primary: SysInfo.formatBytes(SysInfo.storageUsed)
+                label: "of " + SysInfo.formatBytes(SysInfo.storageTotal)
+            }
         }
     }
 
