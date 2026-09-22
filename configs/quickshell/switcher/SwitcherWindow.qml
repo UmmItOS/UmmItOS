@@ -88,7 +88,10 @@ PanelWindow {
 
         Keys.onReleased: event => {
             if (event.key === Qt.Key_Alt || event.key === Qt.Key_Meta) {
-                Switcher.commit();
+                // release(), not commit(): the surface sees the Alt release
+                // too, and going straight to commit here ignored the pin no
+                // matter what the compositor's release bind did.
+                Switcher.release();
                 event.accepted = true;
             }
         }
