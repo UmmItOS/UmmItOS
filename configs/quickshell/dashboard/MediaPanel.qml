@@ -21,10 +21,6 @@ Item {
     // only the elapsed time is shown.
     readonly property bool timed: (root.player?.lengthSupported ?? false) && (root.player?.length ?? 0) > 0
 
-    function timeText(seconds: real): string {
-        return Players.timeText(seconds);
-    }
-
     Text {
         anchors.centerIn: parent
         visible: !root.player
@@ -165,10 +161,13 @@ Item {
                 }
 
                 MouseArea {
+                    id: seek
+
                     anchors.fill: parent
-                    anchors.margins: -8
+                    anchors.margins: -Theme.spacing.small
                     enabled: root.player?.canSeek ?? false
-                    onClicked: event => root.player.position = (event.x / width) * root.player.length
+                    // Measured against the bar, not the enlarged hit area.
+                    onClicked: event => root.player.position = Math.max(0, Math.min(1, seek.mapToItem(seek.parent, event.x, 0).x / seek.parent.width)) * root.player.length
                 }
             }
 
@@ -182,7 +181,7 @@ Item {
                     // the thing it was labelling.
                     Layout.fillWidth: !root.timed
                     horizontalAlignment: root.timed ? Text.AlignLeft : Text.AlignHCenter
-                    text: root.timeText(root.player?.position ?? 0)
+                    text: Players.timeText(root.player?.position ?? 0)
                     color: Theme.dim
                     font.family: Theme.font
                     font.pixelSize: Theme.fontSize.small
@@ -197,7 +196,7 @@ Item {
 
                 Text {
                     visible: root.timed
-                    text: root.timeText(root.player?.length ?? 0)
+                    text: Players.timeText(root.player?.length ?? 0)
                     color: Theme.dim
                     font.family: Theme.font
                     font.pixelSize: Theme.fontSize.small

@@ -58,8 +58,10 @@ Item {
         // A slider thin enough to look right is thinner than a finger.
         anchors.margins: -Theme.spacing.small
 
+        // In track coordinates: the enlarged hit area starts left of the
+        // track, and reading its own x put every press a margin to the right.
         function apply(x: real): void {
-            root.moved(Math.max(0, Math.min(1, x / track.width)));
+            root.moved(Math.max(0, Math.min(1, drag.mapToItem(track, x, 0).x / track.width)));
         }
 
         onPressed: event => drag.apply(event.x)
