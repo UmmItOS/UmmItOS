@@ -152,15 +152,21 @@ PanelWindow {
                             spacing: Theme.spacing.small
 
                             Text {
-                                text: card.modelData.name
+                                Layout.fillWidth: true
+                                // The focused window names the workspace; an
+                                // index says nothing about what is on it.
+                                text: {
+                                    const all = card.modelData.toplevels.values;
+                                    if (all.length === 0)
+                                        return "Empty";
+                                    const top = all.find(w => w.activated) ?? all[0];
+                                    return top.title === "" ? card.modelData.name : top.title;
+                                }
                                 color: Theme.fg
                                 font.family: Theme.fontDisplay
-                                font.pixelSize: Theme.fontSize.normal
+                                font.pixelSize: Theme.fontSize.smaller
                                 font.weight: Theme.weight.bold
-                            }
-
-                            Item {
-                                Layout.fillWidth: true
+                                elide: Text.ElideRight
                             }
 
                             Text {
