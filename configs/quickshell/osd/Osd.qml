@@ -59,11 +59,19 @@ Singleton {
         onTriggered: root.shown = false
     }
 
-    // One pass to settle the starting values, then arm.
+    // One pass to settle the starting values, then arm. Again whenever the
+    // output device changes: a new sink's volume binding in reads as a change,
+    // and plugging in headphones should not flash a volume nobody touched.
     Timer {
+        id: arm
         running: true
         interval: 1200
         onTriggered: root.primed = true
+    }
+
+    onSinkChanged: {
+        primed = false;
+        arm.restart();
     }
 
     Connections {
@@ -96,11 +104,21 @@ Singleton {
         }
     }
 
+    // The brightness keys report in over IPC, so this only catches changes
+    // made some other way, and can afford to be slow.
     Timer {
         running: root.backlight !== ""
-        interval: 300
+        interval: 2000
         repeat: true
-        onTriggered: brightness.reload()
+        onTriggered: brightnessFile.reload()
+    }
+
+    IpcHandler {
+        target: "osd"
+
+        function brightness(): void {
+            brightnessFile.reload();
+        }
     }
 
     FileView {
@@ -111,7 +129,7 @@ Singleton {
     }
 
     FileView {
-        id: brightness
+        id: brightnessFile
         path: root.backlight === "" ? "" : root.backlight + "/brightness"
         printErrors: false
         onLoaded: {
