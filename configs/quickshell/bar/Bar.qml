@@ -99,42 +99,6 @@ PanelWindow {
             Layout.fillWidth: true
         }
 
-        // The anchor. A clock does not need an icon telling you it is a clock.
-        ColumnLayout {
-            Layout.alignment: Qt.AlignVCenter
-            spacing: -2
-
-            Text {
-                Layout.alignment: Qt.AlignHCenter
-                text: Qt.formatDateTime(clock.date, "HH:mm:ss")
-                color: Theme.fg
-                font.family: Theme.fontDisplay
-                font.pixelSize: Theme.fontSize.larger
-                font.bold: true
-                font.features: ({
-                        tnum: 1
-                    })
-            }
-
-            Text {
-                Layout.alignment: Qt.AlignHCenter
-                text: Qt.formatDateTime(clock.date, "ddd d MMM")
-                color: Theme.dim
-                font.family: Theme.font
-                font.pixelSize: Theme.fontSize.small
-                font.weight: Theme.weight.medium
-                font.letterSpacing: Theme.tracking.wide
-            }
-
-            TapHandler {
-                onTapped: Dashboard.toggle()
-            }
-        }
-
-        Item {
-            Layout.fillWidth: true
-        }
-
         Cluster {
             Layout.alignment: Qt.AlignVCenter
 
@@ -158,6 +122,43 @@ PanelWindow {
             icon: "power_settings_new"
             baseColor: Theme.accentText
             onClicked: Session.open = !Session.open
+        }
+    }
+
+    // The anchor. A clock does not need an icon telling you it is a clock.
+    //
+    // It sits on the screen's centre line, not between two spacers: spacers
+    // split whatever the clusters leave over, so the clock drifted every time
+    // the left side grew a digit.
+    ColumnLayout {
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: -2
+
+        Text {
+            Layout.alignment: Qt.AlignHCenter
+            text: Qt.formatDateTime(clock.date, "HH:mm:ss")
+            color: Theme.fg
+            font.family: Theme.fontDisplay
+            font.pixelSize: Theme.fontSize.larger
+            font.bold: true
+            font.features: ({
+                tnum: 1
+            })
+        }
+
+        Text {
+            Layout.alignment: Qt.AlignHCenter
+            text: Qt.formatDateTime(clock.date, "ddd d MMM")
+            color: Theme.dim
+            font.family: Theme.font
+            font.pixelSize: Theme.fontSize.small
+            font.weight: Theme.weight.medium
+            font.letterSpacing: Theme.tracking.wide
+        }
+
+        TapHandler {
+            onTapped: Dashboard.toggle()
         }
     }
 }
