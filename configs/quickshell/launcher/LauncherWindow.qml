@@ -26,7 +26,16 @@ PanelWindow {
         return hits.sort((a, b) => a.name.localeCompare(b.name));
     }
 
-    visible: Launcher.open && Launcher.mode === "apps"
+    // 0 closed, 1 open. The window stays mapped until it has faded out, so
+    // closing animates instead of vanishing.
+    property real reveal: (Launcher.open && Launcher.mode === "apps") ? 1 : 0
+    Behavior on reveal {
+        Reveal {
+            opening: (Launcher.open && Launcher.mode === "apps")
+        }
+    }
+
+    visible: reveal > 0
     onVisibleChanged: {
         if (visible) {
             filter = "";
@@ -38,7 +47,7 @@ PanelWindow {
 
     WlrLayershell.namespace: "ummitos-launcher"
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+    WlrLayershell.keyboardFocus: (Launcher.open && Launcher.mode === "apps") ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
     exclusionMode: ExclusionMode.Ignore
     anchors {
         top: true
@@ -46,7 +55,7 @@ PanelWindow {
         left: true
         right: true
     }
-    color: Theme.scrim(0.78)
+    color: Theme.scrim(0.78 * Math.min(1, reveal))
 
     function accept(): void {
         const item = results[grid.currentIndex];
@@ -62,6 +71,9 @@ PanelWindow {
     FocusScope {
         anchors.fill: parent
         focus: true
+        opacity: Math.min(1, win.reveal)
+        scale: Theme.popScale + (1 - Theme.popScale) * win.reveal
+
 
         // The query line. Oversized and left-anchored, so the eye starts at the
         // same place whether you are typing or scanning.

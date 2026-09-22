@@ -104,6 +104,8 @@ Singleton {
 
     // How far a pressed control sinks under the finger.
     readonly property real pressScale: 0.92
+    // Where an opening surface grows from, as a fraction of its full size.
+    readonly property real popScale: 0.94
 
     readonly property QtObject icon: QtObject {
         readonly property int small: 20

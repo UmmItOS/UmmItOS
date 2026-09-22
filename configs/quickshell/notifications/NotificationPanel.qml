@@ -17,7 +17,16 @@ import ".."
 PanelWindow {
     id: win
 
-    visible: Notifs.panelOpen
+    // 0 closed, 1 open. Stays mapped until the slide out has finished, or
+    // closing is a cut.
+    property real reveal: Notifs.panelOpen ? 1 : 0
+    Behavior on reveal {
+        Reveal {
+            opening: Notifs.panelOpen
+        }
+    }
+
+    visible: reveal > 0
 
     WlrLayershell.namespace: "ummitos-notification-panel"
     WlrLayershell.layer: WlrLayer.Overlay
@@ -42,11 +51,12 @@ PanelWindow {
     // Same dismissal as the bar's flyouts: a click outside closes it.
     HyprlandFocusGrab {
         windows: [win]
-        active: win.visible
+        active: Notifs.panelOpen
         onCleared: Notifs.panelOpen = false
     }
 
     Surface {
+        id: sheet
         anchors {
             fill: parent
             margins: win.inset
@@ -55,14 +65,11 @@ PanelWindow {
         tone: Theme.bg
         lift: 1.1
 
-        // Slides from the edge it lives on.
-        x: Notifs.panelOpen ? 0 : width
-        Behavior on x {
-            NumberAnimation {
-                duration: Theme.duration.expressiveDefaultSpatial
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curve.emphasizedDecel
-            }
+        // Slides in from the edge it lives on. A translate, not `x`: the
+        // anchors own `x`, so a binding on it is silently ignored.
+        opacity: Math.min(1, win.reveal)
+        transform: Translate {
+            x: (1 - win.reveal) * sheet.width
         }
 
         ColumnLayout {

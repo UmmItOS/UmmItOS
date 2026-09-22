@@ -22,7 +22,16 @@ PanelWindow {
 
     readonly property string focusedPath: shown[list.currentIndex] ?? ""
 
-    visible: Wallpapers.pickerOpen
+    // 0 closed, 1 open. The window stays mapped until it has faded out, so
+    // closing animates instead of vanishing.
+    property real reveal: Wallpapers.pickerOpen ? 1 : 0
+    Behavior on reveal {
+        Reveal {
+            opening: Wallpapers.pickerOpen
+        }
+    }
+
+    visible: reveal > 0
     onVisibleChanged: {
         if (visible) {
             filter = "";
@@ -37,7 +46,7 @@ PanelWindow {
 
     WlrLayershell.namespace: "ummitos-wallpaper-picker"
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+    WlrLayershell.keyboardFocus: Wallpapers.pickerOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
     exclusionMode: ExclusionMode.Ignore
     anchors {
         bottom: true
@@ -58,6 +67,7 @@ PanelWindow {
     // Enough wash to read type against any wallpaper, no edge, no card.
     Rectangle {
         anchors.fill: parent
+        opacity: Math.min(1, picker.reveal)
         gradient: Gradient {
             GradientStop {
                 position: 0
@@ -80,6 +90,9 @@ PanelWindow {
     }
 
     FocusScope {
+        opacity: Math.min(1, picker.reveal)
+        scale: Theme.popScale + (1 - Theme.popScale) * picker.reveal
+
         anchors.fill: parent
         focus: true
 

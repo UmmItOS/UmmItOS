@@ -11,13 +11,22 @@ import ".."
 PanelWindow {
     id: win
 
-    visible: Switcher.open
+    // 0 closed, 1 open. The window stays mapped until it has faded out, so
+    // closing animates instead of vanishing.
+    property real reveal: Switcher.open ? 1 : 0
+    Behavior on reveal {
+        Reveal {
+            opening: Switcher.open
+        }
+    }
+
+    visible: reveal > 0
 
     WlrLayershell.namespace: "ummitos-switcher"
     WlrLayershell.layer: WlrLayer.Overlay
     // Focus is the point: with it, the Alt release arrives here as a key event,
     // so the switcher can commit when the modifier is let go.
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+    WlrLayershell.keyboardFocus: Switcher.open ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
     exclusionMode: ExclusionMode.Ignore
     anchors {
         top: true
@@ -25,7 +34,7 @@ PanelWindow {
         left: true
         right: true
     }
-    color: Theme.scrim(0.45)
+    color: Theme.scrim(0.45 * Math.min(1, reveal))
 
     // The cards carry no labels of their own. Nine small captions compete with
     // the thing they caption; one large one, under the grid, changes as the
@@ -60,6 +69,9 @@ PanelWindow {
 
     FocusScope {
         id: scope
+        opacity: Math.min(1, win.reveal)
+        scale: Theme.popScale + (1 - Theme.popScale) * win.reveal
+
         anchors.fill: parent
         focus: true
 

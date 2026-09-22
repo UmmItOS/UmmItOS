@@ -24,13 +24,22 @@ PanelWindow {
         }
     ]
 
-    visible: Dashboard.open
+    // 0 closed, 1 open. The window stays mapped until it has faded out, so
+    // closing animates instead of vanishing.
+    property real reveal: Dashboard.open ? 1 : 0
+    Behavior on reveal {
+        Reveal {
+            opening: Dashboard.open
+        }
+    }
+
+    visible: reveal > 0
     // Polling /proc and hwmon only matters while the panel is on screen.
     onVisibleChanged: SysInfo.active = visible
 
     WlrLayershell.namespace: "ummitos-dashboard"
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
+    WlrLayershell.keyboardFocus: Dashboard.open ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
     exclusionMode: ExclusionMode.Ignore
     anchors {
         top: true
@@ -38,7 +47,7 @@ PanelWindow {
         left: true
         right: true
     }
-    color: Theme.scrim(0.4)
+    color: Theme.scrim(0.4 * Math.min(1, reveal))
 
     MouseArea {
         anchors.fill: parent
@@ -47,6 +56,9 @@ PanelWindow {
 
     Rectangle {
         anchors.horizontalCenter: parent.horizontalCenter
+        opacity: Math.min(1, win.reveal)
+        scale: Theme.popScale + (1 - Theme.popScale) * win.reveal
+
         anchors.top: parent.top
         anchors.topMargin: 52
         width: 940

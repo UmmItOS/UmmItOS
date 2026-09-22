@@ -15,7 +15,16 @@ PanelWindow {
 
     property int current: 0
 
-    visible: Session.open
+    // 0 closed, 1 open. The window stays mapped until it has faded out, so
+    // closing animates instead of vanishing.
+    property real reveal: Session.open ? 1 : 0
+    Behavior on reveal {
+        Reveal {
+            opening: Session.open
+        }
+    }
+
+    visible: reveal > 0
     onVisibleChanged: {
         if (visible) {
             current = 0;
@@ -25,7 +34,7 @@ PanelWindow {
 
     WlrLayershell.namespace: "ummitos-session"
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+    WlrLayershell.keyboardFocus: Session.open ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
     exclusionMode: ExclusionMode.Ignore
     anchors {
         top: true
@@ -33,7 +42,7 @@ PanelWindow {
         left: true
         right: true
     }
-    color: Theme.scrim(0.5)
+    color: Theme.scrim(0.5 * Math.min(1, reveal))
 
     MouseArea {
         anchors.fill: parent
@@ -42,6 +51,9 @@ PanelWindow {
 
     FocusScope {
         id: scope
+        opacity: Math.min(1, win.reveal)
+        scale: Theme.popScale + (1 - Theme.popScale) * win.reveal
+
         anchors.fill: parent
         focus: true
 

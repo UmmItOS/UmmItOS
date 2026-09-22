@@ -21,7 +21,16 @@ PanelWindow {
     }
     readonly property var focusedEntry: results[list.currentIndex] ?? null
 
-    visible: Launcher.open && Launcher.mode === "clipboard"
+    // 0 closed, 1 open. The window stays mapped until it has faded out, so
+    // closing animates instead of vanishing.
+    property real reveal: (Launcher.open && Launcher.mode === "clipboard") ? 1 : 0
+    Behavior on reveal {
+        Reveal {
+            opening: (Launcher.open && Launcher.mode === "clipboard")
+        }
+    }
+
+    visible: reveal > 0
     onVisibleChanged: {
         if (visible) {
             filter = "";
@@ -49,7 +58,7 @@ PanelWindow {
 
     WlrLayershell.namespace: "ummitos-clipboard"
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+    WlrLayershell.keyboardFocus: (Launcher.open && Launcher.mode === "clipboard") ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
     exclusionMode: ExclusionMode.Ignore
     anchors {
         top: true
@@ -57,7 +66,7 @@ PanelWindow {
         left: true
         right: true
     }
-    color: Theme.scrim(0.45)
+    color: Theme.scrim(0.45 * Math.min(1, reveal))
 
     function accept(): void {
         if (focusedEntry)
@@ -71,6 +80,9 @@ PanelWindow {
 
     FocusScope {
         anchors.centerIn: parent
+        opacity: Math.min(1, win.reveal)
+        scale: Theme.popScale + (1 - Theme.popScale) * win.reveal
+
         width: 980
         height: 600
         focus: true

@@ -88,7 +88,8 @@ grep -A5 'name: "workspaces"' /usr/lib/qt6/qml/Quickshell/Hyprland/_Ipc/*.qmltyp
 - **Every singleton and shared component must be listed in `configs/quickshell/qmldir`.** If one is missing, it fails to resolve, and the error does not name the real cause.
 - **Singletons are lazy.** A singleton that nothing references never runs. A background watcher with no UI (`services/BatteryNotifier.qml`) is therefore a `Scope` instantiated in `shell.qml`, not a singleton.
 - **`services/`** holds shared data sources: `SysInfo` (proc polling), `Players` (the active MPRIS player plus the position tick) and `BatteryNotifier`.
-- **Shared components** at the root are `Surface` (the material), `Flyout` (the bar dropdown used by Wi-Fi, Bluetooth and Volume), `Toggle`, `Slider`, `Spinner` and `MaterialIcon`. Reuse these rather than building one-off versions.
+- **Shared components** at the root are `Surface` (the material), `Flyout` (the bar dropdown used by Wi-Fi, Bluetooth and Volume), `Toggle`, `Slider`, `Spinner`, `MaterialIcon` and `Reveal` (the open/close animation). Reuse these rather than building one-off versions.
+- **Surfaces animate their own exit.** A window binds `visible: reveal > 0`, not to its open flag, so it stays mapped while `reveal` animates to 0. Hyprland's layer animation is off for `ummitos-*` (`no_anim` in `windows.conf`) so the two do not stack.
 
 ### How input reaches the shell
 
@@ -118,6 +119,7 @@ Before theorising about why a surface misbehaves, read its actual state. Add a t
 - **Anchoring an Item inside a Layout is undefined behaviour.** Use `TapHandler`, `WheelHandler` or `HoverHandler` instead of an anchored `MouseArea`.
 - **`layer.enabled` plus `scale` magnifies a raster.** To grow an item that carries a glow, change its size, not its `scale`.
 - **Enter events are not movement.** They fire when a surface opens under a still cursor or when geometry shifts. Compare the pointer position in window coordinates instead.
+- **Anchors own `x` and `y`.** A binding on `x` for an item with `anchors.fill` is silently ignored. Slide with a `Translate` transform instead.
 - **`Hyprland.workspaces` yields nulls** during create and destroy, so filter entries before reading them.
 - **Repeater-in-Layout cannot animate removal.** Lists that should animate items leaving (the notifications) are `ListView`s with `add`, `remove` and `displaced` transitions. Delegates outlive their model entry during `remove`, so read `modelData?.x ?? ""`.
 - **Name collisions shadow modules.** `bar/Bluetooth.qml` shadows `Quickshell.Bluetooth`, so the module is imported `as Bluez`.

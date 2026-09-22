@@ -50,6 +50,23 @@ PopupWindow {
     Surface {
         anchors.fill: parent
         radius: Theme.rounding.extraLarge
+
+        // Drops out of the bar. Opening only: an outside click dismisses the
+        // popup in the compositor, which unmaps it before anything could play.
+        transformOrigin: Item.Top
+        opacity: root.visible ? 1 : 0
+        scale: root.visible ? 1 : Theme.popScale
+
+        Behavior on opacity {
+            Reveal {
+                opening: true
+            }
+        }
+        Behavior on scale {
+            Reveal {
+                opening: true
+            }
+        }
         tone: Theme.bg
         lift: 1.12
 

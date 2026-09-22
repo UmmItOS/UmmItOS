@@ -14,3 +14,4 @@ Toggle 1.0 Toggle.qml
 Flyout 1.0 Flyout.qml
 Slider 1.0 Slider.qml
 singleton Players 1.0 services/Players.qml
+Reveal 1.0 Reveal.qml
