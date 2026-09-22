@@ -296,9 +296,6 @@ fi
 # Parse command line arguments
 case "$1" in
     --start-config)
-        # Check dependencies
-        check_git
-        check_paru
         run_interactive_configuration
         ;;
     --settings)
