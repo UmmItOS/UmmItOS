@@ -102,6 +102,9 @@ Singleton {
     // repeating the number.
     readonly property int barHeight: 44
 
+    // How far a pressed control sinks under the finger.
+    readonly property real pressScale: 0.92
+
     readonly property QtObject icon: QtObject {
         readonly property int small: 20
         readonly property int normal: 24

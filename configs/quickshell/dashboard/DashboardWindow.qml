@@ -95,6 +95,27 @@ PanelWindow {
                 radius: Theme.rounding.extraLarge
                 tone: Theme.bgTray
 
+                // One pill that slides between tabs, the way iOS segmented
+                // controls move, rather than a highlight per tab that blinks.
+                Rectangle {
+                    readonly property real slot: tabRow.width / win.tabs.length
+
+                    x: Dashboard.tab * slot + tabCluster.inset
+                    y: tabCluster.inset
+                    width: slot - tabCluster.inset * 2
+                    height: tabCluster.height - tabCluster.inset * 2
+                    radius: tabCluster.radius - tabCluster.inset
+                    color: Theme.accent
+
+                    Behavior on x {
+                        NumberAnimation {
+                            duration: Theme.duration.expressiveDefaultSpatial
+                            easing.type: Easing.BezierSpline
+                            easing.bezierCurve: Theme.curve.expressiveDefaultSpatial
+                        }
+                    }
+                }
+
                 Row {
                     id: tabRow
                     anchors.fill: parent
@@ -112,24 +133,19 @@ PanelWindow {
                             width: tabRow.width / win.tabs.length
                             height: tabRow.height
 
-                            // The selected segment, inset so the cluster stays
-                            // continuous around it.
-                            Rectangle {
-                                anchors.fill: parent
-                                anchors.margins: tabCluster.inset
-                                radius: tabCluster.radius - tabCluster.inset
-                                color: tab.current ? Theme.accent : "transparent"
-
-                                Behavior on color {
-                                    ColorAnimation {
-                                        duration: Theme.duration.expressiveFastEffects
-                                    }
-                                }
-                            }
-
                             Column {
                                 anchors.centerIn: parent
                                 spacing: Theme.spacing.extraSmall
+                                // Sinks under the finger, springs back on release.
+                                scale: press.pressed ? Theme.pressScale : 1
+
+                                Behavior on scale {
+                                    NumberAnimation {
+                                        duration: Theme.duration.expressiveFastSpatial
+                                        easing.type: Easing.BezierSpline
+                                        easing.bezierCurve: Theme.curve.expressiveFastSpatial
+                                    }
+                                }
 
                                 MaterialIcon {
                                     anchors.horizontalCenter: parent.horizontalCenter
@@ -137,6 +153,12 @@ PanelWindow {
                                     color: tab.current ? Theme.fg : Theme.dim
                                     fill: tab.current ? 1 : 0
                                     size: Theme.icon.large
+
+                                    Behavior on color {
+                                        ColorAnimation {
+                                            duration: Theme.duration.expressiveDefaultEffects
+                                        }
+                                    }
                                 }
 
                                 Text {
@@ -146,10 +168,17 @@ PanelWindow {
                                     font.family: Theme.font
                                     font.pixelSize: Theme.fontSize.smaller
                                     font.weight: tab.current ? Theme.weight.medium : Theme.weight.regular
+
+                                    Behavior on color {
+                                        ColorAnimation {
+                                            duration: Theme.duration.expressiveDefaultEffects
+                                        }
+                                    }
                                 }
                             }
 
                             TapHandler {
+                                id: press
                                 onTapped: Dashboard.tab = tab.index
                             }
                         }
@@ -158,10 +187,49 @@ PanelWindow {
             }
 
             StackLayout {
+                id: pages
+
+                property int last: 0
+
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 Layout.topMargin: Theme.padding.large
                 currentIndex: Dashboard.tab
+
+                // The new page drifts in from the side the pill moved toward,
+                // so the content and the control agree on direction.
+                onCurrentIndexChanged: {
+                    shift.from = (currentIndex > last ? 1 : -1) * Theme.spacing.extraLarge;
+                    last = currentIndex;
+                    enter.restart();
+                }
+
+                transform: Translate {
+                    id: slide
+                }
+
+                ParallelAnimation {
+                    id: enter
+
+                    NumberAnimation {
+                        id: shift
+                        target: slide
+                        property: "x"
+                        to: 0
+                        duration: Theme.duration.expressiveDefaultSpatial
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curve.emphasizedDecel
+                    }
+                    NumberAnimation {
+                        target: pages
+                        property: "opacity"
+                        from: 0
+                        to: 1
+                        duration: Theme.duration.expressiveSlowEffects
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curve.expressiveDefaultEffects
+                    }
+                }
 
                 HomeTab {}
 
