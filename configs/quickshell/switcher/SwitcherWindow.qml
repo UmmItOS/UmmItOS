@@ -6,7 +6,6 @@ import Quickshell.Wayland
 import Quickshell.Widgets
 import QtQuick
 import QtQuick.Effects
-import QtQuick.Layouts
 import ".."
 
 PanelWindow {
@@ -27,6 +26,19 @@ PanelWindow {
         right: true
     }
     color: Theme.scrim(0.45)
+
+    // The cards carry no labels of their own. Nine small captions compete with
+    // the thing they caption; one large one, under the grid, changes as the
+    // selection moves and gives the workspace a name worth reading.
+    function titleOf(ws: var): string {
+        if (!ws)
+            return "";
+        const all = [...ws.toplevels.values];
+        if (all.length === 0)
+            return "Empty";
+        const top = all.find(w => w.activated) ?? all[0];
+        return top.title === "" ? ws.name : top.title;
+    }
 
     // Only a pointer that has actually moved may change the selection.
     //
@@ -77,167 +89,265 @@ PanelWindow {
             }
         }
 
-        Grid {
-            id: grid
+        Column {
             anchors.centerIn: parent
-            spacing: Theme.spacing.large
+            spacing: Theme.spacing.extraLarge
 
-            // Wraps at three across, the way a Windows switcher does, so cards
-            // keep a usable size instead of shrinking with every workspace.
-            readonly property int count: Math.max(1, Switcher.workspaces.length)
-            columns: Math.min(3, count)
-            readonly property int cellWidth: Math.min(520, (win.width - Theme.padding.extraLarge * 4) / columns - spacing)
-            readonly property int cellHeight: cellWidth * 0.68
+            Column {
+                id: grid
+                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: Theme.spacing.large
 
-            Repeater {
-                model: Switcher.workspaces
+                // Wraps at three across, the way a Windows switcher does, so
+                // cards keep a usable size instead of shrinking with every
+                // workspace. Rows are built by hand rather than with a Grid so
+                // a short last row sits centred under the others instead of
+                // hanging off the left edge.
+                readonly property int count: Math.max(1, Switcher.workspaces.length)
+                // Three across, the way a Windows switcher does — but a fourth
+                // column past eight workspaces, because a fourth row costs the
+                // cards more height than a fourth column costs them width.
+                readonly property int columns: count <= 3 ? count : count <= 8 ? 3 : 4
+                readonly property int rows: Math.ceil(count / columns)
 
-                Item {
-                    id: cell
-                    required property HyprlandWorkspace modelData
-                    required property int index
+                // Cards take whatever the screen can give, capped so a lone
+                // workspace does not blow up to full width. The caption block
+                // is reserved first; it does not depend on the grid, so the
+                // height it takes is safe to read here.
+                readonly property int roomWide: (win.width - Theme.padding.extraLarge * 4) / columns - spacing
+                readonly property int roomTall: (win.height - caption.implicitHeight - Theme.spacing.extraLarge * 3 - Theme.padding.extraLarge * 2) / rows - spacing
+                readonly property int cellWidth: Math.min(620, roomWide, roomTall / 0.62)
+                readonly property int cellHeight: cellWidth * 0.62
 
-                    readonly property bool current: Switcher.index === index
+                Repeater {
+                    model: grid.rows
 
-                    width: grid.cellWidth
-                    height: grid.cellHeight
+                    Row {
+                        id: cardRow
+                        required property int index
 
-                    Surface {
-                    id: card
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        spacing: Theme.spacing.large
 
-                    readonly property bool current: cell.current
-                    readonly property var modelData: cell.modelData
-                    readonly property var windows: cell.modelData ? [...cell.modelData.toplevels.values].slice(0, 4) : []
+                        Repeater {
+                            model: Switcher.workspaces.slice(cardRow.index * grid.columns, (cardRow.index + 1) * grid.columns)
 
-                    // The focused card grows by shrinking its inset inside a
-                    // fixed cell. Animating `scale` instead would magnify the
-                    // glow layer's texture rather than redraw at the new size,
-                    // which is what made it look resampled — and a fixed cell
-                    // means growing does not shove its neighbours around.
-                    anchors.fill: parent
-                    anchors.margins: current ? 0 : Theme.spacing.largeIncreased
-                    radius: Theme.rounding.extraLarge
-                    tone: current ? Theme.accent : Theme.bgAlt
+                            Item {
+                                id: cell
+                                required property HyprlandWorkspace modelData
+                                required property int index
 
-                    Behavior on anchors.margins {
-                        NumberAnimation {
-                            duration: Theme.duration.expressiveFastSpatial
-                            easing.type: Easing.BezierSpline
-                            easing.bezierCurve: Theme.curve.expressiveDefaultSpatial
-                        }
-                    }
+                                readonly property int slot: cardRow.index * grid.columns + index
+                                readonly property bool current: Switcher.index === slot
 
-                    layer.enabled: card.current
-                    layer.effect: MultiEffect {
-                        shadowEnabled: true
-                        shadowColor: Theme.accent
-                        shadowBlur: 1
-                        shadowOpacity: 0.55
-                        shadowVerticalOffset: 0
-                        shadowHorizontalOffset: 0
-                    }
+                                width: grid.cellWidth
+                                height: grid.cellHeight
 
-                    ColumnLayout {
-                        anchors {
-                            fill: parent
-                            margins: Theme.padding.medium
-                        }
-                        spacing: Theme.spacing.small
+                                Surface {
+                                    id: card
 
-                        // Live captures of what is on that workspace. A
-                        // workspace that is not being rendered hands back its
-                        // last frame rather than a current one — that is a
-                        // compositor limit, not something the shell can fix.
-                        ClippingRectangle {
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            radius: Theme.rounding.medium
-                            color: Theme.scrim(0.45)
+                                    readonly property bool current: cell.current
+                                    readonly property var windows: cell.modelData ? [...cell.modelData.toplevels.values].slice(0, 4) : []
 
-                            Grid {
-                                id: tiles
-                                anchors.fill: parent
-                                columns: card.windows.length > 1 ? 2 : 1
-                                spacing: 2
+                                    // The focused card grows by shrinking its inset
+                                    // inside a fixed cell. Animating `scale` instead
+                                    // would magnify the glow layer's texture rather
+                                    // than redraw at the new size, which is what made
+                                    // it look resampled — and a fixed cell means
+                                    // growing does not shove its neighbours around.
+                                    anchors.fill: parent
+                                    anchors.margins: current ? 0 : Theme.spacing.largeIncreased
+                                    radius: Theme.rounding.extraLarge
+                                    tone: Theme.bgAlt
 
-                                Repeater {
-                                    model: card.windows
+                                    // Selection is carried by light, not by paint. The
+                                    // unselected cards recede; the selected one is the
+                                    // only one at full strength. Filling it with accent
+                                    // instead would hide the very preview it points at.
+                                    opacity: current ? 1 : 0.5
 
-                                    ScreencopyView {
-                                        required property HyprlandToplevel modelData
+                                    Behavior on opacity {
+                                        NumberAnimation {
+                                            duration: Theme.duration.expressiveDefaultEffects
+                                            easing.type: Easing.BezierSpline
+                                            easing.bezierCurve: Theme.curve.expressiveDefaultEffects
+                                        }
+                                    }
 
-                                        width: tiles.width / tiles.columns - 1
-                                        height: card.windows.length > 2 ? tiles.height / 2 - 1 : tiles.height
-                                        captureSource: modelData.wayland
-                                        live: true
-                                        paintCursor: false
+                                    Behavior on anchors.margins {
+                                        NumberAnimation {
+                                            duration: Theme.duration.expressiveFastSpatial
+                                            easing.type: Easing.BezierSpline
+                                            easing.bezierCurve: Theme.curve.expressiveDefaultSpatial
+                                        }
+                                    }
+
+                                    layer.enabled: card.current
+                                    layer.effect: MultiEffect {
+                                        shadowEnabled: true
+                                        shadowColor: Theme.accent
+                                        shadowBlur: 1
+                                        shadowOpacity: 0.75
+                                        shadowVerticalOffset: 0
+                                        shadowHorizontalOffset: 0
+                                    }
+
+                                    // Live captures of what is on that workspace, edge
+                                    // to edge: a preview inside a padded box inside a
+                                    // card is two frames too many. A workspace that is
+                                    // not being rendered hands back its last frame
+                                    // rather than a current one — a compositor limit,
+                                    // not something the shell can fix.
+                                    ClippingRectangle {
+                                        anchors.fill: parent
+                                        anchors.margins: Theme.padding.small
+                                        radius: card.radius - Theme.padding.small
+                                        color: Theme.scrim(0.45)
+
+                                        Grid {
+                                            id: tiles
+                                            anchors.fill: parent
+                                            columns: card.windows.length > 1 ? 2 : 1
+                                            spacing: 2
+
+                                            Repeater {
+                                                model: card.windows
+
+                                                ScreencopyView {
+                                                    required property HyprlandToplevel modelData
+
+                                                    width: tiles.width / tiles.columns - 1
+                                                    height: card.windows.length > 2 ? tiles.height / 2 - 1 : tiles.height
+                                                    captureSource: modelData.wayland
+                                                    live: true
+                                                    paintCursor: false
+                                                }
+                                            }
+                                        }
+
+                                        Text {
+                                            anchors.centerIn: parent
+                                            visible: card.windows.length === 0
+                                            text: "Empty"
+                                            color: Theme.dim
+                                            font.family: Theme.fontDisplay
+                                            font.pixelSize: Theme.fontSize.large
+                                            font.letterSpacing: Theme.tracking.wider
+                                        }
+                                    }
+
+                                    // Window count, floated over the capture rather
+                                    // than given a row of its own — it is a footnote,
+                                    // and a footnote should not cost a band of card.
+                                    Surface {
+                                        anchors.top: parent.top
+                                        anchors.right: parent.right
+                                        anchors.margins: Theme.spacing.medium
+                                        visible: card.windows.length > 1
+                                        width: Math.max(height, countText.implicitWidth + Theme.padding.medium * 2)
+                                        height: countText.implicitHeight + Theme.padding.small
+                                        radius: Theme.rounding.full
+                                        tone: Theme.bgTray
+
+                                        Text {
+                                            id: countText
+                                            anchors.centerIn: parent
+                                            text: card.windows.length
+                                            color: Theme.fg
+                                            font.family: Theme.font
+                                            font.pixelSize: Theme.fontSize.normal
+                                            font.weight: Theme.weight.medium
+                                            font.features: ({
+                                                tnum: 1
+                                            })
+                                        }
                                     }
                                 }
-                            }
 
-                            Text {
-                                anchors.centerIn: parent
-                                visible: card.windows.length === 0
-                                text: "Empty"
-                                color: Theme.dim
-                                font.family: Theme.font
-                                font.pixelSize: Theme.fontSize.smaller
-                            }
-                        }
+                                MouseArea {
+                                    anchors.fill: parent
+                                    hoverEnabled: true
 
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: Theme.spacing.small
-
-                            Text {
-                                Layout.fillWidth: true
-                                // The focused window names the workspace; an
-                                // index says nothing about what is on it.
-                                text: {
-                                    if (!card.modelData)
-                                        return "";
-                                    const all = card.modelData.toplevels.values;
-                                    if (all.length === 0)
-                                        return "Empty";
-                                    const top = all.find(w => w.activated) ?? all[0];
-                                    return top.title === "" ? card.modelData.name : top.title;
+                                    onPositionChanged: mouse => {
+                                        const p = mapToItem(null, mouse.x, mouse.y);
+                                        const first = win.lastPointer.x < 0;
+                                        const moved = Math.abs(p.x - win.lastPointer.x) > 2 || Math.abs(p.y - win.lastPointer.y) > 2;
+                                        win.lastPointer = p;
+                                        if (!first && moved)
+                                            Switcher.index = cell.slot;
+                                    }
+                                    onClicked: Switcher.commit()
                                 }
-                                color: Theme.fg
-                                font.family: Theme.fontDisplay
-                                font.pixelSize: Theme.fontSize.smaller
-                                font.weight: Theme.weight.bold
-                                elide: Text.ElideRight
-                            }
-
-                            Text {
-                                text: card.modelData ? card.modelData.toplevels.values.length : 0
-                                color: card.current ? Theme.fg : Theme.dim
-                                font.family: Theme.font
-                                font.pixelSize: Theme.fontSize.small
-                                font.features: ({
-                                        tnum: 1
-                                    })
                             }
                         }
                     }
+                }
+            }
 
-                    MouseArea {
-                        anchors.fill: parent
-                        hoverEnabled: true
+            Column {
+                id: caption
+                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: Theme.spacing.extraSmall
 
-                        onPositionChanged: mouse => {
-                            const p = mapToItem(null, mouse.x, mouse.y);
-                            const first = win.lastPointer.x < 0;
-                            const moved = Math.abs(p.x - win.lastPointer.x) > 2 || Math.abs(p.y - win.lastPointer.y) > 2;
-                            win.lastPointer = p;
-                            if (!first && moved)
-                                Switcher.index = cell.index;
+                readonly property var ws: Switcher.workspaces[Switcher.index] ?? null
+
+                Text {
+                    id: captionTitle
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    // Capped against the window, not the grid: measuring against the
+                    // grid would make the cards depend on the caption and the
+                    // caption on the cards.
+                    width: Math.min(implicitWidth, win.width * 0.7)
+                    horizontalAlignment: Text.AlignHCenter
+                    text: win.titleOf(caption.ws)
+                    color: Theme.fg
+                    font.family: Theme.fontDisplay
+                    font.pixelSize: Theme.fontSize.extraLarge
+                    font.weight: Theme.weight.bold
+                    elide: Text.ElideRight
+
+                    // The title crossfades where the cards slide: swapping the
+                    // text outright on every tab reads as a flicker at this
+                    // size.
+                    Behavior on text {
+                        SequentialAnimation {
+                            NumberAnimation {
+                                target: captionTitle
+                                property: "opacity"
+                                to: 0
+                                duration: Theme.duration.expressiveFastEffects / 2
+                            }
+                            PropertyAction {}
+                            NumberAnimation {
+                                target: captionTitle
+                                property: "opacity"
+                                to: 1
+                                duration: Theme.duration.expressiveFastEffects
+                            }
                         }
-                        onClicked: Switcher.commit()
                     }
+                }
+
+                Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    // Window count only. Hyprland names workspaces by number,
+                    // and a bare number under the title is the index this
+                    // switcher deliberately does not show.
+                    text: {
+                        const ws = caption.ws;
+                        if (!ws)
+                            return "";
+                        const n = ws.toplevels.values.length;
+                        return n === 1 ? "1 window" : n + " windows";
                     }
+                    color: Theme.accentText
+                    font.family: Theme.font
+                    font.pixelSize: Theme.fontSize.normal
+                    font.weight: Theme.weight.medium
+                    font.letterSpacing: Theme.tracking.wider
                 }
             }
         }
     }
 }
+
