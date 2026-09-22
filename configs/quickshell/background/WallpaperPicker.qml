@@ -74,6 +74,7 @@ OverlayWindow {
         folder = entry.slice(0, -1);
         list.currentIndex = 0;
         list.positionViewAtIndex(0, PathView.Center);
+        turn.open(1);
     }
 
     // Back up one level, landing on the folder just left.
@@ -85,6 +86,7 @@ OverlayWindow {
         const i = Math.max(0, matches.indexOf(left));
         list.currentIndex = i;
         list.positionViewAtIndex(i, PathView.Center);
+        turn.open(-1);
     }
 
     readonly property string focusedPath: matches[list.currentIndex] ?? ""
@@ -109,6 +111,7 @@ OverlayWindow {
         list.currentIndex = i;
         list.positionViewAtIndex(i, PathView.Center);
     }
+
 
     onOpened: {
         filter = "";
@@ -286,6 +289,49 @@ OverlayWindow {
             height: picker.focusedHeight + 40
             model: picker.matches
             clip: true
+
+            // Changing folder turns the strip like the cover of a book: into a
+            // folder it swings open from the left edge, back out it swings in
+            // from the right.
+            transform: Rotation {
+                id: page
+
+                origin.x: page.hinge < 0 ? list.width : 0
+                origin.y: list.height / 2
+                axis {
+                    x: 0
+                    y: 1
+                    z: 0
+                }
+                property int hinge: 1
+            }
+
+            ParallelAnimation {
+                id: turn
+
+                function open(direction: int): void {
+                    page.hinge = direction;
+                    swing.from = direction * 80;
+                    restart();
+                }
+
+                NumberAnimation {
+                    id: swing
+                    target: page
+                    property: "angle"
+                    to: 0
+                    duration: Theme.duration.expressiveDefaultSpatial
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curve.emphasizedDecel
+                }
+                NumberAnimation {
+                    target: list
+                    property: "opacity"
+                    from: 0
+                    to: 1
+                    duration: Theme.duration.expressiveDefaultEffects
+                }
+            }
 
             // PathView wraps around at both ends; ListView cannot.
             pathItemCount: Math.max(3, Math.floor(width / (picker.focusedWidth * 0.72)))
