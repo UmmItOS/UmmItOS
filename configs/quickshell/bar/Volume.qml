@@ -1,8 +1,11 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Effects
 import QtQuick.Layouts
+import Quickshell
 import Quickshell.Services.Pipewire
+import Quickshell.Widgets
 import ".."
 
 // The bar shows the level; the flyout is where the machine's audio actually
@@ -42,6 +45,15 @@ RowLayout {
 
     function labelFor(node: var): string {
         return node.properties["application.name"] || node.description || node.name;
+    }
+
+    // PipeWire rarely sets application.icon-name, so the binary and the app
+    // name are tried in turn; the theme lookup returns "" when none of them
+    // names a real icon, and the row falls back to a glyph.
+    function iconFor(node: var): string {
+        const props = node.properties;
+        const name = props["application.icon-name"] || props["application.process.binary"] || props["application.name"] || "";
+        return name === "" ? "" : Quickshell.iconPath(name.toLowerCase(), true);
     }
 
     spacing: Theme.spacing.small
@@ -240,67 +252,95 @@ RowLayout {
         Repeater {
             model: root.streams
 
-            ColumnLayout {
+            // One line, the same shape as the master row above it: what it is,
+            // how loud, and the number. The app's own icon identifies it, so
+            // the name can stay small.
+            RowLayout {
                 id: stream
 
                 required property PwNode modelData
 
                 readonly property bool muted: stream.modelData.audio?.muted ?? false
+                readonly property real level: stream.modelData.audio?.volume ?? 0
 
                 Layout.fillWidth: true
-                spacing: Theme.spacing.extraSmall
+                Layout.leftMargin: Theme.padding.medium
+                Layout.rightMargin: Theme.padding.medium
+                spacing: Theme.spacing.medium
 
-                RowLayout {
-                    Layout.fillWidth: true
-                    Layout.leftMargin: Theme.padding.medium
-                    Layout.rightMargin: Theme.padding.medium
-                    spacing: Theme.spacing.medium
+                // The app icon, recoloured to the shell rather than left in
+                // whatever brand colours it ships with. Only its silhouette
+                // survives, which is the part that identifies it anyway.
+                Item {
+                    Layout.alignment: Qt.AlignVCenter
+                    implicitWidth: Theme.icon.small
+                    implicitHeight: Theme.icon.small
+
+                    IconImage {
+                        id: appIcon
+
+                        anchors.fill: parent
+                        source: root.iconFor(stream.modelData)
+                        visible: false
+                    }
+
+                    MultiEffect {
+                        anchors.fill: parent
+                        source: appIcon
+                        visible: appIcon.status === Image.Ready
+                        colorization: 1
+                        colorizationColor: stream.muted ? Theme.dim : Theme.accentText
+                    }
 
                     MaterialIcon {
+                        anchors.centerIn: parent
+                        visible: appIcon.status !== Image.Ready
                         text: stream.muted ? "volume_off" : "graphic_eq"
                         color: stream.muted ? Theme.dim : Theme.accentText
                         size: Theme.icon.small
-
-                        MouseArea {
-                            anchors.fill: parent
-                            anchors.margins: -Theme.spacing.extraSmall
-                            onClicked: stream.modelData.audio.muted = !stream.modelData.audio.muted
-                        }
                     }
 
-                    Text {
-                        Layout.fillWidth: true
-                        text: root.labelFor(stream.modelData)
-                        color: Theme.fg
-                        elide: Text.ElideRight
-                        font {
-                            family: Theme.font
-                            pixelSize: Theme.fontSize.smaller
-                        }
+                    MouseArea {
+                        anchors.fill: parent
+                        anchors.margins: -Theme.spacing.extraSmall
+                        onClicked: stream.modelData.audio.muted = !stream.modelData.audio.muted
                     }
+                }
 
-                    Text {
-                        text: Math.round((stream.modelData.audio?.volume ?? 0) * 100) + " %"
-                        color: Theme.dim
-                        font {
-                            family: Theme.font
-                            pixelSize: Theme.fontSize.small
-                            features: ({
-                                    tnum: 1
-                                })
-                        }
+                Text {
+                    Layout.alignment: Qt.AlignVCenter
+                    Layout.maximumWidth: 90
+                    text: root.labelFor(stream.modelData)
+                    color: Theme.dim
+                    elide: Text.ElideRight
+                    font {
+                        family: Theme.font
+                        pixelSize: Theme.fontSize.smaller
                     }
                 }
 
                 Slider {
                     Layout.fillWidth: true
-                    Layout.leftMargin: Theme.padding.medium
-                    Layout.rightMargin: Theme.padding.medium
-                    Layout.bottomMargin: Theme.spacing.small
-                    value: stream.modelData.audio?.volume ?? 0
+                    Layout.alignment: Qt.AlignVCenter
+                    value: stream.level
                     fill: stream.muted ? Theme.dim : Theme.accent2
                     onMoved: value => {
                         stream.modelData.audio.volume = value;
+                    }
+                }
+
+                Text {
+                    Layout.alignment: Qt.AlignVCenter
+                    Layout.preferredWidth: 46
+                    horizontalAlignment: Text.AlignRight
+                    text: Math.round(stream.level * 100) + " %"
+                    color: Theme.dim
+                    font {
+                        family: Theme.font
+                        pixelSize: Theme.fontSize.smaller
+                        features: ({
+                                tnum: 1
+                            })
                     }
                 }
             }

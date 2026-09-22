@@ -134,4 +134,10 @@ RowLayout {
         glyph: "north"
         value: root.upRate
     }
+
+    // The bar's only other live numbers are the machine's own, so this is where
+    // they hang: CPU, memory, storage, temperatures.
+    TapHandler {
+        onTapped: Dashboard.toggleTab(2)
+    }
 }

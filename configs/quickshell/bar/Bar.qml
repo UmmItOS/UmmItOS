@@ -95,14 +95,6 @@ PanelWindow {
             }
         }
 
-        // Only there when something is playing; an empty pill is noise.
-        Cluster {
-            Layout.alignment: Qt.AlignVCenter
-            visible: Players.active !== null
-
-            Media {}
-        }
-
         Item {
             Layout.fillWidth: true
         }
@@ -171,8 +163,10 @@ PanelWindow {
             }
         }
 
+        // The clock opens what the clock is about: what is playing now.
+        // The machine's own numbers hang off the bandwidth readout instead.
         TapHandler {
-            onTapped: Dashboard.toggle()
+            onTapped: Dashboard.toggleTab(1)
         }
     }
 }
