@@ -7,6 +7,7 @@ import "bar"
 import "launcher"
 import "notifications"
 import "osd"
+import "services"
 import "session"
 import "switcher"
 
@@ -35,6 +36,8 @@ ShellRoot {
     OsdWindow {}
 
     Notifications {}
+
+    BatteryNotifier {}
 
     NotificationPanel {}
 }

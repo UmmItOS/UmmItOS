@@ -220,9 +220,11 @@ Scope {
                             implicitHeight: 68
                             radius: Theme.rounding.medium
                             color: "transparent"
-                            visible: card.modelData.image !== ""
+                            visible: preview.status === Image.Ready
 
                             Image {
+                                id: preview
+
                                 anchors.fill: parent
                                 source: card.modelData.image
                                 fillMode: Image.PreserveAspectCrop
