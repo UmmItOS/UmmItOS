@@ -127,6 +127,8 @@ Singleton {
         readonly property int expressiveSlowEffects: 300
         // One turn of a spinner.
         readonly property int spin: 900
+        // Gap between siblings entering one after another.
+        readonly property int stagger: 40
     }
 
     // Bezier control points for Easing.BezierSpline.

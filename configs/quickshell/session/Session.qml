@@ -57,7 +57,9 @@ Singleton {
 
     function run(index: int): void {
         const action = actions[index];
-        if (!action)
+        // A closing menu still sits under the pointer for its exit; a second
+        // click must not run the action again.
+        if (!action || !open)
             return;
         open = false;
         Quickshell.execDetached(action.command);

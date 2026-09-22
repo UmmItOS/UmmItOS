@@ -10,39 +10,19 @@ import ".."
 // One row of tiles rather than wlogout's 3x2 grid: six actions read faster in a
 // line, and the row matches the bar's cluster language. Focus starts on Lock,
 // the only action here you cannot regret.
-PanelWindow {
+OverlayWindow {
     id: win
+
+    shown: Session.open
+    name: "session"
+    scrim: 0.5
 
     property int current: 0
 
-    // 0 closed, 1 open. The window stays mapped until it has faded out, so
-    // closing animates instead of vanishing.
-    property real reveal: Session.open ? 1 : 0
-    Behavior on reveal {
-        Reveal {
-            opening: Session.open
-        }
+    onOpened: {
+        current = 0;
+        scope.forceActiveFocus();
     }
-
-    visible: reveal > 0
-    onVisibleChanged: {
-        if (visible) {
-            current = 0;
-            scope.forceActiveFocus();
-        }
-    }
-
-    WlrLayershell.namespace: "ummitos-session"
-    WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: Session.open ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
-    exclusionMode: ExclusionMode.Ignore
-    anchors {
-        top: true
-        bottom: true
-        left: true
-        right: true
-    }
-    color: Theme.scrim(0.5 * Math.min(1, reveal))
 
     MouseArea {
         anchors.fill: parent
@@ -87,11 +67,32 @@ PanelWindow {
                     implicitWidth: 156
                     implicitHeight: 156
 
-                    opacity: 0
-                    y: 18
-
                     // A stagger reads as the menu assembling itself; everything
-                    // arriving on the same frame reads as a screenshot.
+                    // arriving on the same frame reads as a screenshot. Replayed
+                    // on every open, and a Translate rather than `y`, which the
+                    // RowLayout owns.
+                    opacity: 0
+                    transform: Translate {
+                        id: lift
+                    }
+
+                    Connections {
+                        target: win
+
+                        function onOpened(): void {
+                            entry.stop();
+                            tile.opacity = 0;
+                            lift.y = Theme.spacing.large;
+                            delay.restart();
+                        }
+                    }
+
+                    Timer {
+                        id: delay
+                        interval: tile.index * Theme.duration.stagger
+                        onTriggered: entry.start()
+                    }
+
                     ParallelAnimation {
                         id: entry
 
@@ -102,19 +103,13 @@ PanelWindow {
                             duration: Theme.duration.expressiveDefaultEffects
                         }
                         NumberAnimation {
-                            target: tile
+                            target: lift
                             property: "y"
                             to: 0
                             duration: Theme.duration.expressiveDefaultSpatial
                             easing.type: Easing.BezierSpline
                             easing.bezierCurve: Theme.curve.emphasizedDecel
                         }
-                    }
-
-                    Timer {
-                        running: true
-                        interval: tile.index * 40
-                        onTriggered: entry.start()
                     }
                     radius: Theme.rounding.extraLargeIncreased
                     color: active ? Theme.accent : Theme.bgTray
@@ -182,7 +177,10 @@ PanelWindow {
                     MouseArea {
                         anchors.fill: parent
                         hoverEnabled: true
-                        onEntered: win.current = tile.index
+                        onPositionChanged: mouse => {
+                            if (win.pointerMoved(this, mouse.x, mouse.y))
+                                win.current = tile.index;
+                        }
                         onClicked: Session.run(tile.index)
                     }
                 }

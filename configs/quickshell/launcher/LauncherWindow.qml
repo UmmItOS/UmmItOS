@@ -12,8 +12,12 @@ import ".."
 // identifying, so the apps are the content and the chrome is one query line.
 // Tiles are bare — only the focused one takes a surface, so the grid reads as
 // content instead of a wall of buttons.
-PanelWindow {
+OverlayWindow {
     id: win
+
+    shown: Launcher.open && Launcher.mode === "apps"
+    name: "launcher"
+    scrim: 0.78
 
     property string filter: ""
 
@@ -26,36 +30,12 @@ PanelWindow {
         return hits.sort((a, b) => a.name.localeCompare(b.name));
     }
 
-    // 0 closed, 1 open. The window stays mapped until it has faded out, so
-    // closing animates instead of vanishing.
-    property real reveal: (Launcher.open && Launcher.mode === "apps") ? 1 : 0
-    Behavior on reveal {
-        Reveal {
-            opening: (Launcher.open && Launcher.mode === "apps")
-        }
+    onOpened: {
+        filter = "";
+        search.text = "";
+        grid.currentIndex = 0;
+        search.forceActiveFocus();
     }
-
-    visible: reveal > 0
-    onVisibleChanged: {
-        if (visible) {
-            filter = "";
-            search.text = "";
-            grid.currentIndex = 0;
-            search.forceActiveFocus();
-        }
-    }
-
-    WlrLayershell.namespace: "ummitos-launcher"
-    WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: (Launcher.open && Launcher.mode === "apps") ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
-    exclusionMode: ExclusionMode.Ignore
-    anchors {
-        top: true
-        bottom: true
-        left: true
-        right: true
-    }
-    color: Theme.scrim(0.78 * Math.min(1, reveal))
 
     function accept(): void {
         const item = results[grid.currentIndex];
@@ -73,7 +53,6 @@ PanelWindow {
         focus: true
         opacity: Math.min(1, win.reveal)
         scale: Theme.popScale + (1 - Theme.popScale) * win.reveal
-
 
         // The query line. Oversized and left-anchored, so the eye starts at the
         // same place whether you are typing or scanning.
@@ -255,7 +234,10 @@ PanelWindow {
                 MouseArea {
                     anchors.fill: parent
                     hoverEnabled: true
-                    onEntered: grid.currentIndex = cell.index
+                    onPositionChanged: mouse => {
+                        if (win.pointerMoved(this, mouse.x, mouse.y))
+                            grid.currentIndex = cell.index;
+                    }
                     onClicked: win.accept()
                 }
             }

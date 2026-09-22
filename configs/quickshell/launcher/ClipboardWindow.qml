@@ -10,8 +10,12 @@ import ".."
 // Clipboard entries are arbitrary content, so a row of elided single lines
 // throws most of them away. Two panes instead: scan the list on the left,
 // confirm the whole entry — text or the actual image — on the right.
-PanelWindow {
+OverlayWindow {
     id: win
+
+    shown: Launcher.open && Launcher.mode === "clipboard"
+    name: "clipboard"
+    scrim: 0.45
 
     property string filter: ""
 
@@ -21,23 +25,11 @@ PanelWindow {
     }
     readonly property var focusedEntry: results[list.currentIndex] ?? null
 
-    // 0 closed, 1 open. The window stays mapped until it has faded out, so
-    // closing animates instead of vanishing.
-    property real reveal: (Launcher.open && Launcher.mode === "clipboard") ? 1 : 0
-    Behavior on reveal {
-        Reveal {
-            opening: (Launcher.open && Launcher.mode === "clipboard")
-        }
-    }
-
-    visible: reveal > 0
-    onVisibleChanged: {
-        if (visible) {
-            filter = "";
-            search.text = "";
-            list.currentIndex = 0;
-            search.forceActiveFocus();
-        }
+    onOpened: {
+        filter = "";
+        search.text = "";
+        list.currentIndex = 0;
+        search.forceActiveFocus();
     }
 
     // Decoding is deferred so holding a cursor key does not spawn a process
@@ -55,18 +47,6 @@ PanelWindow {
                 Launcher.clearDecode();
         }
     }
-
-    WlrLayershell.namespace: "ummitos-clipboard"
-    WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: (Launcher.open && Launcher.mode === "clipboard") ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
-    exclusionMode: ExclusionMode.Ignore
-    anchors {
-        top: true
-        bottom: true
-        left: true
-        right: true
-    }
-    color: Theme.scrim(0.45 * Math.min(1, reveal))
 
     function accept(): void {
         if (focusedEntry)
@@ -223,7 +203,10 @@ PanelWindow {
                             MouseArea {
                                 anchors.fill: parent
                                 hoverEnabled: true
-                                onEntered: list.currentIndex = row.index
+                                onPositionChanged: mouse => {
+                                    if (win.pointerMoved(this, mouse.x, mouse.y))
+                                        list.currentIndex = row.index;
+                                }
                                 onClicked: win.accept()
                             }
                         }

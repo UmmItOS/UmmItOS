@@ -14,28 +14,15 @@ import ".."
 // It hugs its contents rather than running the height of the screen. An empty
 // centre used to be a full-height slab with two words stranded in the middle
 // of it; now it is a header and a line, and it grows as the history does.
-PanelWindow {
+OverlayWindow {
     id: win
 
-    // 0 closed, 1 open. Stays mapped until the slide out has finished, or
-    // closing is a cut.
-    property real reveal: Notifs.panelOpen ? 1 : 0
-    Behavior on reveal {
-        Reveal {
-            opening: Notifs.panelOpen
-        }
-    }
+    shown: Notifs.panelOpen
+    name: "notification-panel"
+    focusMode: WlrKeyboardFocus.OnDemand
 
-    visible: reveal > 0
-
-    WlrLayershell.namespace: "ummitos-notification-panel"
-    WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
-    exclusionMode: ExclusionMode.Ignore
-    anchors {
-        top: true
-        right: true
-    }
+    anchors.bottom: false
+    anchors.left: false
     margins.top: Theme.barHeight
     implicitWidth: 440
     // The column reports its content only; its own anchor margins and

@@ -17,11 +17,16 @@ Singleton {
     // preview fail whenever the decode had not finished first.
     property string decodedPath
     property string decodingId
+    readonly property string cacheDir: Quickshell.cachePath("clipboard")
 
     function show(newMode: string): void {
         mode = newMode;
-        if (newMode === "clipboard")
+        // Empty until the fresh list lands: Enter pressed before then must not
+        // copy whatever sat at that index last time.
+        if (newMode === "clipboard") {
+            clipboard = [];
             clipList.running = true;
+        }
         open = true;
     }
 
@@ -33,6 +38,9 @@ Singleton {
     }
 
     function launch(entry: var): void {
+        // Once, even if a second click lands while the grid fades out.
+        if (!open)
+            return;
         open = false;
         entry.execute();
     }
@@ -43,20 +51,25 @@ Singleton {
             return;
         decodingId = id;
         decodedPath = "";
-        const target = Quickshell.cachePath("clipboard/" + id + ".png");
         decodeProc.running = false;
-        decodeProc.command = ["sh", "-c", `mkdir -p "$(dirname '${target}')" && cliphist decode ${id} > '${target}'`];
+        decodeProc.forId = id;
+        // Written aside and moved into place, so an existing file is always a
+        // whole one and a second look at the same entry skips the decode.
+        decodeProc.command = ["sh", "-c", 'mkdir -p "$1" && f="$1/$2.png" && { [ -s "$f" ] || { cliphist decode "$2" > "$f.part" && mv "$f.part" "$f"; }; }', "sh", cacheDir, id];
         decodeProc.running = true;
     }
 
     function clearDecode(): void {
+        decodeProc.running = false;
         decodingId = "";
         decodedPath = "";
     }
 
     function copy(id: string): void {
+        if (!open)
+            return;
         open = false;
-        copyProc.command = ["sh", "-c", `cliphist decode ${id} | wl-copy`];
+        copyProc.command = ["sh", "-c", 'cliphist decode "$1" | wl-copy', "sh", id];
         copyProc.running = true;
     }
 
@@ -79,8 +92,15 @@ Singleton {
                         detail: binary ? binary[3] + "  ·  " + binary[1] : ""
                     };
                 });
+                // Previews of entries cliphist has since dropped are dead weight.
+                prune.command = ["sh", "-c", 'cd "$1" 2>/dev/null || exit 0; shift; for f in *.png; do case " $* " in *" ${f%.png} "*) ;; *) rm -f -- "$f" ;; esac; done', "sh", root.cacheDir, ...root.clipboard.map(c => c.id)];
+                prune.running = true;
             }
         }
+    }
+
+    Process {
+        id: prune
     }
 
     Process {
@@ -90,9 +110,13 @@ Singleton {
     Process {
         id: decodeProc
 
-        onExited: (code, status) => {
-            if (code === 0)
-                root.decodedPath = Quickshell.cachePath("clipboard/" + root.decodingId + ".png");
+        // The entry this run was started for. By the time it exits the focus
+        // may have moved on, and its file must not be shown for another.
+        property string forId
+
+        onExited: code => {
+            if (code === 0 && forId === root.decodingId)
+                root.decodedPath = root.cacheDir + "/" + forId + ".png";
         }
     }
 

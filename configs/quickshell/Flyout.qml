@@ -43,28 +43,40 @@ PopupWindow {
     // The grab closes the window itself, which leaves the caller still thinking
     // it is open until the state is handed back.
     onVisibleChanged: {
-        if (!root.visible)
+        if (root.visible)
+            entrance.restart();
+        else
             root.closeRequested();
     }
 
     Surface {
+        id: sheet
+
         anchors.fill: parent
         radius: Theme.rounding.extraLarge
 
         // Drops out of the bar. Opening only: an outside click dismisses the
         // popup in the compositor, which unmaps it before anything could play.
+        // Restarted from the start on every open, so a quick reopen never
+        // picks up where a hidden animation left off.
         transformOrigin: Item.Top
-        opacity: root.visible ? 1 : 0
-        scale: root.visible ? 1 : Theme.popScale
 
-        Behavior on opacity {
+        ParallelAnimation {
+            id: entrance
+
             Reveal {
                 opening: true
+                target: sheet
+                property: "opacity"
+                from: 0
+                to: 1
             }
-        }
-        Behavior on scale {
             Reveal {
                 opening: true
+                target: sheet
+                property: "scale"
+                from: Theme.popScale
+                to: 1
             }
         }
         tone: Theme.bg

@@ -10,56 +10,42 @@ import ".."
 // on the desktop under a gradient wash, with one metadata block anchored to the
 // left. Typing replaces the wallpaper's name with the query rather than opening
 // a search field, so there is no chrome until it is asked for.
-PanelWindow {
+OverlayWindow {
     id: picker
+
+    shown: Wallpapers.pickerOpen
+    name: "wallpaper-picker"
 
     readonly property int focusedWidth: 420
     readonly property int focusedHeight: 236
     readonly property real shrink: 0.5
 
     property string filter: ""
-    readonly property var shown: filter === "" ? Wallpapers.list : Wallpapers.list.filter(p => Wallpapers.name(p).toLowerCase().includes(filter.toLowerCase()))
+    readonly property var matches: filter === "" ? Wallpapers.list : Wallpapers.list.filter(p => Wallpapers.name(p).toLowerCase().includes(filter.toLowerCase()))
 
-    readonly property string focusedPath: shown[list.currentIndex] ?? ""
+    readonly property string focusedPath: matches[list.currentIndex] ?? ""
 
-    // 0 closed, 1 open. The window stays mapped until it has faded out, so
-    // closing animates instead of vanishing.
-    property real reveal: Wallpapers.pickerOpen ? 1 : 0
-    Behavior on reveal {
-        Reveal {
-            opening: Wallpapers.pickerOpen
-        }
+    onOpened: {
+        filter = "";
+        search.text = "";
+        list.currentIndex = Math.max(0, matches.indexOf(Wallpapers.actual));
+        search.forceActiveFocus();
     }
-
-    visible: reveal > 0
-    onVisibleChanged: {
-        if (visible) {
-            filter = "";
-            search.text = "";
-            list.currentIndex = Math.max(0, shown.indexOf(Wallpapers.actual));
-            search.forceActiveFocus();
-        } else {
-            // Closing without pressing Enter restores the confirmed wallpaper.
+    // Closing without pressing Enter restores the confirmed wallpaper. On the
+    // flag, not on unmapping, so it does not wait out the exit animation.
+    onShownChanged: {
+        if (!shown)
             Wallpapers.clearPreview();
-        }
     }
 
-    WlrLayershell.namespace: "ummitos-wallpaper-picker"
-    WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: Wallpapers.pickerOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
-    exclusionMode: ExclusionMode.Ignore
-    anchors {
-        bottom: true
-        left: true
-        right: true
-    }
+    anchors.top: false
     implicitHeight: 460
     color: "transparent"
 
     function apply(index: int): void {
-        if (index >= 0 && index < shown.length) {
+        if (shown && index >= 0 && index < matches.length) {
             previewDebounce.stop();
-            Wallpapers.set(shown[index]);
+            Wallpapers.set(matches[index]);
             Wallpapers.pickerOpen = false;
         }
     }
@@ -154,7 +140,7 @@ PanelWindow {
                 spacing: Theme.spacing.medium
 
                 Text {
-                    text: picker.shown.length === 0 ? "—" : (list.currentIndex + 1) + " of " + picker.shown.length
+                    text: picker.matches.length === 0 ? "—" : (list.currentIndex + 1) + " of " + picker.matches.length
                     color: Theme.dim
                     font.family: Theme.font
                     font.pixelSize: Theme.fontSize.smaller
@@ -191,7 +177,7 @@ PanelWindow {
                 bottomMargin: Theme.spacing.extraLargeIncreased
             }
             height: picker.focusedHeight + 40
-            model: picker.shown
+            model: picker.matches
             clip: true
 
             // PathView wraps around at both ends; ListView cannot.
@@ -212,7 +198,7 @@ PanelWindow {
                 id: previewDebounce
                 interval: 140
                 onTriggered: {
-                    const path = picker.shown[list.currentIndex];
+                    const path = picker.matches[list.currentIndex];
                     if (path)
                         Wallpapers.preview(path);
                 }
@@ -313,7 +299,10 @@ PanelWindow {
                 MouseArea {
                     anchors.fill: parent
                     hoverEnabled: true
-                    onEntered: list.currentIndex = cell.index
+                    onPositionChanged: mouse => {
+                        if (picker.pointerMoved(this, mouse.x, mouse.y))
+                            list.currentIndex = cell.index;
+                    }
                     onClicked: picker.apply(cell.index)
                 }
             }

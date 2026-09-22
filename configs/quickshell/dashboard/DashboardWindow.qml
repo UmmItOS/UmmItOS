@@ -6,8 +6,13 @@ import QtQuick
 import QtQuick.Layouts
 import ".."
 
-PanelWindow {
+OverlayWindow {
     id: win
+
+    shown: Dashboard.open
+    name: "dashboard"
+    scrim: 0.4
+    focusMode: WlrKeyboardFocus.OnDemand
 
     readonly property var tabs: [
         {
@@ -24,30 +29,8 @@ PanelWindow {
         }
     ]
 
-    // 0 closed, 1 open. The window stays mapped until it has faded out, so
-    // closing animates instead of vanishing.
-    property real reveal: Dashboard.open ? 1 : 0
-    Behavior on reveal {
-        Reveal {
-            opening: Dashboard.open
-        }
-    }
-
-    visible: reveal > 0
     // Polling /proc and hwmon only matters while the panel is on screen.
     onVisibleChanged: SysInfo.active = visible
-
-    WlrLayershell.namespace: "ummitos-dashboard"
-    WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: Dashboard.open ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
-    exclusionMode: ExclusionMode.Ignore
-    anchors {
-        top: true
-        bottom: true
-        left: true
-        right: true
-    }
-    color: Theme.scrim(0.4 * Math.min(1, reveal))
 
     MouseArea {
         anchors.fill: parent
@@ -119,7 +102,11 @@ PanelWindow {
                     radius: tabCluster.radius - tabCluster.inset
                     color: Theme.accent
 
+                    // Only while open: a bar item opens the dashboard onto its
+                    // tab, and the pill should already be there, not travelling.
                     Behavior on x {
+                        enabled: Dashboard.open
+
                         NumberAnimation {
                             duration: Theme.duration.expressiveDefaultSpatial
                             easing.type: Easing.BezierSpline
@@ -211,6 +198,10 @@ PanelWindow {
                 // The new page drifts in from the side the pill moved toward,
                 // so the content and the control agree on direction.
                 onCurrentIndexChanged: {
+                    if (!Dashboard.open) {
+                        last = currentIndex;
+                        return;
+                    }
                     shift.from = (currentIndex > last ? 1 : -1) * Theme.spacing.extraLarge;
                     last = currentIndex;
                     enter.restart();

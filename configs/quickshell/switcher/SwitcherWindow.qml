@@ -8,33 +8,13 @@ import QtQuick
 import QtQuick.Effects
 import ".."
 
-PanelWindow {
+OverlayWindow {
     id: win
 
-    // 0 closed, 1 open. The window stays mapped until it has faded out, so
-    // closing animates instead of vanishing.
-    property real reveal: Switcher.open ? 1 : 0
-    Behavior on reveal {
-        Reveal {
-            opening: Switcher.open
-        }
-    }
+    shown: Switcher.open
+    name: "switcher"
+    scrim: 0.45
 
-    visible: reveal > 0
-
-    WlrLayershell.namespace: "ummitos-switcher"
-    WlrLayershell.layer: WlrLayer.Overlay
-    // Focus is the point: with it, the Alt release arrives here as a key event,
-    // so the switcher can commit when the modifier is let go.
-    WlrLayershell.keyboardFocus: Switcher.open ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
-    exclusionMode: ExclusionMode.Ignore
-    anchors {
-        top: true
-        bottom: true
-        left: true
-        right: true
-    }
-    color: Theme.scrim(0.45 * Math.min(1, reveal))
 
     // The cards carry no labels of their own. Nine small captions compete with
     // the thing they caption; one large one, under the grid, changes as the
@@ -49,23 +29,7 @@ PanelWindow {
         return top.title === "" ? ws.name : top.title;
     }
 
-    // Only a pointer that has actually moved may change the selection.
-    //
-    // Enter events are not evidence of movement: they fire when the switcher
-    // opens under a stationary cursor, and again every time the selection
-    // changes, because the focused card grows and the geometry shifts beneath
-    // the pointer. Acting on them made the selection snap back to whichever
-    // card sat under the mouse, which looked like the switcher refusing to
-    // advance. The last known position is compared instead, in window
-    // coordinates so card-local movement from a resize does not count.
-    property point lastPointer: Qt.point(-1, -1)
-
-    onVisibleChanged: {
-        if (visible) {
-            lastPointer = Qt.point(-1, -1);
-            scope.forceActiveFocus();
-        }
-    }
+    onOpened: scope.forceActiveFocus()
 
     FocusScope {
         id: scope
@@ -344,12 +308,12 @@ PanelWindow {
                                     anchors.fill: parent
                                     hoverEnabled: true
 
+                                    // Only a pointer that has actually moved may
+                                    // change the selection: the focused card grows,
+                                    // and the geometry shifting under a still cursor
+                                    // used to snap the selection back.
                                     onPositionChanged: mouse => {
-                                        const p = mapToItem(null, mouse.x, mouse.y);
-                                        const first = win.lastPointer.x < 0;
-                                        const moved = Math.abs(p.x - win.lastPointer.x) > 2 || Math.abs(p.y - win.lastPointer.y) > 2;
-                                        win.lastPointer = p;
-                                        if (!first && moved)
+                                        if (win.pointerMoved(this, mouse.x, mouse.y))
                                             Switcher.index = cell.slot;
                                     }
                                     onClicked: Switcher.commit()

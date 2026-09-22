@@ -89,7 +89,7 @@ grep -A5 'name: "workspaces"' /usr/lib/qt6/qml/Quickshell/Hyprland/_Ipc/*.qmltyp
 - **Singletons are lazy.** A singleton that nothing references never runs. A background watcher with no UI (`services/BatteryNotifier.qml`) is therefore a `Scope` instantiated in `shell.qml`, not a singleton.
 - **`services/`** holds shared data sources: `SysInfo` (proc polling), `Players` (the active MPRIS player plus the position tick) and `BatteryNotifier`.
 - **Shared components** at the root are `Surface` (the material), `Flyout` (the bar dropdown used by Wi-Fi, Bluetooth and Volume), `Toggle`, `Slider`, `Spinner`, `MaterialIcon` and `Reveal` (the open/close animation). Reuse these rather than building one-off versions.
-- **Surfaces animate their own exit.** A window binds `visible: reveal > 0`, not to its open flag, so it stays mapped while `reveal` animates to 0. Hyprland's layer animation is off for `ummitos-*` (`no_anim` in `windows.conf`) so the two do not stack.
+- **Surfaces extend `OverlayWindow`.** It takes `shown` (the singleton's open flag) and `name`, and it keeps the window mapped while `reveal` animates to 0. Content drives its opacity and scale from `reveal`. Put per-open resets in `onOpened`, not `onVisibleChanged`: a reopen during the exit never unmaps the window, so a visibility hook would not run. While closing, it drops keyboard focus and passes pointer input through. Select on hover with `pointerMoved()`, never `onEntered`. Hyprland's layer animation is off for `ummitos-*` (`no_anim` in `windows.conf`) so the two animations don't stack.
 
 ### How input reaches the shell
 
