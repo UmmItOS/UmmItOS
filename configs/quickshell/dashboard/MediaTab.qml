@@ -10,25 +10,12 @@ import ".."
 Item {
     id: root
 
-    readonly property var player: {
-        const all = Mpris.players.values;
-        return all.find(p => p.isPlaying) ?? all[0] ?? null;
-    }
+    // The bar shows the same player, so the choice of which one lives in a
+    // singleton rather than in both.
+    readonly property var player: Players.active
 
     function timeText(seconds: real): string {
-        if (!seconds || seconds < 0)
-            return "0:00";
-        const m = Math.floor(seconds / 60);
-        const s = Math.floor(seconds % 60);
-        return m + ":" + (s < 10 ? "0" : "") + s;
-    }
-
-    // MPRIS position does not tick on its own.
-    Timer {
-        running: root.player?.isPlaying ?? false
-        interval: 1000
-        repeat: true
-        onTriggered: root.player.positionChanged()
+        return Players.timeText(seconds);
     }
 
     Text {

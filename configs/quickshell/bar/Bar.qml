@@ -95,6 +95,14 @@ PanelWindow {
             }
         }
 
+        // Only there when something is playing; an empty pill is noise.
+        Cluster {
+            Layout.alignment: Qt.AlignVCenter
+            visible: Players.active !== null
+
+            Media {}
+        }
+
         Item {
             Layout.fillWidth: true
         }
