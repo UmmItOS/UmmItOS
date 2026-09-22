@@ -183,7 +183,10 @@ OverlayWindow {
                                     id: card
 
                                     readonly property bool current: cell.current
-                                    readonly property var windows: cell.modelData ? [...cell.modelData.toplevels.values].slice(0, 4) : []
+                                    // Empty while unmapped: every entry is a live
+                                    // capture, and they would otherwise run all day
+                                    // behind a switcher nobody can see.
+                                    readonly property var windows: cell.modelData && win.visible ? [...cell.modelData.toplevels.values].slice(0, 4) : []
 
                                     // The focused card grows by shrinking its inset
                                     // inside a fixed cell. Animating `scale` instead
@@ -255,6 +258,8 @@ OverlayWindow {
                                                     width: tiles.width / tiles.columns - 1
                                                     height: card.windows.length > 2 ? tiles.height / 2 - 1 : tiles.height
                                                     captureSource: modelData.wayland
+                                                    // At the tile's size, not the window's.
+                                                    constraintSize: Qt.size(width, height)
                                                     live: true
                                                     paintCursor: false
                                                 }
@@ -395,7 +400,9 @@ OverlayWindow {
                 // so it has to say how to leave.
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    visible: Switcher.pinned
+                    // Hidden by opacity, not visibility: its line is always
+                    // reserved, or pinning would shrink every card to make room.
+                    opacity: Switcher.pinned ? 1 : 0
                     text: "Pinned  ·  Enter to switch  ·  Esc to close"
                     color: Theme.dim
                     font {
