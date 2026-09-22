@@ -12,7 +12,7 @@ BarButton {
     // Brand purple first, then eleven fills taken from Color Hunt's popular
     // palettes (colorhunt.co), round the wheel. Each is dark enough to carry
     // white text, as the purple does.
-    readonly property var presets: ["#5003c0", "#ab03a9", "#d45060", "#972828", "#e45742", "#c49a45", "#2a835f", "#12544f", "#118ab2", "#2e6fa0", "#2f39a9", "#800020"]
+    readonly property var presets: ["#5003c0", "#ab03a9", "#d45060", "#972828", "#e45742", "#c49a45", "#2a835f", "#12544f", "#76c0ec", "#22396f", "#2f39a9", "#800020"]
 
     property bool popupOpen: false
 
