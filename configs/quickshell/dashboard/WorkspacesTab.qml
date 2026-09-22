@@ -24,7 +24,7 @@ GridView {
             anchors.fill: parent
             anchors.margins: Theme.spacing.small
             radius: Theme.rounding.large
-            color: cell.modelData.urgent ? Theme.urgent : cell.modelData.focused ? Theme.accent : Theme.bgAlt
+            color: cell.modelData?.urgent ? Theme.urgent : cell.modelData?.focused ? Theme.accent : Theme.bgAlt
 
             Behavior on color {
                 ColorAnimation {
@@ -40,7 +40,7 @@ GridView {
                 spacing: Theme.spacing.extraSmall
 
                 Text {
-                    text: cell.modelData.name
+                    text: cell.modelData?.name ?? ""
                     color: Theme.fg
                     font.family: Theme.fontDisplay
                     font.pixelSize: Theme.fontSize.large
@@ -51,10 +51,10 @@ GridView {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     text: {
-                        const names = cell.modelData.toplevels.values.map(t => t.title);
+                        const names = cell.modelData?.toplevels.values.map(t => t.title) ?? [];
                         return names.length === 0 ? "empty" : names.join("\n");
                     }
-                    color: cell.modelData.focused ? Theme.fg : Theme.dim
+                    color: cell.modelData?.focused ? Theme.fg : Theme.dim
                     font.family: Theme.font
                     font.pixelSize: Theme.fontSize.small
                     wrapMode: Text.Wrap
@@ -65,7 +65,7 @@ GridView {
 
             MouseArea {
                 anchors.fill: parent
-                onClicked: cell.modelData.activate()
+                onClicked: cell.modelData?.activate()
             }
         }
     }

@@ -18,13 +18,13 @@ RowLayout {
             id: pill
             required property HyprlandWorkspace modelData
 
-            readonly property bool focused: modelData.focused
+            readonly property bool focused: modelData?.focused ?? false
 
             implicitWidth: focused ? Math.max(30, label.implicitWidth + Theme.padding.large) : 10
             implicitHeight: focused ? 24 : 10
             Layout.alignment: Qt.AlignVCenter
             radius: height / 2
-            color: focused ? Theme.accent : modelData.urgent ? Theme.urgent : Theme.bgTray
+            color: focused ? Theme.accent : modelData?.urgent ? Theme.urgent : Theme.bgTray
 
             Behavior on implicitWidth {
                 NumberAnimation {
@@ -50,7 +50,7 @@ RowLayout {
                 id: label
                 anchors.centerIn: parent
                 opacity: pill.focused ? 1 : 0
-                text: pill.modelData.name
+                text: pill.modelData?.name ?? ""
                 color: Theme.fg
                 font.family: Theme.font
                 font.pixelSize: Theme.fontSize.smaller
@@ -78,7 +78,7 @@ RowLayout {
             MouseArea {
                 anchors.fill: parent
                 anchors.margins: -4
-                onClicked: pill.modelData.activate()
+                onClicked: pill.modelData?.activate()
             }
         }
     }
