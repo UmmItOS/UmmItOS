@@ -2,114 +2,101 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Read `AGENTS.md` first** — it is the authoritative guide to the installer side of this repo (project structure, install flow, package lists, config-copy behavior, commit conventions). This file adds the desktop-shell architecture, which `AGENTS.md` does not cover.
+**Read `AGENTS.md` first.** It is the authoritative guide to the installer: install flow, package lists, config-copy behaviour, `post-install.sh` line edits and commit conventions. This file covers what `AGENTS.md` does not: the Quickshell desktop shell, plus cross-file traps on both halves.
 
 ## What this is
 
-Arch Linux dotfiles + bash installer for a Hyprland desktop. Two halves:
+UmmItOS is Arch Linux plus Hyprland, shipped as a bash installer and a dotfiles bundle. The repo has two halves:
 
-- **Installer** — bash. `setup.sh` → `install.sh` / `install-menu.sh` → `install/*.sh`.
-- **Desktop shell** — `configs/quickshell/`, a ~30-file QML application (Quickshell 0.3.1). It is the bar, notification toasts and centre, wallpaper and picker, app launcher, clipboard, dashboard, session menu, volume/brightness OSD, Wi-Fi menu and an Alt+Tab workspace switcher. It replaced waybar, swaync, rofi, wlogout and swww, which are gone from the repo.
+- **Installer** (bash): `setup.sh` → `install.sh` / `install-menu.sh` → `install/*.sh`, with shared helpers in `lib/common.sh` (`is_laptop`, `has_amdgpu`, `enable_bluetooth`, `prompt_yna`, `backup_file`, and so on).
+- **Desktop shell**: `configs/quickshell/`, a QML application for Quickshell 0.3.1. It provides the bar, notification toasts and centre, wallpaper and picker, launcher and clipboard, dashboard, session menu, volume/brightness OSD, and the Wi-Fi, Bluetooth and audio flyouts. It also includes an Alt+Tab switcher. It replaces waybar, swaync, rofi, wlogout and swww. hyprlock and hypridle remain (`configs/hypr/`).
 
-## Common commands
+## Commands
 
 ```sh
-./install-menu.sh                 # Interactive TUI installer (what most users run)
-./install.sh                      # CLI installer (packages → oh-my-zsh → configs → display manager)
-./post-install.sh --start-config  # Optional per-user tuning; needs a Hyprland session
+./install-menu.sh                 # TUI installer (what most users run)
+./install.sh                      # CLI installer: packages → oh-my-zsh → configs → display manager
+./post-install.sh --start-config  # Per-user tuning after reboot; needs a Hyprland session + jq
 shellcheck install.sh install-menu.sh post-install.sh setup.sh install/*.sh lib/*.sh script/**/*.sh
 
-qs -c ummitos -d                  # Run the shell daemonised
+qs -c ummitos -d                  # Run the shell daemonised (exec.conf starts it at login)
 qs -c ummitos ipc show            # List every IPC target and function
+qs -c ummitos ipc call <target> <fn>
 qs log read /run/user/$UID/quickshell/by-id/*/log.qslog   # Errors from the running instance
 ```
 
-There are no tests, lint config, or CI. `shellcheck` and running the shell are the only verification.
+There are no tests, no lint config and no CI. Verification means running `shellcheck` and running the shell, then reading its log and taking screenshots (`grim`).
 
-**Do not start a second instance of the same config to syntax-check while one is
-already running.** `timeout 6 qs -c ummitos` looks harmless, but when the short-lived
-instance exits it takes the running one down with it — the bar and every panel
-disappear. Read the running instance's log instead, or check against a copy of the
-config under a different name.
+**Never start a second `qs -c ummitos` while one is running**, not even with `timeout` as a syntax check. When it exits, it takes the running instance down with it. To check something in isolation, symlink the config under a different name (`~/.config/quickshell/ummitos-test`) or run a standalone file with `qs -p file.qml`, and remove it afterwards.
 
-## Working on the shell
+## Two installer paths duplicate logic
 
-The config is installed as a **named config directory** at `~/.config/quickshell/ummitos`, which is what `qs -c ummitos` resolves. For development, symlink it to the repo so edits hot-reload:
+`install.sh` **sources** `install/*.sh` in order, so the sub-steps share shell state and one failure aborts the whole run. `install-menu.sh` reuses only `lib/` and `install/copy-config.sh`, and reimplements package installation inline (`read_packages_from_file`, `install_packages_with_paru`, `install_{main,gpu,laptop}_package`). Any change to how packages are read or installed, or to what gets enabled afterwards (for example `enable_bluetooth`), must be made in **both** `install/install-packages.sh` and `install-menu.sh`.
+
+`copy-config.sh` numbers its `safe_copy` steps by hand (`"n" "total"`). Adding a step means renumbering every call.
+
+## The shell
+
+### Development loop
+
+`qs -c ummitos` resolves `~/.config/quickshell/ummitos`. Symlink that path to `configs/quickshell` so edits hot-reload into the running instance, then read the log after each save.
+
+Check QML APIs against the installed type definitions, not the online docs, which lag behind 0.3.1:
 
 ```sh
-ln -s ~/path/to/repo/configs/quickshell ~/.config/quickshell/ummitos
-```
-
-**Verify QML APIs against the installed type definitions, not the online docs** — the docs lag the installed version, and guessing property names wastes a reload cycle:
-
-```sh
-ls /usr/lib/qt6/qml/Quickshell/            # modules: Hyprland, Io, Services/*, Wayland, Networking, Widgets
+ls /usr/lib/qt6/qml/Quickshell/     # Hyprland, Io, Services/*, Wayland, Networking, Bluetooth, Widgets
 grep -A5 'name: "workspaces"' /usr/lib/qt6/qml/Quickshell/Hyprland/_Ipc/*.qmltypes
 ```
 
 ### Structure
 
-Each surface is a **singleton holding state + IPC**, and a **window** that renders it. `Dashboard.qml` owns `open`/`tab`; `DashboardWindow.qml` draws it. Same split for `Launcher`, `Session`, `Notifs`, `Osd`, `Wallpapers`.
+- **Singleton + window split.** Each surface has a singleton that holds its state and its `IpcHandler`, and a window that renders it: `Dashboard`/`DashboardWindow`, `Launcher`/`LauncherWindow`, `Session`, `Notifs`, `Osd`, `Wallpapers`, `Switcher`. `shell.qml` instantiates one of each window, plus `Variants` over `Quickshell.screens` for the bar.
+- **Every singleton and shared component must be listed in `configs/quickshell/qmldir`.** If one is missing, it fails to resolve, and the error does not name the real cause.
+- **Singletons are lazy.** A singleton that nothing references never runs. A background watcher with no UI (`services/BatteryNotifier.qml`) is therefore a `Scope` instantiated in `shell.qml`, not a singleton.
+- **`services/`** holds shared data sources: `SysInfo` (proc polling), `Players` (the active MPRIS player plus the position tick) and `BatteryNotifier`.
+- **Shared components** at the root are `Surface` (the material), `Flyout` (the bar dropdown used by Wi-Fi, Bluetooth and Volume), `Toggle`, `Slider`, `Spinner` and `MaterialIcon`. Reuse these rather than building one-off versions.
 
-**Every singleton and shared component must be registered in `configs/quickshell/qmldir`** or it will not resolve, with no error that names the real cause.
+### How input reaches the shell
 
-`shell.qml` instantiates one of each window, plus `Variants` over `Quickshell.screens` for the bar.
+- Keybinds in `configs/hypr/hyprland/launcher.conf` call `qs -c ummitos ipc call <target> <fn>`. Adding a keybindable surface means adding an `IpcHandler` to its singleton. **Do not name an IPC function `show`**, because `qs ipc show` is a CLI subcommand and claims the name first.
+- Alt+Tab uses `GlobalShortcut` (`bind = ALT, TAB, global, quickshell:switcherNext`). It commits on a release bind (`bindrt = ALT, Alt_L, …`) because Hyprland's bind layer consumes the release. Every commit path goes through `Switcher.release()`, which respects the pin.
+- **Closing on an outside click:** bar flyouts are `PopupWindow`s and use `grabFocus: true`. `HyprlandFocusGrab` only owns layer surfaces, so it works for `PanelWindow` surfaces such as `NotificationPanel` but silently does nothing on an xdg-popup.
 
-Two surfaces are driven by the compositor rather than by IPC: the Alt+Tab
-switcher uses `GlobalShortcut` (Hyprland `bind = …, global, quickshell:<name>`),
-and commits on a release bind (`bindrt = ALT, Alt_L, …`) because Hyprland's bind
-layer consumes Alt+Tab and the release never reaches the surface.
+### Design system
 
-### The design system
+`Theme.qml` is the single source of truth for colour, `rounding`, `spacing`, `padding`, `fontSize`, `icon`, `duration`, `curve` (M3 bezier control points), `tracking`, `weight` and `barHeight`. **Surface files contain no magic numbers.** If you need a new value, add a token for it.
 
-`Theme.qml` is the single source of truth: colour, `rounding`, `spacing`, `padding`, `fontSize`, `icon`, `duration`, `curve` (M3 bezier control points), `tracking`, `weight`, `barHeight`. **No magic numbers in surface files** — if a value is needed, add a token.
-
-- `Surface.qml` is the material: a subtle top-edge gradient. Raised things use it.
-- **There are no borders anywhere, deliberately.** Depth is elevation (`bg` → `bgAlt` → `bgTray`) and space. Do not add `border.width`.
-- Accent `#5003c0` is for fills; `accentText` is the same hue lifted for text on dark.
-
-### Keybinds reach the shell over IPC
-
-`configs/hypr/hyprland/launcher.conf` calls `qs -c ummitos ipc call <target> <function>`. Adding a surface means adding an `IpcHandler` to its singleton.
-
-**Do not name an IPC function `show`** — `qs ipc show` is a subcommand and the CLI claims the name before the handler sees it.
-
-### Blur
-
-A single Hyprland `layerrule` in `configs/hypr/hyprland/windows.conf` matches `ummitos-.*`, so any new surface gets blur for free by setting `WlrLayershell.namespace: "ummitos-<name>"`. The block syntax wants `ignore_alpha`, not the old one-line form's `ignorealpha`.
+- **No borders anywhere, deliberately.** Depth comes from elevation (`bg` → `bgAlt` → `bgTray`) and spacing. Do not add `border.width`.
+- The accent `#5003c0` is for fills. `accentText` is the same hue, lifted so it stays readable as text on the dark background.
+- Blur is automatic. One Hyprland `layerrule` in `configs/hypr/hyprland/windows.conf` matches `ummitos-.*`, so set `WlrLayershell.namespace: "ummitos-<name>"` on new surfaces. The block syntax uses `ignore_alpha`, not `ignorealpha`.
 
 ### Debugging state
 
-When a surface misbehaves, read its actual state before theorising about the
-logic. Add a temporary `function probe(): string` to the singleton's
-`IpcHandler` returning `JSON.stringify({…})` of the internal values, call it
-between steps, and delete it afterwards. The switcher's selection bug looked
-like an off-by-one in arithmetic that turned out to be correct the whole time —
-the probe showed the index being computed right and then overwritten.
+Before theorising about why a surface misbehaves, read its actual state. Add a temporary `function probe(): string` to the singleton's `IpcHandler` that returns `JSON.stringify({…})` of the internal values, call it between steps, and delete it afterwards.
 
 ## Traps found the hard way
 
-- **`Layout.fillWidth` is contagious.** A child that fills makes its row growable, which propagates up and ate the bar's centring spacers. `Layout.preferredWidth` on the row root cannot cap it — give the child a fixed width instead.
-- **`Behavior` fires on the first assignment too.** Properties fed by async data animate up from zero on first paint. Gate the `Behavior` with a flag flipped after the first real value.
-- **`RotationAnimation` leaves `rotation` where it stopped.** A spinner and a static icon must not be the same element, or the static one renders tilted.
-- **Assign the committed value before clearing a preview value.** A derived `readonly property` that falls back between the two will flash the stale value for a frame.
-- **List-typed QML properties are JS arrays.** `DesktopEntry.keywords` is a list; calling `.toLowerCase()` on it throws and silently empties the whole binding.
-- **Anchoring an Item inside a Layout is undefined behaviour.** Use `TapHandler`/`WheelHandler`/`HoverHandler` instead of an anchored `MouseArea`.
-- **`layer.enabled` plus `scale` resamples.** A layer rasterises the item at its own size, so scaling magnifies that texture rather than redrawing. To grow a focused item that carries a glow, change its size — e.g. animate an inset inside a fixed cell — not its `scale`.
-- **Enter events are not evidence that the pointer moved.** They fire when a surface opens under a stationary cursor, and again whenever geometry shifts beneath it — a focused item growing is enough. Driving selection from `onEntered` makes it snap back to whatever sits under the mouse. Compare the pointer's position in window coordinates instead.
-- **`Hyprland.workspaces` yields nulls** while workspaces are being created and destroyed. Filter before reading any property off an entry.
+- **`Layout.fillWidth` is contagious.** A filling child makes its row growable all the way up the tree, which ate the bar's centring. Give the child a fixed width instead. Centre things with anchors, not with spacers either side of content whose width varies.
+- **`Behavior` fires on the first assignment.** Async-fed values animate up from zero on first paint, so gate the `Behavior` on a flag.
+- **`RotationAnimation` leaves `rotation` where it stopped.** Use separate elements for the spinner and the static icon.
+- **Assign the committed value before clearing a preview value**, or a derived fallback binding flashes the stale value.
+- **List-typed QML properties are JS arrays.** Calling `.toLowerCase()` on one throws, and the whole binding silently empties.
+- **Anchoring an Item inside a Layout is undefined behaviour.** Use `TapHandler`, `WheelHandler` or `HoverHandler` instead of an anchored `MouseArea`.
+- **`layer.enabled` plus `scale` magnifies a raster.** To grow an item that carries a glow, change its size, not its `scale`.
+- **Enter events are not movement.** They fire when a surface opens under a still cursor or when geometry shifts. Compare the pointer position in window coordinates instead.
+- **`Hyprland.workspaces` yields nulls** during create and destroy, so filter entries before reading them.
+- **Repeater-in-Layout cannot animate removal.** Lists that should animate items leaving (the notifications) are `ListView`s with `add`, `remove` and `displaced` transitions. Delegates outlive their model entry during `remove`, so read `modelData?.x ?? ""`.
+- **Name collisions shadow modules.** `bar/Bluetooth.qml` shadows `Quickshell.Bluetooth`, so the module is imported `as Bluez`.
+- **MPRIS length is unreliable.** When `lengthSupported` is false, Quickshell reports the position as the length, and some players (Floorp) publish the length late. Gate progress bars on `lengthSupported && length > 0`.
+- **Degenerate geometry can crash Qt.** Clamp computed radii to at least 1 (see `dashboard/Gauge.qml`).
+- **PipeWire nodes:** a device is `isSink && !isStream`, and an app stream is `isSink && isStream`. Nodes need a `PwObjectTracker` before their `audio` properties are readable.
+- **Bluetooth needs `bluetoothd` running before `qs` starts.** Otherwise the adapter stays null until the shell restarts.
 
-## Hard rules (see AGENTS.md for detail)
+## Hard rules
 
-- Arch Linux only; scripts gate on `/etc/arch-release`.
-- Use `paru`, never `pacman` directly, in new install code.
-- Never run/assume root — `install-menu.sh` rejects EUID 0.
-- Wallpapers are a git submodule (`.wallpaper`) — clone `--recursive`.
-- Installer scripts run from repo root and use relative paths (`./install/...`).
-- Conventional Commits required; PRs need the "Tested on my system" checkbox.
-
-## Two installer paths (duplicated logic)
-
-`install.sh` **sources** `install/*.sh` in order, so sub-steps share shell state and a failure aborts everything. `install-menu.sh` only reuses `lib/` and `install/copy-config.sh` — package installation is reimplemented inline (`read_packages_from_file`, `install_packages_with_paru`, `install_{main,gpu,laptop}_package`). Changes to how packages are read or installed must be made in **both** `install/install-packages.sh` and `install-menu.sh`, or the TUI path drifts out of sync.
-
-`copy-config.sh` steps are numbered `"n" "total"` by hand — adding a step means renumbering all of them.
+- Arch Linux only. Scripts gate on `/etc/arch-release`.
+- Use `paru` in new install code, never `pacman` directly. NVIDIA is unsupported, and GPU packages are AMD-only.
+- Never run or assume root. `install-menu.sh` rejects EUID 0.
+- Wallpapers are a git submodule (`.wallpaper`), so clone with `--recursive`.
+- Installer scripts run from the repo root and use relative paths (`./install/...`).
+- Conventional Commits are required, and PRs need the "Tested on my system" checkbox ticked.
