@@ -1,19 +1,38 @@
 pragma Singleton
 
 import Quickshell
+import Quickshell.Io
 import QtQuick
 
 Singleton {
+    id: root
+
     readonly property color bg: Qt.rgba(20 / 255, 20 / 255, 35 / 255, 0.72)
     readonly property color bgAlt: Qt.rgba(30 / 255, 25 / 255, 45 / 255, 0.82)
     // One step brighter than bgAlt, for a tray sitting on top of a panel.
     readonly property color bgTray: Qt.rgba(44 / 255, 37 / 255, 62 / 255, 0.78)
-    // Brand purple. It is dark (L 38%), so it is used for fills, borders and
-    // solid shapes; `accentText` is the same hue lifted to stay readable as
-    // text on the dark background.
-    readonly property color accent: "#5003c0"
-    readonly property color accentText: "#a97bf5"
-    readonly property color accent2: "#c9a3ff"
+    // The accent is chosen in the bar and saved; brand purple until then. It
+    // is a fill colour. `accentText` and `accent2` are the same hue lifted so
+    // they stay readable as text on the dark ground, derived rather than
+    // stored, so any accent brings its own.
+    readonly property color defaultAccent: "#5003c0"
+    property string savedAccent: ""
+    readonly property color accent: /^#[0-9a-f]{6}([0-9a-f]{2})?$/i.test(savedAccent) ? savedAccent : defaultAccent
+    readonly property color accentText: Qt.hsla(Math.max(0, accent.hslHue), Math.min(accent.hslSaturation, 0.86), 0.72, 1)
+    readonly property color accent2: Qt.hsla(Math.max(0, accent.hslHue), accent.hslSaturation, 0.82, 1)
+
+    function setAccent(c: color): void {
+        savedAccent = c.toString();
+        accentFile.setText(savedAccent);
+    }
+
+    FileView {
+        id: accentFile
+        path: Quickshell.statePath("accent.txt")
+        printErrors: false
+        blockWrites: false
+        onLoaded: root.savedAccent = text().trim()
+    }
     readonly property color fg: "#e8e8f0"
     readonly property color dim: Qt.rgba(1, 1, 1, 0.45)
     readonly property color urgent: "#ff6b6b"

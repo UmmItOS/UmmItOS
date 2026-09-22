@@ -93,6 +93,8 @@ PanelWindow {
                 icon: "keyboard"
                 onClicked: Quickshell.execDetached(["kitty", "--execute", bar.home + "/script/hotkey-tui.sh"])
             }
+
+            AccentPicker {}
         }
 
         Item {
