@@ -8,10 +8,11 @@ RowLayout {
 
     readonly property var battery: UPower.displayDevice
     readonly property real pct: battery ? battery.percentage : 1
-    readonly property int state: battery ? battery.state : UPowerDeviceState.Unknown
+    // Not `state`: every Item already has one, for its States.
+    readonly property int charge: battery ? battery.state : UPowerDeviceState.Unknown
 
-    readonly property bool charging: state === UPowerDeviceState.Charging || state === UPowerDeviceState.PendingCharge
-    readonly property bool full: state === UPowerDeviceState.FullyCharged
+    readonly property bool charging: charge === UPowerDeviceState.Charging || charge === UPowerDeviceState.PendingCharge
+    readonly property bool full: charge === UPowerDeviceState.FullyCharged
     readonly property bool low: pct < 0.2 && !charging && !full
 
     // Green while it is filling or filled, amber on the way down, red when the
@@ -76,10 +77,13 @@ RowLayout {
             }
         }
 
-        // A charging battery is the one state worth a pulse.
+        // A few pulses when the charger goes in, then still: an endless pulse
+        // redraws and re-blurs the bar every frame for as long as it charges.
         SequentialAnimation on opacity {
-            running: root.charging
-            loops: Animation.Infinite
+            id: pulse
+
+            running: false
+            loops: 3
             alwaysRunToEnd: true
 
             NumberAnimation {
@@ -93,6 +97,11 @@ RowLayout {
                 easing.type: Easing.InOutQuad
             }
         }
+    }
+
+    onChargingChanged: {
+        if (charging)
+            pulse.restart();
     }
 
     Text {
