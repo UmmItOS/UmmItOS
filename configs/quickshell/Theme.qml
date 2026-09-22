@@ -78,6 +78,8 @@ Singleton {
         readonly property int larger: 17
         readonly property int large: 21
         readonly property int extraLarge: 32
+        // The OSD's number, which is the only thing on screen when it appears.
+        readonly property int huge: 46
     }
 
     // Icons do not follow the text scale: a glyph needs more room than a
@@ -105,6 +107,7 @@ Singleton {
         readonly property int normal: 24
         readonly property int large: 30
         readonly property int extraLarge: 46
+        readonly property int huge: 52
     }
 
     readonly property QtObject duration: QtObject {

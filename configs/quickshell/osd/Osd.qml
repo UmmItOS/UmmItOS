@@ -11,7 +11,12 @@ import QtQuick
 Singleton {
     id: root
 
+    // "volume" | "brightness" | "app". An app carries its own icon and name,
+    // because "61%" over a speaker glyph says nothing about which of four
+    // things playing sound just got quieter.
     property string kind: "volume"
+    property string icon: ""
+    property string label: ""
     property real value: 0
     property bool muted: false
     property bool shown: false
@@ -29,11 +34,23 @@ Singleton {
     function present(newKind: string, newValue: real, newMuted: bool): void {
         if (!primed)
             return;
+        if (newKind !== "app") {
+            icon = "";
+            label = "";
+        }
         kind = newKind;
         value = Math.max(0, Math.min(1, newValue));
         muted = newMuted;
         shown = true;
         hide.restart();
+    }
+
+    // Dragging one app's volume gets the same readout as the volume keys, with
+    // that app's icon in place of the speaker.
+    function presentApp(iconPath: string, name: string, newValue: real, newMuted: bool): void {
+        icon = iconPath;
+        label = name;
+        present("app", newValue, newMuted);
     }
 
     Timer {

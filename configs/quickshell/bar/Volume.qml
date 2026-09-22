@@ -324,8 +324,11 @@ RowLayout {
                     Layout.alignment: Qt.AlignVCenter
                     value: stream.level
                     fill: stream.muted ? Theme.dim : Theme.accent2
+                    // The same readout the volume keys raise, carrying this
+                    // app's icon instead of the speaker.
                     onMoved: value => {
                         stream.modelData.audio.volume = value;
+                        Osd.presentApp(root.iconFor(stream.modelData), root.labelFor(stream.modelData), value, stream.muted);
                     }
                 }
 

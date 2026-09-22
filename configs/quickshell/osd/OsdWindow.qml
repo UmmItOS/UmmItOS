@@ -2,7 +2,9 @@ pragma ComponentBehavior: Bound
 
 import Quickshell
 import Quickshell.Wayland
+import Quickshell.Widgets
 import QtQuick
+import QtQuick.Effects
 import ".."
 
 // A square that appears where you are already looking, says one number, and
@@ -12,7 +14,8 @@ PanelWindow {
     id: win
 
     readonly property int segments: 16
-    readonly property int filled: Math.round(Osd.value * segments)
+    readonly property int filled: Math.round(Osd.value * win.segments)
+    readonly property bool app: Osd.kind === "app"
 
     // Stay mapped until the fade finishes, or the card vanishes instantly
     // instead of animating out.
@@ -58,36 +61,64 @@ PanelWindow {
             anchors.centerIn: parent
             spacing: Theme.spacing.medium
 
-            MaterialIcon {
+            Item {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: {
-                    if (Osd.kind === "brightness")
-                        return Osd.value > 0.6 ? "brightness_high" : Osd.value > 0.25 ? "brightness_medium" : "brightness_low";
-                    if (Osd.muted)
-                        return "volume_off";
-                    return Osd.value > 0.5 ? "volume_up" : Osd.value > 0 ? "volume_down" : "volume_mute";
+                implicitWidth: Theme.icon.huge
+                implicitHeight: Theme.icon.huge
+
+                // The app's own icon, recoloured to the shell. Only the
+                // silhouette survives, which is the part that identifies it,
+                // and a brand palette never fights the card it sits on.
+                IconImage {
+                    id: appIcon
+
+                    anchors.fill: parent
+                    source: Osd.icon
+                    visible: false
                 }
-                color: Osd.muted ? Theme.dim : Theme.fg
-                fill: 1
-                size: 52
+
+                MultiEffect {
+                    anchors.fill: parent
+                    source: appIcon
+                    visible: win.app && appIcon.status === Image.Ready
+                    colorization: 1
+                    colorizationColor: Osd.muted ? Theme.dim : Theme.fg
+                }
+
+                MaterialIcon {
+                    anchors.centerIn: parent
+                    visible: !win.app || appIcon.status !== Image.Ready
+                    text: {
+                        if (Osd.kind === "brightness")
+                            return Osd.value > 0.6 ? "brightness_high" : Osd.value > 0.25 ? "brightness_medium" : "brightness_low";
+                        if (Osd.muted)
+                            return "volume_off";
+                        return Osd.value > 0.5 ? "volume_up" : Osd.value > 0 ? "volume_down" : "volume_mute";
+                    }
+                    color: Osd.muted ? Theme.dim : Theme.fg
+                    fill: 1
+                    size: Theme.icon.huge
+                }
             }
 
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: Osd.muted ? "Muted" : Math.round(Osd.value * 100) + "%"
                 color: Osd.muted ? Theme.dim : Theme.fg
-                font.family: Theme.fontDisplay
-                font.pixelSize: Osd.muted ? 26 : 38
-                font.weight: Theme.weight.bold
-                // Tabular, or the square twitches as the digits change.
-                font.features: ({
-                        tnum: 1
-                    })
+                font {
+                    family: Theme.fontDisplay
+                    pixelSize: Osd.muted ? Theme.fontSize.extraLarge : Theme.fontSize.huge
+                    weight: Theme.weight.bold
+                    // Tabular, or the square twitches as the digits change.
+                    features: ({
+                            tnum: 1
+                        })
+                }
             }
 
             Row {
                 anchors.horizontalCenter: parent.horizontalCenter
-                spacing: 3
+                spacing: Theme.spacing.hair
 
                 Repeater {
                     model: win.segments
@@ -96,8 +127,8 @@ PanelWindow {
                         required property int index
 
                         implicitWidth: 6
-                        implicitHeight: 10
-                        radius: 1.5
+                        implicitHeight: 14
+                        radius: Theme.rounding.extraSmall / 2
                         color: index < win.filled ? (Osd.muted ? Theme.dim : Theme.accentText) : Theme.bgTray
 
                         Behavior on color {
@@ -106,6 +137,24 @@ PanelWindow {
                             }
                         }
                     }
+                }
+            }
+
+            // Which app, when it is an app. Nothing when it is the machine:
+            // a label saying "Volume" under a speaker icon is furniture.
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: card.width - Theme.padding.extraLarge * 2
+                horizontalAlignment: Text.AlignHCenter
+                visible: win.app && Osd.label !== ""
+                text: Osd.label
+                color: Theme.dim
+                elide: Text.ElideRight
+                font {
+                    family: Theme.font
+                    pixelSize: Theme.fontSize.smaller
+                    weight: Theme.weight.medium
+                    letterSpacing: Theme.tracking.wider
                 }
             }
         }
