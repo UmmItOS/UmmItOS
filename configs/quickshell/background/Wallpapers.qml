@@ -53,6 +53,24 @@ Singleton {
         stateFile.setText(path);
     }
 
+    // hyprlock reads its own config and cannot see ours, so its background is
+    // rewritten whenever the wallpaper is committed. Scoped to the background
+    // block, and written back $HOME-relative so the config stays portable —
+    // the same edit script/awww/detect.sh used to make.
+    onActualChanged: {
+        if (actual === "")
+            return;
+        const home = Quickshell.env("HOME");
+        const portable = actual.startsWith(home) ? "$HOME" + actual.slice(home.length) : actual;
+        lockSync.running = false;
+        lockSync.command = ["sed", "-i", `/^# Background wallpaper/,/^}/ s|^    path = .*|    path = ${portable}|`, home + "/.config/hypr/hyprlock.conf"];
+        lockSync.running = true;
+    }
+
+    Process {
+        id: lockSync
+    }
+
     // Same extension filter as script/swww/random-wallpaper.sh, and recursive
     // so the Anime/ and Landscape/ subfolders are included.
     Process {
