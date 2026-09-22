@@ -93,6 +93,57 @@ PanelWindow {
             }
         }
 
+        // A mouse target for the same thing P does. Holding Alt is exactly the
+        // state in which a keyboard shortcut is least reachable, so pinning
+        // needs something to click.
+        Surface {
+            id: pin
+
+            anchors.top: parent.top
+            anchors.right: parent.right
+            anchors.margins: Theme.padding.extraLarge
+            implicitWidth: pinRow.implicitWidth + Theme.padding.large * 2
+            implicitHeight: 44
+            radius: Theme.rounding.full
+            tone: Switcher.pinned ? Theme.accent : Theme.bgTray
+
+            Behavior on tone {
+                ColorAnimation {
+                    duration: Theme.duration.expressiveFastEffects
+                }
+            }
+
+            Row {
+                id: pinRow
+                anchors.centerIn: parent
+                spacing: Theme.spacing.small
+
+                MaterialIcon {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "push_pin"
+                    color: Theme.fg
+                    fill: Switcher.pinned ? 1 : 0
+                    size: Theme.icon.small
+                }
+
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: Switcher.pinned ? "Pinned" : "Keep open"
+                    color: Theme.fg
+                    font.family: Theme.font
+                    font.pixelSize: Theme.fontSize.normal
+                    font.weight: Theme.weight.medium
+                    font.letterSpacing: Theme.tracking.wide
+                }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: Switcher.pinned = !Switcher.pinned
+            }
+        }
+
         Column {
             anchors.centerIn: parent
             spacing: Theme.spacing.extraLarge
