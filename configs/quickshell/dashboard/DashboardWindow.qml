@@ -46,9 +46,11 @@ OverlayWindow {
         scale: Theme.popScale + (1 - Theme.popScale) * win.reveal
 
         anchors.top: parent.top
-        anchors.topMargin: 52
-        width: 940
-        height: 520
+        // Under the bar, read from the token so a taller bar does not end up
+        // on top of it. Capped to the screen, which can be smaller than this.
+        anchors.topMargin: Theme.barHeight + Theme.spacing.small
+        width: Math.min(940, parent.width - Theme.padding.extraLarge * 2)
+        height: Math.min(520, parent.height - anchors.topMargin - Theme.padding.extraLarge)
         radius: Theme.rounding.extraExtraLarge
         gradient: Gradient {
             GradientStop {

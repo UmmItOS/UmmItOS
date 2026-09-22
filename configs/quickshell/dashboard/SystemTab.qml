@@ -129,6 +129,10 @@ ColumnLayout {
                         }
 
                         Text {
+                            // A Layout holds an item at its implicit width, so
+                            // elide never fires without a cap: a long value ran
+                            // off the card instead of ending in an ellipsis.
+                            Layout.maximumWidth: root.width / 4
                             text: fact.modelData.value
                             color: Theme.fg
                             elide: Text.ElideRight

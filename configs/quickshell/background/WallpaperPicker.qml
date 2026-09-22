@@ -254,7 +254,11 @@ OverlayWindow {
                 height: list.height
 
                 scale: PathView.itemScale ?? picker.shrink
-                y: PathView.itemLift ?? 0
+                // A Translate, not `y`: PathView positions the delegate on every
+                // update and overwrote the lift before it could show.
+                transform: Translate {
+                    y: cell.PathView.itemLift ?? 0
+                }
                 z: focused ? 1 : 0
 
                 ClippingRectangle {
