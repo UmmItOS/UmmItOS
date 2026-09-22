@@ -28,27 +28,22 @@ PanelWindow {
     }
     color: Theme.scrim(0.45)
 
-    // The pointer is wherever it was left. Without this, opening the switcher
-    // fires onEntered on whatever card happens to be under it, which overwrites
-    // the keyboard selection the moment it is computed — every Alt+Tab landed
-    // on the card beneath the cursor instead of the next workspace.
-    property bool pointerArmed: false
+    // Only a pointer that has actually moved may change the selection.
+    //
+    // Enter events are not evidence of movement: they fire when the switcher
+    // opens under a stationary cursor, and again every time the selection
+    // changes, because the focused card grows and the geometry shifts beneath
+    // the pointer. Acting on them made the selection snap back to whichever
+    // card sat under the mouse, which looked like the switcher refusing to
+    // advance. The last known position is compared instead, in window
+    // coordinates so card-local movement from a resize does not count.
+    property point lastPointer: Qt.point(-1, -1)
 
     onVisibleChanged: {
         if (visible) {
-            pointerArmed = false;
-            arm.restart();
+            lastPointer = Qt.point(-1, -1);
             scope.forceActiveFocus();
         }
-    }
-
-    // Qt delivers a position event when an area appears under a stationary
-    // cursor, so "has the pointer moved" cannot be answered from events alone.
-    // Ignoring hover for a moment after opening is deterministic.
-    Timer {
-        id: arm
-        interval: 250
-        onTriggered: win.pointerArmed = true
     }
 
     FocusScope {
@@ -230,12 +225,12 @@ PanelWindow {
                         anchors.fill: parent
                         hoverEnabled: true
 
-                        onPositionChanged: {
-                            if (win.pointerArmed)
-                                Switcher.index = cell.index;
-                        }
-                        onEntered: {
-                            if (win.pointerArmed)
+                        onPositionChanged: mouse => {
+                            const p = mapToItem(null, mouse.x, mouse.y);
+                            const first = win.lastPointer.x < 0;
+                            const moved = Math.abs(p.x - win.lastPointer.x) > 2 || Math.abs(p.y - win.lastPointer.y) > 2;
+                            win.lastPointer = p;
+                            if (!first && moved)
                                 Switcher.index = cell.index;
                         }
                         onClicked: Switcher.commit()

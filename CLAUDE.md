@@ -82,6 +82,7 @@ A single Hyprland `layerrule` in `configs/hypr/hyprland/windows.conf` matches `u
 - **List-typed QML properties are JS arrays.** `DesktopEntry.keywords` is a list; calling `.toLowerCase()` on it throws and silently empties the whole binding.
 - **Anchoring an Item inside a Layout is undefined behaviour.** Use `TapHandler`/`WheelHandler`/`HoverHandler` instead of an anchored `MouseArea`.
 - **`layer.enabled` plus `scale` resamples.** A layer rasterises the item at its own size, so scaling magnifies that texture rather than redrawing. To grow a focused item that carries a glow, change its size — e.g. animate an inset inside a fixed cell — not its `scale`.
+- **Enter events are not evidence that the pointer moved.** They fire when a surface opens under a stationary cursor, and again whenever geometry shifts beneath it — a focused item growing is enough. Driving selection from `onEntered` makes it snap back to whatever sits under the mouse. Compare the pointer's position in window coordinates instead.
 - **`Hyprland.workspaces` yields nulls** while workspaces are being created and destroyed. Filter before reading any property off an entry.
 
 ## Hard rules (see AGENTS.md for detail)
