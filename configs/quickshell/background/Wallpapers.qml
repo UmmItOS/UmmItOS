@@ -55,15 +55,19 @@ Singleton {
 
     // hyprlock reads its own config and cannot see ours, so its background is
     // rewritten whenever the wallpaper is committed. Scoped to the background
-    // block, and written back $HOME-relative so the config stays portable —
-    // the same edit script/awww/detect.sh used to make.
+    // block, and written back $HOME-relative so the config stays portable.
     onActualChanged: {
-        if (actual === "")
+        // A newline cannot be carried through one sed line at all.
+        if (actual === "" || actual.includes("\n"))
             return;
         const home = Quickshell.env("HOME");
         const portable = actual.startsWith(home) ? "$HOME" + actual.slice(home.length) : actual;
+        // The path is sed replacement text: an unescaped & pastes the match,
+        // and a | or \ ends or rewrites the expression, so a filename could
+        // add flags such as w (write a file) or e (run a command).
+        const escaped = portable.replace(/[\\&|]/g, "\\$&");
         lockSync.running = false;
-        lockSync.command = ["sed", "-i", `/^# Background wallpaper/,/^}/ s|^    path = .*|    path = ${portable}|`, home + "/.config/hypr/hyprlock.conf"];
+        lockSync.command = ["sed", "-i", `/^# Background wallpaper/,/^}/ s|^    path = .*|    path = ${escaped}|`, home + "/.config/hypr/hyprlock.conf"];
         lockSync.running = true;
     }
 
@@ -71,8 +75,7 @@ Singleton {
         id: lockSync
     }
 
-    // Same extension filter as script/swww/random-wallpaper.sh, and recursive
-    // so the Anime/ and Landscape/ subfolders are included.
+    // Recursive, so the Anime/ and Landscape/ subfolders are included.
     Process {
         running: true
         command: ["find", root.dir, "-type", "f", "-regex", ".*\\.\\(jpg\\|png\\|jpeg\\)"]
