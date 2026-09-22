@@ -16,7 +16,8 @@ Singleton {
     readonly property bool running: Players.watched && (Players.active?.isPlaying ?? false)
 
     // Its own config, written beside the cache, so a user's cava config for
-    // the terminal is left alone.
+    // the terminal is left alone. noise_reduction is cava's smoothing (default
+    // 77); at 20 the bars follow the beat instead of drifting after it.
     readonly property string config: `[general]
 bars = ${bars}
 framerate = 60
@@ -29,6 +30,8 @@ data_format = ascii
 ascii_max_range = 100
 bar_delimiter = 59
 frame_delimiter = 10
+[smoothing]
+noise_reduction = 20
 `
 
     onRunningChanged: {
