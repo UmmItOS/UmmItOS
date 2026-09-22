@@ -144,6 +144,7 @@ install_all_packages() {
     fi
 
     enable_bluetooth
+    retire_old_notifier
 }
 
 # install.sh and install-menu.sh source this file and call the functions themselves

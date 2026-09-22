@@ -45,3 +45,9 @@ aur/smile
 aur/woomer
 aur/bibata-cursor-theme
 aur/apple-fonts
+extra/wl-clipboard
+extra/libnotify
+extra/upower
+extra/networkmanager
+extra/fcitx5
+extra/fzf

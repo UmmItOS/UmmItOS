@@ -72,6 +72,7 @@ install_main_package() {
     display_banner_start
     install_main_packages
     enable_bluetooth
+    retire_old_notifier
     pause_and_continue
 }
 

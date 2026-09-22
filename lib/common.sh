@@ -149,6 +149,16 @@ has_nvidiagpu() {
 # Function to enable the Bluetooth stack
 # bluez only ships the unit; nothing starts it, and the shell's Bluetooth menu
 # has no adapter to talk to until it runs.
+# The shell is the notification server now. A leftover daemon (swaync from an
+# older UmmItOS) gets D-Bus-activated whenever the shell reloads, takes the
+# notification name, and toasts silently stop.
+retire_old_notifier() {
+    if command_exists swaync; then
+        systemctl --user mask swaync.service &> /dev/null &&
+            echo "${COLOR_GREEN}:: Disabled the old swaync notification daemon.${COLOR_RESET}"
+    fi
+}
+
 enable_bluetooth() {
     if ! command_exists bluetoothctl; then
         return 0
