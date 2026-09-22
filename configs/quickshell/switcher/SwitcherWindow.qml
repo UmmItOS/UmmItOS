@@ -46,6 +46,10 @@ PanelWindow {
                 Switcher.step(1);
             } else if (event.key === Qt.Key_Left) {
                 Switcher.step(-1);
+            } else if (event.key === Qt.Key_Down) {
+                Switcher.step(grid.columns);
+            } else if (event.key === Qt.Key_Up) {
+                Switcher.step(-grid.columns);
             } else if (event.key === Qt.Key_Escape) {
                 Switcher.cancel();
             } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
@@ -60,34 +64,55 @@ PanelWindow {
             }
         }
 
-        RowLayout {
-            id: cards
+        Grid {
+            id: grid
             anchors.centerIn: parent
-            spacing: Theme.spacing.largeIncreased
+            spacing: Theme.spacing.large
 
-            // Cards take what the screen allows, so more workspaces shrink them
-            // rather than running off the edge.
-            readonly property int cardWidth: Math.min(460, (win.width - Theme.padding.extraLarge * 4) / Math.max(1, Switcher.workspaces.length) - Theme.spacing.largeIncreased)
+            // Wraps at three across, the way a Windows switcher does, so cards
+            // keep a usable size instead of shrinking with every workspace.
+            readonly property int count: Math.max(1, Switcher.workspaces.length)
+            columns: Math.min(3, count)
+            readonly property int cellWidth: Math.min(520, (win.width - Theme.padding.extraLarge * 4) / columns - spacing)
+            readonly property int cellHeight: cellWidth * 0.68
 
             Repeater {
                 model: Switcher.workspaces
 
-                Surface {
-                    id: card
+                Item {
+                    id: cell
                     required property HyprlandWorkspace modelData
                     required property int index
 
                     readonly property bool current: Switcher.index === index
-                    readonly property var windows: [...modelData.toplevels.values].slice(0, 4)
 
-                    implicitWidth: cards.cardWidth
-                    implicitHeight: cards.cardWidth * 0.72
+                    width: grid.cellWidth
+                    height: grid.cellHeight
+
+                    Surface {
+                    id: card
+
+                    readonly property bool current: cell.current
+                    readonly property var modelData: cell.modelData
+                    readonly property var windows: cell.modelData ? [...cell.modelData.toplevels.values].slice(0, 4) : []
+
+                    // The focused card grows by shrinking its inset inside a
+                    // fixed cell. Animating `scale` instead would magnify the
+                    // glow layer's texture rather than redraw at the new size,
+                    // which is what made it look resampled — and a fixed cell
+                    // means growing does not shove its neighbours around.
+                    anchors.fill: parent
+                    anchors.margins: current ? 0 : Theme.spacing.largeIncreased
                     radius: Theme.rounding.extraLarge
                     tone: current ? Theme.accent : Theme.bgAlt
 
-                    // No scale on the focused card: it is already inside a layer
-                    // for the glow, and magnifying that texture is what made the
-                    // previews look resampled. Colour and glow carry focus.
+                    Behavior on anchors.margins {
+                        NumberAnimation {
+                            duration: Theme.duration.expressiveFastSpatial
+                            easing.type: Easing.BezierSpline
+                            easing.bezierCurve: Theme.curve.expressiveDefaultSpatial
+                        }
+                    }
 
                     layer.enabled: card.current
                     layer.effect: MultiEffect {
@@ -156,6 +181,8 @@ PanelWindow {
                                 // The focused window names the workspace; an
                                 // index says nothing about what is on it.
                                 text: {
+                                    if (!card.modelData)
+                                        return "";
                                     const all = card.modelData.toplevels.values;
                                     if (all.length === 0)
                                         return "Empty";
@@ -170,7 +197,7 @@ PanelWindow {
                             }
 
                             Text {
-                                text: card.modelData.toplevels.values.length
+                                text: card.modelData ? card.modelData.toplevels.values.length : 0
                                 color: card.current ? Theme.fg : Theme.dim
                                 font.family: Theme.font
                                 font.pixelSize: Theme.fontSize.small
@@ -184,8 +211,9 @@ PanelWindow {
                     MouseArea {
                         anchors.fill: parent
                         hoverEnabled: true
-                        onEntered: Switcher.index = card.index
+                        onEntered: Switcher.index = cell.index
                         onClicked: Switcher.commit()
+                    }
                     }
                 }
             }

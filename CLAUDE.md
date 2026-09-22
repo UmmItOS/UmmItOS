@@ -19,12 +19,18 @@ Arch Linux dotfiles + bash installer for a Hyprland desktop. Two halves:
 ./post-install.sh --start-config  # Optional per-user tuning; needs a Hyprland session
 shellcheck install.sh install-menu.sh post-install.sh setup.sh install/*.sh lib/*.sh script/**/*.sh
 
-qs -c ummitos                     # Run the shell in the foreground; QML errors print here
+qs -c ummitos -d                  # Run the shell daemonised
 qs -c ummitos ipc show            # List every IPC target and function
-timeout 6 qs -c ummitos 2>&1 | grep -i error   # Non-interactive syntax/binding check
+qs log read /run/user/$UID/quickshell/by-id/*/log.qslog   # Errors from the running instance
 ```
 
 There are no tests, lint config, or CI. `shellcheck` and running the shell are the only verification.
+
+**Do not start a second instance of the same config to syntax-check while one is
+already running.** `timeout 6 qs -c ummitos` looks harmless, but when the short-lived
+instance exits it takes the running one down with it — the bar and every panel
+disappear. Read the running instance's log instead, or check against a copy of the
+config under a different name.
 
 ## Working on the shell
 
@@ -75,6 +81,8 @@ A single Hyprland `layerrule` in `configs/hypr/hyprland/windows.conf` matches `u
 - **Assign the committed value before clearing a preview value.** A derived `readonly property` that falls back between the two will flash the stale value for a frame.
 - **List-typed QML properties are JS arrays.** `DesktopEntry.keywords` is a list; calling `.toLowerCase()` on it throws and silently empties the whole binding.
 - **Anchoring an Item inside a Layout is undefined behaviour.** Use `TapHandler`/`WheelHandler`/`HoverHandler` instead of an anchored `MouseArea`.
+- **`layer.enabled` plus `scale` resamples.** A layer rasterises the item at its own size, so scaling magnifies that texture rather than redrawing. To grow a focused item that carries a glow, change its size — e.g. animate an inset inside a fixed cell — not its `scale`.
+- **`Hyprland.workspaces` yields nulls** while workspaces are being created and destroyed. Filter before reading any property off an entry.
 
 ## Hard rules (see AGENTS.md for detail)
 
