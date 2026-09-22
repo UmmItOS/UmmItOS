@@ -51,34 +51,6 @@ Item {
         }
     }
 
-    // The number, over the middle of the track, while the finger is down. The
-    // row's own percentage is off to one side and easy to miss when the thing
-    // you are watching is the fill.
-    Rectangle {
-        anchors.centerIn: parent
-        visible: drag.pressed
-        implicitWidth: readout.implicitWidth + Theme.padding.medium * 2
-        implicitHeight: readout.implicitHeight + Theme.spacing.extraSmall
-        radius: Theme.rounding.full
-        color: Theme.bg
-
-        Text {
-            id: readout
-
-            anchors.centerIn: parent
-            text: Math.round(root.value * 100) + " %"
-            color: Theme.fg
-            font {
-                family: Theme.font
-                pixelSize: Theme.fontSize.smaller
-                weight: Theme.weight.medium
-                features: ({
-                        tnum: 1
-                    })
-            }
-        }
-    }
-
     MouseArea {
         id: drag
 

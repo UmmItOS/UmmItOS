@@ -4,7 +4,6 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Widgets
 import QtQuick
-import QtQuick.Effects
 import ".."
 
 // A square that appears where you are already looking, says one number, and
@@ -66,23 +65,16 @@ PanelWindow {
                 implicitWidth: Theme.icon.huge
                 implicitHeight: Theme.icon.huge
 
-                // The app's own icon, recoloured to the shell. Only the
-                // silhouette survives, which is the part that identifies it,
-                // and a brand palette never fights the card it sits on.
+                // In its own colours. The flyout tints its tiny row icons so a
+                // list of them stays calm; at this size the icon is the subject
+                // and a grey silhouette just looks broken.
                 IconImage {
                     id: appIcon
 
                     anchors.fill: parent
                     source: Osd.icon
-                    visible: false
-                }
-
-                MultiEffect {
-                    anchors.fill: parent
-                    source: appIcon
                     visible: win.app && appIcon.status === Image.Ready
-                    colorization: 1
-                    colorizationColor: Osd.muted ? Theme.dim : Theme.fg
+                    opacity: Osd.muted ? 0.4 : 1
                 }
 
                 MaterialIcon {
