@@ -14,6 +14,13 @@ Item {
     // singleton rather than in both.
     readonly property var player: Players.active
 
+    // Some players publish no mpris:length at all — a browser tab is one — and
+    // quickshell then hands back the position as the length. That is what made
+    // the bar sit full at "0:45 / 0:45", vanish while seeking and come back on
+    // play. Without a real length there is nothing to draw a bar against, so
+    // only the elapsed time is shown.
+    readonly property bool timed: (root.player?.lengthSupported ?? false) && (root.player?.length ?? 0) > 0
+
     function timeText(seconds: real): string {
         return Players.timeText(seconds);
     }
@@ -148,7 +155,7 @@ Item {
                 implicitHeight: 6
                 radius: height / 2
                 color: Theme.bgAlt
-                visible: root.player?.lengthSupported ?? false
+                visible: root.timed
 
                 Rectangle {
                     width: parent.width * Math.max(0, Math.min(1, (root.player?.position ?? 0) / (root.player?.length || 1)))
@@ -167,7 +174,7 @@ Item {
 
             RowLayout {
                 Layout.fillWidth: true
-                visible: root.player?.lengthSupported ?? false
+                visible: root.player !== null
 
                 Text {
                     text: root.timeText(root.player?.position ?? 0)
@@ -184,6 +191,7 @@ Item {
                 }
 
                 Text {
+                    visible: root.timed
                     text: root.timeText(root.player?.length ?? 0)
                     color: Theme.dim
                     font.family: Theme.font
