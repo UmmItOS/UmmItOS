@@ -33,8 +33,8 @@ Variants {
             anchors.fill: parent
 
             readonly property int duration: Theme.duration.expressiveSlowEffects
-            // The circle takes its time, like awww's did; a fade that long drags.
-            readonly property int revealDuration: Theme.duration.extraLarge * 2
+            // awww's --transition-duration 2.5.
+            readonly property int revealDuration: 2500
             property Item currentImage
 
             Component.onCompleted: swap(Wallpapers.current)
@@ -49,11 +49,17 @@ Variants {
             function swap(path: string): void {
                 if (!path)
                     return;
-                const comp = Wallpapers.reveal ? revealComp : imgComp;
+                const reveal = Wallpapers.reveal;
                 Wallpapers.reveal = false;
-                currentImage = comp.createObject(fader, {
+                // The old script's two options, half and half: "center", or
+                // awww's "random", which picks one of its own transitions.
+                const mode = !reveal ? "" : Math.random() < 0.5 ? "center" : ["grow", "wipe", "fade"][Math.floor(Math.random() * 3)];
+                const props = {
                     source: "file://" + path
-                });
+                };
+                if (reveal)
+                    props.mode = mode;
+                currentImage = (reveal ? revealComp : imgComp).createObject(fader, props);
             }
 
             Component {
@@ -97,10 +103,11 @@ Variants {
                 }
             }
 
-            // awww's circle: the new wallpaper shows through a disc that grows
-            // from near the top-right corner until it covers the screen. The
-            // image inside is held still against the screen while the disc
-            // moves, so it is uncovered, not slid in.
+            // awww's transitions. "grow" and "center" show the new wallpaper
+            // through a disc growing from --transition-pos 0.977,0.969 or from
+            // the middle; "wipe" through an edge sweeping left to right; "fade"
+            // simply fades. The image is held still against the screen while
+            // the shape moves, so it is uncovered, not slid in.
             Component {
                 id: revealComp
 
@@ -111,17 +118,21 @@ Variants {
                     readonly property int status: pic.status
                     readonly property int transition: fader.revealDuration
                     property real progress: 0
+                    property string mode: "grow"
 
-                    readonly property real originX: fader.width * 0.977
-                    readonly property real originY: fader.height * 0.031
-                    // Far enough to reach the opposite corner.
-                    readonly property real reach: Math.hypot(originX, fader.height - originY)
+                    readonly property bool round: mode === "grow" || mode === "center"
+                    // awww measures y from the bottom, so 0.969 is near the top.
+                    readonly property real originX: mode === "center" ? fader.width / 2 : fader.width * 0.977
+                    readonly property real originY: mode === "center" ? fader.height / 2 : fader.height * (1 - 0.969)
+                    // Far enough to reach the farthest corner.
+                    readonly property real reach: Math.hypot(Math.max(originX, fader.width - originX), Math.max(originY, fader.height - originY))
 
-                    width: reach * 2 * progress
-                    height: width
-                    radius: width / 2
-                    x: originX - width / 2
-                    y: originY - height / 2
+                    width: round ? reach * 2 * progress : mode === "wipe" ? fader.width * progress : fader.width
+                    height: round ? width : fader.height
+                    radius: round ? width / 2 : 0
+                    x: round ? originX - width / 2 : 0
+                    y: round ? originY - height / 2 : 0
+                    opacity: mode === "fade" ? progress : 1
                     color: "transparent"
 
                     Image {
