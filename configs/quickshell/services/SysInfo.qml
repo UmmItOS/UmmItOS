@@ -38,26 +38,32 @@ Singleton {
         return (bytes / (1024 * 1024)).toFixed(0) + "MiB";
     }
 
-    // `active` means a panel is on screen and wants live numbers. When nothing
-    // is showing them the poll drops to a trickle rather than stopping, so the
-    // dashboard opens with real values instead of empty meters.
+    // `active` means a panel is on screen and wants live numbers. Nothing
+    // else reads these, so with it off nothing is polled at all; turning it on
+    // samples straight away, so the dashboard opens on real values.
     property bool active: false
 
     property real lastIdle: 0
     property real lastTotal: 0
 
+    function refresh(): void {
+        stat.reload();
+        meminfo.reload();
+        uptime.reload();
+        temps.running = true;
+        storage.running = true;
+    }
+
+    onActiveChanged: {
+        if (active)
+            refresh();
+    }
+
     Timer {
-        running: true
-        interval: root.active ? 2000 : 30000
+        running: root.active
+        interval: 2000
         repeat: true
-        triggeredOnStart: true
-        onTriggered: {
-            stat.reload();
-            meminfo.reload();
-            uptime.reload();
-            temps.running = true;
-            storage.running = true;
-        }
+        onTriggered: root.refresh()
     }
 
     FileView {

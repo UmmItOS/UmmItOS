@@ -23,11 +23,16 @@ Singleton {
         return m + ":" + (s < 10 ? "0" : "") + s;
     }
 
-    // MPRIS position does not tick on its own.
+    // Set while something shows the position. MPRIS position does not tick
+    // on its own, and ticking it for a closed dashboard is a wakeup a second
+    // for as long as music plays.
+    property bool watched: false
+
     Timer {
-        running: root.active?.isPlaying ?? false
+        running: root.watched && (root.active?.isPlaying ?? false)
         interval: 1000
         repeat: true
+        triggeredOnStart: true
         onTriggered: root.active.positionChanged()
     }
 }

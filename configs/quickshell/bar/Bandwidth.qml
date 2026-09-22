@@ -1,27 +1,13 @@
 pragma ComponentBehavior: Bound
 
 import Quickshell
-import Quickshell.Io
-import Quickshell.Networking
 import QtQuick
 import QtQuick.Layouts
 import ".."
 
-// Throughput read from /proc/net/dev, the same source waybar used. The rate is
-// a difference between two samples, so the first sample only establishes a
-// baseline and shows nothing.
+// Throughput, as sampled by the Net service. One bar per screen, one sampler.
 RowLayout {
     id: root
-
-    readonly property string device: {
-        const dev = Networking.devices.values.find(d => d.connected);
-        return dev ? dev.name : "";
-    }
-
-    property real downRate: 0
-    property real upRate: 0
-    property real lastRx: -1
-    property real lastTx: -1
 
     // One decimal below ten, none above, so the string length barely moves and
     // the two readouts stay the same visual weight.
@@ -41,48 +27,6 @@ RowLayout {
     readonly property real busyAt: 2048
 
     spacing: 0
-
-    Timer {
-        running: root.device !== ""
-        interval: 1000
-        repeat: true
-        triggeredOnStart: true
-        onTriggered: stat.reload()
-    }
-
-    FileView {
-        id: stat
-        path: "/proc/net/dev"
-        printErrors: false
-
-        onLoaded: {
-            for (const line of text().split("\n")) {
-                const parts = line.trim().split(/\s+/);
-                if (parts[0] !== root.device + ":")
-                    continue;
-
-                const rx = Number(parts[1]);
-                const tx = Number(parts[9]);
-
-                if (root.lastRx >= 0) {
-                    root.downRate = Math.max(0, rx - root.lastRx);
-                    root.upRate = Math.max(0, tx - root.lastTx);
-                }
-                root.lastRx = rx;
-                root.lastTx = tx;
-                return;
-            }
-        }
-    }
-
-    // Reset the baseline when the interface changes, or the first reading is a
-    // meaningless jump between two different counters.
-    onDeviceChanged: {
-        lastRx = -1;
-        lastTx = -1;
-        downRate = 0;
-        upRate = 0;
-    }
 
     // Each arrow sits with its own number and the pair is spaced apart from the
     // other, so it reads as two readouts rather than four loose items.
@@ -125,14 +69,14 @@ RowLayout {
     Rate {
         Layout.alignment: Qt.AlignVCenter
         glyph: "south"
-        value: root.downRate
+        value: Net.downRate
     }
 
     Rate {
         Layout.alignment: Qt.AlignVCenter
         Layout.leftMargin: Theme.spacing.small
         glyph: "north"
-        value: root.upRate
+        value: Net.upRate
     }
 
     // The bar's only other live numbers are the machine's own, so this is where

@@ -30,7 +30,10 @@ OverlayWindow {
     ]
 
     // Polling /proc and hwmon only matters while the panel is on screen.
-    onVisibleChanged: SysInfo.active = visible
+    onVisibleChanged: {
+        SysInfo.active = visible;
+        Players.watched = visible;
+    }
 
     MouseArea {
         anchors.fill: parent

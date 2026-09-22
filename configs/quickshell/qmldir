@@ -16,3 +16,4 @@ Slider 1.0 Slider.qml
 singleton Players 1.0 services/Players.qml
 Reveal 1.0 Reveal.qml
 OverlayWindow 1.0 OverlayWindow.qml
+singleton Net 1.0 services/Net.qml
