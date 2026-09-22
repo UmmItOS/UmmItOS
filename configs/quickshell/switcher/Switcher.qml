@@ -28,7 +28,11 @@ Singleton {
             open = true;
             // Opening starts from the workspace you are on, so the first Tab
             // lands on the next one rather than reselecting the current.
-            const here = workspaces.findIndex(w => w.focused);
+            // Compared against Hyprland.focusedWorkspace rather than scanning
+            // for a `focused` flag: the flag is per-monitor, so on a workspace
+            // it did not consider focused the scan returned -1 and the switch
+            // started from the first workspace instead of the current one.
+            const here = workspaces.indexOf(Hyprland.focusedWorkspace);
             index = here < 0 ? 0 : here;
         }
         index = (index + delta + count) % count;
@@ -39,7 +43,7 @@ Singleton {
             return;
         open = false;
         const target = workspaces[index];
-        if (target && !target.focused)
+        if (target && target !== Hyprland.focusedWorkspace)
             target.activate();
     }
 
