@@ -88,5 +88,6 @@ Singleton {
         function commit(): void {
             root.commit();
         }
+
     }
 }

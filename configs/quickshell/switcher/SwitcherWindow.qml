@@ -28,9 +28,27 @@ PanelWindow {
     }
     color: Theme.scrim(0.45)
 
+    // The pointer is wherever it was left. Without this, opening the switcher
+    // fires onEntered on whatever card happens to be under it, which overwrites
+    // the keyboard selection the moment it is computed — every Alt+Tab landed
+    // on the card beneath the cursor instead of the next workspace.
+    property bool pointerArmed: false
+
     onVisibleChanged: {
-        if (visible)
+        if (visible) {
+            pointerArmed = false;
+            arm.restart();
             scope.forceActiveFocus();
+        }
+    }
+
+    // Qt delivers a position event when an area appears under a stationary
+    // cursor, so "has the pointer moved" cannot be answered from events alone.
+    // Ignoring hover for a moment after opening is deterministic.
+    Timer {
+        id: arm
+        interval: 250
+        onTriggered: win.pointerArmed = true
     }
 
     FocusScope {
@@ -211,7 +229,15 @@ PanelWindow {
                     MouseArea {
                         anchors.fill: parent
                         hoverEnabled: true
-                        onEntered: Switcher.index = cell.index
+
+                        onPositionChanged: {
+                            if (win.pointerArmed)
+                                Switcher.index = cell.index;
+                        }
+                        onEntered: {
+                            if (win.pointerArmed)
+                                Switcher.index = cell.index;
+                        }
                         onClicked: Switcher.commit()
                     }
                     }
