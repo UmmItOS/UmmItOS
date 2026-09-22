@@ -9,6 +9,10 @@ import ".."
 
 // A column down the right edge, under the bar: notifications arrive there, so
 // their history belongs in the same place rather than in a centred dialog.
+//
+// It hugs its contents rather than running the height of the screen. An empty
+// centre used to be a full-height slab with two words stranded in the middle
+// of it; now it is a header and a line, and it grows as the history does.
 PanelWindow {
     id: win
 
@@ -20,17 +24,24 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
     anchors {
         top: true
-        bottom: true
         right: true
     }
     margins.top: Theme.barHeight
     implicitWidth: 440
+    // The column reports its content only; its own anchor margins and
+    // the surface inset have to be added back or the panel clips them.
+    implicitHeight: Math.min(shell.implicitHeight + (Theme.padding.large + inset) * 2, maxHeight)
     color: "transparent"
+
+    readonly property int inset: Theme.spacing.small
+    readonly property int maxHeight: (screen?.height ?? 1080) - Theme.barHeight - inset * 2
+    // What the list may take once the header has had its share.
+    readonly property int listRoom: maxHeight - inset * 2 - Theme.padding.large * 2 - header.implicitHeight - Theme.spacing.medium
 
     Surface {
         anchors {
             fill: parent
-            margins: Theme.spacing.small
+            margins: win.inset
         }
         radius: Theme.rounding.extraExtraLarge
         tone: Theme.bg
@@ -47,6 +58,7 @@ PanelWindow {
         }
 
         ColumnLayout {
+            id: shell
             anchors {
                 fill: parent
                 margins: Theme.padding.large
@@ -54,6 +66,7 @@ PanelWindow {
             spacing: Theme.spacing.medium
 
             RowLayout {
+                id: header
                 Layout.fillWidth: true
                 spacing: Theme.spacing.medium
 
@@ -136,9 +149,9 @@ PanelWindow {
 
             Text {
                 Layout.fillWidth: true
-                Layout.fillHeight: true
+                Layout.topMargin: Theme.spacing.small
+                Layout.bottomMargin: Theme.spacing.large
                 horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
                 visible: Notifs.history.length === 0
                 text: Notifs.dnd ? "Nothing here. Do not disturb is on." : "Nothing here."
                 color: Theme.dim
@@ -148,7 +161,9 @@ PanelWindow {
 
             ListView {
                 Layout.fillWidth: true
-                Layout.fillHeight: true
+                // Tall enough for the history, never taller than the screen.
+                // fillHeight would have stretched an empty list to the bottom.
+                Layout.preferredHeight: Math.min(contentHeight, win.listRoom)
                 visible: Notifs.history.length > 0
                 clip: true
                 spacing: Theme.spacing.small
@@ -190,7 +205,7 @@ PanelWindow {
                                 text: card.modelData.appName
                                 color: Theme.dim
                                 font.family: Theme.font
-                                font.pixelSize: Theme.fontSize.small
+                                font.pixelSize: Theme.fontSize.smaller
                                 font.weight: Theme.weight.medium
                                 font.letterSpacing: Theme.tracking.wide
                                 elide: Text.ElideRight
@@ -232,7 +247,7 @@ PanelWindow {
                             text: card.modelData.summary
                             color: card.modelData.critical ? Theme.urgent : Theme.accentText
                             font.family: Theme.fontDisplay
-                            font.pixelSize: Theme.fontSize.normal
+                            font.pixelSize: Theme.fontSize.larger
                             font.weight: Theme.weight.bold
                             elide: Text.ElideRight
                         }
@@ -242,7 +257,7 @@ PanelWindow {
                             text: card.modelData.body
                             color: Theme.fg
                             font.family: Theme.font
-                            font.pixelSize: Theme.fontSize.smaller
+                            font.pixelSize: Theme.fontSize.normal
                             textFormat: Text.StyledText
                             wrapMode: Text.Wrap
                             maximumLineCount: 4
