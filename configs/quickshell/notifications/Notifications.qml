@@ -41,239 +41,259 @@ Scope {
         margins.right: Theme.spacing.small
         visible: server.trackedNotifications.values.length > 0
         implicitWidth: 420
-        implicitHeight: Math.max(1, column.implicitHeight + Theme.padding.largeIncreased)
+        implicitHeight: Math.max(1, list.contentHeight + Theme.padding.medium * 2)
         color: "transparent"
 
-        ColumnLayout {
-            id: column
+        // A ListView, not a column of Repeater items: a toast that is removed
+        // from a Layout simply stops existing, and the ones under it snap up.
+        // add/remove/displaced are what make that a movement instead of a jump.
+        ListView {
+            id: list
+
             anchors {
-                top: parent.top
-                right: parent.right
+                fill: parent
                 margins: Theme.padding.medium
             }
             spacing: Theme.spacing.small
+            interactive: false
+            model: server.trackedNotifications
 
-            Repeater {
-                model: server.trackedNotifications
+            add: Transition {
+                NumberAnimation {
+                    property: "opacity"
+                    from: 0
+                    to: 1
+                    duration: Theme.duration.expressiveDefaultEffects
+                }
+                NumberAnimation {
+                    property: "x"
+                    from: 60
+                    duration: Theme.duration.expressiveDefaultSpatial
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curve.emphasizedDecel
+                }
+            }
 
-                Rectangle {
-                    id: card
-                    required property Notification modelData
+            remove: Transition {
+                NumberAnimation {
+                    property: "opacity"
+                    to: 0
+                    duration: Theme.duration.expressiveFastEffects
+                }
+                NumberAnimation {
+                    property: "x"
+                    to: 60
+                    duration: Theme.duration.expressiveFastSpatial
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curve.emphasizedAccel
+                }
+            }
 
-                    readonly property bool critical: modelData.urgency === NotificationUrgency.Critical
-                    readonly property string appIcon: modelData.appIcon ? Quickshell.iconPath(modelData.appIcon, true) : ""
-                    // Delegates are created on arrival, so this is the arrival time.
-                    readonly property string time: Qt.formatDateTime(new Date(), "HH:mm")
-                    // Clicking the body invokes the "default" action, which is
-                    // how an app asks to be raised on the relevant view.
-                    readonly property var defaultAction: modelData.actions.find(a => a.identifier === "default") ?? null
+            displaced: Transition {
+                NumberAnimation {
+                    property: "y"
+                    duration: Theme.duration.expressiveFastSpatial
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curve.standard
+                }
+            }
 
-                    Layout.preferredWidth: 390
-                    implicitHeight: body.implicitHeight + Theme.padding.large * 2
-                    radius: Theme.rounding.extraLarge
-                    // Critical reads through its summary colour and its own
-                    // longer timeout, not an outline.
-                    color: Theme.bgAlt
+            delegate: Rectangle {
+                id: card
 
-                    // Slide in from the right rather than appearing.
-                    x: 0
-                    opacity: 0
-                    Component.onCompleted: {
-                        x = 60;
-                        enter.start();
+                required property Notification modelData
+
+                // A delegate outlives its model entry: the remove transition
+                // still needs it on screen after the notification is gone, so
+                // every read of modelData has to survive it being null.
+                readonly property bool critical: card.modelData?.urgency === NotificationUrgency.Critical
+                readonly property string appIcon: card.modelData?.appIcon ? Quickshell.iconPath(card.modelData?.appIcon, true) : ""
+                // Delegates are created on arrival, so this is the arrival time.
+                readonly property string time: Qt.formatDateTime(new Date(), "HH:mm")
+                // Clicking the body invokes the "default" action, which is
+                // how an app asks to be raised on the relevant view.
+                readonly property var defaultAction: card.modelData?.actions?.find(a => a.identifier === "default") ?? null
+
+                width: list.width
+                implicitHeight: body.implicitHeight + Theme.padding.large * 2
+                radius: Theme.rounding.extraLarge
+                // Critical reads through its summary colour and its own
+                // longer timeout, not an outline.
+                color: Theme.bgAlt
+
+                HoverHandler {
+                    id: hover
+                }
+
+                TapHandler {
+                    onTapped: {
+                        if (card.defaultAction)
+                        card.defaultAction.invoke();
+                        card.modelData?.dismiss();
                     }
-                    ParallelAnimation {
-                        id: enter
-                        NumberAnimation {
-                            target: card
-                            property: "x"
-                            to: 0
-                            duration: Theme.duration.expressiveDefaultSpatial
-                            easing.type: Easing.BezierSpline
-                            easing.bezierCurve: Theme.curve.emphasizedDecel
+                }
+
+                // Reading a notification should not race its own timer.
+                Timer {
+                    running: !hover.hovered && card.modelData !== null
+                    interval: card.critical ? 15000 : 6000
+                    onTriggered: card.modelData?.expire()
+                }
+
+                ColumnLayout {
+                    id: body
+                    anchors {
+                        left: parent.left
+                        right: parent.right
+                        verticalCenter: parent.verticalCenter
+                        margins: Theme.padding.large
+                    }
+                    spacing: Theme.spacing.extraSmall
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: Theme.spacing.small
+
+                        IconImage {
+                            id: icon
+                            implicitSize: 16
+                            source: card.appIcon
+                            visible: status === Image.Ready
                         }
-                        NumberAnimation {
-                            target: card
-                            property: "opacity"
-                            to: 1
-                            duration: Theme.duration.expressiveDefaultEffects
+
+                        MaterialIcon {
+                            visible: !icon.visible
+                            text: "notifications"
+                            color: Theme.dim
+                            size: Theme.icon.small
                         }
-                    }
 
-                    HoverHandler {
-                        id: hover
-                    }
-
-                    TapHandler {
-                        onTapped: {
-                            if (card.defaultAction)
-                                card.defaultAction.invoke();
-                            card.modelData.dismiss();
-                        }
-                    }
-
-                    // Reading a notification should not race its own timer.
-                    Timer {
-                        running: !hover.hovered
-                        interval: card.critical ? 15000 : 6000
-                        onTriggered: card.modelData.expire()
-                    }
-
-                    ColumnLayout {
-                        id: body
-                        anchors {
-                            left: parent.left
-                            right: parent.right
-                            verticalCenter: parent.verticalCenter
-                            margins: Theme.padding.large
-                        }
-                        spacing: Theme.spacing.extraSmall
-
-                        RowLayout {
+                        Text {
                             Layout.fillWidth: true
-                            spacing: Theme.spacing.small
+                            text: card.modelData?.appName ?? ""
+                            color: Theme.dim
+                            font.family: Theme.font
+                            font.pixelSize: Theme.fontSize.small
+                            font.weight: Theme.weight.medium
+                            font.letterSpacing: Theme.tracking.wide
+                            elide: Text.ElideRight
+                        }
 
-                            IconImage {
-                                id: icon
-                                implicitSize: 16
-                                source: card.appIcon
-                                visible: status === Image.Ready
+                        Text {
+                            text: card.time
+                            color: Theme.dim
+                            font.family: Theme.font
+                            font.features: ({
+                                tnum: 1
+                            })
+                            font.pixelSize: Theme.fontSize.small
+                        }
+
+                        MaterialIcon {
+                            text: "close"
+                            color: Theme.dim
+                            size: Theme.icon.small
+                            opacity: hover.hovered ? 1 : 0
+
+                            Behavior on opacity {
+                                NumberAnimation {
+                                    duration: Theme.duration.expressiveFastEffects
+                                }
                             }
 
-                            MaterialIcon {
-                                visible: !icon.visible
-                                text: "notifications"
-                                color: Theme.dim
-                                size: Theme.icon.small
+                            MouseArea {
+                                anchors.fill: parent
+                                anchors.margins: -4
+                                onClicked: card.modelData?.dismiss()
                             }
+                        }
+                    }
 
-                            Text {
-                                Layout.fillWidth: true
-                                text: card.modelData.appName
-                                color: Theme.dim
-                                font.family: Theme.font
-                                font.pixelSize: Theme.fontSize.small
-                                font.weight: Theme.weight.medium
-                                font.letterSpacing: Theme.tracking.wide
-                                elide: Text.ElideRight
-                            }
+                    Text {
+                        Layout.fillWidth: true
+                        Layout.topMargin: Theme.spacing.extraSmall
+                        text: card.modelData?.summary ?? ""
+                        color: card.critical ? Theme.urgent : Theme.accentText
+                        font.family: Theme.fontDisplay
+                        font.pixelSize: Theme.fontSize.larger
+                        font.bold: true
+                        elide: Text.ElideRight
+                    }
 
-                            Text {
-                                text: card.time
-                                color: Theme.dim
-                                font.family: Theme.font
-                                font.features: ({
-                                        tnum: 1
-                                    })
-                                font.pixelSize: Theme.fontSize.small
-                            }
+                    Text {
+                        Layout.fillWidth: true
+                        text: card.modelData?.body ?? ""
+                        color: Theme.fg
+                        font.family: Theme.font
+                        font.pixelSize: Theme.fontSize.normal
+                        textFormat: Text.StyledText
+                        wrapMode: Text.Wrap
+                        maximumLineCount: 6
+                        elide: Text.ElideRight
+                        visible: text !== ""
+                        onLinkActivated: link => Qt.openUrlExternally(link)
+                    }
 
-                            MaterialIcon {
-                                text: "close"
-                                color: Theme.dim
-                                size: Theme.icon.small
-                                opacity: hover.hovered ? 1 : 0
+                    // Album art, screenshot previews, and the like.
+                    ClippingRectangle {
+                        Layout.topMargin: Theme.spacing.small
+                        implicitWidth: 120
+                        implicitHeight: 68
+                        radius: Theme.rounding.medium
+                        color: "transparent"
+                        visible: preview.status === Image.Ready
 
-                                Behavior on opacity {
-                                    NumberAnimation {
+                        Image {
+                            id: preview
+
+                            anchors.fill: parent
+                            source: card.modelData?.image ?? ""
+                            fillMode: Image.PreserveAspectCrop
+                            asynchronous: true
+                            sourceSize.width: 240
+                            sourceSize.height: 136
+                        }
+                    }
+
+                    RowLayout {
+                        Layout.topMargin: Theme.spacing.small
+                        spacing: Theme.spacing.small
+                        visible: card.modelData?.actions?.some(a => a.identifier !== "default") ?? false
+
+                        Repeater {
+                            model: card.modelData?.actions?.filter(a => a.identifier !== "default") ?? []
+
+                            Rectangle {
+                                id: action
+                                required property var modelData
+
+                                implicitWidth: label.implicitWidth + Theme.padding.large * 2
+                                implicitHeight: 34
+                                radius: Theme.rounding.full
+                                color: actionHover.hovered ? Theme.accent : Theme.bgTray
+
+                                Behavior on color {
+                                    ColorAnimation {
                                         duration: Theme.duration.expressiveFastEffects
                                     }
                                 }
 
+                                HoverHandler {
+                                    id: actionHover
+                                }
+
+                                Text {
+                                    id: label
+                                    anchors.centerIn: parent
+                                    text: action.modelData.text
+                                    color: actionHover.hovered ? Theme.bg : Theme.fg
+                                    font.family: Theme.font
+                                    font.pixelSize: Theme.fontSize.smaller
+                                }
+
                                 MouseArea {
                                     anchors.fill: parent
-                                    anchors.margins: -4
-                                    onClicked: card.modelData.dismiss()
-                                }
-                            }
-                        }
-
-                        Text {
-                            Layout.fillWidth: true
-                            Layout.topMargin: Theme.spacing.extraSmall
-                            text: card.modelData.summary
-                            color: card.critical ? Theme.urgent : Theme.accentText
-                            font.family: Theme.fontDisplay
-                            font.pixelSize: Theme.fontSize.larger
-                            font.bold: true
-                            elide: Text.ElideRight
-                        }
-
-                        Text {
-                            Layout.fillWidth: true
-                            text: card.modelData.body
-                            color: Theme.fg
-                            font.family: Theme.font
-                            font.pixelSize: Theme.fontSize.normal
-                            textFormat: Text.StyledText
-                            wrapMode: Text.Wrap
-                            maximumLineCount: 6
-                            elide: Text.ElideRight
-                            visible: text !== ""
-                            onLinkActivated: link => Qt.openUrlExternally(link)
-                        }
-
-                        // Album art, screenshot previews, and the like.
-                        ClippingRectangle {
-                            Layout.topMargin: Theme.spacing.small
-                            implicitWidth: 120
-                            implicitHeight: 68
-                            radius: Theme.rounding.medium
-                            color: "transparent"
-                            visible: preview.status === Image.Ready
-
-                            Image {
-                                id: preview
-
-                                anchors.fill: parent
-                                source: card.modelData.image
-                                fillMode: Image.PreserveAspectCrop
-                                asynchronous: true
-                                sourceSize.width: 240
-                                sourceSize.height: 136
-                            }
-                        }
-
-                        RowLayout {
-                            Layout.topMargin: Theme.spacing.small
-                            spacing: Theme.spacing.small
-                            visible: card.modelData.actions.some(a => a.identifier !== "default")
-
-                            Repeater {
-                                model: card.modelData.actions.filter(a => a.identifier !== "default")
-
-                                Rectangle {
-                                    id: action
-                                    required property var modelData
-
-                                    implicitWidth: label.implicitWidth + Theme.padding.large * 2
-                                    implicitHeight: 34
-                                    radius: Theme.rounding.full
-                                    color: actionHover.hovered ? Theme.accent : Theme.bgTray
-
-                                    Behavior on color {
-                                        ColorAnimation {
-                                            duration: Theme.duration.expressiveFastEffects
-                                        }
-                                    }
-
-                                    HoverHandler {
-                                        id: actionHover
-                                    }
-
-                                    Text {
-                                        id: label
-                                        anchors.centerIn: parent
-                                        text: action.modelData.text
-                                        color: actionHover.hovered ? Theme.bg : Theme.fg
-                                        font.family: Theme.font
-                                        font.pixelSize: Theme.fontSize.smaller
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        onClicked: action.modelData.invoke()
-                                    }
+                                    onClicked: action.modelData.invoke()
                                 }
                             }
                         }
