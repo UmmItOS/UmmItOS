@@ -19,3 +19,4 @@ OverlayWindow 1.0 OverlayWindow.qml
 singleton Net 1.0 services/Net.qml
 FlyoutEmpty 1.0 FlyoutEmpty.qml
 FlyoutRow 1.0 FlyoutRow.qml
+singleton Cava 1.0 services/Cava.qml

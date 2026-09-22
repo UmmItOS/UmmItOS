@@ -35,28 +35,75 @@ Item {
         spacing: Theme.spacing.extraLargeIncreased
         visible: root.player
 
-        ClippingRectangle {
-            Layout.alignment: Qt.AlignVCenter
-            implicitWidth: 190
-            implicitHeight: 190
-            radius: width / 2
-            color: Theme.bgAlt
+        // The art inside a ring of bars that move with the music, mirrored
+        // left and right so the low end sits at the top and bottom.
+        Item {
+            id: disc
 
-            Image {
-                anchors.fill: parent
-                source: root.player?.trackArtUrl ?? ""
-                fillMode: Image.PreserveAspectCrop
-                asynchronous: true
-                sourceSize.width: 380
-                sourceSize.height: 380
+            readonly property int art: 170
+            readonly property int gap: Theme.spacing.small
+            readonly property int reach: 34
+            readonly property int count: Cava.bars * 2
+
+            Layout.alignment: Qt.AlignVCenter
+            implicitWidth: art + (gap + reach) * 2
+            implicitHeight: implicitWidth
+
+            Repeater {
+                model: disc.count
+
+                Rectangle {
+                    id: bar
+
+                    required property int index
+                    // Right half runs top to bottom, left half mirrors it back.
+                    readonly property real level: Cava.levels[index < Cava.bars ? index : disc.count - 1 - index] ?? 0
+
+                    x: disc.width / 2 - width / 2
+                    y: disc.height / 2 - disc.art / 2 - disc.gap - height
+                    width: Theme.spacing.extraSmall
+                    height: Theme.spacing.extraSmall + bar.level * disc.reach
+                    radius: width / 2
+                    color: Theme.accentText
+                    opacity: Cava.running ? 1 : 0
+
+                    transform: Rotation {
+                        origin.x: bar.width / 2
+                        origin.y: bar.height + disc.gap + disc.art / 2
+                        angle: bar.index * 360 / disc.count
+                    }
+
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: Theme.duration.expressiveDefaultEffects
+                        }
+                    }
+                }
             }
 
-            MaterialIcon {
+            ClippingRectangle {
                 anchors.centerIn: parent
-                visible: !(root.player?.trackArtUrl ?? "")
-                text: "music_note"
-                color: Theme.dim
-                size: Theme.icon.extraLarge
+                implicitWidth: disc.art
+                implicitHeight: disc.art
+                radius: width / 2
+                color: Theme.bgAlt
+
+                Image {
+                    anchors.fill: parent
+                    source: root.player?.trackArtUrl ?? ""
+                    fillMode: Image.PreserveAspectCrop
+                    asynchronous: true
+                    sourceSize.width: 380
+                    sourceSize.height: 380
+                }
+
+                MaterialIcon {
+                    anchors.centerIn: parent
+                    visible: !(root.player?.trackArtUrl ?? "")
+                    text: "music_note"
+                    color: Theme.dim
+                    size: Theme.icon.extraLarge
+                }
             }
         }
 
