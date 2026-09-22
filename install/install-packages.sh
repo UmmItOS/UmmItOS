@@ -90,6 +90,13 @@ install_main_packages() {
 
 # Function to install GPU packages
 install_gpu_packages() {
+    if has_nvidiagpu; then
+        echo "${COLOR_YELLOW}:: Nvidia GPU detected, but unfortunatly, this script is not support Nvidia GPU.${COLOR_RESET}"
+        echo "${COLOR_YELLOW}:: Since UmmItOS owner (UmmIt) is using AMD GPU, I dont even have Nvidia GPU to test for this script.${COLOR_RESET}"
+        echo "${COLOR_YELLOW}:: So, feel free to contribute to this script to support Nvidia GPU XD${COLOR_RESET}"
+        return 0
+    fi
+
     if ! has_amdgpu; then
         echo "${COLOR_YELLOW}:: No AMD GPU detected. Skipping GPU package installation.${COLOR_RESET}"
         return 0
@@ -120,7 +127,7 @@ install_laptop_packages() {
     fi
 }
 
-main() {
+install_all_packages() {
     # Display the banner
     display_banner_start
 
@@ -139,4 +146,7 @@ main() {
     enable_bluetooth
 }
 
-main
+# install.sh and install-menu.sh source this file and call the functions themselves
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    install_all_packages
+fi

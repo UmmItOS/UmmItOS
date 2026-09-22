@@ -20,6 +20,7 @@ main() {
 
     # Install packages from install-packages.sh
     source ./install/install-packages.sh
+    install_all_packages
 
     # Install oh-my-zsh from oh-my-zsh.sh
     source ./install/oh-my-zsh.sh
@@ -39,7 +40,7 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
 
     # Only allow Arch Linux to run the script
     if [[ -f /etc/arch-release ]]; then
-        clear_screen
+        clear
         draw_header_cli
         prompt_installation
         main

@@ -131,23 +131,6 @@ pause_and_continue() {
     read -rp ":: ${message}"
 }
 
-# Function to clear screen with optional pause
-clear_with_pause() {
-    if [[ "$1" == "pause" ]]; then
-        pause_and_continue
-    fi
-    clear
-}
-
-# Clear screen
-clear_screen() {
-    printf '\033[2J\033[H'
-}
-
-pause() {
-    read -rp "Press Enter to continue..."
-}
-
 # Function to check if running on a laptop
 is_laptop() {
     [[ -f /sys/class/power_supply/BAT0/capacity ]]
