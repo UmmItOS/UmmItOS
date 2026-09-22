@@ -51,7 +51,21 @@ Singleton {
             "slash": "/"
         };
         let key = bind.keycode === 36 ? "Enter" : bind.keycode === 61 ? "/" : (named[bind.key] ?? bind.key);
-        if (key.startsWith("XF86"))
+        // Media keys by what they are for, short enough to leave the
+        // description room.
+        const media = {
+            "XF86MonBrightnessUp": "Bright +",
+            "XF86MonBrightnessDown": "Bright −",
+            "XF86AudioRaiseVolume": "Vol +",
+            "XF86AudioLowerVolume": "Vol −",
+            "XF86AudioMute": "Mute",
+            "XF86AudioPlay": "Play",
+            "XF86AudioPrev": "Prev",
+            "XF86AudioNext": "Next"
+        };
+        if (media[key])
+            key = media[key];
+        else if (key.startsWith("XF86"))
             key = key.slice(4).replace(/([a-z])([A-Z])/g, "$1 $2");
         else if (key.length === 1)
             key = key.toUpperCase();

@@ -35,7 +35,7 @@ OverlayWindow {
             text: parent.label
             color: Theme.fg
             font.family: Theme.font
-            font.pixelSize: Theme.fontSize.small
+            font.pixelSize: Theme.fontSize.smaller
             font.weight: Theme.weight.medium
         }
     }
@@ -44,7 +44,7 @@ OverlayWindow {
         id: scope
 
         anchors.centerIn: parent
-        width: Math.min(1180, parent.width - Theme.padding.extraLarge * 2)
+        width: Math.min(1400, parent.width - Theme.padding.extraLarge * 2)
         height: Math.min(sheet.implicitHeight, parent.height - Theme.padding.extraLarge * 2)
         focus: true
         opacity: Math.min(1, win.reveal)
@@ -89,7 +89,7 @@ OverlayWindow {
                             text: "Cheat sheet"
                             color: Theme.fg
                             font.family: Theme.fontDisplay
-                            font.pixelSize: Theme.fontSize.large
+                            font.pixelSize: Theme.fontSize.extraLarge
                             font.bold: true
                         }
 
@@ -106,7 +106,7 @@ OverlayWindow {
 
                     GridLayout {
                         Layout.fillWidth: true
-                        columns: Math.max(1, Math.floor(width / 360))
+                        columns: Math.max(1, Math.floor(width / 440))
                         columnSpacing: Theme.spacing.extraLarge
                         rowSpacing: Theme.spacing.extraLarge
 
@@ -126,7 +126,7 @@ OverlayWindow {
                                     text: group.modelData.title
                                     color: Theme.accentText
                                     font.family: Theme.fontDisplay
-                                    font.pixelSize: Theme.fontSize.larger
+                                    font.pixelSize: Theme.fontSize.large
                                     font.bold: true
                                 }
 
@@ -142,7 +142,7 @@ OverlayWindow {
                                         spacing: Theme.spacing.medium
 
                                         Row {
-                                            Layout.preferredWidth: 150
+                                            Layout.preferredWidth: 180
                                             spacing: Theme.spacing.extraSmall
 
                                             Repeater {
@@ -158,10 +158,11 @@ OverlayWindow {
                                         Text {
                                             Layout.fillWidth: true
                                             text: row.modelData.description
-                                            color: Theme.dim
+                                            color: Theme.fg
+                                            opacity: 0.75
                                             elide: Text.ElideRight
                                             font.family: Theme.font
-                                            font.pixelSize: Theme.fontSize.smaller
+                                            font.pixelSize: Theme.fontSize.normal
                                         }
                                     }
                                 }
