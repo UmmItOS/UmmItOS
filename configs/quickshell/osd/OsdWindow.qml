@@ -41,14 +41,20 @@ PanelWindow {
         opacity: Osd.shown ? 1 : 0
         scale: Osd.shown ? 1 : 0.92
 
+        // Both the same length. They used to be 200ms and 500ms, so the card
+        // finished fading while it was still scaling, `visible` unmapped it
+        // mid-animation, and the next one started from whatever scale it was
+        // caught at — which is what read as a stutter.
         Behavior on opacity {
             NumberAnimation {
-                duration: Theme.duration.expressiveDefaultEffects
+                duration: Theme.duration.expressiveFastSpatial
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Theme.curve.emphasizedDecel
             }
         }
         Behavior on scale {
             NumberAnimation {
-                duration: Theme.duration.expressiveDefaultSpatial
+                duration: Theme.duration.expressiveFastSpatial
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: Theme.curve.emphasizedDecel
             }

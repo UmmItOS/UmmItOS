@@ -1,5 +1,4 @@
 import Quickshell
-import Quickshell.Hyprland
 import QtQuick
 import QtQuick.Layouts
 
@@ -36,13 +35,16 @@ PopupWindow {
     implicitHeight: root.hug ? head.implicitHeight + body.implicitHeight + Theme.spacing.medium + Theme.padding.large * 2 : 420
     color: "transparent"
 
-    // Click anywhere else and it goes, the way a web dropdown does. The grab
-    // also swallows the click that dismisses it, so closing one flyout cannot
-    // press whatever happened to be underneath.
-    HyprlandFocusGrab {
-        windows: [root]
-        active: root.visible
-        onCleared: root.closeRequested()
+    // PopupWindow's own grab, not HyprlandFocusGrab: the Hyprland grab owns
+    // layer surfaces, and an xdg-popup it cannot own never closes on an
+    // outside click.
+    grabFocus: true
+
+    // The grab closes the window itself, which leaves the caller still thinking
+    // it is open until the state is handed back.
+    onVisibleChanged: {
+        if (!root.visible)
+            root.closeRequested();
     }
 
     Surface {
