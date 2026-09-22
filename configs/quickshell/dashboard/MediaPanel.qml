@@ -177,6 +177,11 @@ Item {
                 visible: root.player !== null
 
                 Text {
+                    // Centred when it is alone, so an untimed player reads as
+                    // "here is the elapsed time" and not as a label that lost
+                    // the thing it was labelling.
+                    Layout.fillWidth: !root.timed
+                    horizontalAlignment: root.timed ? Text.AlignLeft : Text.AlignHCenter
                     text: root.timeText(root.player?.position ?? 0)
                     color: Theme.dim
                     font.family: Theme.font
