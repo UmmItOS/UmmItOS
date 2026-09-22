@@ -141,22 +141,26 @@ PanelWindow {
             Layout.alignment: Qt.AlignHCenter
             text: Qt.formatDateTime(clock.date, "HH:mm:ss")
             color: Theme.fg
-            font.family: Theme.fontDisplay
-            font.pixelSize: Theme.fontSize.larger
-            font.bold: true
-            font.features: ({
-                tnum: 1
-            })
+            font {
+                family: Theme.fontDisplay
+                pixelSize: Theme.fontSize.larger
+                bold: true
+                features: ({
+                    tnum: 1
+                })
+            }
         }
 
         Text {
             Layout.alignment: Qt.AlignHCenter
             text: Qt.formatDateTime(clock.date, "ddd d MMM")
             color: Theme.dim
-            font.family: Theme.font
-            font.pixelSize: Theme.fontSize.small
-            font.weight: Theme.weight.medium
-            font.letterSpacing: Theme.tracking.wide
+            font {
+                family: Theme.font
+                pixelSize: Theme.fontSize.small
+                weight: Theme.weight.medium
+                letterSpacing: Theme.tracking.wide
+            }
         }
 
         TapHandler {

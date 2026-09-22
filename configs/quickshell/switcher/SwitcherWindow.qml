@@ -133,10 +133,12 @@ PanelWindow {
                     anchors.verticalCenter: parent.verticalCenter
                     text: Switcher.pinned ? "Pinned" : "Keep open"
                     color: Theme.fg
-                    font.family: Theme.font
-                    font.pixelSize: Theme.fontSize.normal
-                    font.weight: Theme.weight.medium
-                    font.letterSpacing: Theme.tracking.wide
+                    font {
+                        family: Theme.font
+                        pixelSize: Theme.fontSize.normal
+                        weight: Theme.weight.medium
+                        letterSpacing: Theme.tracking.wide
+                    }
                 }
             }
 
@@ -288,9 +290,11 @@ PanelWindow {
                                             visible: card.windows.length === 0
                                             text: "Empty"
                                             color: Theme.dim
-                                            font.family: Theme.fontDisplay
-                                            font.pixelSize: Theme.fontSize.large
-                                            font.letterSpacing: Theme.tracking.wider
+                                            font {
+                                                family: Theme.fontDisplay
+                                                pixelSize: Theme.fontSize.large
+                                                letterSpacing: Theme.tracking.wider
+                                            }
                                         }
                                     }
 
@@ -312,12 +316,14 @@ PanelWindow {
                                             anchors.centerIn: parent
                                             text: card.windows.length
                                             color: Theme.fg
-                                            font.family: Theme.font
-                                            font.pixelSize: Theme.fontSize.normal
-                                            font.weight: Theme.weight.medium
-                                            font.features: ({
-                                                tnum: 1
-                                            })
+                                            font {
+                                                family: Theme.font
+                                                pixelSize: Theme.fontSize.normal
+                                                weight: Theme.weight.medium
+                                                features: ({
+                                                    tnum: 1
+                                                })
+                                            }
                                         }
                                     }
                                 }
@@ -359,9 +365,11 @@ PanelWindow {
                     horizontalAlignment: Text.AlignHCenter
                     text: win.titleOf(caption.ws)
                     color: Theme.fg
-                    font.family: Theme.fontDisplay
-                    font.pixelSize: Theme.fontSize.extraLarge
-                    font.weight: Theme.weight.bold
+                    font {
+                        family: Theme.fontDisplay
+                        pixelSize: Theme.fontSize.extraLarge
+                        weight: Theme.weight.bold
+                    }
                     elide: Text.ElideRight
 
                     // The title crossfades where the cards slide: swapping the
@@ -399,10 +407,12 @@ PanelWindow {
                         return n === 1 ? "1 window" : n + " windows";
                     }
                     color: Theme.accentText
-                    font.family: Theme.font
-                    font.pixelSize: Theme.fontSize.normal
-                    font.weight: Theme.weight.medium
-                    font.letterSpacing: Theme.tracking.wider
+                    font {
+                        family: Theme.font
+                        pixelSize: Theme.fontSize.normal
+                        weight: Theme.weight.medium
+                        letterSpacing: Theme.tracking.wider
+                    }
                 }
 
                 // Only while pinned: the switcher no longer closes by itself,
@@ -412,9 +422,11 @@ PanelWindow {
                     visible: Switcher.pinned
                     text: "Pinned  ·  Enter to switch  ·  Esc to close"
                     color: Theme.dim
-                    font.family: Theme.font
-                    font.pixelSize: Theme.fontSize.small
-                    font.letterSpacing: Theme.tracking.wider
+                    font {
+                        family: Theme.font
+                        pixelSize: Theme.fontSize.small
+                        letterSpacing: Theme.tracking.wider
+                    }
                 }
             }
         }

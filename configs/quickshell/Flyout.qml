@@ -1,0 +1,102 @@
+import Quickshell
+import QtQuick
+import QtQuick.Layouts
+
+// The bar's drop-down: a titled panel hanging off a bar item, carrying a radio
+// switch in its header and closing itself once the pointer has left both it and
+// the item that opened it.
+//
+// Wi-Fi and Bluetooth are the same object with different contents, so the shell
+// holds one of these rather than two near-identical windows.
+PopupWindow {
+    id: root
+
+    default property alias content: body.data
+
+    required property Item anchorItem
+    // Whether the pointer is still on the bar item that opened this.
+    property bool anchorHovered: false
+    property string title
+    property bool busy: false
+    property bool checked: false
+    property bool toggleVisible: true
+
+    signal toggled
+    signal closeRequested
+
+    anchor.item: root.anchorItem
+    anchor.edges: Edges.Bottom
+    anchor.gravity: Edges.Bottom
+    anchor.margins.top: Theme.spacing.small
+
+    implicitWidth: 380
+    implicitHeight: 420
+    color: "transparent"
+
+    HoverHandler {
+        id: hover
+    }
+
+    Timer {
+        running: root.visible && !hover.hovered && !root.anchorHovered
+        interval: Theme.duration.linger
+        onTriggered: root.closeRequested()
+    }
+
+    Surface {
+        anchors.fill: parent
+        radius: Theme.rounding.extraLarge
+        tone: Theme.bg
+        lift: 1.12
+
+        ColumnLayout {
+            anchors {
+                fill: parent
+                margins: Theme.padding.large
+            }
+            spacing: Theme.spacing.medium
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: Theme.spacing.medium
+
+                Text {
+                    text: root.title
+                    color: Theme.fg
+                    font {
+                        family: Theme.fontDisplay
+                        pixelSize: Theme.fontSize.larger
+                        weight: Theme.weight.bold
+                    }
+                }
+
+                // The spinner sits next to the title rather than in the list, so
+                // a slow scan reads as work in progress and not as an empty box.
+                Item {
+                    Layout.fillWidth: true
+                    implicitHeight: 1
+
+                    Spinner {
+                        anchors.left: parent.left
+                        anchors.verticalCenter: parent.verticalCenter
+                        visible: root.busy
+                    }
+                }
+
+                Toggle {
+                    visible: root.toggleVisible
+                    checked: root.checked
+                    onToggled: root.toggled()
+                }
+            }
+
+            ColumnLayout {
+                id: body
+
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                spacing: Theme.spacing.medium
+            }
+        }
+    }
+}

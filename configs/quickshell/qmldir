@@ -9,3 +9,6 @@ Surface 1.0 Surface.qml
 singleton Osd 1.0 osd/Osd.qml
 singleton Notifs 1.0 notifications/Notifs.qml
 singleton Switcher 1.0 switcher/Switcher.qml
+Spinner 1.0 Spinner.qml
+Toggle 1.0 Toggle.qml
+Flyout 1.0 Flyout.qml

@@ -74,20 +74,24 @@ PanelWindow {
                     Layout.leftMargin: Theme.spacing.hair
                     text: "Notifications"
                     color: Theme.fg
-                    font.family: Theme.fontDisplay
-                    font.pixelSize: Theme.fontSize.large
-                    font.weight: Theme.weight.bold
+                    font {
+                        family: Theme.fontDisplay
+                        pixelSize: Theme.fontSize.large
+                        weight: Theme.weight.bold
+                    }
                 }
 
                 Text {
                     Layout.fillWidth: true
                     text: Notifs.history.length === 0 ? "" : Notifs.history.length
                     color: Theme.dim
-                    font.family: Theme.font
-                    font.pixelSize: Theme.fontSize.smaller
-                    font.features: ({
-                            tnum: 1
-                        })
+                    font {
+                        family: Theme.font
+                        pixelSize: Theme.fontSize.smaller
+                        features: ({
+                                tnum: 1
+                            })
+                    }
                 }
 
                 // Do not disturb still records; it only stops the toast.
@@ -156,8 +160,10 @@ PanelWindow {
                 visible: Notifs.history.length === 0
                 text: Notifs.dnd ? "Nothing here. Do not disturb is on." : "Nothing here."
                 color: Theme.dim
-                font.family: Theme.font
-                font.pixelSize: Theme.fontSize.normal
+                font {
+                    family: Theme.font
+                    pixelSize: Theme.fontSize.normal
+                }
             }
 
             ListView {
@@ -212,21 +218,25 @@ PanelWindow {
                                 Layout.fillWidth: true
                                 text: card.modelData.appName
                                 color: Theme.dim
-                                font.family: Theme.font
-                                font.pixelSize: Theme.fontSize.smaller
-                                font.weight: Theme.weight.medium
-                                font.letterSpacing: Theme.tracking.wide
+                                font {
+                                    family: Theme.font
+                                    pixelSize: Theme.fontSize.smaller
+                                    weight: Theme.weight.medium
+                                    letterSpacing: Theme.tracking.wide
+                                }
                                 elide: Text.ElideRight
                             }
 
                             Text {
                                 text: card.modelData.time
                                 color: Theme.dim
-                                font.family: Theme.font
-                                font.pixelSize: Theme.fontSize.small
-                                font.features: ({
-                                        tnum: 1
-                                    })
+                                font {
+                                    family: Theme.font
+                                    pixelSize: Theme.fontSize.small
+                                    features: ({
+                                            tnum: 1
+                                        })
+                                }
                             }
 
                             MaterialIcon {
@@ -254,9 +264,11 @@ PanelWindow {
                             Layout.topMargin: Theme.spacing.extraSmall
                             text: card.modelData.summary
                             color: card.modelData.critical ? Theme.urgent : Theme.accentText
-                            font.family: Theme.fontDisplay
-                            font.pixelSize: Theme.fontSize.larger
-                            font.weight: Theme.weight.bold
+                            font {
+                                family: Theme.fontDisplay
+                                pixelSize: Theme.fontSize.larger
+                                weight: Theme.weight.bold
+                            }
                             elide: Text.ElideRight
                         }
 
@@ -264,8 +276,10 @@ PanelWindow {
                             Layout.fillWidth: true
                             text: card.modelData.body
                             color: Theme.fg
-                            font.family: Theme.font
-                            font.pixelSize: Theme.fontSize.normal
+                            font {
+                                family: Theme.font
+                                pixelSize: Theme.fontSize.normal
+                            }
                             textFormat: Text.StyledText
                             wrapMode: Text.Wrap
                             maximumLineCount: 4
