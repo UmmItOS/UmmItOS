@@ -24,9 +24,9 @@ RowLayout {
             implicitHeight: focused ? 24 : 10
             Layout.alignment: Qt.AlignVCenter
             radius: height / 2
-            // Inactive dots take the dim ink, not a surface tone: bgTray on the bar
-            // was a near-match and the dots all but disappeared.
-            color: focused ? Theme.accent : modelData?.urgent ? Theme.urgent : Theme.dim
+            // Inactive dots are the accent's light tone, faded: bgTray was a
+            // near-match for the bar and vanished, plain white shouted.
+            color: focused ? Theme.accent : modelData?.urgent ? Theme.urgent : Qt.rgba(Theme.accentText.r, Theme.accentText.g, Theme.accentText.b, 0.4)
 
             Behavior on implicitWidth {
                 NumberAnimation {
