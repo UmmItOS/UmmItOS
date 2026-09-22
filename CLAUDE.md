@@ -66,7 +66,7 @@ It must run inside a Hyprland session (it calls `hyprctl`) and needs `jq`. Befor
 
 `install.sh` **sources** `install/*.sh` in order, so the sub-steps share shell state and one failure aborts the whole run. `install/install-packages.sh` only runs `install_all_packages` when executed directly; `install.sh` calls it after sourcing. `install-menu.sh` sources the same file and calls `install_{main,gpu,laptop}_packages` per menu entry, and runs `install/copy-config.sh` and `install/setup-dm.sh` as child scripts. Change package handling in `install-packages.sh` only; do not copy it into the menu again.
 
-Keybinds carry their own descriptions (`bindd`, `bindeld`, …), and `script/hotkey-tui.sh` lists them from `hyprctl binds`. A new bind without a description is missing from the cheatsheet. Descriptions cannot contain commas.
+Keybinds carry their own descriptions (`bindd`, `bindeld`, …), and the shell's cheat sheet (`cheatsheet/`, Super+/) lists them from `hyprctl binds`, grouped by dispatcher. A new bind without a description is missing from the cheatsheet. Descriptions cannot contain commas.
 
 ## The shell
 

@@ -91,7 +91,7 @@ PanelWindow {
 
             BarButton {
                 icon: "keyboard"
-                onClicked: Quickshell.execDetached(["kitty", "--execute", bar.home + "/script/hotkey-tui.sh"])
+                onClicked: Cheatsheet.open = !Cheatsheet.open
             }
 
             AccentPicker {}

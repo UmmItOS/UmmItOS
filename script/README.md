@@ -6,7 +6,6 @@ hyprlock call out to.
 
 | Path | Called by |
 |------|-----------|
-| `hotkey-tui.sh` | the bar's keyboard button |
 | `cliphist/clip-store.sh` | `wl-paste --watch` in `exec.conf` |
 | `hypr/hyprlock/battery-display.sh` | `hyprlock.conf`, the battery readout |
 | `hypr/hyprlock/detect_vm.sh` | `hypridle.conf`, locks on idle unless a QEMU guest is running |

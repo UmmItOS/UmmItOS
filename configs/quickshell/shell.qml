@@ -2,6 +2,7 @@
 
 import Quickshell
 import "background"
+import "cheatsheet"
 import "dashboard"
 import "bar"
 import "launcher"
@@ -32,6 +33,8 @@ ShellRoot {
     SessionWindow {}
 
     SwitcherWindow {}
+
+    CheatsheetWindow {}
 
     OsdWindow {}
 
