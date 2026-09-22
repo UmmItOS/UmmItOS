@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Arch Linux dotfiles + bash installer for a Hyprland desktop. Two halves:
 
 - **Installer** — bash. `setup.sh` → `install.sh` / `install-menu.sh` → `install/*.sh`.
-- **Desktop shell** — `configs/quickshell/`, a ~30-file QML application (Quickshell 0.3.1). It is the bar, notifications, wallpaper, app launcher, clipboard, dashboard, session menu, OSD and Wi-Fi menu. It replaced waybar, swaync, rofi, wlogout and swww, which are gone from the repo.
+- **Desktop shell** — `configs/quickshell/`, a ~30-file QML application (Quickshell 0.3.1). It is the bar, notification toasts and centre, wallpaper and picker, app launcher, clipboard, dashboard, session menu, volume/brightness OSD, Wi-Fi menu and an Alt+Tab workspace switcher. It replaced waybar, swaync, rofi, wlogout and swww, which are gone from the repo.
 
 ## Common commands
 
@@ -55,6 +55,11 @@ Each surface is a **singleton holding state + IPC**, and a **window** that rende
 
 `shell.qml` instantiates one of each window, plus `Variants` over `Quickshell.screens` for the bar.
 
+Two surfaces are driven by the compositor rather than by IPC: the Alt+Tab
+switcher uses `GlobalShortcut` (Hyprland `bind = …, global, quickshell:<name>`),
+and commits on a release bind (`bindrt = ALT, Alt_L, …`) because Hyprland's bind
+layer consumes Alt+Tab and the release never reaches the surface.
+
 ### The design system
 
 `Theme.qml` is the single source of truth: colour, `rounding`, `spacing`, `padding`, `fontSize`, `icon`, `duration`, `curve` (M3 bezier control points), `tracking`, `weight`, `barHeight`. **No magic numbers in surface files** — if a value is needed, add a token.
@@ -72,6 +77,15 @@ Each surface is a **singleton holding state + IPC**, and a **window** that rende
 ### Blur
 
 A single Hyprland `layerrule` in `configs/hypr/hyprland/windows.conf` matches `ummitos-.*`, so any new surface gets blur for free by setting `WlrLayershell.namespace: "ummitos-<name>"`. The block syntax wants `ignore_alpha`, not the old one-line form's `ignorealpha`.
+
+### Debugging state
+
+When a surface misbehaves, read its actual state before theorising about the
+logic. Add a temporary `function probe(): string` to the singleton's
+`IpcHandler` returning `JSON.stringify({…})` of the internal values, call it
+between steps, and delete it afterwards. The switcher's selection bug looked
+like an off-by-one in arithmetic that turned out to be correct the whole time —
+the probe showed the index being computed right and then overwritten.
 
 ## Traps found the hard way
 
