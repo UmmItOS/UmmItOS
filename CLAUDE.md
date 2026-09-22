@@ -125,6 +125,7 @@ Before theorising about why a surface misbehaves, read its actual state. Add a t
 - **MPRIS length is unreliable.** When `lengthSupported` is false, Quickshell reports the position as the length, and some players (Floorp) publish the length late. Gate progress bars on `lengthSupported && length > 0`.
 - **Degenerate geometry can crash Qt.** Clamp computed radii to at least 1 (see `dashboard/Gauge.qml`).
 - **PipeWire nodes:** a device is `isSink && !isStream`, and an app stream is `isSink && isStream`. Nodes need a `PwObjectTracker` before their `audio` properties are readable.
+- **A leftover notification daemon steals the bus name.** If swaync (or dunst, mako) is still installed, D-Bus activates it whenever a notification arrives while the shell's name is released, which happens during every reload. The shell only claims the name at startup, so toasts silently stop until `qs` restarts. Mask it: `systemctl --user mask swaync.service`.
 - **Bluetooth needs `bluetoothd` running before `qs` starts.** Otherwise the adapter stays null until the shell restarts.
 
 ## Hard rules

@@ -41,7 +41,14 @@ Scope {
         margins.right: Theme.spacing.small
         // Mapped until the last toast has finished leaving: unmapping on an
         // empty model cut the final remove transition off before it played.
-        visible: list.count > 0 || linger.running
+        // Driven by the server's count, not the ListView's: a view in a hidden
+        // window does not update its count, so it never showed the window.
+        readonly property int toasts: server.trackedNotifications.values.length
+        visible: toasts > 0 || linger.running
+        onToastsChanged: {
+            if (toasts === 0)
+                linger.restart();
+        }
         implicitWidth: 420
         // A fixed column, not the height of the toasts: shrinking the window
         // as one leaves clipped it mid-slide. Input only lands on the toasts.
@@ -70,10 +77,6 @@ Scope {
             interactive: false
             model: server.trackedNotifications
 
-            onCountChanged: {
-                if (count === 0)
-                    linger.restart();
-            }
 
             add: Transition {
                 NumberAnimation {
