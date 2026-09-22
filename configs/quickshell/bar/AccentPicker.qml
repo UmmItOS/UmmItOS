@@ -4,13 +4,15 @@ import QtQuick
 import QtQuick.Layouts
 import ".."
 
-// The accent colour, chosen in place. Eight swatches cover the common wish
+// The accent colour, chosen in place. Twelve swatches cover the common wish
 // without a colour wheel; the field takes anything else, as #hex or rgba().
 BarButton {
     id: root
 
-    // Dark enough to carry white text as a fill, like the brand purple.
-    readonly property var presets: ["#5003c0", "#3a3fd9", "#0a6cd6", "#007f7a", "#2e7d32", "#a15c00", "#c2185b", "#c62828"]
+    // Brand purple first, then eleven fills taken from Color Hunt's popular
+    // palettes (colorhunt.co), round the wheel. Each is dark enough to carry
+    // white text, as the purple does.
+    readonly property var presets: ["#5003c0", "#ab03a9", "#d45060", "#972828", "#e45742", "#c49a45", "#2a835f", "#12544f", "#118ab2", "#2e6fa0", "#2f39a9", "#800020"]
 
     property bool popupOpen: false
 
