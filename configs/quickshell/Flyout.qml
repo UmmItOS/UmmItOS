@@ -20,17 +20,22 @@ PopupWindow {
     property bool busy: false
     property bool checked: false
     property bool toggleVisible: true
+    // Size to the content instead of the default panel height. A list that
+    // scrolls wants the fixed height; a stack of rows does not.
+    property bool hug: false
 
     signal toggled
     signal closeRequested
 
-    anchor.item: root.anchorItem
-    anchor.edges: Edges.Bottom
-    anchor.gravity: Edges.Bottom
-    anchor.margins.top: Theme.spacing.small
+    anchor {
+        item: root.anchorItem
+        edges: Edges.Bottom
+        gravity: Edges.Bottom
+        margins.top: Theme.spacing.small
+    }
 
     implicitWidth: 380
-    implicitHeight: 420
+    implicitHeight: root.hug ? head.implicitHeight + body.implicitHeight + Theme.spacing.medium + Theme.padding.large * 2 : 420
     color: "transparent"
 
     HoverHandler {
@@ -57,6 +62,8 @@ PopupWindow {
             spacing: Theme.spacing.medium
 
             RowLayout {
+                id: head
+
                 Layout.fillWidth: true
                 spacing: Theme.spacing.medium
 
