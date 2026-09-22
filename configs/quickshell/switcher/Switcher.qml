@@ -14,6 +14,10 @@ Singleton {
 
     property bool open: false
     property int index: 0
+    // Pinned: the Alt release stops dismissing the switcher, so it can be held
+    // on screen — to photograph it, or to read it without keeping a finger on
+    // the modifier. Enter or Escape still close it.
+    property bool pinned: false
 
     // Entries go null while Hyprland creates and destroys workspaces, so the
     // list is filtered before anything reads an id off it.
@@ -38,10 +42,20 @@ Singleton {
         index = (index + delta + count) % count;
     }
 
+    // What the Alt release runs. Pinning is the whole reason this is not just
+    // commit(): the compositor's release bind is authoritative and would
+    // otherwise close the switcher the moment the modifier came up.
+    function release(): void {
+        if (pinned)
+            return;
+        commit();
+    }
+
     function commit(): void {
         if (!open)
             return;
         open = false;
+        pinned = false;
         const target = workspaces[index];
         if (target && target !== Hyprland.focusedWorkspace)
             target.activate();
@@ -49,6 +63,7 @@ Singleton {
 
     function cancel(): void {
         open = false;
+        pinned = false;
     }
 
     GlobalShortcut {
@@ -64,7 +79,7 @@ Singleton {
         appid: "quickshell"
         name: "switcherCommit"
         description: "Commit the workspace switch"
-        onPressed: root.commit()
+        onPressed: root.release()
     }
 
     GlobalShortcut {
@@ -87,6 +102,10 @@ Singleton {
 
         function commit(): void {
             root.commit();
+        }
+
+        function pin(): void {
+            root.pinned = !root.pinned;
         }
 
     }

@@ -75,6 +75,10 @@ PanelWindow {
                 Switcher.step(grid.columns);
             } else if (event.key === Qt.Key_Up) {
                 Switcher.step(-grid.columns);
+            } else if (event.key === Qt.Key_P || event.key === Qt.Key_Space) {
+                // Hold it on screen; the Alt release stops closing it.
+                Switcher.pinned = !Switcher.pinned;
+                event.accepted = true;
             } else if (event.key === Qt.Key_Escape) {
                 Switcher.cancel();
             } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
@@ -344,6 +348,18 @@ PanelWindow {
                     font.family: Theme.font
                     font.pixelSize: Theme.fontSize.normal
                     font.weight: Theme.weight.medium
+                    font.letterSpacing: Theme.tracking.wider
+                }
+
+                // Only while pinned: the switcher no longer closes by itself,
+                // so it has to say how to leave.
+                Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    visible: Switcher.pinned
+                    text: "Pinned  ·  Enter to switch  ·  Esc to close"
+                    color: Theme.dim
+                    font.family: Theme.font
+                    font.pixelSize: Theme.fontSize.small
                     font.letterSpacing: Theme.tracking.wider
                 }
             }
