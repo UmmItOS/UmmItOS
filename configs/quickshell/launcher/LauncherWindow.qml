@@ -21,13 +21,34 @@ OverlayWindow {
 
     property string filter: ""
 
+    readonly property int total: [...DesktopEntries.applications.values].filter(a => !a.noDisplay).length
+
+    // Ranked, not alphabetical. With no query the apps you open most come
+    // first. With one, a match at the start of the name beats one at the start
+    // of a later word, which beats one anywhere in the name, which beats a
+    // keyword; use breaks ties, then the alphabet.
     readonly property var results: {
         const f = filter.toLowerCase();
-        const apps = [...DesktopEntries.applications.values].filter(a => !a.noDisplay);
-        // keywords and categories are lists, not strings: calling toLowerCase()
-        // on one throws and takes the whole binding down, emptying the list.
-        const hits = f === "" ? apps : apps.filter(a => [a.name, a.genericName ?? "", ...(a.keywords ?? [])].join(" ").toLowerCase().includes(f));
-        return hits.sort((a, b) => a.name.localeCompare(b.name));
+        const used = Launcher.launches;
+        const rank = a => {
+            if (f === "")
+                return 0;
+            const name = a.name.toLowerCase();
+            if (name.startsWith(f))
+                return 0;
+            if (name.includes(" " + f))
+                return 1;
+            if (name.includes(f))
+                return 2;
+            // keywords and categories are lists, not strings: calling
+            // toLowerCase() on one throws and empties the whole binding.
+            return [a.genericName ?? "", ...(a.keywords ?? [])].join(" ").toLowerCase().includes(f) ? 3 : -1;
+        };
+        return [...DesktopEntries.applications.values].filter(a => !a.noDisplay).map(a => ({
+                    app: a,
+                    rank: rank(a),
+                    used: used[a.id] ?? 0
+                })).filter(r => r.rank >= 0).sort((x, y) => (x.rank - y.rank) || (y.used - x.used) || x.app.name.localeCompare(y.app.name)).map(r => r.app);
     }
 
     onOpened: {
@@ -95,29 +116,18 @@ OverlayWindow {
                     anchors.fill: parent
                     verticalAlignment: Text.AlignVCenter
                     visible: search.text === ""
-                    text: "Search"
+                    text: "Search " + win.total + " apps"
                     color: Theme.dim
                     font: search.font
                 }
             }
 
-            // A drawn rule that follows the query rather than a boxed input.
-            Rectangle {
-                Layout.fillWidth: true
-                implicitHeight: 2
-                radius: 1
-                color: search.text === "" ? Theme.bgTray : Theme.accentText
-
-                Behavior on color {
-                    ColorAnimation {
-                        duration: Theme.duration.expressiveDefaultEffects
-                    }
-                }
-            }
-
+            // Only while typing: the placeholder already says how many there
+            // are, so this is the answer to the query, not a second header.
             Text {
                 Layout.topMargin: Theme.spacing.extraSmall
-                text: win.results.length === 0 ? "Nothing matches" : win.results.length + (win.results.length === 1 ? " application" : " applications")
+                opacity: search.text === "" ? 0 : 1
+                text: win.results.length === 0 ? "Nothing matches" : win.results.length === 1 ? "1 match, Enter to open" : win.results.length + " matches, Enter opens the first"
                 color: Theme.dim
                 font.family: Theme.font
                 font.pixelSize: Theme.fontSize.smaller

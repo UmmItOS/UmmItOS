@@ -37,12 +37,34 @@ Singleton {
             show(newMode);
     }
 
+    // How often each app has been opened, by desktop id, so the grid can
+    // lead with the ones you use instead of the alphabet.
+    property var launches: ({})
+
     function launch(entry: var): void {
         // Once, even if a second click lands while the grid fades out.
         if (!open)
             return;
         open = false;
+        const next = Object.assign({}, launches);
+        next[entry.id] = (next[entry.id] ?? 0) + 1;
+        launches = next;
+        launchesFile.setText(JSON.stringify(launches));
         entry.execute();
+    }
+
+    FileView {
+        id: launchesFile
+        path: Quickshell.statePath("launches.json")
+        printErrors: false
+        blockWrites: false
+        onLoaded: {
+            try {
+                root.launches = JSON.parse(text());
+            } catch (e) {
+                root.launches = {};
+            }
+        }
     }
 
     // Decodes one image entry into the cache so the preview pane can show it.
