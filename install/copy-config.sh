@@ -70,7 +70,7 @@ set_zsh_default() {
             return 0
         else
             echo "${COLOR_DARK_RED}:: Failed to set zsh as default shell.${COLOR_RESET}"
-            echo "${COLOR_YELLOW}:: You can manually set zsh as default shell later with: chsh -s /usr/bin/nu${COLOR_RESET}"
+            echo "${COLOR_YELLOW}:: You can manually set zsh as default shell later with: chsh -s /usr/bin/zsh${COLOR_RESET}"
             return 1
         fi
     fi
@@ -79,24 +79,31 @@ set_zsh_default() {
 # Function to copy all configuration files
 copy_all_configs() {
     if prompt_yna ":: Copy configuration files?"; then
-        safe_copy "$PARENT_DIR/configs/hypr" "$config_dir/hypr" "Hyprland" "1" "10"
-        safe_copy "$PARENT_DIR/configs/kitty" "$config_dir/kitty" "Kitty" "2" "10"
-        safe_copy "$PARENT_DIR/configs/fastfetch" "$config_dir/fastfetch" "Fastfetch" "3" "10"
-        safe_copy "$PARENT_DIR/configs/mpv" "$config_dir/mpv" "MPV" "4" "10"
-        safe_copy "$PARENT_DIR/configs/yazi" "$config_dir/yazi" "Yazi" "5" "10"
-        safe_copy "$PARENT_DIR/configs/quickshell" "$config_dir/quickshell/ummitos" "Quickshell" "6" "10"
-
-        safe_copy "$PARENT_DIR/script" "$HOME/script" "Scripts" "7" "10"
+        # src|dest|name; the step counter is derived from this list
+        local steps=(
+            "$PARENT_DIR/configs/hypr|$config_dir/hypr|Hyprland"
+            "$PARENT_DIR/configs/kitty|$config_dir/kitty|Kitty"
+            "$PARENT_DIR/configs/fastfetch|$config_dir/fastfetch|Fastfetch"
+            "$PARENT_DIR/configs/mpv|$config_dir/mpv|MPV"
+            "$PARENT_DIR/configs/yazi|$config_dir/yazi|Yazi"
+            "$PARENT_DIR/configs/quickshell|$config_dir/quickshell/ummitos|Quickshell"
+            "$PARENT_DIR/script|$HOME/script|Scripts"
+            "$PARENT_DIR/.wallpaper|$HOME/.wallpaper|Wallpapers"
+            "$PARENT_DIR/configs/.zshrc|$HOME/.zshrc|zsh"
+            "$PARENT_DIR/configs/starship.toml|$config_dir/starship.toml|Starship"
+        )
+        local i src dest name
+        for i in "${!steps[@]}"; do
+            IFS='|' read -r src dest name <<< "${steps[$i]}"
+            # Switch the login shell right before .zshrc is copied
+            if [[ $name == zsh ]]; then
+                echo "${COLOR_GREEN}:: Basic Configuration files copied successfully.${COLOR_RESET}"
+                echo "${COLOR_GREEN}:: Now setting zsh as default shell...${COLOR_RESET}"
+                set_zsh_default
+            fi
+            safe_copy "$src" "$dest" "$name" "$((i + 1))" "${#steps[@]}"
+        done
         record_repo_path
-        safe_copy "$PARENT_DIR/.wallpaper" "$HOME/.wallpaper" "Wallpapers" "8" "10"
-        
-        echo "${COLOR_GREEN}:: Basic Configuration files copied successfully.${COLOR_RESET}"
-        echo "${COLOR_GREEN}:: Now setting zsh as default shell...${COLOR_RESET}"
-
-        set_zsh_default
-        
-        safe_copy "$PARENT_DIR/configs/.zshrc" "$HOME/.zshrc" "zsh" "9" "10"
-        safe_copy "$PARENT_DIR/configs/starship.toml" "$config_dir/starship.toml" "Starship" "10" "10"
 
         echo "${COLOR_GREEN}:: All the files copied successfully.${COLOR_RESET}"
         pause_and_continue
