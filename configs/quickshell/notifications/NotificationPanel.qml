@@ -71,6 +71,7 @@ PanelWindow {
                 spacing: Theme.spacing.medium
 
                 Text {
+                    Layout.leftMargin: Theme.spacing.hair
                     text: "Notifications"
                     color: Theme.fg
                     font.family: Theme.fontDisplay
@@ -200,6 +201,13 @@ PanelWindow {
                                 visible: status === Image.Ready
                             }
 
+                            MaterialIcon {
+                                visible: !icon.visible
+                                text: "notifications"
+                                color: Theme.dim
+                                size: Theme.icon.small
+                            }
+
                             Text {
                                 Layout.fillWidth: true
                                 text: card.modelData.appName
@@ -263,6 +271,29 @@ PanelWindow {
                             maximumLineCount: 4
                             elide: Text.ElideRight
                             visible: text !== ""
+                        }
+
+                        // The same preview the toast showed: album art, a
+                        // screenshot, an avatar. Shown only once the file has
+                        // actually loaded — the server hands out a temporary
+                        // path, and a history entry can outlive it.
+                        ClippingRectangle {
+                            Layout.topMargin: Theme.spacing.small
+                            implicitWidth: 120
+                            implicitHeight: 68
+                            radius: Theme.rounding.medium
+                            color: "transparent"
+                            visible: preview.status === Image.Ready
+
+                            Image {
+                                id: preview
+                                anchors.fill: parent
+                                source: card.modelData.image ?? ""
+                                fillMode: Image.PreserveAspectCrop
+                                asynchronous: true
+                                sourceSize.width: 240
+                                sourceSize.height: 136
+                            }
                         }
                     }
 

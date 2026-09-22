@@ -50,6 +50,9 @@ Singleton {
     }
 
     readonly property QtObject spacing: QtObject {
+        // Optical, not structural: a nudge for text that sits flush against a
+        // rounded edge and reads tighter than it measures.
+        readonly property int hair: 2
         readonly property int extraSmall: 4
         readonly property int small: 8
         readonly property int medium: 12
