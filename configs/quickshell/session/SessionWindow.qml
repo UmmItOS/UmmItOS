@@ -7,7 +7,7 @@ import QtQuick.Effects
 import QtQuick.Layouts
 import ".."
 
-// One row of tiles rather than wlogout's 3x2 grid: six actions read faster in a
+// One row of tiles rather than a 3x2 grid: six actions read faster in a
 // line, and the row matches the bar's cluster language. Focus starts on Lock,
 // the only action here you cannot regret.
 OverlayWindow {

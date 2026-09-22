@@ -104,46 +104,16 @@ RowLayout {
         }
 
         // Every empty case says which one it is.
-        Item {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
+        FlyoutEmpty {
             visible: !Networking.wifiEnabled || !root.wifi || root.networks.length === 0
-
-            Column {
-                anchors.centerIn: parent
-                width: parent.width
-                spacing: Theme.spacing.medium
-
-                MaterialIcon {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    visible: !root.searching
-                    text: root.wifi && Networking.wifiEnabled ? "wifi_find" : "wifi_off"
-                    color: Theme.dim
-                    size: Theme.icon.large
-                }
-
-                Spinner {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    visible: root.searching
-                    size: Theme.icon.large
-                }
-
-                Text {
-                    width: parent.width
-                    horizontalAlignment: Text.AlignHCenter
-                    text: {
-                        if (!root.wifi)
-                            return "No Wi-Fi adapter";
-                        if (!Networking.wifiEnabled)
-                            return "Wi-Fi is off";
-                        return root.scanning ? "Searching for networks" : "No networks found";
-                    }
-                    color: Theme.dim
-                    font {
-                        family: Theme.font
-                        pixelSize: Theme.fontSize.normal
-                    }
-                }
+            searching: root.searching
+            icon: root.wifi && Networking.wifiEnabled ? "wifi_find" : "wifi_off"
+            text: {
+                if (!root.wifi)
+                    return "No Wi-Fi adapter";
+                if (!Networking.wifiEnabled)
+                    return "Wi-Fi is off";
+                return root.scanning ? "Searching for networks" : "No networks found";
             }
         }
 
@@ -163,21 +133,20 @@ RowLayout {
                 values: root.networks
             }
 
-            delegate: Rectangle {
+            delegate: FlyoutRow {
                 id: row
 
                 required property var modelData
 
                 readonly property bool busy: row.modelData.stateChanging
-                readonly property int lineHeight: 46
+                readonly property int lineHeight: Theme.control.row
 
                 readonly property bool askingPsk: root.askingFor !== "" && root.askingFor === row.modelData.name
 
                 width: list.width
+                active: row.modelData.connected
                 // The expanded row is as tall as what it holds, not a guess.
                 implicitHeight: row.askingPsk ? content.implicitHeight : row.lineHeight
-                radius: Theme.rounding.large
-                color: rowHover.hovered || row.modelData.connected ? Theme.bgTray : "transparent"
 
                 Behavior on implicitHeight {
                     NumberAnimation {
@@ -185,15 +154,6 @@ RowLayout {
                         easing.type: Easing.BezierSpline
                         easing.bezierCurve: Theme.curve.standard
                     }
-                }
-                Behavior on color {
-                    ColorAnimation {
-                        duration: Theme.duration.expressiveFastEffects
-                    }
-                }
-
-                HoverHandler {
-                    id: rowHover
                 }
 
                 ColumnLayout {
@@ -243,7 +203,7 @@ RowLayout {
                         }
 
                         MaterialIcon {
-                            visible: !row.busy && row.modelData.known && rowHover.hovered
+                            visible: !row.busy && row.modelData.known && row.hovered
                             text: "link_off"
                             color: Theme.dim
                             size: Theme.icon.small
@@ -260,7 +220,7 @@ RowLayout {
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.bottomMargin: Theme.padding.medium
-                        implicitHeight: 34
+                        implicitHeight: Theme.control.field
                         radius: Theme.rounding.full
                         color: Theme.bgAlt
                         visible: row.askingPsk

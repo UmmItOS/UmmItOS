@@ -98,8 +98,8 @@ OverlayWindow {
 
                 // Do not disturb still records; it only stops the toast.
                 Rectangle {
-                    implicitWidth: 38
-                    implicitHeight: 38
+                    implicitWidth: Theme.control.button
+                    implicitHeight: Theme.control.button
                     radius: width / 2
                     color: Notifs.dnd ? Theme.accent : Theme.bgTray
 
@@ -124,8 +124,8 @@ OverlayWindow {
                 }
 
                 Rectangle {
-                    implicitWidth: 38
-                    implicitHeight: 38
+                    implicitWidth: Theme.control.button
+                    implicitHeight: Theme.control.button
                     radius: width / 2
                     color: clearHover.hovered ? Theme.urgent : Theme.bgTray
                     visible: Notifs.history.count > 0
@@ -247,7 +247,7 @@ OverlayWindow {
 
                             IconImage {
                                 id: icon
-                                implicitSize: 16
+                                implicitSize: Theme.icon.tiny
                                 source: card.model.appIcon ? Quickshell.iconPath(card.model.appIcon, true) : ""
                                 visible: status === Image.Ready
                             }
@@ -339,8 +339,8 @@ OverlayWindow {
                         // path, and a history entry can outlive it.
                         ClippingRectangle {
                             Layout.topMargin: Theme.spacing.small
-                            implicitWidth: 120
-                            implicitHeight: 68
+                            implicitWidth: Theme.control.thumbWidth
+                            implicitHeight: Theme.control.thumbHeight
                             radius: Theme.rounding.medium
                             color: "transparent"
                             visible: preview.status === Image.Ready

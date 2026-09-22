@@ -39,7 +39,7 @@ PanelWindow {
         lift: 1.3
 
         opacity: Osd.shown ? 1 : 0
-        scale: Osd.shown ? 1 : 0.92
+        scale: Osd.shown ? 1 : Theme.popScale
 
         // Both the same length. They used to be 200ms and 500ms, so the card
         // finished fading while it was still scaling, `visible` unmapped it

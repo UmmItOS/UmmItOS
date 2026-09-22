@@ -104,8 +104,8 @@ RowLayout {
 
             Rectangle {
                 Layout.alignment: Qt.AlignVCenter
-                implicitWidth: 40
-                implicitHeight: 40
+                implicitWidth: Theme.control.button
+                implicitHeight: Theme.control.button
                 radius: width / 2
                 color: root.muted ? Theme.accent : Theme.bgTray
 
@@ -141,7 +141,7 @@ RowLayout {
 
             Text {
                 Layout.alignment: Qt.AlignVCenter
-                Layout.preferredWidth: 46
+                Layout.preferredWidth: Theme.control.readout
                 horizontalAlignment: Text.AlignRight
                 text: Math.round(root.level * 100) + " %"
                 color: Theme.dim
@@ -183,7 +183,7 @@ RowLayout {
                 readonly property bool current: device.modelData === root.sink
 
                 Layout.fillWidth: true
-                implicitHeight: 40
+                implicitHeight: Theme.control.button
                 radius: Theme.rounding.large
                 color: deviceHover.hovered || device.current ? Theme.bgTray : "transparent"
 
@@ -336,7 +336,7 @@ RowLayout {
 
                 Text {
                     Layout.alignment: Qt.AlignVCenter
-                    Layout.preferredWidth: 46
+                    Layout.preferredWidth: Theme.control.readout
                     horizontalAlignment: Text.AlignRight
                     text: Math.round(stream.level * 100) + " %"
                     color: Theme.dim

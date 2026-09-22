@@ -17,15 +17,15 @@ RowLayout {
             id: entry
             required property SystemTrayItem modelData
 
-            implicitWidth: 22
-            implicitHeight: 22
+            implicitWidth: Theme.icon.tray
+            implicitHeight: Theme.icon.tray
             Layout.alignment: Qt.AlignVCenter
             acceptedButtons: Qt.LeftButton | Qt.RightButton
 
             IconImage {
                 id: icon
                 anchors.fill: parent
-                implicitSize: 22
+                implicitSize: Theme.icon.tray
                 source: entry.modelData.icon
                 visible: status === Image.Ready
             }

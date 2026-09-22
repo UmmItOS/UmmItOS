@@ -75,7 +75,7 @@ OverlayWindow {
                 Layout.fillWidth: true
                 color: Theme.fg
                 font.family: Theme.fontDisplay
-                font.pixelSize: 54
+                font.pixelSize: Theme.fontSize.query
                 font.weight: Theme.weight.bold
                 focus: true
 
@@ -152,7 +152,7 @@ OverlayWindow {
 
             delegate: Item {
                 id: cell
-                required property var modelData
+                required property DesktopEntry modelData
                 required property int index
 
                 readonly property bool active: GridView.isCurrentItem
@@ -194,7 +194,7 @@ OverlayWindow {
                     IconImage {
                         id: appIcon
                         Layout.alignment: Qt.AlignHCenter
-                        implicitSize: 60
+                        implicitSize: Theme.icon.app
                         visible: status === Image.Ready
                         source: Quickshell.iconPath(cell.modelData.icon, true)
                     }
@@ -204,7 +204,7 @@ OverlayWindow {
                         visible: !appIcon.visible
                         text: "widgets"
                         color: Theme.dim
-                        size: 60
+                        size: Theme.icon.app
                     }
 
                     Text {

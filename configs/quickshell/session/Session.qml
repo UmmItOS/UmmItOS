@@ -8,8 +8,6 @@ Singleton {
 
     property bool open: false
 
-    // Mirrors configs/wlogout/layout, so the actions are the ones that were
-    // already in use rather than a new set.
     readonly property var actions: [
         {
             id: "lock",

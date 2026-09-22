@@ -109,7 +109,7 @@ OverlayWindow {
                 text: picker.focusedPath === "" ? "No match" : Wallpapers.name(picker.focusedPath)
                 color: Theme.fg
                 font.family: Theme.fontDisplay
-                font.pixelSize: 30
+                font.pixelSize: Theme.fontSize.extraLarge
                 font.bold: true
                 elide: Text.ElideRight
             }
@@ -121,7 +121,7 @@ OverlayWindow {
                 visible: text !== ""
                 color: Theme.accentText
                 font.family: Theme.fontDisplay
-                font.pixelSize: 30
+                font.pixelSize: Theme.fontSize.extraLarge
                 font.bold: true
                 focus: true
 

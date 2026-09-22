@@ -24,7 +24,7 @@ MaterialIcon {
     MouseArea {
         id: mouse
         anchors.fill: parent
-        anchors.margins: -4
+        anchors.margins: -Theme.spacing.extraSmall
         hoverEnabled: true
         onClicked: root.clicked()
     }

@@ -191,7 +191,7 @@ Scope {
 
                         IconImage {
                             id: icon
-                            implicitSize: 16
+                            implicitSize: Theme.icon.tiny
                             source: card.appIcon
                             visible: status === Image.Ready
                         }
@@ -272,8 +272,8 @@ Scope {
                     // Album art, screenshot previews, and the like.
                     ClippingRectangle {
                         Layout.topMargin: Theme.spacing.small
-                        implicitWidth: 120
-                        implicitHeight: 68
+                        implicitWidth: Theme.control.thumbWidth
+                        implicitHeight: Theme.control.thumbHeight
                         radius: Theme.rounding.medium
                         color: "transparent"
                         visible: preview.status === Image.Ready
@@ -303,7 +303,7 @@ Scope {
                                 required property var modelData
 
                                 implicitWidth: label.implicitWidth + Theme.padding.large * 2
-                                implicitHeight: 34
+                                implicitHeight: Theme.control.field
                                 radius: Theme.rounding.full
                                 color: actionHover.hovered ? Theme.accent : Theme.bgTray
 

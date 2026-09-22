@@ -36,7 +36,7 @@ ColumnLayout {
                     text: Qt.formatDateTime(clock.date, "HH")
                     color: Theme.fg
                     font.family: Theme.fontDisplay
-                    font.pixelSize: 78
+                    font.pixelSize: Theme.fontSize.hero
                     font.bold: true
                     font.features: ({
                             tnum: 1
@@ -48,7 +48,7 @@ ColumnLayout {
                     text: Qt.formatDateTime(clock.date, "mm")
                     color: Theme.accentText
                     font.family: Theme.fontDisplay
-                    font.pixelSize: 78
+                    font.pixelSize: Theme.fontSize.hero
                     font.bold: true
                     font.features: ({
                             tnum: 1

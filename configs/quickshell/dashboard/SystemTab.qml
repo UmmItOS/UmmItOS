@@ -19,11 +19,15 @@ ColumnLayout {
     Rectangle {
         Layout.fillWidth: true
         Layout.fillHeight: true
-        Layout.minimumHeight: 170 + Theme.padding.extraLarge * 2
+        // Never shorter than a gauge, read from the gauges rather than
+        // repeating their size here.
+        Layout.minimumHeight: gauges.implicitHeight + Theme.padding.extraLarge * 2
         radius: Theme.rounding.extraLarge
         color: Theme.bgAlt
 
         RowLayout {
+            id: gauges
+
             anchors {
                 fill: parent
                 margins: Theme.padding.extraLarge

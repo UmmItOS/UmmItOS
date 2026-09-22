@@ -4,8 +4,6 @@ import Quickshell
 import QtQuick
 
 Singleton {
-    // Palette taken from configs/waybar/style.css so both bars look the same
-    // while they run side by side.
     readonly property color bg: Qt.rgba(20 / 255, 20 / 255, 35 / 255, 0.72)
     readonly property color bgAlt: Qt.rgba(30 / 255, 25 / 255, 45 / 255, 0.82)
     // One step brighter than bgAlt, for a tray sitting on top of a panel.
@@ -78,6 +76,10 @@ Singleton {
         readonly property int larger: 17
         readonly property int large: 21
         readonly property int extraLarge: 32
+        // The launcher's query line, which is the whole of its chrome.
+        readonly property int query: 54
+        // The dashboard clock.
+        readonly property int hero: 78
         // The OSD's number, which is the only thing on screen when it appears.
         readonly property int huge: 46
     }
@@ -108,11 +110,35 @@ Singleton {
     readonly property real popScale: 0.94
 
     readonly property QtObject icon: QtObject {
+        // An app's own icon beside its notification, at caption size.
+        readonly property int tiny: 16
         readonly property int small: 20
+        // Tray icons: the size SNI items are drawn for.
+        readonly property int tray: 22
         readonly property int normal: 24
         readonly property int large: 30
         readonly property int extraLarge: 46
         readonly property int huge: 52
+        // Launcher tiles, where the icon is the content.
+        readonly property int app: 60
+    }
+
+    // Controls that recur across surfaces, so a row in the Wi-Fi list and one
+    // in the Bluetooth list stay the same height.
+    readonly property QtObject control: QtObject {
+        // A list row in a flyout or the clipboard.
+        readonly property int row: 46
+        // A text field or an action chip.
+        readonly property int field: 34
+        // A round icon button.
+        readonly property int button: 40
+        // A pill-shaped button or search field.
+        readonly property int pill: 44
+        // Room for a live number ("12.4 M", "100 %") so it does not jitter.
+        readonly property int readout: 46
+        // A notification's preview image.
+        readonly property int thumbWidth: 120
+        readonly property int thumbHeight: 68
     }
 
     readonly property QtObject duration: QtObject {

@@ -82,7 +82,7 @@ OverlayWindow {
             anchors.right: parent.right
             anchors.margins: Theme.padding.extraLarge
             implicitWidth: pinRow.implicitWidth + Theme.padding.large * 2
-            implicitHeight: 44
+            implicitHeight: Theme.control.pill
             radius: Theme.rounding.full
             tone: Switcher.pinned ? Theme.accent : Theme.bgTray
 

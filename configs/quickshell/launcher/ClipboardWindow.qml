@@ -103,7 +103,7 @@ OverlayWindow {
 
                     Rectangle {
                         Layout.fillWidth: true
-                        implicitHeight: 44
+                        implicitHeight: Theme.control.pill
                         radius: Theme.rounding.full
                         color: "transparent"
 

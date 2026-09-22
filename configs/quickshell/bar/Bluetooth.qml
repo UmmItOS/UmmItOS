@@ -84,46 +84,16 @@ RowLayout {
         }
 
         // Every empty case says which one it is.
-        Item {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
+        FlyoutEmpty {
             visible: !root.adapter || !root.on || root.devices.length === 0
-
-            Column {
-                anchors.centerIn: parent
-                width: parent.width
-                spacing: Theme.spacing.medium
-
-                MaterialIcon {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    visible: !root.searching
-                    text: root.on ? "bluetooth_searching" : "bluetooth_disabled"
-                    color: Theme.dim
-                    size: Theme.icon.large
-                }
-
-                Spinner {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    visible: root.searching
-                    size: Theme.icon.large
-                }
-
-                Text {
-                    width: parent.width
-                    horizontalAlignment: Text.AlignHCenter
-                    text: {
-                        if (!root.adapter)
-                            return "No Bluetooth adapter";
-                        if (!root.on)
-                            return "Bluetooth is off";
-                        return root.searching ? "Looking for devices" : "No devices found";
-                    }
-                    color: Theme.dim
-                    font {
-                        family: Theme.font
-                        pixelSize: Theme.fontSize.normal
-                    }
-                }
+            searching: root.searching
+            icon: root.on ? "bluetooth_searching" : "bluetooth_disabled"
+            text: {
+                if (!root.adapter)
+                    return "No Bluetooth adapter";
+                if (!root.on)
+                    return "Bluetooth is off";
+                return root.searching ? "Looking for devices" : "No devices found";
             }
         }
 
@@ -143,7 +113,7 @@ RowLayout {
                 values: root.devices
             }
 
-            delegate: Rectangle {
+            delegate: FlyoutRow {
                 id: row
 
                 required property var modelData
@@ -151,19 +121,8 @@ RowLayout {
                 readonly property bool busy: row.modelData.pairing || row.modelData.state === Bluez.BluetoothDeviceState.Connecting || row.modelData.state === Bluez.BluetoothDeviceState.Disconnecting
 
                 width: list.width
-                implicitHeight: 46
-                radius: Theme.rounding.large
-                color: rowHover.hovered || row.modelData.connected ? Theme.bgTray : "transparent"
+                active: row.modelData.connected
 
-                Behavior on color {
-                    ColorAnimation {
-                        duration: Theme.duration.expressiveFastEffects
-                    }
-                }
-
-                HoverHandler {
-                    id: rowHover
-                }
 
                 RowLayout {
                     anchors {
@@ -210,7 +169,7 @@ RowLayout {
                     }
 
                     MaterialIcon {
-                        visible: !row.busy && row.modelData.paired && rowHover.hovered
+                        visible: !row.busy && row.modelData.paired && row.hovered
                         text: "link_off"
                         color: Theme.dim
                         size: Theme.icon.small

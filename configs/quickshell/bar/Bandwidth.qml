@@ -54,7 +54,7 @@ RowLayout {
 
         Text {
             Layout.alignment: Qt.AlignVCenter
-            Layout.preferredWidth: 46
+            Layout.preferredWidth: Theme.control.readout
             horizontalAlignment: Text.AlignLeft
             text: root.human(parent.value)
             color: Theme.fg
