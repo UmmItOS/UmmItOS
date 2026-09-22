@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 
+import Quickshell
 import QtQuick
 import QtQuick.Layouts
 import Quickshell.Bluetooth as Bluez
@@ -71,12 +72,15 @@ RowLayout {
         onToggled: root.adapter.enabled = !root.adapter.enabled
         onCloseRequested: root.popupOpen = false
 
-        // Scanning drains the radio; run it only while the list is up.
+        // Scanning drains the radio; run it only while the list is up. Held
+        // only while this flyout is open, and handed back afterwards: every
+        // screen has a bar, and one that always wrote would stop a scan another
+        // screen, or another app, had started.
         Binding {
             target: root.adapter
             property: "discovering"
-            value: root.popupOpen && root.on
-            when: root.adapter !== null
+            value: root.on
+            when: root.adapter !== null && root.popupOpen
         }
 
         // Every empty case says which one it is.
@@ -132,7 +136,12 @@ RowLayout {
             clip: true
             spacing: Theme.spacing.extraSmall
             boundsBehavior: Flickable.StopAtBounds
-            model: root.devices
+            // A ScriptModel, not the array: it diffs each new array against the last,
+            // so an entry that is still there keeps its row instead of every row
+            // being rebuilt whenever anything changes.
+            model: ScriptModel {
+                values: root.devices
+            }
 
             delegate: Rectangle {
                 id: row

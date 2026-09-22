@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 
+import Quickshell
 import QtQuick
 import QtQuick.Layouts
 import Quickshell.Networking
@@ -15,8 +16,15 @@ RowLayout {
     readonly property var active: root.wifi ? root.wifi.networks.values.find(n => n.connected) ?? null : null
     readonly property bool plugged: root.wired?.hasLink ?? false
 
-    // Connected first, then strongest.
-    readonly property var networks: root.wifi ? [...root.wifi.networks.values].sort((a, b) => (b.connected - a.connected) || (b.signalStrength - a.signalStrength)) : []
+    // Connected first, then known, then by name. Not by signal: strength
+    // changes every scan, and each change rebuilt every row, including the
+    // one you were typing a password into. The bars already show strength.
+    readonly property var networks: root.wifi ? [...root.wifi.networks.values].sort((a, b) => (b.connected - a.connected) || (b.known - a.known) || a.name.localeCompare(b.name)) : []
+
+    // The password prompt lives here, not in the row, so a row being
+    // recreated neither closes it nor loses what was typed.
+    property string askingFor: ""
+    property string pskDraft: ""
 
     property bool popupOpen: false
     // A scan takes a few seconds. Without this the flyout shows an empty box
@@ -47,6 +55,9 @@ RowLayout {
         if (popupOpen) {
             scanning = true;
             scanGrace.restart();
+        } else {
+            askingFor = "";
+            pskDraft = "";
         }
     }
 
@@ -83,11 +94,13 @@ RowLayout {
         onCloseRequested: root.popupOpen = false
 
         // Scanning is only worth its cost while someone is looking at the list.
+        // Held only while this flyout is open, so the bar on another screen
+        // does not switch it off underneath.
         Binding {
             target: root.wifi
             property: "scannerEnabled"
-            value: root.popupOpen
-            when: root.wifi !== null
+            value: true
+            when: root.wifi !== null && root.popupOpen
         }
 
         // Every empty case says which one it is.
@@ -143,7 +156,12 @@ RowLayout {
             clip: true
             spacing: Theme.spacing.extraSmall
             boundsBehavior: Flickable.StopAtBounds
-            model: root.networks
+            // A ScriptModel, not the array: it diffs each new array against the last,
+            // so an entry that is still there keeps its row instead of every row
+            // being rebuilt whenever anything changes.
+            model: ScriptModel {
+                values: root.networks
+            }
 
             delegate: Rectangle {
                 id: row
@@ -153,10 +171,11 @@ RowLayout {
                 readonly property bool busy: row.modelData.stateChanging
                 readonly property int lineHeight: 46
 
-                property bool askingPsk: false
+                readonly property bool askingPsk: root.askingFor !== "" && root.askingFor === row.modelData.name
 
                 width: list.width
-                implicitHeight: row.askingPsk ? row.lineHeight * 2 : row.lineHeight
+                // The expanded row is as tall as what it holds, not a guess.
+                implicitHeight: row.askingPsk ? content.implicitHeight : row.lineHeight
                 radius: Theme.rounding.large
                 color: rowHover.hovered || row.modelData.connected ? Theme.bgTray : "transparent"
 
@@ -178,6 +197,8 @@ RowLayout {
                 }
 
                 ColumnLayout {
+                    id: content
+
                     anchors {
                         left: parent.left
                         right: parent.right
@@ -260,12 +281,26 @@ RowLayout {
                                 pixelSize: Theme.fontSize.smaller
                             }
 
+                            text: row.askingPsk ? root.pskDraft : ""
+                            onTextChanged: {
+                                if (row.askingPsk)
+                                    root.pskDraft = text;
+                            }
+                            // A recreated row takes the focus back.
+                            Component.onCompleted: {
+                                if (row.askingPsk)
+                                    forceActiveFocus();
+                            }
+
                             Keys.onReturnPressed: {
                                 row.modelData.connectWithPsk(text);
-                                row.askingPsk = false;
-                                text = "";
+                                root.askingFor = "";
+                                root.pskDraft = "";
                             }
-                            Keys.onEscapePressed: row.askingPsk = false
+                            Keys.onEscapePressed: {
+                                root.askingFor = "";
+                                root.pskDraft = "";
+                            }
 
                             Text {
                                 anchors.fill: parent
@@ -293,7 +328,8 @@ RowLayout {
                         } else if (row.modelData.known || !root.secured(row.modelData)) {
                             row.modelData.connect();
                         } else {
-                            row.askingPsk = true;
+                            root.pskDraft = "";
+                            root.askingFor = row.modelData.name;
                             psk.forceActiveFocus();
                         }
                     }

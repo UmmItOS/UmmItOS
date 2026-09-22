@@ -171,7 +171,9 @@ RowLayout {
         }
 
         Repeater {
-            model: root.devices.length > 1 ? root.devices : []
+            model: ScriptModel {
+                values: root.devices.length > 1 ? root.devices : []
+            }
 
             Rectangle {
                 id: device
@@ -245,7 +247,12 @@ RowLayout {
         }
 
         Repeater {
-            model: root.streams
+            // A ScriptModel, not the array: it diffs each new array against the last,
+            // so an entry that is still there keeps its row instead of every row
+            // being rebuilt whenever anything changes.
+            model: ScriptModel {
+                values: root.streams
+            }
 
             // One line, the same shape as the master row above it: what it is,
             // how loud, and the number. The app's own icon identifies it, so
