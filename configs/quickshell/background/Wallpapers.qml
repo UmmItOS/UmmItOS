@@ -27,9 +27,14 @@ Singleton {
         return dot > 0 ? base.slice(0, dot) : base;
     }
 
+    // Set for one change: the random button reveals its pick through a
+    // growing circle, the way awww's transition used to. Everything else fades.
+    property bool reveal: false
+
     function setRandom(): void {
         if (list.length === 0)
             return;
+        reveal = true;
         let next = list[Math.floor(Math.random() * list.length)];
         if (list.length > 1)
             while (next === actual)
