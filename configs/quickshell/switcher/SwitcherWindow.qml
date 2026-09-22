@@ -61,8 +61,13 @@ PanelWindow {
         }
 
         RowLayout {
+            id: cards
             anchors.centerIn: parent
             spacing: Theme.spacing.largeIncreased
+
+            // Cards take what the screen allows, so more workspaces shrink them
+            // rather than running off the edge.
+            readonly property int cardWidth: Math.min(460, (win.width - Theme.padding.extraLarge * 4) / Math.max(1, Switcher.workspaces.length) - Theme.spacing.largeIncreased)
 
             Repeater {
                 model: Switcher.workspaces
@@ -75,19 +80,14 @@ PanelWindow {
                     readonly property bool current: Switcher.index === index
                     readonly property var windows: [...modelData.toplevels.values].slice(0, 4)
 
-                    implicitWidth: 300
-                    implicitHeight: 220
+                    implicitWidth: cards.cardWidth
+                    implicitHeight: cards.cardWidth * 0.72
                     radius: Theme.rounding.extraLarge
                     tone: current ? Theme.accent : Theme.bgAlt
-                    scale: current ? 1.05 : 1
 
-                    Behavior on scale {
-                        NumberAnimation {
-                            duration: Theme.duration.expressiveFastSpatial
-                            easing.type: Easing.BezierSpline
-                            easing.bezierCurve: Theme.curve.expressiveDefaultSpatial
-                        }
-                    }
+                    // No scale on the focused card: it is already inside a layer
+                    // for the glow, and magnifying that texture is what made the
+                    // previews look resampled. Colour and glow carry focus.
 
                     layer.enabled: card.current
                     layer.effect: MultiEffect {
