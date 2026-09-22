@@ -73,7 +73,13 @@ ColumnLayout {
                 fill: parent
                 margins: Theme.padding.large
             }
-            spacing: Theme.spacing.large
+            spacing: Theme.spacing.extraLargeIncreased
+
+            // Centred as a group. Three facts each filling a third left the
+            // last one with a hand's width of nothing beside it.
+            Item {
+                Layout.fillWidth: true
+            }
 
             Repeater {
                 model: [
@@ -99,7 +105,6 @@ ColumnLayout {
 
                     required property var modelData
 
-                    Layout.fillWidth: true
                     spacing: Theme.spacing.medium
 
                     MaterialIcon {
@@ -110,7 +115,6 @@ ColumnLayout {
                     }
 
                     ColumnLayout {
-                        Layout.fillWidth: true
                         spacing: 0
 
                         Text {
@@ -125,7 +129,6 @@ ColumnLayout {
                         }
 
                         Text {
-                            Layout.fillWidth: true
                             text: fact.modelData.value
                             color: Theme.fg
                             elide: Text.ElideRight
@@ -137,6 +140,10 @@ ColumnLayout {
                         }
                     }
                 }
+            }
+
+            Item {
+                Layout.fillWidth: true
             }
         }
     }
