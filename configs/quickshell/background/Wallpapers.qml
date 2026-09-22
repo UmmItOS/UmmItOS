@@ -31,7 +31,21 @@ Singleton {
     // growing circle, the way awww's transition used to. Everything else fades.
     property bool reveal: false
 
+    // The folder is read again whenever it is about to be used, so wallpapers
+    // added to ~/.wallpaper show up without restarting the shell.
+    property bool pendingRandom: false
+
+    onPickerOpenChanged: {
+        if (pickerOpen)
+            scan.running = true;
+    }
+
     function setRandom(): void {
+        pendingRandom = true;
+        scan.running = true;
+    }
+
+    function pickRandom(): void {
         if (list.length === 0)
             return;
         reveal = true;
@@ -82,13 +96,16 @@ Singleton {
 
     // Recursive, so the Anime/ and Landscape/ subfolders are included.
     Process {
+        id: scan
         running: true
         command: ["find", root.dir, "-type", "f", "-regex", ".*\\.\\(jpg\\|png\\|jpeg\\)"]
         stdout: StdioCollector {
             onStreamFinished: {
                 root.list = text.trim().split("\n").filter(l => l !== "");
-                if (!root.actual || !root.list.includes(root.actual))
-                    root.setRandom();
+                if (root.pendingRandom || !root.actual || !root.list.includes(root.actual)) {
+                    root.pendingRandom = false;
+                    root.pickRandom();
+                }
             }
         }
     }

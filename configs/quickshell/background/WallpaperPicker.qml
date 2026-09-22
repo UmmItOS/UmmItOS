@@ -25,6 +25,17 @@ OverlayWindow {
 
     readonly property string focusedPath: matches[list.currentIndex] ?? ""
 
+    // The folder is rescanned on open, and the fresh list lands after the
+    // jump to the current wallpaper; land on it again.
+    Connections {
+        target: Wallpapers
+
+        function onListChanged(): void {
+            if (picker.shown && picker.filter === "")
+                list.currentIndex = Math.max(0, picker.matches.indexOf(Wallpapers.actual));
+        }
+    }
+
     onOpened: {
         filter = "";
         search.text = "";
