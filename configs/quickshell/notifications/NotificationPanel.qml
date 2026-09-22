@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Wayland
 import Quickshell.Widgets
 import QtQuick
@@ -37,6 +38,13 @@ PanelWindow {
     readonly property int maxHeight: (screen?.height ?? 1080) - Theme.barHeight - inset * 2
     // What the list may take once the header has had its share.
     readonly property int listRoom: maxHeight - inset * 2 - Theme.padding.large * 2 - header.implicitHeight - Theme.spacing.medium
+
+    // Same dismissal as the bar's flyouts: a click outside closes it.
+    HyprlandFocusGrab {
+        windows: [win]
+        active: win.visible
+        onCleared: Notifs.panelOpen = false
+    }
 
     Surface {
         anchors {

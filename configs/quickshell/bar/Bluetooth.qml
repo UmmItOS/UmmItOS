@@ -62,13 +62,8 @@ RowLayout {
         onTapped: root.popupOpen = !root.popupOpen
     }
 
-    HoverHandler {
-        id: barHover
-    }
-
     Flyout {
         anchorItem: root
-        anchorHovered: barHover.hovered
         visible: root.popupOpen
         title: "Bluetooth"
         busy: root.searching && root.devices.length > 0

@@ -88,13 +88,8 @@ RowLayout {
         onWheel: event => root.setVolume(root.level + (event.angleDelta.y > 0 ? 0.05 : -0.05))
     }
 
-    HoverHandler {
-        id: barHover
-    }
-
     Flyout {
         anchorItem: root
-        anchorHovered: barHover.hovered
         visible: root.popupOpen
         title: "Audio"
         hug: true

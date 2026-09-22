@@ -120,10 +120,8 @@ Singleton {
         readonly property int expressiveFastEffects: 150
         readonly property int expressiveDefaultEffects: 200
         readonly property int expressiveSlowEffects: 300
-        // One turn of a spinner, and how long a flyout waits before closing
-        // itself once the pointer has left.
+        // One turn of a spinner.
         readonly property int spin: 900
-        readonly property int linger: 2500
     }
 
     // Bezier control points for Easing.BezierSpline.

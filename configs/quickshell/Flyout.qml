@@ -1,10 +1,10 @@
 import Quickshell
+import Quickshell.Hyprland
 import QtQuick
 import QtQuick.Layouts
 
 // The bar's drop-down: a titled panel hanging off a bar item, carrying a radio
-// switch in its header and closing itself once the pointer has left both it and
-// the item that opened it.
+// switch in its header and closing on a click anywhere outside it.
 //
 // Wi-Fi and Bluetooth are the same object with different contents, so the shell
 // holds one of these rather than two near-identical windows.
@@ -14,8 +14,6 @@ PopupWindow {
     default property alias content: body.data
 
     required property Item anchorItem
-    // Whether the pointer is still on the bar item that opened this.
-    property bool anchorHovered: false
     property string title
     property bool busy: false
     property bool checked: false
@@ -38,14 +36,13 @@ PopupWindow {
     implicitHeight: root.hug ? head.implicitHeight + body.implicitHeight + Theme.spacing.medium + Theme.padding.large * 2 : 420
     color: "transparent"
 
-    HoverHandler {
-        id: hover
-    }
-
-    Timer {
-        running: root.visible && !hover.hovered && !root.anchorHovered
-        interval: Theme.duration.linger
-        onTriggered: root.closeRequested()
+    // Click anywhere else and it goes, the way a web dropdown does. The grab
+    // also swallows the click that dismisses it, so closing one flyout cannot
+    // press whatever happened to be underneath.
+    HyprlandFocusGrab {
+        windows: [root]
+        active: root.visible
+        onCleared: root.closeRequested()
     }
 
     Surface {

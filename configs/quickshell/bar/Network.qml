@@ -73,13 +73,8 @@ RowLayout {
         onTapped: root.popupOpen = !root.popupOpen
     }
 
-    HoverHandler {
-        id: barHover
-    }
-
     Flyout {
         anchorItem: root
-        anchorHovered: barHover.hovered
         visible: root.popupOpen
         title: "Wi-Fi"
         busy: root.scanning && root.networks.length > 0
