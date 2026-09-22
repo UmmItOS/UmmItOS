@@ -13,9 +13,8 @@ hyprlock call out to.
 | `hypr/hyprpicker/hyprpicker.sh` | Alt+P |
 | `misc/first-run.sh` | `exec.conf`, once per user |
 | `misc/update.sh` | the bar's update button |
-| `misc/clipboard-history.sh` | `update.sh`, to offer clearing cliphist |
+| `misc/clear-clipboard.sh` | `update.sh`, offers to wipe the cliphist history |
 | `misc/wf-recorder.sh` | Super+Shift+R |
-| `misc/convert-extensions.sh` | run by hand, normalises wallpaper extensions |
 
 Scripts log to a `.log` file beside themselves. Check the log rather than relying
 on the notification, which only reports the last run.

@@ -32,7 +32,7 @@ execute_command() {
 
 run_history() {
     # Execute history script first
-    execute_command "History script been executed :)" bash "$HOME/script/misc/clipboard-history.sh"
+    execute_command "Clipboard clean-up offered :)" bash "$HOME/script/misc/clear-clipboard.sh"
 }
 
 # Run history script
