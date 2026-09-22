@@ -85,7 +85,7 @@ OverlayWindow {
 
                 Text {
                     Layout.fillWidth: true
-                    text: Notifs.history.length === 0 ? "" : Notifs.history.length
+                    text: Notifs.history.count === 0 ? "" : Notifs.history.count
                     color: Theme.dim
                     font {
                         family: Theme.font
@@ -128,7 +128,7 @@ OverlayWindow {
                     implicitHeight: 38
                     radius: width / 2
                     color: clearHover.hovered ? Theme.urgent : Theme.bgTray
-                    visible: Notifs.history.length > 0
+                    visible: Notifs.history.count > 0
 
                     Behavior on color {
                         ColorAnimation {
@@ -159,7 +159,7 @@ OverlayWindow {
                 Layout.topMargin: Theme.spacing.small
                 Layout.bottomMargin: Theme.spacing.large
                 horizontalAlignment: Text.AlignHCenter
-                visible: Notifs.history.length === 0
+                visible: Notifs.history.count === 0
                 text: Notifs.dnd ? "Nothing here. Do not disturb is on." : "Nothing here."
                 color: Theme.dim
                 font {
@@ -173,15 +173,58 @@ OverlayWindow {
                 // Tall enough for the history, never taller than the screen.
                 // fillHeight would have stretched an empty list to the bottom.
                 Layout.preferredHeight: Math.min(contentHeight, win.listRoom)
-                visible: Notifs.history.length > 0
+                visible: Notifs.history.count > 0
                 clip: true
                 spacing: Theme.spacing.small
                 model: Notifs.history
                 boundsBehavior: Flickable.StopAtBounds
 
+                // The same movement as the toasts, so a dismissed card leaves
+                // and the rest close the gap instead of snapping.
+                add: Transition {
+                    NumberAnimation {
+                        property: "opacity"
+                        from: 0
+                        to: 1
+                        duration: Theme.duration.expressiveDefaultEffects
+                    }
+                }
+                remove: Transition {
+                    NumberAnimation {
+                        property: "opacity"
+                        to: 0
+                        duration: Theme.duration.expressiveFastEffects
+                    }
+                    NumberAnimation {
+                        property: "x"
+                        to: Theme.spacing.extraLarge * 2
+                        duration: Theme.duration.expressiveFastSpatial
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curve.emphasizedAccel
+                    }
+                }
+                displaced: Transition {
+                    NumberAnimation {
+                        property: "y"
+                        duration: Theme.duration.expressiveFastSpatial
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curve.standard
+                    }
+                    // A card displaced mid-entrance keeps whatever opacity the
+                    // cancelled add left it at unless this finishes the job.
+                    NumberAnimation {
+                        property: "opacity"
+                        to: 1
+                        duration: Theme.duration.expressiveFastEffects
+                    }
+                }
+
                 delegate: Surface {
                     id: card
-                    required property var modelData
+
+                    // Roles of the history ListModel. Read with a fallback: a
+                    // delegate outlives its row while the remove transition plays.
+                    required property var model
 
                     width: ListView.view.width
                     implicitHeight: body.implicitHeight + Theme.padding.large * 2
@@ -205,7 +248,7 @@ OverlayWindow {
                             IconImage {
                                 id: icon
                                 implicitSize: 16
-                                source: card.modelData.appIcon ? Quickshell.iconPath(card.modelData.appIcon, true) : ""
+                                source: card.model.appIcon ? Quickshell.iconPath(card.model.appIcon, true) : ""
                                 visible: status === Image.Ready
                             }
 
@@ -218,7 +261,7 @@ OverlayWindow {
 
                             Text {
                                 Layout.fillWidth: true
-                                text: card.modelData.appName
+                                text: card.model.appName ?? ""
                                 color: Theme.dim
                                 font {
                                     family: Theme.font
@@ -230,7 +273,7 @@ OverlayWindow {
                             }
 
                             Text {
-                                text: card.modelData.time
+                                text: card.model.time ?? ""
                                 color: Theme.dim
                                 font {
                                     family: Theme.font
@@ -256,7 +299,7 @@ OverlayWindow {
                                 MouseArea {
                                     anchors.fill: parent
                                     anchors.margins: -4
-                                    onClicked: Notifs.forget(card.modelData.key)
+                                    onClicked: Notifs.forget(card.model.key)
                                 }
                             }
                         }
@@ -264,8 +307,8 @@ OverlayWindow {
                         Text {
                             Layout.fillWidth: true
                             Layout.topMargin: Theme.spacing.extraSmall
-                            text: card.modelData.summary
-                            color: card.modelData.critical ? Theme.urgent : Theme.accentText
+                            text: card.model.summary ?? ""
+                            color: card.model.critical ? Theme.urgent : Theme.accentText
                             font {
                                 family: Theme.fontDisplay
                                 pixelSize: Theme.fontSize.larger
@@ -276,7 +319,7 @@ OverlayWindow {
 
                         Text {
                             Layout.fillWidth: true
-                            text: card.modelData.body
+                            text: card.model.body ?? ""
                             color: Theme.fg
                             font {
                                 family: Theme.font
@@ -287,6 +330,7 @@ OverlayWindow {
                             maximumLineCount: 4
                             elide: Text.ElideRight
                             visible: text !== ""
+                            onLinkActivated: link => Notifs.openLink(link)
                         }
 
                         // The same preview the toast showed: album art, a
@@ -304,7 +348,7 @@ OverlayWindow {
                             Image {
                                 id: preview
                                 anchors.fill: parent
-                                source: card.modelData.image ?? ""
+                                source: card.model.image ? card.model.image : ""
                                 fillMode: Image.PreserveAspectCrop
                                 asynchronous: true
                                 sourceSize.width: 240

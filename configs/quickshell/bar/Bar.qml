@@ -109,7 +109,7 @@ PanelWindow {
             Bluetooth {}
 
             BarButton {
-                icon: Notifs.dnd ? "notifications_off" : Notifs.history.length > 0 ? "notifications_active" : "notifications"
+                icon: Notifs.dnd ? "notifications_off" : Notifs.history.count > 0 ? "notifications_active" : "notifications"
                 baseColor: Notifs.dnd ? Theme.dim : Theme.fg
                 onClicked: Notifs.panelOpen = !Notifs.panelOpen
             }

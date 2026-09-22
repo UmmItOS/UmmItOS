@@ -39,10 +39,22 @@ Scope {
         // at y=0 and would otherwise sit on top of the tray and the clock.
         margins.top: Theme.barHeight + Theme.spacing.small
         margins.right: Theme.spacing.small
-        visible: server.trackedNotifications.values.length > 0
+        // Mapped until the last toast has finished leaving: unmapping on an
+        // empty model cut the final remove transition off before it played.
+        visible: list.count > 0 || linger.running
         implicitWidth: 420
-        implicitHeight: Math.max(1, list.contentHeight + Theme.padding.medium * 2)
+        // A fixed column, not the height of the toasts: shrinking the window
+        // as one leaves clipped it mid-slide. Input only lands on the toasts.
+        implicitHeight: (screen?.height ?? 1080) - Theme.barHeight - Theme.spacing.small * 2
+        mask: Region {
+            item: list.contentItem
+        }
         color: "transparent"
+
+        Timer {
+            id: linger
+            interval: Theme.duration.expressiveFastSpatial
+        }
 
         // A ListView, not a column of Repeater items: a toast that is removed
         // from a Layout simply stops existing, and the ones under it snap up.
@@ -57,6 +69,11 @@ Scope {
             spacing: Theme.spacing.small
             interactive: false
             model: server.trackedNotifications
+
+            onCountChanged: {
+                if (count === 0)
+                    linger.restart();
+            }
 
             add: Transition {
                 NumberAnimation {
@@ -96,6 +113,20 @@ Scope {
                     easing.type: Easing.BezierSpline
                     easing.bezierCurve: Theme.curve.standard
                 }
+                // Displacing a toast cancels its add transition; without these
+                // it would stay half faded and off to the side for good.
+                NumberAnimation {
+                    properties: "opacity"
+                    to: 1
+                    duration: Theme.duration.expressiveFastEffects
+                }
+                NumberAnimation {
+                    properties: "x"
+                    to: 0
+                    duration: Theme.duration.expressiveFastSpatial
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curve.emphasizedDecel
+                }
             }
 
             delegate: Rectangle {
@@ -133,10 +164,14 @@ Scope {
                     }
                 }
 
+                // What the sender asked for, in ms: -1 leaves it to us, 0 means
+                // never. Critical ones never expire either; that is the spec.
+                readonly property real timeout: card.modelData?.expireTimeout ?? -1
+
                 // Reading a notification should not race its own timer.
                 Timer {
-                    running: !hover.hovered && card.modelData !== null
-                    interval: card.critical ? 15000 : 6000
+                    running: !hover.hovered && card.modelData !== null && !card.critical && card.timeout !== 0
+                    interval: card.timeout > 0 ? card.timeout : 6000
                     onTriggered: card.modelData?.expire()
                 }
 
@@ -222,7 +257,7 @@ Scope {
 
                     Text {
                         Layout.fillWidth: true
-                        text: card.modelData?.body ?? ""
+                        text: Notifs.safeBody(card.modelData?.body ?? "")
                         color: Theme.fg
                         font.family: Theme.font
                         font.pixelSize: Theme.fontSize.normal
@@ -231,7 +266,7 @@ Scope {
                         maximumLineCount: 6
                         elide: Text.ElideRight
                         visible: text !== ""
-                        onLinkActivated: link => Qt.openUrlExternally(link)
+                        onLinkActivated: link => Notifs.openLink(link)
                     }
 
                     // Album art, screenshot previews, and the like.
@@ -247,7 +282,7 @@ Scope {
                             id: preview
 
                             anchors.fill: parent
-                            source: card.modelData?.image ?? ""
+                            source: card.modelData ? card.modelData.image : ""
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: true
                             sourceSize.width: 240
