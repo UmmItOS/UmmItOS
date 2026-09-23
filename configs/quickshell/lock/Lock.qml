@@ -28,6 +28,8 @@ Singleton {
 
     signal wrong
 
+    // Uncompressed PPM: PNG encoding took ~0.6s a screen, which read as the
+    // lock lagging behind the key; PPM is ~25ms.
     // Each screen as it was just before locking, so the lock can fade in
     // from the desktop and back out to it. A lock surface is opaque, so
     // without this the desktop could only pop back when the lock lets go.
@@ -37,14 +39,14 @@ Singleton {
     property bool preparing: false
 
     function shotOf(screenName: string): string {
-        return "file://" + shotDir + "/" + screenName + ".png?" + shot;
+        return "file://" + shotDir + "/" + screenName + ".ppm?" + shot;
     }
 
     // Photograph every screen, then run `then`.
     function capture(then: var): void {
         preparing = true;
         grab.then = then;
-        grab.command = ["sh", "-c", 'mkdir -p -m 700 "$1" && d="$1" && shift && for o; do grim -o "$o" "$d/$o.png"; done', "sh", shotDir, ...Quickshell.screens.map(s => s.name)];
+        grab.command = ["sh", "-c", 'mkdir -p -m 700 "$1" && d="$1" && shift && for o; do grim -t ppm -o "$o" "$d/$o.ppm"; done', "sh", shotDir, ...Quickshell.screens.map(s => s.name)];
         grab.running = true;
     }
 

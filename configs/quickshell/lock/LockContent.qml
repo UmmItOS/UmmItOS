@@ -14,6 +14,7 @@ Item {
     // Which screen this is, for its picture of the desktop.
     required property string screenName
 
+
     function at(fraction: real): real {
         return -fraction * height;
     }
@@ -285,15 +286,15 @@ Item {
             anchors.rightMargin: Theme.padding.large
             focus: true
             echoMode: TextInput.Password
-            passwordCharacter: "●"
             horizontalAlignment: TextInput.AlignHCenter
             verticalAlignment: TextInput.AlignVCenter
-            color: "white"
+            // The typing is drawn by the dots below, so each can arrive with
+            // its own little spring; the input itself stays invisible.
+            color: "transparent"
             font.pixelSize: Theme.fontSize.larger
             font.letterSpacing: Theme.spacing.extraSmall
             enabled: !Lock.checking
-            // No caret over the "incorrect" line when nothing is typed.
-            cursorVisible: text !== ""
+            cursorVisible: false
 
             Component.onCompleted: forceActiveFocus()
 
@@ -302,6 +303,35 @@ Item {
                 text = "";
             }
             Keys.onEscapePressed: text = ""
+        }
+
+        // One dot per character, each popping in on a spring as it is typed.
+        Row {
+            anchors.centerIn: parent
+            spacing: Theme.spacing.small
+
+            Repeater {
+                model: input.text.length
+
+                Rectangle {
+                    id: dot
+
+                    width: Theme.spacing.medium
+                    height: width
+                    radius: width / 2
+                    color: "white"
+                    scale: 0
+
+                    Component.onCompleted: scale = 1
+
+                    Behavior on scale {
+                        SpringAnimation {
+                            spring: Theme.spring.stiffness
+                            damping: Theme.spring.damping * 0.6
+                        }
+                    }
+                }
+            }
         }
 
         Text {
