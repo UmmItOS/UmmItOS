@@ -125,6 +125,10 @@ Singleton {
     // Anything that positions itself under the bar reads this rather than
     // repeating the number.
     readonly property int barHeight: 44
+    // Where tiled windows' borders sit, in from the screen edge: Hyprland's
+    // gaps_out (20) plus border_size (3). Things meant to sit inside that
+    // frame, not over it, keep at least this far in.
+    readonly property int windowInset: 23
 
     // How far a pressed control sinks under the finger.
     readonly property real pressScale: 0.92

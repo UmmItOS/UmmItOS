@@ -57,8 +57,8 @@ Scope {
             bottom: true
             right: true
         }
-        implicitWidth: 620
-        implicitHeight: (Theme.control.row * 2 + Theme.spacing.medium) * 5 + Theme.padding.large
+        implicitWidth: 620 + Theme.windowInset
+        implicitHeight: (Theme.control.row * 2 + Theme.spacing.medium) * 5 + Theme.windowInset + Theme.spacing.medium
         color: "transparent"
         mask: Region {}
 
@@ -82,8 +82,9 @@ Scope {
 
             anchors {
                 fill: parent
-                rightMargin: Theme.padding.large
-                bottomMargin: Theme.padding.large
+                // Inside the window border, not on top of it.
+                rightMargin: Theme.windowInset + Theme.spacing.medium
+                bottomMargin: Theme.windowInset + Theme.spacing.medium
             }
             verticalLayoutDirection: ListView.BottomToTop
             spacing: Theme.spacing.medium
