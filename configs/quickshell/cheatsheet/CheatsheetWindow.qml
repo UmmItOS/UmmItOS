@@ -165,6 +165,68 @@ OverlayWindow {
             radius: Theme.rounding.extraLarge
             tone: Theme.bg
             lift: 1.1
+            clip: true
+
+            HoverHandler {
+                id: pointer
+            }
+
+            // A soft light under the pointer, eased so it trails a little, and
+            // gone when the pointer leaves: the sheet notices where you are.
+            Item {
+                id: spot
+
+                readonly property int size: 360
+
+                width: spot.size
+                height: spot.size
+                x: pointer.point.position.x - spot.size / 2
+                y: pointer.point.position.y - spot.size / 2
+                opacity: pointer.hovered ? 1 : 0
+
+                Behavior on x {
+                    NumberAnimation {
+                        duration: Theme.duration.expressiveFastSpatial
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curve.emphasizedDecel
+                    }
+                }
+                Behavior on y {
+                    NumberAnimation {
+                        duration: Theme.duration.expressiveFastSpatial
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curve.emphasizedDecel
+                    }
+                }
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: Theme.duration.expressiveDefaultEffects
+                    }
+                }
+
+                Rectangle {
+                    id: glow
+
+                    anchors.centerIn: parent
+                    width: spot.size / 2
+                    height: width
+                    radius: width / 2
+                    color: Theme.accentText
+                    opacity: 0.22
+                    visible: false
+                    layer.enabled: true
+                }
+
+                MultiEffect {
+                    anchors.fill: parent
+                    source: glow
+                    blurEnabled: true
+                    blurMax: 64
+                    blur: 1
+                    autoPaddingEnabled: true
+                    opacity: glow.opacity
+                }
+            }
 
             Flickable {
                 anchors {
