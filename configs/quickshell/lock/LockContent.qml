@@ -11,6 +11,9 @@ import ".."
 Item {
     id: root
 
+    // Which screen this is, for its picture of the desktop.
+    required property string screenName
+
     function at(fraction: real): real {
         return -fraction * height;
     }
@@ -68,16 +71,32 @@ Item {
         visible: false
     }
 
-    // hyprlock: blur 2 passes, brightness 0.8, contrast 1.3, vibrancy 0.21.
+    // hyprlock's background: a light blur (size 1, 2 passes), a little
+    // contrast, and brightness 0.8 as a multiply, which is a 20% black veil.
+    // Vibrancy only touched the colourful parts, so saturation is left alone.
     MultiEffect {
         anchors.fill: parent
         source: wall
         blurEnabled: true
-        blurMax: 48
-        blur: 0.55 * root.haze
-        brightness: -0.2 * root.haze
-        contrast: 0.15 * root.haze
-        saturation: 0.21 * root.haze
+        blurMax: 32
+        blur: 0.3
+        contrast: 0.08
+    }
+
+    Rectangle {
+        anchors.fill: parent
+        color: "black"
+        opacity: 0.2
+    }
+
+    // The desktop as it was, on top, fading out as the lock comes in and back
+    // in before it lets go: both ways start and end on what was on screen.
+    Image {
+        anchors.fill: parent
+        source: Lock.shot > 0 ? Lock.shotOf(root.screenName) : ""
+        cache: false
+        fillMode: Image.PreserveAspectCrop
+        opacity: 1 - root.haze
     }
 
     Item {

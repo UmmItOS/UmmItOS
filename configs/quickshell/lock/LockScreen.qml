@@ -10,21 +10,26 @@ Scope {
         locked: Lock.locked
 
         WlSessionLockSurface {
+            id: surface
+
             color: "black"
 
             LockContent {
                 anchors.fill: parent
+                screenName: surface.screen?.name ?? ""
             }
         }
     }
 
     OverlayWindow {
+        id: preview
+
         shown: Lock.previewing
         name: "lock-preview"
 
         LockContent {
             anchors.fill: parent
-            opacity: Math.min(1, parent.parent?.reveal ?? 1)
+            screenName: preview.screen?.name ?? ""
         }
     }
 }

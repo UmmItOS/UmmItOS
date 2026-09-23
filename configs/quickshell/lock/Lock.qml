@@ -28,12 +28,58 @@ Singleton {
 
     signal wrong
 
+    // Each screen as it was just before locking, so the lock can fade in
+    // from the desktop and back out to it. A lock surface is opaque, so
+    // without this the desktop could only pop back when the lock lets go.
+    // Kept in the runtime dir (private tmpfs) and deleted after unlocking.
+    readonly property string shotDir: Quickshell.env("XDG_RUNTIME_DIR") + "/ummitos-lock"
+    property int shot: 0
+    property bool preparing: false
+
+    function shotOf(screenName: string): string {
+        return "file://" + shotDir + "/" + screenName + ".png?" + shot;
+    }
+
+    // Photograph every screen, then run `then`.
+    function capture(then: var): void {
+        preparing = true;
+        grab.then = then;
+        grab.command = ["sh", "-c", 'mkdir -p -m 700 "$1" && d="$1" && shift && for o; do grim -o "$o" "$d/$o.png"; done', "sh", shotDir, ...Quickshell.screens.map(s => s.name)];
+        grab.running = true;
+    }
+
     function lock(): void {
-        if (locked)
+        if (locked || preparing)
             return;
         failed = false;
         attempts = 0;
-        locked = true;
+        capture(() => locked = true);
+    }
+
+    function preview(): void {
+        if (previewing)
+            previewing = false;
+        else if (!preparing)
+            capture(() => previewing = true);
+    }
+
+    Process {
+        id: grab
+
+        property var then: null
+
+        // Lock even if the picture failed: a lock that never comes is worse
+        // than one that fades in from black.
+        onExited: {
+            root.shot++;
+            root.preparing = false;
+            then?.();
+        }
+    }
+
+    Process {
+        id: forget
+        command: ["rm", "-rf", root.shotDir]
     }
 
     function submit(password: string): void {
@@ -61,6 +107,7 @@ Singleton {
             root.locked = false;
             root.previewing = false;
             root.unlocking = false;
+            forget.running = true;
         }
     }
 
@@ -101,8 +148,9 @@ Singleton {
             return root.locked;
         }
 
+
         function preview(): void {
-            root.previewing = !root.previewing;
+            root.preview();
         }
     }
 }
