@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 UmmItOS is Arch Linux plus Hyprland, shipped as a bash installer and a dotfiles bundle. It is billed as the "first Hong Kong Linux distribution", but the OS underneath is Arch; this repo is the installer and the config bundle ([UmmItOS/UmmItOS](https://github.com/UmmItOS/UmmItOS)). It has two halves:
 
 - **Installer** (bash): `setup.sh` → `install.sh` / `install-menu.sh` → `install/*.sh`, with shared helpers in `lib/common.sh` (`is_laptop`, `has_amdgpu`, `enable_bluetooth`, `prompt_yna`, `backup_file`, and so on).
-- **Desktop shell**: `configs/quickshell/`, a QML application for Quickshell 0.3.1. It provides the bar, notification toasts and centre, wallpaper and picker, launcher and clipboard, dashboard, session menu, volume/brightness OSD, and the Wi-Fi, Bluetooth and audio flyouts. It also includes an Alt+Tab switcher. It replaces waybar, swaync, rofi, wlogout and swww. hyprlock and hypridle remain (`configs/hypr/`).
+- **Desktop shell**: `configs/quickshell/`, a QML application for Quickshell 0.3.1. It draws the bar, notifications, wallpaper and its picker, the launcher and clipboard, the dashboard, the session menu, the volume/brightness OSD, the Wi-Fi, Bluetooth, audio and accent flyouts, an Alt+Tab switcher, a keybind cheat sheet and the screenshot tool. It replaced waybar, swaync, rofi, wlogout, swww and hyprshot. hyprlock and hypridle are still separate (`configs/hypr/`).
 
 ## Commands
 
@@ -20,7 +20,7 @@ shellcheck install.sh install-menu.sh post-install.sh setup.sh install/*.sh lib/
 qs -c ummitos -d                  # Run the shell daemonised (exec.conf starts it at login)
 qs -c ummitos ipc show            # List every IPC target and function
 qs -c ummitos ipc call <target> <fn>
-qs log read /run/user/$UID/quickshell/by-id/*/log.qslog   # Errors from the running instance
+qs log -c ummitos                 # The running instance's log; reloads, warnings, errors
 ```
 
 There are no tests, no lint config and no CI. Verification means running `shellcheck` and running the shell, then reading its log and taking screenshots (`grim`).
@@ -83,11 +83,11 @@ grep -A5 'name: "workspaces"' /usr/lib/qt6/qml/Quickshell/Hyprland/_Ipc/*.qmltyp
 
 ### Structure
 
-- **Singleton + window split.** Each surface has a singleton that holds its state and its `IpcHandler`, and a window that renders it: `Dashboard`/`DashboardWindow`, `Launcher`/`LauncherWindow`, `Session`, `Notifs`, `Osd`, `Wallpapers`, `Switcher`. `shell.qml` instantiates one of each window, plus `Variants` over `Quickshell.screens` for the bar.
+- **Singleton + window split.** Each surface has a singleton that holds its state and its `IpcHandler`, and a window that renders it: `Dashboard`/`DashboardWindow`, `Launcher`/`LauncherWindow`, `Session`, `Notifs`, `Osd`, `Wallpapers`, `Switcher`, `Cheatsheet`, `Screenshot`. `shell.qml` instantiates one of each window, plus `Variants` over `Quickshell.screens` for the bar.
 - **Every singleton and shared component must be listed in `configs/quickshell/qmldir`.** If one is missing, it fails to resolve, and the error does not name the real cause.
 - **Singletons are lazy.** A singleton that nothing references never runs. A background watcher with no UI (`services/BatteryNotifier.qml`) is therefore a `Scope` instantiated in `shell.qml`, not a singleton.
-- **`services/`** holds shared data sources: `SysInfo` (proc polling), `Players` (the active MPRIS player plus the position tick) and `BatteryNotifier`.
-- **Shared components** at the root are `Surface` (the material), `Flyout` (the bar dropdown used by Wi-Fi, Bluetooth and Volume), `Toggle`, `Slider`, `Spinner`, `MaterialIcon` and `Reveal` (the open/close animation). Reuse these rather than building one-off versions.
+- **`services/`** holds shared data: `SysInfo` (proc polling), `Net` (bandwidth, one sampler however many bars), `Players` (the active MPRIS player), `Cava` (audio levels for the media ring) and `BatteryNotifier`. Anything that polls runs only while something on screen shows it: `SysInfo.active`, `Players.watched` and `Cava.running` are all switched by the dashboard.
+- **Shared components** at the root are `Surface` (the material), `Flyout` (the bar dropdown used by Wi-Fi, Bluetooth and Volume), `FlyoutRow` and `FlyoutEmpty` (its list row and empty state), `Toggle`, `Slider`, `Spinner`, `MaterialIcon` and `Reveal` (the open/close animation). Reuse these rather than building one-off versions.
 - **Surfaces extend `OverlayWindow`.** It takes `shown` (the singleton's open flag) and `name`, and it keeps the window mapped while `reveal` animates to 0. Content drives its opacity and scale from `reveal`. Put per-open resets in `onOpened`, not `onVisibleChanged`: a reopen during the exit never unmaps the window, so a visibility hook would not run. While closing, it drops keyboard focus and passes pointer input through. Select on hover with `pointerMoved()`, never `onEntered`. Hyprland's layer animation is off for `ummitos-*` (`no_anim` in `windows.conf`) so the two animations don't stack.
 
 ### How input reaches the shell
@@ -101,12 +101,19 @@ grep -A5 'name: "workspaces"' /usr/lib/qt6/qml/Quickshell/Hyprland/_Ipc/*.qmltyp
 `Theme.qml` is the single source of truth for colour, `rounding`, `spacing`, `padding`, `fontSize`, `icon`, `duration`, `curve` (M3 bezier control points), `tracking`, `weight` and `barHeight`. **Surface files contain no magic numbers.** If you need a new value, add a token for it.
 
 - **No borders anywhere, deliberately.** Depth comes from elevation (`bg` → `bgAlt` → `bgTray`) and spacing. Do not add `border.width`.
-- The accent `#5003c0` is for fills. `accentText` is the same hue, lifted so it stays readable as text on the dark background.
+- The accent is a fill colour, chosen from the bar's palette button and saved to `Quickshell.statePath("accent.txt")`; `#5003c0` is the default. `accentText` and `accent2` are derived from it, so never hardcode a purple: read the tokens and it follows the user's choice.
+- The cheat sheet's turning ring is the one deliberate border, by request.
 - Blur is automatic. One Hyprland `layerrule` in `configs/hypr/hyprland/windows.conf` matches `ummitos-.*`, so set `WlrLayershell.namespace: "ummitos-<name>"` on new surfaces. The block syntax uses `ignore_alpha`, not `ignorealpha`.
+
+### Screenshots
+
+`Screenshot` has three modes, all drawn by one overlay (`ScreenshotWindow`): `region` (Shift+Print, drag; the wheel zooms), `window` (Super+Print or Super+Shift+W, pick one) and `screen` (Print). The overlay freezes the screen with a `ScreencopyView` captured once on open, blurs it, and hangs the selection from the screen corners on tendrils that trail the pointer on springs (except in region mode, where the corners are the pointer). A region or screen shot is taken with `grim` only after the overlay has left, so the overlay is never in it. A window shot does not use `grim`: it captures the window's own surface (`HyprlandToplevel.wayland`) off screen, clips it to Hyprland's corner radius and saves it with `grabToImage`, which keeps transparency. Files go to `HYPRSHOT_DIR` (the name predates the shell) and onto the clipboard.
 
 ### Debugging state
 
 Before theorising about why a surface misbehaves, read its actual state. Add a temporary `function probe(): string` to the singleton's `IpcHandler` that returns `JSON.stringify({…})` of the internal values, call it between steps, and delete it afterwards.
+
+For things that need input you cannot give from a terminal, mark every temporary line `// PROBE` (an `IpcHandler` that calls the function a click would, a `console.log`) and remove them with `sed -i '/\/\/ PROBE/d'`. `hyprctl dispatch movecursor x y` moves the pointer. Animations are checked by recording: `wf-recorder -f rec.mp4`, then `ffmpeg -i rec.mp4 -vf "fps=6,scale=320:-1,tile=4x3" -frames:v 1 grid.png` for a contact sheet. Never delete a user's files by guessing which one a test made; list the folder before and after and remove only the difference.
 
 ## Traps found the hard way
 
@@ -126,6 +133,15 @@ Before theorising about why a surface misbehaves, read its actual state. Add a t
 - **Degenerate geometry can crash Qt.** Clamp computed radii to at least 1 (see `dashboard/Gauge.qml`).
 - **PipeWire nodes:** a device is `isSink && !isStream`, and an app stream is `isSink && isStream`. Nodes need a `PwObjectTracker` before their `audio` properties are readable.
 - **A leftover notification daemon steals the bus name.** If swaync (or dunst, mako) is still installed, D-Bus activates it whenever a notification arrives while the shell's name is released, which happens during every reload. The shell only claims the name at startup, so toasts silently stop until `qs` restarts. Mask it: `systemctl --user mask swaync.service`.
+- **IPC calls during a reload are lost.** For a moment after a save the targets do not exist ("Target not found", "Not ready to accept queries yet"). In scripts, wait until the log shows a new `Configuration Loaded` before calling.
+- **A failed reload can leave the log stale and the watcher idle.** After an error, the last lines of `qs log` may still show it even once the file is fixed. `touch shell.qml` and wait for a fresh `Configuration Loaded` before believing either.
+- **Files in subfolders need `import ".."`** to see `Theme` and the other root types. Without it the error is `Theme is not defined` at runtime, not at load.
+- **`width`, `height` and friends are FINAL.** Declaring a property with such a name on a subclass fails the whole file with "Cannot override FINAL property".
+- **QML JavaScript has no object spread** (`{...a}`); build the object and assign fields.
+- **`clip: true` clips to a rectangle.** Inside rounded surfaces, clip with a `ClippingRectangle` of the same radius, or corners show.
+- **A blurred shape is cut off at its own bounds**, which reads as a square edge. For soft light use a radial gradient that fades to zero before the edge (a `Canvas`).
+- **`ScreencopyView` captures whatever is on screen, including the shell.** Capture only when your own overlay is fully gone, or you photograph yourself.
+- **State paths are per shell id.** `Quickshell.statePath()` resolves under `~/.local/state/quickshell/by-shell/<id>/`, and the id changes with how `qs` was started. Find the live one from the instance's own log, not by guessing.
 - **Bluetooth needs `bluetoothd` running before `qs` starts.** Otherwise the adapter stays null until the shell restarts.
 
 ## Hard rules
