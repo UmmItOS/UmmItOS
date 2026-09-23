@@ -2,6 +2,8 @@ pragma Singleton
 
 import Quickshell
 import Quickshell.Io
+import QtQuick
+import ".."
 
 Singleton {
     id: root
@@ -14,9 +16,8 @@ Singleton {
             icon: "lock",
             label: "Lock",
             key: "l",
-            // After the menu has faded, so it is not in the picture the
-            // lock fades in from.
-            command: ["sh", "-c", "sleep 0.4; qs -c ummitos ipc call lock lock"]
+            // No command: run() locks directly, once the menu has faded.
+            command: null
         },
         {
             id: "suspend",
@@ -62,7 +63,18 @@ Singleton {
         if (!action || !open)
             return;
         open = false;
-        Quickshell.execDetached(action.command);
+        if (action.command)
+            Quickshell.execDetached(action.command);
+        else
+            lockLater.restart();
+    }
+
+    // After the menu has faded, so it is not in the picture the lock fades
+    // in from.
+    Timer {
+        id: lockLater
+        interval: 400
+        onTriggered: Lock.lock()
     }
 
     function indexForKey(key: string): int {

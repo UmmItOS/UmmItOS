@@ -22,8 +22,8 @@ Singleton {
     // Opened as the overview (hot corner), not Alt+Tab: it zooms out of the
     // current workspace on the way in and into the chosen one on the way out.
     property bool overviewing: false
-    // Bumped when the hot corner fires, so the window can ripple the corner.
-    property int cornerHits: 0
+    // The hot corner fired; the window ripples the corner.
+    signal cornerHit
 
     // Entries go null while Hyprland creates and destroys workspaces, so the
     // list is filtered before anything reads an id off it.
@@ -77,7 +77,7 @@ Singleton {
     // again, Esc, or picking a workspace closes it.
     function overview(fromCorner: bool): void {
         if (fromCorner)
-            cornerHits++;
+            cornerHit();
         if (open)
             return cancel();
         if (grab.running || warming)

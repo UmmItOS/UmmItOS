@@ -36,7 +36,8 @@ OverlayWindow {
         // as one giant card.
         zoomAnim.stop();
         if (Switcher.overviewing) {
-            zoomFrom(1);
+            zoom = 1;
+            Qt.callLater(() => zoomFrom(1));
         } else {
             zoom = 0;
             // No full-screen picture was taken for Alt+Tab; a stale one from
@@ -50,19 +51,16 @@ OverlayWindow {
     // grows back to fill it. 0 is the grid, 1 is the card at full screen.
     property real zoom: 0
     property Item focusCell: null
-    // Where the current card sits in the stage. A binding over the layout,
-    // not a snapshot: on open the grid is still being laid out, and a
-    // measurement taken then pointed the zoom at the wrong place.
-    readonly property rect zoomCard: {
-        const c = focusCell;
-        if (!c)
-            return Qt.rect(0, 0, 1, 1);
-        void [c.x, c.y, c.width, c.height, c.parent?.x, c.parent?.y, grid.width, grid.height, stage.width, stage.height];
-        const r = c.mapToItem(stage, 0, 0, c.width, c.height);
-        return Qt.rect(r.x, r.y, Math.max(1, r.width), Math.max(1, r.height));
-    }
+    property rect zoomCard: Qt.rect(0, 0, 1, 1)
 
+    // Measures where the current card sits, then runs the zoom. Called a
+    // frame late on open (see onOpened) so the grid has been laid out.
     function zoomFrom(start: real): void {
+        const c = focusCell;
+        if (c) {
+            const r = c.mapToItem(stage, 0, 0, c.width, c.height);
+            zoomCard = Qt.rect(r.x, r.y, Math.max(1, r.width), Math.max(1, r.height));
+        }
         zoomAnim.stop();
         zoom = start;
         zoomAnim.to = start === 1 ? 0 : 1;
@@ -559,7 +557,7 @@ OverlayWindow {
         Connections {
             target: Switcher
 
-            function onCornerHitsChanged(): void {
+            function onCornerHit(): void {
                 rippleAnim.restart();
             }
         }
