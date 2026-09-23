@@ -93,7 +93,38 @@ OverlayWindow {
     // toward the tip and fades to nothing at both ends, so it stays tied.
     // Its width narrows along the way, and a short tendril (reeled in) barely
     // sways at all.
-    function tendril(ax: real, ay: real, cx: real, cy: real, t0: real, seed: real): list<point> {
+    // Opening: 0 → 1, the tendrils growing out of the screen corners.
+    property real sprout: 0
+
+    // The blur settles first, then the tendrils grow out and join: one
+    // movement after the other, never both at once.
+    readonly property int sproutDelay: Theme.duration.extraLarge * 1.5
+    readonly property int sproutDuration: Theme.duration.extraLarge + Theme.duration.small
+
+    SequentialAnimation {
+        id: sproutIn
+
+        PauseAnimation {
+            duration: win.sproutDelay
+        }
+        NumberAnimation {
+            target: win
+            property: "sprout"
+            from: 0
+            to: 1
+            duration: win.sproutDuration
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Theme.curve.standard
+        }
+    }
+
+    // How far a tendril has grown. All four grow together over the whole
+    // opening; a stagger left the first ones rushing in.
+    function grownOf(order: int): real {
+        return sprout;
+    }
+
+    function tendril(ax: real, ay: real, cx: real, cy: real, t0: real, seed: real, grow: real): list<point> {
         const x1 = ax + (cx - ax) * 0.7, y1 = ay;
         const x2 = cx, y2 = ay + (cy - ay) * 0.4;
         const reach = Math.hypot(cx - ax, cy - ay);
@@ -101,7 +132,8 @@ OverlayWindow {
         const n = 40;
         const left = [], right = [];
         for (let i = 0; i <= n; i++) {
-            const t = i / n, u = 1 - t;
+            // Only the grown part is drawn; its end tapers like a tip.
+            const t = Math.max(0.001, grow) * i / n, u = 1 - t;
             const bx = u * u * u * ax + 3 * u * u * t * x1 + 3 * u * t * t * x2 + t * t * t * cx;
             const by = u * u * u * ay + 3 * u * u * t * y1 + 3 * u * t * t * y2 + t * t * t * cy;
             let dx = 3 * u * u * (x1 - ax) + 6 * u * t * (x2 - x1) + 3 * t * t * (cx - x2);
@@ -194,6 +226,8 @@ OverlayWindow {
             haze = 0;
         }
         hazeIn.restart();
+        sprout = 0;
+        sproutIn.restart();
         zoom = 1;
         tx = ty = 0;
         finishing.stop();
@@ -225,7 +259,8 @@ OverlayWindow {
 
     Timer {
         id: settleThenCommit
-        interval: Theme.duration.expressiveDefaultSpatial + Theme.duration.normal
+        // After the opening has played in full, so Print shows it too.
+        interval: win.sproutDelay + win.sproutDuration + Theme.duration.normal
         onTriggered: win.commit()
     }
 
@@ -431,6 +466,7 @@ OverlayWindow {
                 required property QtObject corner
                 // Offsets the wave so the four do not move in step.
                 property real seed: 0
+                property int order: 0
 
                 readonly property real ax: win.anchorOf(sx, corner.x)
                 readonly property real ay: win.anchorOf(sy, corner.y)
@@ -440,7 +476,7 @@ OverlayWindow {
                 fillColor: Theme.accentText
 
                 PathPolyline {
-                    path: win.tendril(ax, ay, corner.x, corner.y, win.phase, seed)
+                    path: win.tendril(ax, ay, corner.x, corner.y, win.phase, seed, win.grownOf(order))
                 }
             }
 
@@ -455,18 +491,21 @@ OverlayWindow {
                 sy: 0
                 corner: tr
                 seed: 1.7
+                order: 1
             }
             Thread {
                 sx: 0
                 sy: win.height
                 corner: bl
                 seed: 3.1
+                order: 2
             }
             Thread {
                 sx: win.width
                 sy: win.height
                 corner: br
                 seed: 4.6
+                order: 3
             }
 
             // The selection's own edges, as thick as the tendrils' tips so
@@ -507,8 +546,13 @@ OverlayWindow {
 
                 x: modelData.x - width / 2
                 y: modelData.y - height / 2
-                // A slow heartbeat, each bead a little out of step.
-                scale: 1 + 0.2 * Math.sin(2 * Math.PI * (win.phase * 2) + index)
+                // Grows in gently as its tendril's last stretch arrives, then
+                // keeps a slow heartbeat, each bead a little out of step.
+                readonly property real arrived: {
+                    const x = Math.max(0, Math.min(1, (win.grownOf(index) - 0.6) / 0.4));
+                    return x * x * (3 - 2 * x);
+                }
+                scale: (1 + 0.2 * Math.sin(2 * Math.PI * (win.phase * 2) + index)) * arrived
                 width: Theme.spacing.medium
                 height: width
                 radius: width / 2
