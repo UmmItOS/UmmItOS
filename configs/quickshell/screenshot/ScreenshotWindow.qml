@@ -63,8 +63,8 @@ OverlayWindow {
         loops: Animation.Infinite
     }
 
-    readonly property real rootWidth: Theme.spacing.extraSmall + 1
-    readonly property real tipWidth: 1.2
+    readonly property real rootWidth: Theme.spacing.small + 1
+    readonly property real tipWidth: 2.5
 
     // A tendril's outline from its root (ax, ay) to its tip (cx, cy): the same
     // curve the threads always took, bent sideways by a wave that travels
