@@ -21,8 +21,12 @@ Singleton {
 
     function start(newMode: string): void {
         mode = newMode;
-        if (newMode === "window")
+        // Cleared first: a list left over from the last time would frame a
+        // window from another layout until the fresh one arrives.
+        if (newMode === "window") {
+            windows = [];
             clients.running = true;
+        }
         open = true;
     }
 

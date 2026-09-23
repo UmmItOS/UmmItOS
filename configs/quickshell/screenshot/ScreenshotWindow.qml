@@ -110,6 +110,9 @@ OverlayWindow {
     function commit(): void {
         if (finishing.running)
             return;
+        // A window shot needs a window: nothing is taken before one is picked.
+        if (mode === "window" && !picked)
+            return;
         if (selW < 4 || selH < 4) {
             wholeScreen();
             return;
@@ -390,7 +393,16 @@ OverlayWindow {
                 }
             }
             enabled: !finishing.running
-            onReleased: win.commit()
+            onReleased: mouse => {
+                // The window under the click, not wherever the frame is.
+                if (win.mode === "window") {
+                    const b = win.boxAt(mouse.x, mouse.y);
+                    if (!b)
+                        return;
+                    win.pick(b);
+                }
+                win.commit();
+            }
         }
     }
 }
