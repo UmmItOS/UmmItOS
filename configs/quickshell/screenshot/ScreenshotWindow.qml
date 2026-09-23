@@ -41,6 +41,28 @@ OverlayWindow {
     // The clock the tendrils sway and the beads pulse to; runs only while
     // the overlay is up.
     property real phase: 0
+    // Region zoom: the frozen screen is drawn at `zoom`, shifted by (tx, ty),
+    // so view = screen * zoom + t. The selection lives in view coordinates
+    // and is mapped back to the screen when taken.
+    property real zoom: 1
+    property real tx: 0
+    property real ty: 0
+
+    function toScreenX(v: real): real {
+        return (v - tx) / zoom;
+    }
+    function toScreenY(v: real): real {
+        return (v - ty) / zoom;
+    }
+
+    // Zoom about the pointer, keeping the screen covering the view.
+    function zoomAt(px: real, py: real, steps: real): void {
+        const z = Math.max(1, Math.min(4, zoom * Math.pow(1.15, steps)));
+        const w = screen?.width ?? width, h = screen?.height ?? height;
+        tx = Math.max(w - w * z, Math.min(0, px - (px - tx) * z / zoom));
+        ty = Math.max(h - h * z, Math.min(0, py - (py - ty) * z / zoom));
+        zoom = z;
+    }
     // The blur's own slow gathering, two seconds long, so it is watched
     // rather than noticed; it lifts with the release as before.
     property real haze: 0
@@ -63,8 +85,8 @@ OverlayWindow {
         loops: Animation.Infinite
     }
 
-    readonly property real rootWidth: Theme.spacing.small + 1
-    readonly property real tipWidth: 2.5
+    readonly property real rootWidth: Theme.spacing.medium + 2
+    readonly property real tipWidth: 4
 
     // A tendril's outline from its root (ax, ay) to its tip (cx, cy): the same
     // curve the threads always took, bent sideways by a wave that travels
@@ -160,6 +182,8 @@ OverlayWindow {
 
 
 
+
+
     onOpened: {
         cutting = null;
         // Only a closed overlay captures: reopened mid-fade it is still on
@@ -170,6 +194,8 @@ OverlayWindow {
             haze = 0;
         }
         hazeIn.restart();
+        zoom = 1;
+        tx = ty = 0;
         finishing.stop();
         release = 0;
         dragging = false;
@@ -213,9 +239,9 @@ OverlayWindow {
             wholeScreen();
             return;
         }
-        const x = Math.round(win.screen.x + selX);
-        const y = Math.round(win.screen.y + selY);
-        pendingGeometry = `${x},${y} ${Math.round(selW)}x${Math.round(selH)}`;
+        const x = Math.round(win.screen.x + toScreenX(selX));
+        const y = Math.round(win.screen.y + toScreenY(selY));
+        pendingGeometry = `${x},${y} ${Math.round(selW / zoom)}x${Math.round(selH / zoom)}`;
         finishing.start();
     }
 
@@ -324,6 +350,16 @@ OverlayWindow {
 
         MultiEffect {
             anchors.fill: parent
+            transform: [
+                Scale {
+                    xScale: win.zoom
+                    yScale: win.zoom
+                },
+                Translate {
+                    x: win.tx
+                    y: win.ty
+                }
+            ]
             source: frozen
             blurEnabled: true
             blurMax: 64
@@ -341,10 +377,10 @@ OverlayWindow {
             clip: true
 
             ShaderEffectSource {
-                x: -parent.x
-                y: -parent.y
-                width: frozen.width
-                height: frozen.height
+                x: win.tx - parent.x
+                y: win.ty - parent.y
+                width: frozen.width * win.zoom
+                height: frozen.height * win.zoom
                 sourceItem: frozen
             }
         }
@@ -433,10 +469,11 @@ OverlayWindow {
                 seed: 4.6
             }
 
-            // The selection's own edges.
+            // The selection's own edges, as thick as the tendrils' tips so
+            // the frame and the threads read as one thing.
             ShapePath {
                 strokeColor: Theme.accentText
-                strokeWidth: 1.5
+                strokeWidth: win.tipWidth
                 fillColor: "transparent"
                 startX: tl.x
                 startY: tl.y
@@ -544,6 +581,11 @@ OverlayWindow {
                 }
             }
             enabled: !finishing.running
+            // Scroll to zoom the frozen screen for a precise region.
+            onWheel: wheel => {
+                if (win.mode === "region")
+                    win.zoomAt(wheel.x, wheel.y, wheel.angleDelta.y / 120);
+            }
             onReleased: mouse => {
                 if (!win.pressed)
                     return;
