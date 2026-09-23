@@ -35,6 +35,13 @@ Singleton {
     }
     // A card on a blurred panel: a faint sheen rather than a fill, so the
     // blur behind the panel still shows through it.
+    // Blur a surface draws itself, over the wallpaper, when the compositor's
+    // (shared with every window) is too light for it.
+    readonly property QtObject blur: QtObject {
+        readonly property int max: 64
+        // How much of the ink colour lies over it; lower shows more blur.
+        readonly property real tint: 0.45
+    }
     readonly property color glass: Qt.rgba(1, 1, 1, 0.04)
     readonly property color fg: "#e8e8f0"
     readonly property color dim: Qt.rgba(1, 1, 1, 0.45)

@@ -2,7 +2,9 @@ pragma ComponentBehavior: Bound
 
 import Quickshell
 import Quickshell.Wayland
+import Quickshell.Widgets
 import QtQuick
+import QtQuick.Effects
 import QtQuick.Layouts
 import ".."
 
@@ -28,6 +30,8 @@ OverlayWindow {
     }
 
     Rectangle {
+        id: panel
+
         anchors.horizontalCenter: parent.horizontalCenter
         opacity: Math.min(1, win.reveal)
         scale: Theme.popScale + (1 - Theme.popScale) * win.reveal
@@ -39,15 +43,45 @@ OverlayWindow {
         width: Math.min(940, parent.width - Theme.padding.extraLarge * 2)
         height: Math.min(520, parent.height - anchors.topMargin - Theme.padding.extraLarge)
         radius: Theme.rounding.extraExtraLarge
-        gradient: Gradient {
-            GradientStop {
-                position: 0
-                color: Qt.lighter(Theme.bg, 1.12)
+        color: "transparent"
+
+        // A heavier blur than the compositor's, drawn by the panel itself: the
+        // part of the wallpaper it sits over, blurred, under the tint.
+        ClippingRectangle {
+            anchors.fill: parent
+            radius: parent.radius
+            color: "transparent"
+
+            Image {
+                id: wall
+
+                x: -panel.x
+                y: -panel.y
+                width: win.width
+                height: win.height
+                source: Wallpapers.current ? "file://" + Wallpapers.current : ""
+                fillMode: Image.PreserveAspectCrop
+                // Blurred to mush anyway; a small decode is cheaper and blurs
+                // further for the same radius.
+                sourceSize.width: win.width / 4
+                asynchronous: true
+                visible: false
             }
-            GradientStop {
-                position: 0.6
-                color: Theme.bg
+
+            MultiEffect {
+                anchors.fill: wall
+                source: wall
+                blurEnabled: true
+                blurMax: Theme.blur.max
+                blur: 1
             }
+        }
+
+        Surface {
+            anchors.fill: parent
+            radius: parent.radius
+            tone: Theme.scrim(Theme.blur.tint)
+            lift: 1.12
         }
 
         // Swallow clicks so they do not reach the dismiss handler.
