@@ -2,6 +2,7 @@
 
 import Quickshell
 import "background"
+import "charging"
 import "cheatsheet"
 import "dashboard"
 import "bar"
@@ -46,7 +47,14 @@ ShellRoot {
 
     Notifications {}
 
-    BatteryNotifier {}
+    // Plugging in plays the ripple.
+    BatteryNotifier {
+        onPluggedIn: ripple.play()
+    }
+
+    ChargeRipple {
+        id: ripple
+    }
 
     NotificationPanel {}
 }

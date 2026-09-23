@@ -23,6 +23,9 @@ Scope {
     // not warn once a second. Cleared when it charges back above the band.
     property int warned: 100
 
+    // For the charging ripple.
+    signal pluggedIn
+
     function notify(urgency: string, summary: string, body: string): void {
         // No -i: the icon hint comes back as an image the card tries to draw,
         // and a name the theme does not have renders as a broken checkerboard.
@@ -67,6 +70,8 @@ Scope {
                 return;
             root.lastState = state;
 
+            if (state === UPowerDeviceState.Charging)
+                root.pluggedIn();
             if (state === UPowerDeviceState.Charging)
                 root.notify("low", "Charging", root.percent() + "%" + (root.battery.timeToFull > 0 ? " · " + Math.round(root.battery.timeToFull / 60) + " min to full" : ""));
             else if (state === UPowerDeviceState.Discharging)

@@ -50,3 +50,5 @@ extra/upower
 extra/networkmanager
 extra/fcitx5
 extra/fzf
+extra/libcanberra
+extra/sound-theme-freedesktop
