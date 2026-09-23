@@ -1,4 +1,5 @@
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Wayland
 import QtQuick
 import ".."
@@ -16,7 +17,10 @@ Scope {
 
             LockContent {
                 anchors.fill: parent
-                screenName: surface.screen?.name ?? ""
+                // The surface's screen is not set yet when this is built, which
+                // left the desktop picture unnamed on a real lock; the focused
+                // monitor is the right one until it is.
+                screenName: surface.screen?.name || (Hyprland.focusedMonitor?.name ?? "")
             }
         }
     }

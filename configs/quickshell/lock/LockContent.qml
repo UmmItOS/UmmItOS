@@ -93,7 +93,7 @@ Item {
     // in before it lets go: both ways start and end on what was on screen.
     Image {
         anchors.fill: parent
-        source: Lock.shot > 0 ? Lock.shotOf(root.screenName) : ""
+        source: Lock.shot > 0 && root.screenName !== "" ? Lock.shotOf(root.screenName) : ""
         cache: false
         fillMode: Image.PreserveAspectCrop
         opacity: 1 - root.haze
