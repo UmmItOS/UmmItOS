@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 
-import Quickshell.Widgets
 import QtQuick
+import QtQuick.Effects
 import QtQuick.Layouts
 import ".."
 
@@ -58,16 +58,20 @@ OverlayWindow {
             anchors.fill: parent
         }
 
-        // The window border's turning gradient, as a ring round the sheet:
-        // a large square of the gradient spins inside a rounded clip, and the
-        // sheet covers all of it but the edge. borderangle 50 is 5s a turn.
-        ClippingRectangle {
+        // The window border's turning gradient, as a ring round the sheet. The
+        // sheet is translucent, so the gradient cannot simply sit behind it:
+        // it is drawn off screen and cut to a thin outline by a mask, leaving
+        // the inside the usual dark glass. borderangle 50 is 5s a turn.
+        Item {
+            id: ringFill
+
             anchors {
                 fill: sheet
-                margins: -Theme.spacing.hair - 1
+                margins: -ring.thickness
             }
-            radius: sheet.radius + Theme.spacing.hair + 1
-            color: "transparent"
+            visible: false
+            layer.enabled: true
+            clip: true
 
             Rectangle {
                 anchors.centerIn: parent
@@ -102,6 +106,28 @@ OverlayWindow {
                     loops: Animation.Infinite
                 }
             }
+        }
+
+        // The outline the gradient shows through; a mask, never drawn.
+        Rectangle {
+            id: ring
+
+            readonly property int thickness: Theme.spacing.hair + 1
+
+            anchors.fill: ringFill
+            visible: false
+            layer.enabled: true
+            radius: sheet.radius + ring.thickness
+            color: "transparent"
+            border.width: ring.thickness
+            border.color: "white"
+        }
+
+        MultiEffect {
+            anchors.fill: ringFill
+            source: ringFill
+            maskEnabled: true
+            maskSource: ring
         }
 
         Surface {
