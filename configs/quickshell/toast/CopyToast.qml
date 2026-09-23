@@ -50,8 +50,8 @@ Scope {
             bottom: true
             right: true
         }
-        implicitWidth: 260
-        implicitHeight: (Theme.control.pill + Theme.spacing.small) * 5 + Theme.padding.large
+        implicitWidth: 340
+        implicitHeight: (Theme.control.row + Theme.spacing.medium) * 5 + Theme.padding.large
         color: "transparent"
         mask: Region {}
 
@@ -79,7 +79,7 @@ Scope {
                 bottomMargin: Theme.padding.large
             }
             verticalLayoutDirection: ListView.BottomToTop
-            spacing: Theme.spacing.small
+            spacing: Theme.spacing.medium
             interactive: false
             model: pills
 
@@ -140,7 +140,7 @@ Scope {
                 required property string icon
 
                 width: list.width
-                height: Theme.control.pill
+                height: Theme.control.row + Theme.spacing.small
 
                 Timer {
                     running: true
@@ -150,7 +150,7 @@ Scope {
 
                 Surface {
                     anchors.right: parent.right
-                    width: row.implicitWidth + Theme.padding.large * 2
+                    width: row.implicitWidth + Theme.padding.extraLarge * 2
                     height: parent.height
                     radius: Theme.rounding.full
                     tone: Theme.bgTray
@@ -166,7 +166,7 @@ Scope {
                             text: slot.icon
                             color: Theme.accentText
                             fill: 1
-                            size: Theme.icon.small
+                            size: Theme.icon.normal
                         }
 
                         Text {
@@ -174,7 +174,7 @@ Scope {
                             text: slot.label
                             color: Theme.fg
                             font.family: Theme.font
-                            font.pixelSize: Theme.fontSize.normal
+                            font.pixelSize: Theme.fontSize.larger
                             font.weight: Theme.weight.medium
                         }
                     }
