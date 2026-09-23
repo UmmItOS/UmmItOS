@@ -22,9 +22,21 @@ Scope {
         // The record is taken here because the object itself does not survive
         // expiry, and the panel needs something that does.
         onNotification: notification => {
-            // The notices that replaced hyprctl notify keep a sound of their own.
-            if (["Color picker", "Screen recording", "Update"].includes(notification.appName))
-                Quickshell.execDetached(["pw-play", Quickshell.shellDir + "/toast/pop.ogg"]);
+            // Every notification sounds, like a phone, unless something else
+            // already does: the shell's own notices keep their pop, and apps
+            // that play their own sound (or ask not to have one) stay quiet.
+            const app = (notification.appName || "").toLowerCase();
+            const entry = (notification.desktopEntry || "").toLowerCase();
+            const hints = notification.hints ?? {};
+            const ownSound = ["vesktop", "discord", "telegram", "telegramdesktop", "org.telegram.desktop"].some(a => app.includes(a) || entry.includes(a)) || hints["suppress-sound"] || hints["sound-file"] || hints["sound-name"];
+            const charging = app === "battery" && notification.summary === "Charging";
+            let sound = "";
+            if (["color picker", "screen recording", "update"].includes(app))
+                sound = "/toast/pop.ogg";
+            else if (!ownSound && !charging)
+                sound = "/notifications/chime.ogg";
+            if (sound !== "" && !Notifs.dnd)
+                Quickshell.execDetached(["pw-play", Quickshell.shellDir + sound]);
             Notifs.record(notification);
             notification.tracked = !Notifs.dnd;
         }
