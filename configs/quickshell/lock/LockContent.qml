@@ -352,7 +352,8 @@ Item {
             font.pixelSize: Theme.fontSize.larger
             font.letterSpacing: Theme.spacing.extraSmall
             enabled: !Lock.checking
-            cursorVisible: false
+            // The dots are the whole display; focus would still draw a caret.
+            cursorDelegate: Item {}
 
             Component.onCompleted: forceActiveFocus()
 
@@ -363,13 +364,17 @@ Item {
             Keys.onEscapePressed: text = ""
         }
 
-        // One dot per character, each popping in on a spring as it is typed.
+        // One dot per character, each popping in on a spring as it is typed,
+        // but never more than fit inside the field: past that the row stays
+        // full instead of running out of the box.
         Row {
+            readonly property int fits: Math.max(1, Math.floor((field.width - Theme.padding.large * 2 + spacing) / (Theme.spacing.medium + spacing)))
+
             anchors.centerIn: parent
             spacing: Theme.spacing.small
 
             Repeater {
-                model: input.text.length
+                model: Math.min(input.text.length, parent.fits)
 
                 Rectangle {
                     id: dot
