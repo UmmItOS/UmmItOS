@@ -48,7 +48,10 @@ Scope {
     PanelWindow {
         id: win
 
-        visible: pills.count > 0 || linger.running
+        // Always mapped: a view in an unmapped window skips its add
+        // transition, so pills appeared without sliding in. Transparent and
+        // input-free, so idle it shows nothing.
+        visible: true
         screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
         WlrLayershell.namespace: "ummitos-copy-toast"
         WlrLayershell.layer: WlrLayer.Overlay
@@ -61,21 +64,6 @@ Scope {
         implicitHeight: (Theme.control.row * 2 + Theme.spacing.medium) * 5 + Theme.windowInset + Theme.spacing.medium
         color: "transparent"
         mask: Region {}
-
-        // Mapped until the last pill has finished sliding out.
-        Timer {
-            id: linger
-            interval: Theme.duration.normal
-        }
-
-        Connections {
-            target: pills
-
-            function onCountChanged(): void {
-                if (pills.count === 0)
-                    linger.restart();
-            }
-        }
 
         ListView {
             id: list
