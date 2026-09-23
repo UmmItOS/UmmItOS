@@ -12,6 +12,19 @@ Singleton {
     id: root
 
     property bool open: false
+    // "region" (drag), "window" (pick one) or "screen" (the whole monitor).
+    // All three go through the same overlay, so they look and feel the same.
+    property string mode: "region"
+    // Windows on the focused monitor's workspace, most recently focused
+    // first, in global coordinates: { x, y, w, h, title }.
+    property var windows: []
+
+    function start(newMode: string): void {
+        mode = newMode;
+        if (newMode === "window")
+            clients.running = true;
+        open = true;
+    }
 
     readonly property string dir: Quickshell.env("HYPRSHOT_DIR") || Quickshell.env("HOME") + "/Pictures/Screenshots"
 
@@ -45,10 +58,10 @@ Singleton {
     }
 
     // Saves, copies to the clipboard and says so. `target` is grim's own
-    // arguments; "window" asks Hyprland for the active window's box.
+    // arguments.
     function take(target: var): void {
         const file = root.dir + "/Screenshot_" + Qt.formatDateTime(new Date(), "yyyy-MM-dd_HH-mm-ss") + ".png";
-        shot.command = ["sh", "-c", 'mkdir -p "$1" && f="$2" && shift 2 && if [ "$1" = window ]; then set -- -g "$(hyprctl activewindow -j | jq -r \'"\\(.at[0]),\\(.at[1]) \\(.size[0])x\\(.size[1])"\')"; fi && grim "$@" "$f" && wl-copy --type image/png < "$f" && notify-send "Screenshot saved" "$f"', "sh", root.dir, file, ...target];
+        shot.command = ["sh", "-c", 'mkdir -p "$1" && f="$2" && shift 2 && grim "$@" "$f" && wl-copy --type image/png < "$f" && notify-send "Screenshot saved" "$f"', "sh", root.dir, file, ...target];
         shot.running = true;
     }
 
@@ -56,20 +69,43 @@ Singleton {
         id: shot
     }
 
+    Process {
+        id: clients
+        command: ["hyprctl", "clients", "-j"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const ws = Hyprland.focusedMonitor?.activeWorkspace?.id;
+                try {
+                    root.windows = JSON.parse(text).filter(c => c.mapped && !c.hidden && c.workspace.id === ws).sort((a, b) => a.focusHistoryID - b.focusHistoryID).map(c => ({
+                                x: c.at[0],
+                                y: c.at[1],
+                                w: c.size[0],
+                                h: c.size[1],
+                                title: c.title
+                            }));
+                } catch (e) {
+                    root.windows = [];
+                }
+            }
+        }
+    }
+
     IpcHandler {
         target: "screenshot"
 
         function toggle(): void {
-            root.open = !root.open;
+            if (root.open)
+                root.open = false;
+            else
+                root.start("region");
         }
 
-        // The whole focused monitor, straight away.
         function screen(): void {
-            root.take(["-o", Hyprland.focusedMonitor?.name ?? ""]);
+            root.start("screen");
         }
 
         function window(): void {
-            root.take(["window"]);
+            root.start("window");
         }
     }
 }

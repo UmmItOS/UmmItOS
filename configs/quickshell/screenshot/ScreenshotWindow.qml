@@ -7,7 +7,7 @@ import QtQuick
 import QtQuick.Shapes
 import ".."
 
-// Pick a region over a frozen copy of the screen. The four corners of the
+// Pick a region, a window or the whole screen over a frozen copy of it. The four corners of the
 // selection hang from the four corners of the screen on curved threads, and
 // every corner trails the pointer on a spring, so the selection is pulled
 // into place rather than drawn.
@@ -39,20 +39,79 @@ OverlayWindow {
     readonly property real selW: Math.abs(to.x - from.x)
     readonly property real selH: Math.abs(to.y - from.y)
 
+    readonly property string mode: Screenshot.mode
+    // Window mode: the window the frame is on, in local coordinates.
+    property var picked: null
+    readonly property var boxes: Screenshot.windows.map(b => ({
+                x: b.x - (win.screen?.x ?? 0),
+                y: b.y - (win.screen?.y ?? 0),
+                w: b.w,
+                h: b.h,
+                title: b.title
+            }))
+
+    // Pull the frame onto a box; the springs carry the corners there.
+    function frame(b: var): void {
+        from = Qt.point(b.x, b.y);
+        to = Qt.point(b.x + b.w, b.y + b.h);
+    }
+
+    function boxAt(x: real, y: real): var {
+        return boxes.find(b => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) ?? null;
+    }
+
+    function pick(b: var): void {
+        if (!b)
+            return;
+        picked = b;
+        frame(b);
+    }
+
+    // The window list arrives after the overlay opens: start on the active one.
+    onBoxesChanged: {
+        if (shown && mode === "window" && !picked)
+            pick(boxes[0] ?? null);
+    }
+
 
     onOpened: {
         frozen.captureFrame();
         finishing.stop();
         release = 0;
         dragging = false;
+        picked = null;
+        // Every mode starts as a point in the middle, so the frame is seen to
+        // travel to what it takes.
+        from = to = Qt.point(width / 2, height / 2);
         scope.forceActiveFocus();
+        if (mode === "screen")
+            Qt.callLater(wholeScreen);
+        else if (mode === "window")
+            Qt.callLater(() => pick(boxes[0] ?? null));
+    }
+
+    // Spread the frame to the screen's edges, let it settle, then take it.
+    function wholeScreen(): void {
+        frame({
+            x: 0,
+            y: 0,
+            w: width,
+            h: height
+        });
+        settleThenCommit.restart();
+    }
+
+    Timer {
+        id: settleThenCommit
+        interval: Theme.duration.expressiveDefaultSpatial + Theme.duration.normal
+        onTriggered: win.commit()
     }
 
     function commit(): void {
         if (finishing.running)
             return;
         if (selW < 4 || selH < 4) {
-            Screenshot.output(win.screen.name);
+            wholeScreen();
             return;
         }
         const x = Math.round(win.screen.x + selX);
@@ -130,7 +189,9 @@ OverlayWindow {
         opacity: Math.min(1, win.reveal)
 
         Keys.onEscapePressed: Screenshot.open = false
-        Keys.onReturnPressed: Screenshot.output(win.screen.name)
+        // Enter takes what the frame is on; in region mode with nothing
+        // dragged, that is the whole screen.
+        Keys.onReturnPressed: win.commit()
 
         // The screen as it was when the overlay opened.
         ScreencopyView {
@@ -267,7 +328,7 @@ OverlayWindow {
 
         // Size, under the selection while dragging.
         Rectangle {
-            visible: win.dragging && win.selW > 0
+            visible: (win.dragging || win.mode !== "region") && win.selW > 0
             opacity: 1 - win.release
             x: Math.min(Math.max(bl.x, Theme.padding.large), parent.width - width - Theme.padding.large)
             y: Math.min(bl.y + Theme.spacing.medium, parent.height - height - Theme.padding.large)
@@ -279,7 +340,7 @@ OverlayWindow {
             Text {
                 id: sizeText
                 anchors.centerIn: parent
-                text: Math.round(win.selW) + " × " + Math.round(win.selH)
+                text: win.mode === "window" && win.picked ? win.picked.title : Math.round(win.selW) + " × " + Math.round(win.selH)
                 color: Theme.fg
                 font.family: Theme.font
                 font.pixelSize: Theme.fontSize.smaller
@@ -295,8 +356,8 @@ OverlayWindow {
                 horizontalCenter: parent.horizontalCenter
                 bottomMargin: Theme.padding.extraLarge
             }
-            visible: !win.dragging
-            text: "Drag to select  ·  Click or Enter for the whole screen  ·  Esc to cancel"
+            visible: !win.dragging && win.mode !== "screen"
+            text: win.mode === "window" ? "Point at a window  ·  Click or Enter to take it  ·  Esc to cancel" : "Drag to select  ·  Click or Enter for the whole screen  ·  Esc to cancel"
             color: Theme.fg
             opacity: 0.75
             font.family: Theme.font
@@ -306,18 +367,27 @@ OverlayWindow {
         MouseArea {
             anchors.fill: parent
             hoverEnabled: true
-            cursorShape: Qt.CrossCursor
+
+            cursorShape: win.mode === "window" ? Qt.PointingHandCursor : Qt.CrossCursor
 
             onPressed: mouse => {
+                if (win.mode !== "region")
+                    return;
                 win.from = Qt.point(mouse.x, mouse.y);
                 win.to = win.from;
                 win.dragging = true;
             }
             onPositionChanged: mouse => {
-                if (win.dragging)
-                    win.to = Qt.point(mouse.x, mouse.y);
-                else
-                    win.from = win.to = Qt.point(mouse.x, mouse.y);
+                if (win.mode === "window") {
+                    const b = win.boxAt(mouse.x, mouse.y);
+                    if (b && b !== win.picked)
+                        win.pick(b);
+                } else if (win.mode === "region") {
+                    if (win.dragging)
+                        win.to = Qt.point(mouse.x, mouse.y);
+                    else
+                        win.from = win.to = Qt.point(mouse.x, mouse.y);
+                }
             }
             enabled: !finishing.running
             onReleased: win.commit()
