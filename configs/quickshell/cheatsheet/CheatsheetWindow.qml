@@ -125,10 +125,41 @@ OverlayWindow {
         }
 
         MultiEffect {
+            id: ringLine
+
             anchors.fill: ringFill
             source: ringFill
             maskEnabled: true
             maskSource: ring
+        }
+
+        // The same outline, blurred and lifted, spilling past the edge: the
+        // ring glows as it turns rather than only drawing a line. Captured
+        // with room round it, or the blur would stop at the ring's own edge.
+        ShaderEffectSource {
+            id: lineShot
+
+            readonly property int pad: 48
+
+            sourceItem: ringLine
+            sourceRect: Qt.rect(-pad, -pad, ringLine.width + pad * 2, ringLine.height + pad * 2)
+            width: sourceRect.width
+            height: sourceRect.height
+            visible: false
+        }
+
+        MultiEffect {
+            z: -1
+            anchors {
+                fill: ringFill
+                margins: -lineShot.pad
+            }
+            source: lineShot
+            blurEnabled: true
+            blurMax: lineShot.pad
+            blur: 1
+            brightness: 0.45
+            saturation: 0.4
         }
 
         // The same turning gradient, faint, through the whole sheet: the glass
@@ -155,7 +186,7 @@ OverlayWindow {
             source: ringFill
             maskEnabled: true
             maskSource: fillMask
-            opacity: 0.35
+            opacity: 0.5
         }
 
         Surface {
