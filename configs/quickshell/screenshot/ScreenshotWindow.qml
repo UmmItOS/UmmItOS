@@ -96,9 +96,9 @@ OverlayWindow {
     // Opening: 0 → 1, the tendrils growing out of the screen corners.
     property real sprout: 0
 
-    // The blur settles first, then the tendrils grow out and join: one
-    // movement after the other, never both at once.
-    readonly property int sproutDelay: Theme.duration.extraLarge * 1.5
+    // The blur leads by 0.3s, then the tendrils grow out and join while it
+    // keeps gathering.
+    readonly property int sproutDelay: Theme.duration.expressiveSlowEffects
     readonly property int sproutDuration: Theme.duration.extraLarge + Theme.duration.small
 
     SequentialAnimation {
