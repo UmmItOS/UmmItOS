@@ -31,8 +31,14 @@ OverlayWindow {
 
     onOpened: {
         scope.forceActiveFocus();
+        // Closing the overview leaves the zoom at full screen; anything else
+        // opening next (Alt+Tab) must start from the plain grid, or it came up
+        // as one giant card.
+        zoomAnim.stop();
         if (Switcher.overviewing)
             zoomFrom(1);
+        else
+            zoom = 0;
     }
 
     // The overview zooms: the current workspace's card starts filling the
@@ -349,20 +355,38 @@ OverlayWindow {
                                             Repeater {
                                                 model: card.windows
 
-                                                ScreencopyView {
+                                                // The window at its own resolution, drawn through a
+                                                // mipmapped copy. Shrinking a whole window about 3x
+                                                // in one step (the compositor's, or Qt's plain smooth
+                                                // sampling) skips detail and leaves text soft; mipmaps
+                                                // pre-shrink it by halves and blend the nearest two.
+                                                Item {
+                                                    id: tile
+
                                                     required property HyprlandToplevel modelData
 
                                                     width: tiles.width / tiles.columns - 1
                                                     height: card.windows.length > 2 ? tiles.height / 2 - 1 : tiles.height
-                                                    captureSource: modelData.wayland
-                                                    // Twice the tile's size, shrunk smoothly by Qt: at
-                                                    // exactly tile size the compositor shrank a whole
-                                                    // window about 3x in one cheap step, which blurred
-                                                    // and jagged the text.
-                                                    constraintSize: Qt.size(width * 2, height * 2)
-                                                    smooth: true
-                                                    live: true
-                                                    paintCursor: false
+
+                                                    ScreencopyView {
+                                                        id: view
+
+                                                        anchors.fill: parent
+                                                        captureSource: tile.modelData.wayland
+                                                        live: true
+                                                        paintCursor: false
+                                                    }
+
+                                                    ShaderEffectSource {
+                                                        anchors.fill: parent
+                                                        sourceItem: view
+                                                        hideSource: true
+                                                        mipmap: true
+                                                        smooth: true
+                                                        // Rendered at the capture's full size, so the
+                                                        // mipmaps start from every pixel of the window.
+                                                        textureSize: view.hasContent ? view.sourceSize : Qt.size(width, height)
+                                                    }
                                                 }
                                             }
                                         }
