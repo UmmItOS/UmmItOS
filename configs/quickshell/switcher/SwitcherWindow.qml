@@ -355,8 +355,12 @@ OverlayWindow {
                                                     width: tiles.width / tiles.columns - 1
                                                     height: card.windows.length > 2 ? tiles.height / 2 - 1 : tiles.height
                                                     captureSource: modelData.wayland
-                                                    // At the tile's size, not the window's.
-                                                    constraintSize: Qt.size(width, height)
+                                                    // Twice the tile's size, shrunk smoothly by Qt: at
+                                                    // exactly tile size the compositor shrank a whole
+                                                    // window about 3x in one cheap step, which blurred
+                                                    // and jagged the text.
+                                                    constraintSize: Qt.size(width * 2, height * 2)
+                                                    smooth: true
                                                     live: true
                                                     paintCursor: false
                                                 }
