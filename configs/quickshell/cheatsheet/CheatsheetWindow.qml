@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 
+import Quickshell.Widgets
 import QtQuick
 import QtQuick.Layouts
 import ".."
@@ -55,6 +56,52 @@ OverlayWindow {
         // Clicks on the sheet stay on the sheet.
         MouseArea {
             anchors.fill: parent
+        }
+
+        // The window border's turning gradient, as a ring round the sheet:
+        // a large square of the gradient spins inside a rounded clip, and the
+        // sheet covers all of it but the edge. borderangle 50 is 5s a turn.
+        ClippingRectangle {
+            anchors {
+                fill: sheet
+                margins: -Theme.spacing.hair - 1
+            }
+            radius: sheet.radius + Theme.spacing.hair + 1
+            color: "transparent"
+
+            Rectangle {
+                anchors.centerIn: parent
+                width: Math.hypot(parent.width, parent.height)
+                height: width
+                gradient: Gradient {
+                    orientation: Gradient.Horizontal
+
+                    GradientStop {
+                        position: 0
+                        color: Theme.ring[0]
+                    }
+                    GradientStop {
+                        position: 0.33
+                        color: Theme.ring[1]
+                    }
+                    GradientStop {
+                        position: 0.66
+                        color: Theme.ring[2]
+                    }
+                    GradientStop {
+                        position: 1
+                        color: Theme.ring[3]
+                    }
+                }
+
+                RotationAnimation on rotation {
+                    running: win.visible
+                    from: 0
+                    to: 360
+                    duration: 5000
+                    loops: Animation.Infinite
+                }
+            }
         }
 
         Surface {
