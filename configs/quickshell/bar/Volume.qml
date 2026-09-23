@@ -4,6 +4,7 @@ import QtQuick
 import QtQuick.Effects
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Services.Mpris
 import Quickshell.Services.Pipewire
 import Quickshell.Widgets
 import ".."
@@ -45,6 +46,24 @@ RowLayout {
 
     function labelFor(node: var): string {
         return node.properties["application.name"] || node.description || node.name;
+    }
+
+    // Browsers give every tab its own stream but name them all alike, so an
+    // app with several is numbered: "Floorp 1", "Floorp 2".
+    function numberedLabel(node: var): string {
+        const name = labelFor(node);
+        const same = streams.filter(n => labelFor(n) === name);
+        return same.length > 1 ? name + " " + (same.indexOf(node) + 1) : name;
+    }
+
+    // What the app is playing, from its media player when it has one. MPRIS
+    // is per app, not per stream, so with several streams this is the app's
+    // current track, not necessarily this stream's.
+    function titleFor(node: var): string {
+        const name = labelFor(node).toLowerCase();
+        const bin = (node.properties["application.process.binary"] || "").toLowerCase();
+        const p = Mpris.players.values.find(p => (p.identity || "").toLowerCase() === name || (p.desktopEntry || "").toLowerCase() === bin);
+        return p?.trackTitle ?? "";
     }
 
     // PipeWire rarely sets application.icon-name, so the binary and the app
@@ -309,15 +328,31 @@ RowLayout {
                     }
                 }
 
-                Text {
+                Column {
                     Layout.alignment: Qt.AlignVCenter
-                    Layout.maximumWidth: 90
-                    text: root.labelFor(stream.modelData)
-                    color: Theme.dim
-                    elide: Text.ElideRight
-                    font {
-                        family: Theme.font
-                        pixelSize: Theme.fontSize.smaller
+                    Layout.preferredWidth: Theme.control.readout * 3
+
+                    Text {
+                        width: parent.width
+                        text: root.numberedLabel(stream.modelData)
+                        color: Theme.dim
+                        elide: Text.ElideRight
+                        font {
+                            family: Theme.font
+                            pixelSize: Theme.fontSize.smaller
+                        }
+                    }
+
+                    Text {
+                        width: parent.width
+                        visible: text !== ""
+                        text: root.titleFor(stream.modelData)
+                        color: Theme.fg
+                        elide: Text.ElideRight
+                        font {
+                            family: Theme.font
+                            pixelSize: Theme.fontSize.small
+                        }
                     }
                 }
 
