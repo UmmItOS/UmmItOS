@@ -73,7 +73,6 @@ Item {
                 margins: parent.width * 0.01
             }
             spacing: Theme.spacing.small
-            visible: battery.visible
 
             Battery {
                 id: battery
@@ -178,9 +177,11 @@ Item {
             id: shake
         }
 
+        // Appears at once when typing starts, and only takes its time going
+        // away again (hyprlock's fade_on_empty): a slow fade-in read as lag.
         Behavior on opacity {
             NumberAnimation {
-                duration: Theme.duration.extraLarge
+                duration: field.opacity < 0.5 ? Theme.duration.expressiveFastEffects : Theme.duration.extraLarge
             }
         }
         Behavior on color {
