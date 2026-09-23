@@ -78,7 +78,7 @@ run_updates() {
     total_duration=$((end_time - start_time))
 
     echo -e "[${COLOR_GREEN} SUCESS ${COLOR_RESET}] System upgrade completed successfully.\nTotal duration: ${COLOR_GREEN}${total_duration}${COLOR_RESET} seconds"
-    hyprctl notify 5 5000 "rgb(00ff00)" "fontsize:35   Upgrade completed successfully. Total duration: ${total_duration} seconds"
+    notify-send -a "Update" "System updated" "Finished in ${total_duration} seconds."
     echo "<NOTICE> $(date +"%Y-%m-%d %H:%M:%S"): System upgrade completed successfully. Total duration: ${total_duration} seconds" >> ~/script/misc/update.log
 }
 
@@ -138,7 +138,7 @@ while true; do
                 echo -e "${COLOR_RESET}"
                 case $reboot_choice in
                     [Yy]* )
-                        hyprctl notify 2 5000 "rgb(433878)" "fontsize:35   System will reboot in 5 seconds"
+                        notify-send -a "Update" -u critical "Rebooting" "The system will reboot in 5 seconds."
                         sleep 5
                         systemctl reboot
                         break;;

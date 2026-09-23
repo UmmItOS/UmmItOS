@@ -15,7 +15,7 @@ record_or_stop() {
         # Start recording
         local filename
         filename="$recording_dir/wf-recorder-$(date +'%Y-%m-%d-%H-%M-%S').mp4"
-        hyprctl notify 1 5000 "rgb(00FF00)" "fontsize:35   Video recording started with wf-recorder 📹"
+        notify-send -a "Screen recording" "Recording started" "Press the same keys again to stop."
         echo "<NOTICE> $(date +"%Y-%m-%d %H:%M:%S"): Video recording started with wf-recorder - $filename" >> ~/script/misc/wf-recorder.log
 
         wf-recorder -a --file "$filename"
@@ -33,7 +33,7 @@ record_or_stop() {
             local filename
             filename=$(find "$recording_dir" -maxdepth 1 -type f -printf '%T@ %p\n' | sort -rn | head -n1 | cut -d' ' -f2-)
             echo "Video recording ended and saved to $filename"
-            hyprctl notify 5 5000 "rgb(00FF00)" "fontsize:35   Video recording ended and saved to: $recording_dir/$filename 📹"
+            notify-send -a "Screen recording" "Recording saved" "$recording_dir/$filename"
             echo "<NOTICE> $(date +"%Y-%m-%d %H:%M:%S"): Video recording ended and saved to: $recording_dir/$filename - wf-recorder" >> ~/script/misc/wf-recorder.log
         else
             echo "wf-recorder is not running."
