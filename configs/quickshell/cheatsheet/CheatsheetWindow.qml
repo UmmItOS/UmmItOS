@@ -211,27 +211,33 @@ OverlayWindow {
                         }
                     }
 
-                    Rectangle {
+                    // A radial light that fades to nothing before its edge, so
+                    // it reads as a lamp rather than a shape. Painted once; only
+                    // the item moves.
+                    Canvas {
                         id: glow
 
-                        anchors.centerIn: parent
-                        width: spot.size / 2
-                        height: width
-                        radius: width / 2
-                        color: Theme.accentText
-                        opacity: 0.22
-                        visible: false
-                        layer.enabled: true
-                    }
-
-                    MultiEffect {
                         anchors.fill: parent
-                        source: glow
-                        blurEnabled: true
-                        blurMax: 64
-                        blur: 1
-                        autoPaddingEnabled: true
-                        opacity: glow.opacity
+                        onPaint: {
+                            const ctx = getContext("2d");
+                            const r = width / 2;
+                            const c = Theme.accentText;
+                            const g = ctx.createRadialGradient(r, r, 0, r, r, r);
+                            g.addColorStop(0, Qt.rgba(c.r, c.g, c.b, 0.28));
+                            g.addColorStop(0.45, Qt.rgba(c.r, c.g, c.b, 0.1));
+                            g.addColorStop(1, Qt.rgba(c.r, c.g, c.b, 0));
+                            ctx.clearRect(0, 0, width, height);
+                            ctx.fillStyle = g;
+                            ctx.fillRect(0, 0, width, height);
+                        }
+
+                        Connections {
+                            target: Theme
+
+                            function onAccentTextChanged(): void {
+                                glow.requestPaint();
+                            }
+                        }
                     }
                 }
             }
