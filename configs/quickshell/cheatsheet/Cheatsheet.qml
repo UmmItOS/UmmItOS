@@ -5,8 +5,7 @@ import Quickshell.Io
 import QtQuick
 
 // Every keybind that carries a description, read from the running Hyprland
-// when the sheet opens, so it cannot drift from the config. Grouped by what
-// the bind does, since hyprctl does not say which file it came from.
+// when the sheet opens, so it cannot drift from the config.
 Singleton {
     id: root
 
@@ -15,22 +14,18 @@ Singleton {
 
     readonly property var order: ["Shell", "Apps", "Window", "Workspace", "Utilities", "Media"]
 
-    function groupOf(bind: var): string {
-        const d = bind.dispatcher;
-        const a = bind.arg ?? "";
-        // Media first: the brightness keys also call the shell's IPC.
-        if (/^(brightnessctl|wpctl|playerctl)/.test(a))
-            return "Media";
-        if (/hyprshot|wf-recorder|hyprpicker|woomer|smile|ipc call screenshot/.test(a))
-            return "Utilities";
-        if (d === "global" || a.includes("qs -c ummitos ipc"))
-            return "Shell";
-        if (d === "workspace" || d === "movetoworkspace" || d === "togglespecialworkspace")
-            return "Workspace";
-        if (d === "exec") {
-            return "Apps";
-        }
-        return "Window";
+    // The config starts every description with its group ("Shell: Session
+    // menu"). Under the Lua config hyprctl reports every bind's dispatcher as
+    // "__lua", so the description is the only place that can say.
+    function split(description: string): var {
+        const m = description.match(/^(\w+):\s*(.*)$/);
+        return m && order.includes(m[1]) ? {
+            group: m[1],
+            text: m[2]
+        } : {
+            group: "Window",
+            text: description
+        };
     }
 
     function keysOf(bind: var): list<string> {
@@ -45,12 +40,13 @@ Singleton {
             "up": "↑",
             "down": "↓",
             "Alt_L": "Alt",
+            "Return": "Enter",
             "PRINT": "Print",
             "Print": "Print",
             "TAB": "Tab",
             "slash": "/"
         };
-        let key = bind.keycode === 36 ? "Enter" : bind.keycode === 61 ? "/" : (named[bind.key] ?? bind.key);
+        let key = named[bind.key] ?? bind.key;
         // Media keys by what they are for, short enough to leave the
         // description room.
         const media = {
@@ -77,10 +73,12 @@ Singleton {
     function build(binds: var): void {
         const byGroup = {};
         for (const b of binds.filter(b => b.has_description)) {
-            const g = groupOf(b);
+            const parts = split(b.description);
+            const g = parts.group;
+            const description = parts.text;
             const keys = keysOf(b);
             // "Switch to workspace 1" … "10" collapse into one row.
-            const n = b.description.match(/^(.*?)\s*(\d+)$/);
+            const n = description.match(/^(.*?)\s*(\d+)$/);
             const rows = byGroup[g] ?? (byGroup[g] = []);
             if (n) {
                 const stem = n[1];
@@ -97,13 +95,13 @@ Singleton {
                     prefix: prefix,
                     first: keys[keys.length - 1],
                     keys: keys,
-                    description: b.description
+                    description: description
                 });
                 continue;
             }
             rows.push({
                 keys: keys,
-                description: b.description
+                description: description
             });
         }
         groups = order.filter(g => byGroup[g]).map(g => ({
