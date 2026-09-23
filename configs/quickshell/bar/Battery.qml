@@ -45,17 +45,19 @@ RowLayout {
         }
         if (pct < 0.1)
             return "battery_alert";
-        if (pct >= 0.95)
+        // Full only when it is: at 98% on battery the full glyph read as
+        // "charged" and hid that it was already draining.
+        if (Math.round(pct * 100) >= 100)
             return "battery_full";
-        if (pct >= 0.8)
+        if (pct >= 0.85)
             return "battery_6_bar";
-        if (pct >= 0.65)
+        if (pct >= 0.7)
             return "battery_5_bar";
-        if (pct >= 0.5)
+        if (pct >= 0.55)
             return "battery_4_bar";
-        if (pct >= 0.35)
+        if (pct >= 0.4)
             return "battery_3_bar";
-        if (pct >= 0.2)
+        if (pct >= 0.25)
             return "battery_2_bar";
         return "battery_1_bar";
     }
