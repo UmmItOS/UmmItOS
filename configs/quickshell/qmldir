@@ -21,3 +21,4 @@ FlyoutEmpty 1.0 FlyoutEmpty.qml
 FlyoutRow 1.0 FlyoutRow.qml
 singleton Cava 1.0 services/Cava.qml
 singleton Cheatsheet 1.0 cheatsheet/Cheatsheet.qml
+singleton Screenshot 1.0 screenshot/Screenshot.qml

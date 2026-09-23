@@ -1,0 +1,285 @@
+pragma ComponentBehavior: Bound
+
+import Quickshell
+import Quickshell.Hyprland
+import Quickshell.Wayland
+import QtQuick
+import QtQuick.Shapes
+import ".."
+
+// Pick a region over a frozen copy of the screen. The four corners of the
+// selection hang from the four corners of the screen on curved threads, and
+// every corner trails the pointer on a spring, so the selection is pulled
+// into place rather than drawn.
+OverlayWindow {
+    id: win
+
+    shown: Screenshot.open
+    name: "screenshot"
+    screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
+
+    // Where the drag started and where the pointer is. Before a drag the
+    // selection is a point under the pointer, so the threads already follow it.
+    property point from: Qt.point(width / 2, height / 2)
+    property point to: from
+    property bool dragging: false
+
+    readonly property real selX: Math.min(from.x, to.x)
+    readonly property real selY: Math.min(from.y, to.y)
+    readonly property real selW: Math.abs(to.x - from.x)
+    readonly property real selH: Math.abs(to.y - from.y)
+
+    onOpened: {
+        frozen.captureFrame();
+        dragging = false;
+        scope.forceActiveFocus();
+    }
+
+    function commit(): void {
+        if (selW < 4 || selH < 4) {
+            Screenshot.output(win.screen.name);
+            return;
+        }
+        const x = Math.round(win.screen.x + selX);
+        const y = Math.round(win.screen.y + selY);
+        Screenshot.region(`${x},${y} ${Math.round(selW)}x${Math.round(selH)}`);
+    }
+
+    // A corner that trails its target on a spring.
+    component Corner: QtObject {
+        required property real tx
+        required property real ty
+        property real x: tx
+        property real y: ty
+
+        Behavior on x {
+            SpringAnimation {
+                spring: Theme.spring.stiffness
+                damping: Theme.spring.damping
+            }
+        }
+        Behavior on y {
+            SpringAnimation {
+                spring: Theme.spring.stiffness
+                damping: Theme.spring.damping
+            }
+        }
+    }
+
+    Corner {
+        id: tl
+        tx: win.selX
+        ty: win.selY
+    }
+    Corner {
+        id: tr
+        tx: win.selX + win.selW
+        ty: win.selY
+    }
+    Corner {
+        id: bl
+        tx: win.selX
+        ty: win.selY + win.selH
+    }
+    Corner {
+        id: br
+        tx: win.selX + win.selW
+        ty: win.selY + win.selH
+    }
+
+    FocusScope {
+        id: scope
+
+        anchors.fill: parent
+        focus: true
+        opacity: Math.min(1, win.reveal)
+
+        Keys.onEscapePressed: Screenshot.open = false
+        Keys.onReturnPressed: Screenshot.output(win.screen.name)
+
+        // The screen as it was when the overlay opened.
+        ScreencopyView {
+            id: frozen
+            anchors.fill: parent
+            captureSource: win.screen
+            live: false
+        }
+
+        // Dim everything outside the selection.
+        Item {
+            anchors.fill: parent
+
+            Rectangle {
+                width: parent.width
+                height: tl.y
+                color: Theme.scrim(0.6)
+            }
+            Rectangle {
+                y: bl.y
+                width: parent.width
+                height: parent.height - bl.y
+                color: Theme.scrim(0.6)
+            }
+            Rectangle {
+                y: tl.y
+                width: tl.x
+                height: bl.y - tl.y
+                color: Theme.scrim(0.6)
+            }
+            Rectangle {
+                x: tr.x
+                y: tr.y
+                width: parent.width - tr.x
+                height: br.y - tr.y
+                color: Theme.scrim(0.6)
+            }
+        }
+
+        // The threads: each leaves its screen corner along the edge and bends
+        // down into its selection corner.
+        Shape {
+            anchors.fill: parent
+            preferredRendererType: Shape.CurveRenderer
+
+            component Thread: ShapePath {
+                required property real sx
+                required property real sy
+                required property QtObject corner
+
+                strokeColor: Theme.accentText
+                strokeWidth: 1.5
+                fillColor: "transparent"
+                startX: sx
+                startY: sy
+
+                PathCubic {
+                    x: corner.x
+                    y: corner.y
+                    control1X: sx + (corner.x - sx) * 0.7
+                    control1Y: sy
+                    control2X: corner.x
+                    control2Y: sy + (corner.y - sy) * 0.4
+                }
+            }
+
+            Thread {
+                sx: 0
+                sy: 0
+                corner: tl
+            }
+            Thread {
+                sx: win.width
+                sy: 0
+                corner: tr
+            }
+            Thread {
+                sx: 0
+                sy: win.height
+                corner: bl
+            }
+            Thread {
+                sx: win.width
+                sy: win.height
+                corner: br
+            }
+
+            // The selection's own edges.
+            ShapePath {
+                strokeColor: Theme.accentText
+                strokeWidth: 1.5
+                fillColor: "transparent"
+                startX: tl.x
+                startY: tl.y
+
+                PathLine {
+                    x: tr.x
+                    y: tr.y
+                }
+                PathLine {
+                    x: br.x
+                    y: br.y
+                }
+                PathLine {
+                    x: bl.x
+                    y: bl.y
+                }
+                PathLine {
+                    x: tl.x
+                    y: tl.y
+                }
+            }
+        }
+
+        // A bead on every corner, where the thread is tied.
+        Repeater {
+            model: [tl, tr, bl, br]
+
+            Rectangle {
+                required property QtObject modelData
+
+                x: modelData.x - width / 2
+                y: modelData.y - height / 2
+                width: Theme.spacing.medium
+                height: width
+                radius: width / 2
+                color: Theme.accentText
+            }
+        }
+
+        // Size, under the selection while dragging.
+        Rectangle {
+            visible: win.dragging && win.selW > 0
+            x: Math.min(Math.max(bl.x, Theme.padding.large), parent.width - width - Theme.padding.large)
+            y: Math.min(bl.y + Theme.spacing.medium, parent.height - height - Theme.padding.large)
+            implicitWidth: sizeText.implicitWidth + Theme.padding.medium * 2
+            implicitHeight: sizeText.implicitHeight + Theme.padding.small
+            radius: height / 2
+            color: Theme.bgTray
+
+            Text {
+                id: sizeText
+                anchors.centerIn: parent
+                text: Math.round(win.selW) + " × " + Math.round(win.selH)
+                color: Theme.fg
+                font.family: Theme.font
+                font.pixelSize: Theme.fontSize.smaller
+                font.features: ({
+                        tnum: 1
+                    })
+            }
+        }
+
+        Text {
+            anchors {
+                bottom: parent.bottom
+                horizontalCenter: parent.horizontalCenter
+                bottomMargin: Theme.padding.extraLarge
+            }
+            visible: !win.dragging
+            text: "Drag to select  ·  Click or Enter for the whole screen  ·  Esc to cancel"
+            color: Theme.fg
+            opacity: 0.75
+            font.family: Theme.font
+            font.pixelSize: Theme.fontSize.normal
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.CrossCursor
+
+            onPressed: mouse => {
+                win.from = Qt.point(mouse.x, mouse.y);
+                win.to = win.from;
+                win.dragging = true;
+            }
+            onPositionChanged: mouse => {
+                if (win.dragging)
+                    win.to = Qt.point(mouse.x, mouse.y);
+                else
+                    win.from = win.to = Qt.point(mouse.x, mouse.y);
+            }
+            onReleased: win.commit()
+        }
+    }
+}

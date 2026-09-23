@@ -21,13 +21,13 @@ Singleton {
         // Media first: the brightness keys also call the shell's IPC.
         if (/^(brightnessctl|wpctl|playerctl)/.test(a))
             return "Media";
+        if (/hyprshot|wf-recorder|hyprpicker|woomer|smile|ipc call screenshot/.test(a))
+            return "Utilities";
         if (d === "global" || a.includes("qs -c ummitos ipc") || a.startsWith("hyprlock"))
             return "Shell";
         if (d === "workspace" || d === "movetoworkspace" || d === "togglespecialworkspace")
             return "Workspace";
         if (d === "exec") {
-            if (/hyprshot|wf-recorder|hyprpicker|woomer|smile/.test(a))
-                return "Utilities";
             return "Apps";
         }
         return "Window";

@@ -9,6 +9,7 @@ import "launcher"
 import "notifications"
 import "osd"
 import "services"
+import "screenshot"
 import "session"
 import "switcher"
 
@@ -35,6 +36,8 @@ ShellRoot {
     SwitcherWindow {}
 
     CheatsheetWindow {}
+
+    ScreenshotWindow {}
 
     OsdWindow {}
 

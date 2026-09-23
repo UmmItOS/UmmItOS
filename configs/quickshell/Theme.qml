@@ -179,6 +179,13 @@ Singleton {
         readonly property int stagger: 40
     }
 
+    // Springs for things that should trail the pointer and settle, not just
+    // follow it: lower damping overshoots more.
+    readonly property QtObject spring: QtObject {
+        readonly property real stiffness: 4.5
+        readonly property real damping: 0.32
+    }
+
     // Bezier control points for Easing.BezierSpline.
     readonly property QtObject curve: QtObject {
         readonly property list<real> standard: [0.2, 0, 0, 1, 1, 1]
