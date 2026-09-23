@@ -2,6 +2,7 @@ pragma Singleton
 
 import Quickshell
 import Quickshell.Io
+import Quickshell.Hyprland
 import QtQuick
 import ".."
 
@@ -40,12 +41,15 @@ Singleton {
     Timer {
         id: settle
         interval: Theme.duration.expressiveFastSpatial + Theme.duration.small
-        onTriggered: {
-            const file = root.dir + "/Screenshot_" + Qt.formatDateTime(new Date(), "yyyy-MM-dd_HH-mm-ss") + ".png";
-            const target = root.pendingGeometry !== "" ? ["-g", root.pendingGeometry] : ["-o", root.pendingOutput];
-            shot.command = ["sh", "-c", 'mkdir -p "$1" && f="$2" && shift 2 && grim "$@" "$f" && wl-copy --type image/png < "$f" && notify-send "Screenshot saved" "$f"', "sh", root.dir, file, ...target];
-            shot.running = true;
-        }
+        onTriggered: root.take(root.pendingGeometry !== "" ? ["-g", root.pendingGeometry] : ["-o", root.pendingOutput])
+    }
+
+    // Saves, copies to the clipboard and says so. `target` is grim's own
+    // arguments; "window" asks Hyprland for the active window's box.
+    function take(target: var): void {
+        const file = root.dir + "/Screenshot_" + Qt.formatDateTime(new Date(), "yyyy-MM-dd_HH-mm-ss") + ".png";
+        shot.command = ["sh", "-c", 'mkdir -p "$1" && f="$2" && shift 2 && if [ "$1" = window ]; then set -- -g "$(hyprctl activewindow -j | jq -r \'"\\(.at[0]),\\(.at[1]) \\(.size[0])x\\(.size[1])"\')"; fi && grim "$@" "$f" && wl-copy --type image/png < "$f" && notify-send "Screenshot saved" "$f"', "sh", root.dir, file, ...target];
+        shot.running = true;
     }
 
     Process {
@@ -57,6 +61,15 @@ Singleton {
 
         function toggle(): void {
             root.open = !root.open;
+        }
+
+        // The whole focused monitor, straight away.
+        function screen(): void {
+            root.take(["-o", Hyprland.focusedMonitor?.name ?? ""]);
+        }
+
+        function window(): void {
+            root.take(["window"]);
         }
     }
 }
