@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Wayland
+import Quickshell.Widgets
 import QtQuick
 import QtQuick.Shapes
 import ".."
@@ -23,6 +24,14 @@ OverlayWindow {
     property point from: Qt.point(width / 2, height / 2)
     property point to: from
     property bool dragging: false
+    // A press seen inside the overlay. A release without one (left over from
+    // the keys or a click elsewhere) must not take anything.
+    property bool pressed: false
+    // While set, corners jump instead of springing: used to place the frame
+    // just outside a window before it settles onto it.
+    property bool snap: false
+    // The window being cut out for a window shot.
+    property var cutting: null
     // 0 while picking; runs to 1 after release, reeling the threads into the
     // selection and lifting the dim before the shot is taken.
     property real release: 0
@@ -47,7 +56,8 @@ OverlayWindow {
                 y: b.y - (win.screen?.y ?? 0),
                 w: b.w,
                 h: b.h,
-                title: b.title
+                title: b.title,
+                address: b.address
             }))
 
     // Pull the frame onto a box; the springs carry the corners there.
@@ -67,27 +77,48 @@ OverlayWindow {
         frame(b);
     }
 
+    // Opening onto a window: the frame appears a little outside it and
+    // springs in to hug it, instead of flying there from the middle.
+    function focusFirst(b: var): void {
+        if (!b)
+            return;
+        const pad = Theme.spacing.extraLarge;
+        snap = true;
+        frame({
+            x: b.x - pad,
+            y: b.y - pad,
+            w: b.w + pad * 2,
+            h: b.h + pad * 2
+        });
+        snap = false;
+        Qt.callLater(() => pick(b));
+    }
+
     // The window list arrives after the overlay opens: start on the active one.
     onBoxesChanged: {
         if (shown && mode === "window" && !picked)
-            pick(boxes[0] ?? null);
+            focusFirst(boxes[0] ?? null);
     }
 
 
+
     onOpened: {
+        cutting = null;
         frozen.captureFrame();
         finishing.stop();
         release = 0;
         dragging = false;
         picked = null;
+        pressed = false;
         // Every mode starts as a point in the middle, so the frame is seen to
-        // travel to what it takes.
-        from = to = Qt.point(width / 2, height / 2);
+        // travel to what it takes. The screen's size, not the window's: the
+        // window can still be unsized here, which put the point in the corner.
+        from = to = Qt.point((screen?.width ?? width) / 2, (screen?.height ?? height) / 2);
         scope.forceActiveFocus();
         if (mode === "screen")
             Qt.callLater(wholeScreen);
         else if (mode === "window")
-            Qt.callLater(() => pick(boxes[0] ?? null));
+            Qt.callLater(() => focusFirst(boxes[0] ?? null));
     }
 
     // Spread the frame to the screen's edges, let it settle, then take it.
@@ -95,8 +126,8 @@ OverlayWindow {
         frame({
             x: 0,
             y: 0,
-            w: width,
-            h: height
+            w: screen?.width ?? width,
+            h: screen?.height ?? height
         });
         settleThenCommit.restart();
     }
@@ -138,7 +169,18 @@ OverlayWindow {
             easing.bezierCurve: Theme.curve.emphasized
         }
         ScriptAction {
-            script: Screenshot.region(win.pendingGeometry)
+            script: {
+                // A window is cut from its own surface; anything else is grim.
+                const top = win.mode === "window" && win.picked ? Hyprland.toplevels.values.find(t => t && (t.address === win.picked.address || "0x" + t.address === win.picked.address)) : null;
+                if (top?.wayland)
+                    win.cutting = {
+                        toplevel: top.wayland,
+                        w: win.picked.w,
+                        h: win.picked.h
+                    };
+                else
+                    Screenshot.region(win.pendingGeometry);
+            }
         }
     }
 
@@ -150,12 +192,16 @@ OverlayWindow {
         property real y: ty
 
         Behavior on x {
+            enabled: !win.snap
+
             SpringAnimation {
                 spring: Theme.spring.stiffness
                 damping: Theme.spring.damping
             }
         }
         Behavior on y {
+            enabled: !win.snap
+
             SpringAnimation {
                 spring: Theme.spring.stiffness
                 damping: Theme.spring.damping
@@ -374,6 +420,7 @@ OverlayWindow {
             cursorShape: win.mode === "window" ? Qt.PointingHandCursor : Qt.CrossCursor
 
             onPressed: mouse => {
+                win.pressed = true;
                 if (win.mode !== "region")
                     return;
                 win.from = Qt.point(mouse.x, mouse.y);
@@ -394,6 +441,8 @@ OverlayWindow {
             }
             enabled: !finishing.running
             onReleased: mouse => {
+                if (!win.pressed)
+                    return;
                 // The window under the click, not wherever the frame is.
                 if (win.mode === "window") {
                     const b = win.boxAt(mouse.x, mouse.y);
@@ -402,6 +451,41 @@ OverlayWindow {
                     win.pick(b);
                 }
                 win.commit();
+            }
+        }
+    }
+
+    // The window shot, rendered off screen: the window's own surface with
+    // Hyprland's rounded corners, so what is saved is the window alone, with
+    // transparent corners and whatever transparency the window has itself.
+    ClippingRectangle {
+        id: cutter
+
+        x: -width - Theme.padding.extraLarge
+        width: win.cutting?.w ?? 1
+        height: win.cutting?.h ?? 1
+        visible: win.cutting !== null
+        // Hyprland's decoration:rounding (20).
+        radius: Theme.rounding.largeIncreased
+        color: "transparent"
+
+        ScreencopyView {
+            id: cutView
+
+            anchors.fill: parent
+            captureSource: win.cutting?.toplevel ?? null
+            live: false
+
+            onHasContentChanged: {
+                if (!hasContent || !win.cutting)
+                    return;
+                const file = Screenshot.newFile();
+                cutter.grabToImage(result => {
+                    result.saveToFile(file);
+                    win.cutting = null;
+                    Screenshot.open = false;
+                    Screenshot.saved(file);
+                });
             }
         }
     }
