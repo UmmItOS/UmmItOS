@@ -32,6 +32,6 @@ PanelWindow {
     Timer {
         running: hover.hovered
         interval: Theme.duration.expressiveFastEffects - 70
-        onTriggered: Switcher.overview()
+        onTriggered: Switcher.overview(true)
     }
 }

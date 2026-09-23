@@ -29,7 +29,56 @@ OverlayWindow {
         return top.title === "" ? ws.name : top.title;
     }
 
-    onOpened: scope.forceActiveFocus()
+    onOpened: {
+        scope.forceActiveFocus();
+        if (Switcher.overviewing)
+            zoomFrom(1);
+    }
+
+    // The overview zooms: the current workspace's card starts filling the
+    // screen and settles into the grid, and on the way out the chosen card
+    // grows back to fill it. 0 is the grid, 1 is the card at full screen.
+    property real zoom: 0
+    property Item focusCell: null
+    // Where the current card sits in the stage. A binding over the layout,
+    // not a snapshot: on open the grid is still being laid out, and a
+    // measurement taken then pointed the zoom at the wrong place.
+    readonly property rect zoomCard: {
+        const c = focusCell;
+        if (!c)
+            return Qt.rect(0, 0, 1, 1);
+        void [c.x, c.y, c.width, c.height, c.parent?.x, c.parent?.y, grid.width, grid.height, stage.width, stage.height];
+        const r = c.mapToItem(stage, 0, 0, c.width, c.height);
+        return Qt.rect(r.x, r.y, Math.max(1, r.width), Math.max(1, r.height));
+    }
+
+    function zoomFrom(start: real): void {
+        zoomAnim.stop();
+        zoom = start;
+        zoomAnim.to = start === 1 ? 0 : 1;
+        zoomAnim.start();
+    }
+
+    onShownChanged: {
+        if (!shown && Switcher.overviewing)
+            zoomFrom(0);
+    }
+
+    NumberAnimation {
+        id: zoomAnim
+        target: win
+        property: "zoom"
+        duration: Theme.duration.expressiveDefaultSpatial
+        easing.type: Easing.BezierSpline
+        easing.bezierCurve: Theme.curve.emphasizedDecel
+    }
+
+    // The card's rectangle, in the stage's own coordinates, between its grid
+    // place and the whole screen.
+    readonly property real zoomW: zoomCard.width + ((win.screen?.width ?? width) - zoomCard.width) * zoom
+    readonly property real zoomScale: zoomW / zoomCard.width
+    readonly property real zoomX: zoomCard.x + (-stage.x - zoomCard.x) * zoom
+    readonly property real zoomY: zoomCard.y + (-stage.y - zoomCard.y) * zoom
 
     FocusScope {
         id: scope
@@ -78,6 +127,7 @@ OverlayWindow {
         Surface {
             id: pin
 
+            opacity: 1 - win.zoom
             anchors.top: parent.top
             anchors.right: parent.right
             anchors.margins: Theme.padding.extraLarge
@@ -126,8 +176,21 @@ OverlayWindow {
         }
 
         Column {
+            id: stage
+
             anchors.centerIn: parent
             spacing: Theme.spacing.extraLarge
+
+            transform: [
+                Scale {
+                    xScale: win.zoomScale
+                    yScale: win.zoomScale
+                },
+                Translate {
+                    x: win.zoomX - win.zoomCard.x * win.zoomScale
+                    y: win.zoomY - win.zoomCard.y * win.zoomScale
+                }
+            ]
 
             Column {
                 id: grid
@@ -176,6 +239,13 @@ OverlayWindow {
                                 readonly property int slot: cardRow.index * grid.columns + index
                                 readonly property bool current: Switcher.index === slot
 
+                                Binding {
+                                    target: win
+                                    property: "focusCell"
+                                    value: cell
+                                    when: cell.current
+                                }
+
                                 width: grid.cellWidth
                                 height: grid.cellHeight
 
@@ -203,7 +273,9 @@ OverlayWindow {
                                     // unselected cards recede; the selected one is the
                                     // only one at full strength. Filling it with accent
                                     // instead would hide the very preview it points at.
-                                    opacity: current ? 1 : 0.5
+                                    // The chosen card at full strength with a strong
+                                    // accent glow; the rest step well back.
+                                    opacity: current ? 1 : 0.35
 
                                     Behavior on opacity {
                                         NumberAnimation {
@@ -224,9 +296,9 @@ OverlayWindow {
                                     layer.enabled: card.current
                                     layer.effect: MultiEffect {
                                         shadowEnabled: true
-                                        shadowColor: Theme.accent
+                                        shadowColor: Theme.accentText
                                         shadowBlur: 1
-                                        shadowOpacity: 0.75
+                                        shadowOpacity: 1
                                         shadowVerticalOffset: 0
                                         shadowHorizontalOffset: 0
                                     }
@@ -414,5 +486,55 @@ OverlayWindow {
             }
         }
     }
-}
 
+    // The hot corner answering: rings of light spread from the top-left
+    // corner when it fires, so the push is seen to have landed.
+    Item {
+        id: cornerRipple
+
+        property real t: 1
+
+        anchors.fill: parent
+        visible: t < 1
+
+        Connections {
+            target: Switcher
+
+            function onCornerHitsChanged(): void {
+                rippleAnim.restart();
+            }
+        }
+
+        NumberAnimation {
+            id: rippleAnim
+            target: cornerRipple
+            property: "t"
+            from: 0
+            to: 1
+            duration: Theme.duration.extraLarge
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Theme.curve.standardDecel
+        }
+
+        Repeater {
+            model: 3
+
+            Rectangle {
+                required property int index
+
+                // Each ring a step behind the one before.
+                readonly property real k: Math.max(0, Math.min(1, cornerRipple.t * 1.4 - index * 0.2))
+
+                x: -width / 2
+                y: -height / 2
+                width: Theme.spacing.extraLarge * 12 * k
+                height: width
+                radius: width / 2
+                color: "transparent"
+                border.width: Theme.spacing.extraSmall * (1 - k) + 1
+                border.color: Theme.accentText
+                opacity: (1 - k) * 0.9
+            }
+        }
+    }
+}

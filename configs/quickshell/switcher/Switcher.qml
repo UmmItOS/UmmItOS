@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
 import QtQuick
+import ".."
 
 // Alt+Tab over workspaces. Hyprland delivers the shortcut through the
 // global-shortcuts protocol; the window takes keyboard focus once open so it
@@ -18,6 +19,11 @@ Singleton {
     // on screen — to photograph it, or to read it without keeping a finger on
     // the modifier. Enter or Escape still close it.
     property bool pinned: false
+    // Opened as the overview (hot corner), not Alt+Tab: it zooms out of the
+    // current workspace on the way in and into the chosen one on the way out.
+    property bool overviewing: false
+    // Bumped when the hot corner fires, so the window can ripple the corner.
+    property int cornerHits: 0
 
     // Entries go null while Hyprland creates and destroys workspaces, so the
     // list is filtered before anything reads an id off it.
@@ -69,11 +75,28 @@ Singleton {
     // Every workspace at once, GNOME-overview style, from the hot corner:
     // opens on the current one and stays up without Alt held. The corner
     // again, Esc, or picking a workspace closes it.
-    function overview(): void {
+    function overview(fromCorner: bool): void {
+        if (fromCorner)
+            cornerHits++;
         if (open)
             return cancel();
+        overviewing = true;
         step(0);
         pinned = true;
+    }
+
+    onOpenChanged: {
+        // Cleared after the exit has had time to play.
+        if (!open)
+            overviewDone.restart();
+        else
+            overviewDone.stop();
+    }
+
+    Timer {
+        id: overviewDone
+        interval: Theme.duration.expressiveDefaultSpatial
+        onTriggered: root.overviewing = false
     }
 
     GlobalShortcut {
@@ -119,7 +142,7 @@ Singleton {
         }
 
         function overview(): void {
-            root.overview();
+            root.overview(false);
         }
 
     }
