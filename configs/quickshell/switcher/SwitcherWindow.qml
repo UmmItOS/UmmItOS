@@ -273,9 +273,9 @@ OverlayWindow {
                                     // unselected cards recede; the selected one is the
                                     // only one at full strength. Filling it with accent
                                     // instead would hide the very preview it points at.
-                                    // The chosen card at full strength with a strong
-                                    // accent glow; the rest step well back.
-                                    opacity: current ? 1 : 0.35
+                                    // The overview marks its choice harder (the rest
+                                    // step well back); Alt+Tab keeps its original look.
+                                    opacity: current ? 1 : Switcher.overviewing ? 0.35 : 0.5
 
                                     Behavior on opacity {
                                         NumberAnimation {
@@ -296,9 +296,9 @@ OverlayWindow {
                                     layer.enabled: card.current
                                     layer.effect: MultiEffect {
                                         shadowEnabled: true
-                                        shadowColor: Theme.accentText
+                                        shadowColor: Switcher.overviewing ? Theme.accentText : Theme.accent
                                         shadowBlur: 1
-                                        shadowOpacity: 1
+                                        shadowOpacity: Switcher.overviewing ? 1 : 0.75
                                         shadowVerticalOffset: 0
                                         shadowHorizontalOffset: 0
                                     }
