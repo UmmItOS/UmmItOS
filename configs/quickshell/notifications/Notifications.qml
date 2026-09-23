@@ -82,7 +82,6 @@ Scope {
             interactive: false
             model: server.trackedNotifications
 
-
             add: Transition {
                 id: entrance
                 NumberAnimation {
