@@ -126,15 +126,21 @@ Item {
         anchors.fill: parent
         opacity: root.haze
 
-        // One shadow for all the text, as hyprlock gave every label its own.
-        layer.enabled: true
-        layer.effect: MultiEffect {
+        // hyprlock's shadow, per element as hyprlock.conf set it: black,
+        // centred, a tight blur of `size` px run `passes` times (and boosted,
+        // hyprlock's default 1.2), rather than one soft shadow for the lot.
+        component Shade: MultiEffect {
+            required property int size
+            required property int passes
+
             shadowEnabled: true
             shadowColor: "black"
-            shadowBlur: 0.4
-            shadowOpacity: 0.6
-            shadowVerticalOffset: 1
             shadowHorizontalOffset: 0
+            shadowVerticalOffset: 0
+            blurMax: 16
+            shadowBlur: Math.min(1, size * passes / 16)
+            shadowOpacity: passes > 1 ? 1 : 0.85
+            shadowScale: 1.02
         }
 
         // Battery: the bar's own glyph and figure, plus the state in words.
@@ -145,6 +151,11 @@ Item {
                 margins: parent.width * 0.01
             }
             spacing: Theme.spacing.small
+            layer.enabled: true
+            layer.effect: Shade {
+                size: 3
+                passes: 2
+            }
 
             Battery {
                 id: battery
@@ -174,6 +185,11 @@ Item {
             font.family: Theme.fontDisplay
             font.pixelSize: Theme.lock.date
             font.weight: Theme.weight.medium
+            layer.enabled: true
+            layer.effect: Shade {
+                size: 3
+                passes: 2
+            }
         }
 
         Text {
@@ -184,6 +200,11 @@ Item {
             font.family: Theme.fontDisplay
             font.pixelSize: Theme.lock.clock
             font.weight: Font.Light
+            layer.enabled: true
+            layer.effect: Shade {
+                size: 4
+                passes: 2
+            }
         }
 
         // The avatar keeps hyprlock's thin ring, by request: the one other
@@ -197,6 +218,11 @@ Item {
             color: Theme.bgAlt
             border.width: Theme.lock.ring
             border.color: Qt.rgba(1, 1, 1, 0.3)
+            layer.enabled: true
+            layer.effect: Shade {
+                size: 3
+                passes: 2
+            }
 
             Image {
                 anchors.fill: parent
@@ -220,6 +246,11 @@ Item {
             font.family: Theme.fontDisplay
             font.pixelSize: Theme.lock.user
             font.weight: Theme.weight.medium
+            layer.enabled: true
+            layer.effect: Shade {
+                size: 2
+                passes: 2
+            }
         }
 
         Text {
@@ -229,6 +260,11 @@ Item {
             color: Qt.rgba(1, 1, 1, 0.6)
             font.family: Theme.fontDisplay
             font.pixelSize: Theme.lock.hint
+            layer.enabled: true
+            layer.effect: Shade {
+                size: 2
+                passes: 1
+            }
         }
     }
 
@@ -359,7 +395,9 @@ Item {
         Text {
             anchors.centerIn: parent
             visible: input.text === "" && Lock.failed
-            text: "Password is incorrect (" + Lock.attempts + ")"
+            // hyprlock's fail_text: italic, the count in bold.
+            textFormat: Text.StyledText
+            text: "<i>Password is incorrect <b>(" + Lock.attempts + ")</b></i>"
             color: "white"
             font.family: Theme.font
             font.pixelSize: Theme.fontSize.normal
