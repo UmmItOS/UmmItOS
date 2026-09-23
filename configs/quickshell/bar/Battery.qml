@@ -77,31 +77,24 @@ RowLayout {
             }
         }
 
-        // A few pulses when the charger goes in, then still: an endless pulse
-        // redraws and re-blurs the bar every frame for as long as it charges.
+        // Breathes for as long as it charges, by request. Slow on purpose:
+        // every frame of it redraws the bar, so a calm rhythm costs less.
         SequentialAnimation on opacity {
-            id: pulse
-
-            running: false
-            loops: 3
+            running: root.charging
+            loops: Animation.Infinite
             alwaysRunToEnd: true
 
             NumberAnimation {
-                to: 0.45
-                duration: Theme.duration.large
-                easing.type: Easing.InOutQuad
+                to: 0.35
+                duration: Theme.duration.extraLarge
+                easing.type: Easing.InOutSine
             }
             NumberAnimation {
                 to: 1
-                duration: Theme.duration.large
-                easing.type: Easing.InOutQuad
+                duration: Theme.duration.extraLarge
+                easing.type: Easing.InOutSine
             }
         }
-    }
-
-    onChargingChanged: {
-        if (charging)
-            pulse.restart();
     }
 
     Text {
