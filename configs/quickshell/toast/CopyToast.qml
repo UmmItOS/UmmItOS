@@ -50,8 +50,8 @@ Scope {
             bottom: true
             right: true
         }
-        implicitWidth: 460
-        implicitHeight: (Theme.control.row * 1.5 + Theme.spacing.medium) * 5 + Theme.padding.large
+        implicitWidth: 620
+        implicitHeight: (Theme.control.row * 2 + Theme.spacing.medium) * 5 + Theme.padding.large
         color: "transparent"
         mask: Region {}
 
@@ -140,7 +140,7 @@ Scope {
                 required property string icon
 
                 width: list.width
-                height: Theme.control.row * 1.5
+                height: Theme.control.row * 2
 
                 Timer {
                     running: true
@@ -150,7 +150,7 @@ Scope {
 
                 Surface {
                     anchors.right: parent.right
-                    width: row.implicitWidth + Theme.padding.extraLarge * 2.5
+                    width: row.implicitWidth + Theme.padding.extraLarge * 3
                     height: parent.height
                     radius: Theme.rounding.full
                     tone: Theme.bgTray
@@ -166,7 +166,7 @@ Scope {
                             text: slot.icon
                             color: Theme.accentText
                             fill: 1
-                            size: Theme.icon.large
+                            size: Theme.icon.extraLarge
                         }
 
                         Text {
@@ -174,7 +174,7 @@ Scope {
                             text: slot.label
                             color: Theme.fg
                             font.family: Theme.font
-                            font.pixelSize: Theme.fontSize.large
+                            font.pixelSize: Theme.fontSize.extraLarge
                             font.weight: Theme.weight.medium
                         }
                     }
