@@ -14,7 +14,9 @@ Singleton {
             icon: "lock",
             label: "Lock",
             key: "l",
-            command: ["hyprlock"]
+            // After the menu has faded, so it is not in the picture the
+            // lock fades in from.
+            command: ["sh", "-c", "sleep 0.4; qs -c ummitos ipc call lock lock"]
         },
         {
             id: "suspend",
