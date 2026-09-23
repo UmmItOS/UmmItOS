@@ -19,7 +19,27 @@ Singleton {
     // first, in global coordinates: { x, y, w, h, title }.
     property var windows: []
 
+    // True from a close until the overlay has fully left. A press in that
+    // window used to reopen it mid-fade, half torn down, which flashed and
+    // lost the effect; it is ignored instead.
+    property bool leaving: false
+
+    onOpenChanged: {
+        if (!open) {
+            leaving = true;
+            left.restart();
+        }
+    }
+
+    Timer {
+        id: left
+        interval: Theme.duration.expressiveFastSpatial + Theme.duration.small
+        onTriggered: root.leaving = false
+    }
+
     function start(newMode: string): void {
+        if (leaving)
+            return;
         mode = newMode;
         // Cleared first: a list left over from the last time would frame a
         // window from another layout until the fresh one arrives.
