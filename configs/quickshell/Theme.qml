@@ -33,6 +33,9 @@ Singleton {
         blockWrites: false
         onLoaded: root.savedAccent = text().trim()
     }
+    // A card on a blurred panel: a faint sheen rather than a fill, so the
+    // blur behind the panel still shows through it.
+    readonly property color glass: Qt.rgba(1, 1, 1, 0.04)
     readonly property color fg: "#e8e8f0"
     readonly property color dim: Qt.rgba(1, 1, 1, 0.45)
     readonly property color urgent: "#ff6b6b"

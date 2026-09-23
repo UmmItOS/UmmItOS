@@ -23,7 +23,7 @@ ColumnLayout {
         // repeating their size here.
         Layout.minimumHeight: gauges.implicitHeight + Theme.padding.extraLarge * 2
         radius: Theme.rounding.extraLarge
-        color: Theme.bgAlt
+        color: Theme.glass
 
         RowLayout {
             id: gauges
@@ -70,7 +70,7 @@ ColumnLayout {
         Layout.fillWidth: true
         implicitHeight: 92
         radius: Theme.rounding.extraLarge
-        color: Theme.bgAlt
+        color: Theme.glass
 
         RowLayout {
             anchors {

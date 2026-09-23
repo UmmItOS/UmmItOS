@@ -11,7 +11,7 @@ OverlayWindow {
 
     shown: Dashboard.open
     name: "dashboard"
-    scrim: 0.4
+    scrim: 0
     focusMode: WlrKeyboardFocus.OnDemand
 
     readonly property var tabs: [

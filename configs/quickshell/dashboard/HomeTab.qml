@@ -25,7 +25,7 @@ ColumnLayout {
             Layout.fillHeight: true
             implicitWidth: 210 + calendar.implicitWidth + Theme.padding.large
             radius: Theme.rounding.extraLarge
-            color: Theme.bgAlt
+            color: Theme.glass
 
             Column {
                 // Centred in the card's first 210 px, as it was before the
@@ -86,7 +86,7 @@ ColumnLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
             radius: Theme.rounding.extraLarge
-            color: Theme.bgAlt
+            color: Theme.glass
 
             MediaPanel {
                 anchors {
