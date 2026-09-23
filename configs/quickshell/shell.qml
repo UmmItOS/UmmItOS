@@ -14,6 +14,7 @@ import "services"
 import "screenshot"
 import "session"
 import "switcher"
+import "toast"
 
 ShellRoot {
     // One bar per connected screen. Plugging a monitor in adds one.
@@ -57,6 +58,8 @@ ShellRoot {
     BatteryNotifier {
         onPluggedIn: ripple.play()
     }
+
+    CopyToast {}
 
     ChargeRipple {
         id: ripple
