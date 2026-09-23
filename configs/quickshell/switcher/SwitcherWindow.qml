@@ -175,6 +175,23 @@ OverlayWindow {
             }
         }
 
+        // The screen as it was just before the overview opened, at full
+        // resolution, laid exactly over the zoomed card. The live card is a
+        // small capture, so stretched to full screen it looked like 144p; this
+        // is sharp there and hands over to the card as it shrinks.
+        Image {
+            x: stage.x + win.zoomX
+            y: stage.y + win.zoomY
+            width: win.zoomCard.width * win.zoomScale
+            height: win.zoomCard.height * win.zoomScale
+            z: 1
+            source: Switcher.shotReady ? Switcher.shotUrl : ""
+            cache: false
+            fillMode: Image.PreserveAspectCrop
+            visible: win.zoom > 0 && Switcher.index === Switcher.startIndex
+            opacity: Math.min(1, win.zoom * 1.6)
+        }
+
         Column {
             id: stage
 
@@ -293,7 +310,9 @@ OverlayWindow {
                                         }
                                     }
 
-                                    layer.enabled: card.current
+                                    // Off while zooming: a layer is rasterised at the
+                                    // card's own size, so scaling it magnifies pixels.
+                                    layer.enabled: card.current && win.zoom < 0.01
                                     layer.effect: MultiEffect {
                                         shadowEnabled: true
                                         shadowColor: Switcher.overviewing ? Theme.accentText : Theme.accent

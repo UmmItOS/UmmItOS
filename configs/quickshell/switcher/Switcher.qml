@@ -80,9 +80,32 @@ Singleton {
             cornerHits++;
         if (open)
             return cancel();
-        overviewing = true;
-        step(0);
-        pinned = true;
+        if (grab.running)
+            return;
+        // A full-resolution picture of the screen first, for the zoom to
+        // start from (uncompressed; ~25ms). Opens either way.
+        shotReady = false;
+        grab.command = ["sh", "-c", 'mkdir -p -m 700 "$(dirname "$1")" && grim -t ppm -o "$2" "$1"', "sh", shotPath, Hyprland.focusedMonitor?.name ?? ""];
+        grab.running = true;
+    }
+
+    readonly property string shotPath: Quickshell.env("XDG_RUNTIME_DIR") + "/ummitos-overview/screen.ppm"
+    property bool shotReady: false
+    property int shotCount: 0
+    readonly property string shotUrl: "file://" + shotPath + "?" + shotCount
+    // The workspace the overview opened on: the picture only matches it.
+    property int startIndex: -1
+
+    Process {
+        id: grab
+        onExited: code => {
+            root.shotCount++;
+            root.shotReady = code === 0;
+            root.overviewing = true;
+            root.step(0);
+            root.startIndex = root.index;
+            root.pinned = true;
+        }
     }
 
     onOpenChanged: {
