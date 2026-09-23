@@ -6,6 +6,7 @@ import "cheatsheet"
 import "dashboard"
 import "bar"
 import "launcher"
+import "lock"
 import "notifications"
 import "osd"
 import "services"
@@ -38,6 +39,8 @@ ShellRoot {
     CheatsheetWindow {}
 
     ScreenshotWindow {}
+
+    LockScreen {}
 
     OsdWindow {}
 

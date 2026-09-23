@@ -179,6 +179,18 @@ Singleton {
         readonly property int stagger: 40
     }
 
+    // The lock screen's sizes, kept from hyprlock so the switch looks the same.
+    readonly property QtObject lock: QtObject {
+        readonly property int clock: 180
+        readonly property int date: 32
+        readonly property int user: 24
+        readonly property int hint: 16
+        readonly property int battery: 14
+        readonly property int avatar: 100
+        readonly property int ring: 3
+        readonly property int field: 60
+    }
+
     // Springs for things that should trail the pointer and settle, not just
     // follow it: lower damping overshoots more.
     readonly property QtObject spring: QtObject {
