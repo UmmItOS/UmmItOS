@@ -50,8 +50,8 @@ Scope {
             bottom: true
             right: true
         }
-        implicitWidth: 340
-        implicitHeight: (Theme.control.row + Theme.spacing.medium) * 5 + Theme.padding.large
+        implicitWidth: 460
+        implicitHeight: (Theme.control.row * 1.5 + Theme.spacing.medium) * 5 + Theme.padding.large
         color: "transparent"
         mask: Region {}
 
@@ -140,7 +140,7 @@ Scope {
                 required property string icon
 
                 width: list.width
-                height: Theme.control.row + Theme.spacing.small
+                height: Theme.control.row * 1.5
 
                 Timer {
                     running: true
@@ -150,7 +150,7 @@ Scope {
 
                 Surface {
                     anchors.right: parent.right
-                    width: row.implicitWidth + Theme.padding.extraLarge * 2
+                    width: row.implicitWidth + Theme.padding.extraLarge * 2.5
                     height: parent.height
                     radius: Theme.rounding.full
                     tone: Theme.bgTray
@@ -159,14 +159,14 @@ Scope {
                         id: row
 
                         anchors.centerIn: parent
-                        spacing: Theme.spacing.small
+                        spacing: Theme.spacing.medium
 
                         MaterialIcon {
                             anchors.verticalCenter: parent.verticalCenter
                             text: slot.icon
                             color: Theme.accentText
                             fill: 1
-                            size: Theme.icon.normal
+                            size: Theme.icon.large
                         }
 
                         Text {
@@ -174,7 +174,7 @@ Scope {
                             text: slot.label
                             color: Theme.fg
                             font.family: Theme.font
-                            font.pixelSize: Theme.fontSize.larger
+                            font.pixelSize: Theme.fontSize.large
                             font.weight: Theme.weight.medium
                         }
                     }
