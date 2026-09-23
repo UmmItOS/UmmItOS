@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 UmmItOS is Arch Linux plus Hyprland, shipped as a bash installer and a dotfiles bundle. It is billed as the "first Hong Kong Linux distribution", but the OS underneath is Arch; this repo is the installer and the config bundle ([UmmItOS/UmmItOS](https://github.com/UmmItOS/UmmItOS)). It has two halves:
 
 - **Installer** (bash): `setup.sh` → `install.sh` / `install-menu.sh` → `install/*.sh`, with shared helpers in `lib/common.sh` (`is_laptop`, `has_amdgpu`, `enable_bluetooth`, `prompt_yna`, `backup_file`, and so on).
-- **Desktop shell**: `configs/quickshell/`, a QML application for Quickshell 0.3.1. It draws the bar, notifications, wallpaper and its picker, the launcher and clipboard, the dashboard, the session menu, the volume/brightness OSD, the Wi-Fi, Bluetooth, audio and accent flyouts, an Alt+Tab switcher, a keybind cheat sheet and the screenshot tool. It replaced waybar, swaync, rofi, wlogout, swww and hyprshot. hyprlock and hypridle are still separate (`configs/hypr/`).
+- **Desktop shell**: `configs/quickshell/`, a QML application for Quickshell 0.3.1. It draws the bar, notifications, wallpaper and its picker, the launcher and clipboard, the dashboard, the session menu, the volume/brightness OSD, the Wi-Fi, Bluetooth, audio and accent flyouts, an Alt+Tab switcher, a keybind cheat sheet, the screenshot tool, the lock screen and a charging ripple. It replaced waybar, swaync, rofi, wlogout, swww, hyprshot and hyprlock. hypridle is still separate (`configs/hypr/`) and locks through the shell's IPC.
 
 ## Commands
 
@@ -37,7 +37,7 @@ There are no tests, no lint config and no CI. Verification means running `shellc
 | `install/` | Installer sub-steps and plain-text package lists |
 | `lib/` | Shared bash library (`common.sh`, `display-utils.sh`) |
 | `configs/` | Dotfiles copied to `~/.config/` (and `configs/.zshrc` to `~/.zshrc`) |
-| `script/` | Helpers for cliphist, hyprlock, hyprpicker, updates and screen recording; copied to `~/script` |
+| `script/` | Helpers for cliphist, the idle lock, hyprpicker, updates and screen recording; copied to `~/script` |
 | `.wallpaper/` | Git submodule (`UmmItOS/wallpaper`), copied to `~/.wallpaper` |
 
 The order matters: `setup.sh` → `install.sh` → `install/install-packages.sh` → `install/oh-my-zsh.sh` → `install/copy-config.sh` → `install/setup-dm.sh` → reboot → `post-install.sh --start-config`.
@@ -58,7 +58,6 @@ Each list is plain text, one `repo/pkgname` per line, and the installer reads it
 
 It must run inside a Hyprland session (it calls `hyprctl`) and needs `jq`. Before editing a file, it writes a `.bak.YYYYMMDD-HHMMSS` backup. It edits these by position or pattern, so moving these lines breaks it:
 
-- `~/.config/hypr/hyprlock.conf`: the `monitor = …` line.
 - `~/.config/hypr/hyprland.conf`: **line 3** (`monitor=…`).
 - `~/.config/hypr/hyprland/env.conf`: `env = HYPRSHOT_DIR, …`.
 
@@ -108,6 +107,10 @@ grep -A5 'name: "workspaces"' /usr/lib/qt6/qml/Quickshell/Hyprland/_Ipc/*.qmltyp
 ### Screenshots
 
 `Screenshot` has three modes, all drawn by one overlay (`ScreenshotWindow`): `region` (Shift+Print, drag; the wheel zooms), `window` (Super+Print or Super+Shift+W, pick one) and `screen` (Print). The overlay freezes the screen with a `ScreencopyView` captured once on open, blurs it, and hangs the selection from the screen corners on tendrils that trail the pointer on springs (except in region mode, where the corners are the pointer). A region or screen shot is taken with `grim` only after the overlay has left, so the overlay is never in it. A window shot does not use `grim`: it captures the window's own surface (`HyprlandToplevel.wayland`) off screen, clips it to Hyprland's corner radius and saves it with `grabToImage`, which keeps transparency. Files go to `HYPRSHOT_DIR` (the name predates the shell) and onto the clipboard.
+
+### Lock screen
+
+`Lock` (singleton) and `lock/LockScreen.qml`: a `WlSessionLock` with one `WlSessionLockSurface` per screen, drawing `LockContent`. `ipc call lock preview` shows the same content in an ordinary window, which is how the look is worked on; never save a lock file while really locked, since a reload recreates the lock. The password goes through a `PamContext` whose stack lives in the shell (`lock/pam/password`, `pam_unix`), so no `/etc/pam.d` file is needed. Before locking, each screen is captured with `grim -t ppm` into `$XDG_RUNTIME_DIR/ummitos-lock` (PNG encoding was ~0.6s and read as lag); the lock fades in from that picture and fades back to it before releasing, because a lock surface is opaque and the desktop cannot show through. `misc:allow_session_lock_restore` is on, so if `qs` dies while locked: switch to a TTY, start `qs -c ummitos -d` in the session's environment, run `qs -c ummitos ipc call lock lock`, go back and unlock.
 
 ### Debugging state
 

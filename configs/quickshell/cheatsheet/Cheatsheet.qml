@@ -23,7 +23,7 @@ Singleton {
             return "Media";
         if (/hyprshot|wf-recorder|hyprpicker|woomer|smile|ipc call screenshot/.test(a))
             return "Utilities";
-        if (d === "global" || a.includes("qs -c ummitos ipc") || a.startsWith("hyprlock"))
+        if (d === "global" || a.includes("qs -c ummitos ipc"))
             return "Shell";
         if (d === "workspace" || d === "movetoworkspace" || d === "togglespecialworkspace")
             return "Workspace";

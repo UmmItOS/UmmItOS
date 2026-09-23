@@ -27,63 +27,6 @@ run_interactive_configuration() {
     pause_and_continue "Press Enter to start with Configuration..."
     clear
 
-    # Hyprlock Configuration
-    print_header "Hyprlock Configuration"
-    echo "${COLOR_YELLOW}Hyprlock needs to know which monitor to display on.${COLOR_RESET}"
-    echo "${COLOR_GREY}The configuration file is: ${COLOR_GREEN}~/.config/hypr/hyprlock.conf${COLOR_RESET}"
-    echo "${COLOR_GREY}You can list your monitor names by running: ${COLOR_GREEN}hyprctl monitors${COLOR_RESET}"
-    echo ""
-
-    check_config_exists "$HOME/.config/hypr/hyprlock.conf" # Check if file exists first
-
-    # Get focused monitor name directly
-    local default_monitor_name=""
-    if command_exists hyprctl; then
-        # Extracts the name like "DP-1" from the "Monitor DP-1 (ID 0):" line
-        # for the monitor block that contains "focused: yes".
-        default_monitor_name=$(hyprctl monitors | awk '/^Monitor / { M=$2 } /focused: yes/ { print M; exit }')
-    fi
-
-    local selected_monitor_name
-    if [[  -n "$default_monitor_name"  ]]; then
-        echo "${COLOR_BLUE}We detected '${default_monitor_name}' as a likely candidate (your currently focused monitor).${COLOR_RESET}"
-        show_monitor_info
-        selected_monitor_name=$(prompt_with_default "Enter monitor name for Hyprlock (or press Enter for default '${default_monitor_name}'): " "$default_monitor_name")
-    else
-        echo "${COLOR_YELLOW}Could not automatically detect a focused monitor (are you in a Hyprland session?).${COLOR_RESET}"
-        echo "${COLOR_YELLOW}Please identify your monitor name from the list below or by running 'hyprctl monitors'.${COLOR_RESET}"
-        show_monitor_info 
-        selected_monitor_name=$(prompt_with_default "Enter monitor name for Hyprlock (e.g., DP-1): " "")
-    fi
-
-    if [[  -n "$selected_monitor_name"  ]]; then
-        echo ""
-        echo "${COLOR_GREEN}You entered: ${COLOR_CYAN}$selected_monitor_name${COLOR_RESET}"
-        echo "${COLOR_YELLOW}Attempting to update ${COLOR_GREEN}~/.config/hypr/hyprlock.conf${COLOR_YELLOW} with monitor '${COLOR_CYAN}$selected_monitor_name${COLOR_CYAN}'...${COLOR_RESET}"
-        
-        local hyprlock_conf_file_path="$HOME/.config/hypr/hyprlock.conf"
-        if [[  -f "$hyprlock_conf_file_path"  ]]; then
-            backup_file "$hyprlock_conf_file_path"
-            sed -i -E "s/^[[:space:]]*monitor[[:space:]]*=.*$/    monitor = $selected_monitor_name/" "$hyprlock_conf_file_path"
-            if grep -q "^[[:space:]]*monitor[[:space:]]*= $selected_monitor_name" "$hyprlock_conf_file_path"; then
-                echo "${COLOR_GREEN}Successfully updated monitor settings in ${hyprlock_conf_file_path}${COLOR_RESET}"
-            else
-                echo "${COLOR_DARK_RED}Failed to update monitor settings, or no monitor lines were found. Please check manually.${COLOR_RESET}"
-                echo "${COLOR_YELLOW}Original file backed up. You might need to restore it or edit manually.${COLOR_RESET}"
-            fi
-        else
-            echo "${COLOR_DARK_RED}Hyprlock configuration file not found at ${hyprlock_conf_file_path}. Cannot apply changes.${COLOR_RESET}"
-        fi
-    else
-        echo ""
-        echo "${COLOR_DARK_RED}No monitor name entered. You will need to configure Hyprlock manually.${COLOR_RESET}"
-        echo "${COLOR_YELLOW}Run ${COLOR_GREEN}hyprctl monitors${COLOR_YELLOW} to find your monitor name and edit ${COLOR_GREEN}~/.config/hypr/hyprlock.conf${COLOR_YELLOW}.${COLOR_RESET}"
-    fi
-    
-    # Add a pause after Hyprlock section
-    pause_and_continue "Press Enter to continue to Hyprland Main Configuration..."
-    clear
-
     # Hyprland Main Configuration (Monitor line)
     print_header "Hyprland Main Configuration (hyprland.conf)"
     echo "${COLOR_YELLOW}This section will attempt to update the primary monitor configuration in your main Hyprland config.${COLOR_RESET}"
@@ -244,19 +187,6 @@ display_usage() {
 # Function to show current settings without interaction
 show_current_settings() {
     print_header "Current Detected Settings"
-
-    echo "${COLOR_MAGENTA}Hyprlock Monitor(s):${COLOR_RESET}"
-    local hyprlock_conf_file="$HOME/.config/hypr/hyprlock.conf"
-    if [[  -f "$hyprlock_conf_file"  ]]; then
-        if grep -q -E "^[[:space:]]*monitor[[:space:]]*=" "$hyprlock_conf_file"; then
-            grep -E "^[[:space:]]*monitor[[:space:]]*=" "$hyprlock_conf_file" | awk '!seen[$0]++' | sed 's/^/   /'
-        else
-            echo "   ${COLOR_YELLOW}No 'monitor =' lines found in $hyprlock_conf_file.${COLOR_RESET}"
-        fi
-    else
-        echo "   ${COLOR_DARK_RED}${hyprlock_conf_file} not found.${COLOR_RESET}"
-    fi
-    echo ""
 
     echo "${COLOR_MAGENTA}Hyprland Main Monitor (hyprland.conf line 3):${COLOR_RESET}"
     local hyprland_conf_file="$HOME/.config/hypr/hyprland.conf"
