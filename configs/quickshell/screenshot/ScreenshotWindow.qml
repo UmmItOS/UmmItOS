@@ -23,26 +23,61 @@ OverlayWindow {
     property point from: Qt.point(width / 2, height / 2)
     property point to: from
     property bool dragging: false
+    // 0 while picking; runs to 1 after release, reeling the threads into the
+    // selection and lifting the dim before the shot is taken.
+    property real release: 0
+    property string pendingGeometry: ""
+
+    // Where a thread starts: at its screen corner, sliding into its selection
+    // corner as the release plays.
+    function anchorOf(sx: real, corner: real): real {
+        return sx + (corner - sx) * release;
+    }
 
     readonly property real selX: Math.min(from.x, to.x)
     readonly property real selY: Math.min(from.y, to.y)
     readonly property real selW: Math.abs(to.x - from.x)
     readonly property real selH: Math.abs(to.y - from.y)
 
+
     onOpened: {
         frozen.captureFrame();
+        finishing.stop();
+        release = 0;
         dragging = false;
         scope.forceActiveFocus();
     }
 
     function commit(): void {
+        if (finishing.running)
+            return;
         if (selW < 4 || selH < 4) {
             Screenshot.output(win.screen.name);
             return;
         }
         const x = Math.round(win.screen.x + selX);
         const y = Math.round(win.screen.y + selY);
-        Screenshot.region(`${x},${y} ${Math.round(selW)}x${Math.round(selH)}`);
+        pendingGeometry = `${x},${y} ${Math.round(selW)}x${Math.round(selH)}`;
+        finishing.start();
+    }
+
+    // Letting go is a movement too, not a cut: the threads reel in, the dim
+    // lifts off the pick, and only then does the overlay leave.
+    SequentialAnimation {
+        id: finishing
+
+        NumberAnimation {
+            target: win
+            property: "release"
+            from: 0
+            to: 1
+            duration: Theme.duration.expressiveDefaultSpatial
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Theme.curve.emphasized
+        }
+        ScriptAction {
+            script: Screenshot.region(win.pendingGeometry)
+        }
     }
 
     // A corner that trails its target on a spring.
@@ -108,6 +143,7 @@ OverlayWindow {
         // Dim everything outside the selection.
         Item {
             anchors.fill: parent
+            opacity: 1 - win.release
 
             Rectangle {
                 width: parent.width
@@ -149,16 +185,19 @@ OverlayWindow {
                 strokeColor: Theme.accentText
                 strokeWidth: 1.5
                 fillColor: "transparent"
-                startX: sx
-                startY: sy
+                readonly property real ax: win.anchorOf(sx, corner.x)
+                readonly property real ay: win.anchorOf(sy, corner.y)
+
+                startX: ax
+                startY: ay
 
                 PathCubic {
                     x: corner.x
                     y: corner.y
-                    control1X: sx + (corner.x - sx) * 0.7
-                    control1Y: sy
+                    control1X: ax + (corner.x - ax) * 0.7
+                    control1Y: ay
                     control2X: corner.x
-                    control2Y: sy + (corner.y - sy) * 0.4
+                    control2Y: ay + (corner.y - ay) * 0.4
                 }
             }
 
@@ -229,6 +268,7 @@ OverlayWindow {
         // Size, under the selection while dragging.
         Rectangle {
             visible: win.dragging && win.selW > 0
+            opacity: 1 - win.release
             x: Math.min(Math.max(bl.x, Theme.padding.large), parent.width - width - Theme.padding.large)
             y: Math.min(bl.y + Theme.spacing.medium, parent.height - height - Theme.padding.large)
             implicitWidth: sizeText.implicitWidth + Theme.padding.medium * 2
@@ -279,6 +319,7 @@ OverlayWindow {
                 else
                     win.from = win.to = Qt.point(mouse.x, mouse.y);
             }
+            enabled: !finishing.running
             onReleased: win.commit()
         }
     }
