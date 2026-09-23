@@ -14,7 +14,9 @@ RowLayout {
     // Charging as soon as the charger is in (UPower.onBattery flips the
     // moment the plug does), not when the battery gets round to saying so.
     readonly property bool charging: !full && (!UPower.onBattery || charge === UPowerDeviceState.Charging)
-    readonly property bool full: charge === UPowerDeviceState.FullyCharged
+    // The driver can say "fully charged" for a moment on plug-in, well short
+    // of full; believe it only when the level agrees.
+    readonly property bool full: charge === UPowerDeviceState.FullyCharged && Math.round(pct * 100) >= 99
     readonly property bool low: pct < 0.2 && !charging && !full
 
     // Green while it is filling or filled, amber on the way down, red when the

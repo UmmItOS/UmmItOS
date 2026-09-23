@@ -72,7 +72,8 @@ Scope {
 
             // Plugging and unplugging are read from the charger below; the
             // battery's own state follows seconds later.
-            if (state === UPowerDeviceState.FullyCharged)
+            // Not the brief "fully charged" some drivers report on plug-in.
+            if (state === UPowerDeviceState.FullyCharged && root.percent() >= 99)
                 root.notify("low", "Battery full", "Charged. You can unplug.");
         }
     }
