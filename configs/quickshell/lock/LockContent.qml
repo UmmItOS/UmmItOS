@@ -14,7 +14,6 @@ Item {
     // Which screen this is, for its picture of the desktop.
     required property string screenName
 
-
     function at(fraction: real): real {
         return -fraction * height;
     }
