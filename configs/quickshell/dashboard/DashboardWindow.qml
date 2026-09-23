@@ -14,20 +14,7 @@ OverlayWindow {
     scrim: 0
     focusMode: WlrKeyboardFocus.OnDemand
 
-    readonly property var tabs: [
-        {
-            icon: "dashboard",
-            label: "Dashboard"
-        },
-        {
-            icon: "monitoring",
-            label: "System"
-        },
-        {
-            icon: "workspaces",
-            label: "Workspaces"
-        }
-    ]
+    readonly property var tabs: ["Dashboard", "System", "Workspaces"]
 
     // Polling /proc and hwmon only matters while the panel is on screen.
     onVisibleChanged: {
@@ -75,40 +62,78 @@ OverlayWindow {
             }
             spacing: 0
 
-            // One continuous cluster holding all four tabs, the same shape the
-            // bar uses for its icon group, rather than four tabs floating
-            // separately with only the active one carrying a background.
-            // Spans the content width so its edges line up with the cards
-            // below; a hugging cluster centred in a panel aligns with nothing.
-            Surface {
-                id: tabCluster
-
-                // Concentric radii: an inner corner only nests inside an outer
-                // one when its radius is the outer radius minus the inset.
-                // A fixed inner radius makes the first and last tab collide
-                // with the cluster's own corner.
-                readonly property int inset: Theme.spacing.extraSmall
-
+            // The tabs are the page's headline: the words themselves, set large,
+            // with the current one lit and a short bar sliding under it. No tray
+            // around them; the panel is already the container.
+            Item {
                 Layout.fillWidth: true
-                Layout.bottomMargin: Theme.padding.large
-                implicitHeight: 68
-                radius: Theme.rounding.extraLarge
-                tone: Theme.bgTray
+                implicitHeight: tabRow.implicitHeight + Theme.spacing.small + indicator.height
 
-                // One pill that slides between tabs, the way iOS segmented
-                // controls move, rather than a highlight per tab that blinks.
+                Row {
+                    id: tabRow
+                    spacing: Theme.spacing.extraLarge
+
+                    Repeater {
+                        id: tabs
+                        model: win.tabs
+
+                        Text {
+                            id: tab
+                            required property string modelData
+                            required property int index
+
+                            readonly property bool current: Dashboard.tab === index
+
+                            text: tab.modelData
+                            color: tab.current ? Theme.fg : hover.hovered ? Theme.accent2 : Theme.dim
+                            font.family: Theme.fontDisplay
+                            font.pixelSize: Theme.fontSize.large
+                            font.weight: Theme.weight.bold
+                            // Sinks under the finger, springs back on release.
+                            scale: press.pressed ? Theme.pressScale : 1
+
+                            Behavior on scale {
+                                NumberAnimation {
+                                    duration: Theme.duration.expressiveFastSpatial
+                                    easing.type: Easing.BezierSpline
+                                    easing.bezierCurve: Theme.curve.expressiveFastSpatial
+                                }
+                            }
+
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: Theme.duration.expressiveDefaultEffects
+                                }
+                            }
+
+                            HoverHandler {
+                                id: hover
+                            }
+
+                            TapHandler {
+                                id: press
+                                onTapped: Dashboard.tab = tab.index
+                            }
+                        }
+                    }
+                }
+
+                // Slides and stretches to the next word, so it travels rather
+                // than blinks.
                 Rectangle {
-                    readonly property real slot: tabRow.width / win.tabs.length
+                    id: indicator
 
-                    x: Dashboard.tab * slot + tabCluster.inset
-                    y: tabCluster.inset
-                    width: slot - tabCluster.inset * 2
-                    height: tabCluster.height - tabCluster.inset * 2
-                    radius: tabCluster.radius - tabCluster.inset
-                    color: Theme.accent
+                    readonly property Item target: tabs.itemAt(Dashboard.tab)
+
+                    anchors.bottom: parent.bottom
+                    x: target?.x ?? 0
+                    width: target?.width ?? 0
+                    height: Theme.spacing.extraSmall
+                    radius: Theme.rounding.full
+                    color: Theme.accentText
 
                     // Only while open: a bar item opens the dashboard onto its
-                    // tab, and the pill should already be there, not travelling.
+                    // tab, and the bar should already be there, not travelling.
                     Behavior on x {
                         enabled: Dashboard.open
 
@@ -118,73 +143,13 @@ OverlayWindow {
                             easing.bezierCurve: Theme.curve.expressiveDefaultSpatial
                         }
                     }
-                }
+                    Behavior on width {
+                        enabled: Dashboard.open
 
-                Row {
-                    id: tabRow
-                    anchors.fill: parent
-
-                    Repeater {
-                        model: win.tabs
-
-                        Item {
-                            id: tab
-                            required property var modelData
-                            required property int index
-
-                            readonly property bool current: Dashboard.tab === index
-
-                            width: tabRow.width / win.tabs.length
-                            height: tabRow.height
-
-                            Column {
-                                anchors.centerIn: parent
-                                spacing: Theme.spacing.extraSmall
-                                // Sinks under the finger, springs back on release.
-                                scale: press.pressed ? Theme.pressScale : 1
-
-                                Behavior on scale {
-                                    NumberAnimation {
-                                        duration: Theme.duration.expressiveFastSpatial
-                                        easing.type: Easing.BezierSpline
-                                        easing.bezierCurve: Theme.curve.expressiveFastSpatial
-                                    }
-                                }
-
-                                MaterialIcon {
-                                    anchors.horizontalCenter: parent.horizontalCenter
-                                    text: tab.modelData.icon
-                                    color: tab.current ? Theme.fg : Theme.dim
-                                    fill: tab.current ? 1 : 0
-                                    size: Theme.icon.large
-
-                                    Behavior on color {
-                                        ColorAnimation {
-                                            duration: Theme.duration.expressiveDefaultEffects
-                                        }
-                                    }
-                                }
-
-                                Text {
-                                    anchors.horizontalCenter: parent.horizontalCenter
-                                    text: tab.modelData.label
-                                    color: tab.current ? Theme.fg : Theme.dim
-                                    font.family: Theme.font
-                                    font.pixelSize: Theme.fontSize.smaller
-                                    font.weight: tab.current ? Theme.weight.medium : Theme.weight.regular
-
-                                    Behavior on color {
-                                        ColorAnimation {
-                                            duration: Theme.duration.expressiveDefaultEffects
-                                        }
-                                    }
-                                }
-                            }
-
-                            TapHandler {
-                                id: press
-                                onTapped: Dashboard.tab = tab.index
-                            }
+                        NumberAnimation {
+                            duration: Theme.duration.expressiveDefaultSpatial
+                            easing.type: Easing.BezierSpline
+                            easing.bezierCurve: Theme.curve.expressiveDefaultSpatial
                         }
                     }
                 }
