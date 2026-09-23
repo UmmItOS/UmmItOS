@@ -293,15 +293,16 @@ OverlayWindow {
                     readonly property bool shownInGroup: (Notifs.expanded[card.model.appName ?? ""] ?? false) || card.ListView.previousSection !== card.ListView.section
 
                     width: ListView.view.width
+                    // Height snaps and the card fades in. Animating the height
+                    // resized the panel window every frame (the window hugs the
+                    // list), and Hyprland re-blurring it each time was the lag.
                     implicitHeight: shownInGroup ? body.implicitHeight + Theme.padding.large * 2 : 0
-                    visible: implicitHeight > 0
-                    clip: true
+                    visible: shownInGroup
+                    opacity: shownInGroup ? 1 : 0
 
-                    Behavior on implicitHeight {
+                    Behavior on opacity {
                         NumberAnimation {
-                            duration: Theme.duration.expressiveFastSpatial
-                            easing.type: Easing.BezierSpline
-                            easing.bezierCurve: Theme.curve.standard
+                            duration: Theme.duration.expressiveDefaultEffects
                         }
                     }
                     radius: Theme.rounding.extraLarge
