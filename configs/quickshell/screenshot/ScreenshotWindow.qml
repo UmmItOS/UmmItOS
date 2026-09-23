@@ -5,6 +5,7 @@ import Quickshell.Hyprland
 import Quickshell.Wayland
 import Quickshell.Widgets
 import QtQuick
+import QtQuick.Effects
 import QtQuick.Shapes
 import ".."
 
@@ -286,12 +287,40 @@ OverlayWindow {
         // dragged, that is the whole screen.
         Keys.onReturnPressed: win.commit()
 
-        // The screen as it was when the overlay opened.
+        // The screen as it was when the overlay opened. Drawn blurred, the
+        // blur growing in with the overlay and lifting with the release, so
+        // opening reads as the screen stepping back rather than a cut.
         ScreencopyView {
             id: frozen
             anchors.fill: parent
             captureSource: win.screen
             live: false
+            visible: false
+        }
+
+        MultiEffect {
+            anchors.fill: parent
+            source: frozen
+            blurEnabled: true
+            blurMax: 48
+            blur: 0.7 * Math.min(1, win.reveal) * (1 - win.release)
+        }
+
+        // The selection itself stays sharp: what you frame is what you get.
+        Item {
+            x: tl.x
+            y: tl.y
+            width: Math.max(0, br.x - tl.x)
+            height: Math.max(0, br.y - tl.y)
+            clip: true
+
+            ShaderEffectSource {
+                x: -parent.x
+                y: -parent.y
+                width: frozen.width
+                height: frozen.height
+                sourceItem: frozen
+            }
         }
 
         // Dim everything outside the selection.
