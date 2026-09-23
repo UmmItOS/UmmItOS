@@ -66,6 +66,16 @@ Singleton {
         pinned = false;
     }
 
+    // Every workspace at once, GNOME-overview style, from the hot corner:
+    // opens on the current one and stays up without Alt held. The corner
+    // again, Esc, or picking a workspace closes it.
+    function overview(): void {
+        if (open)
+            return cancel();
+        step(0);
+        pinned = true;
+    }
+
     GlobalShortcut {
         appid: "quickshell"
         name: "switcherNext"
@@ -106,6 +116,10 @@ Singleton {
 
         function pin(): void {
             root.pinned = !root.pinned;
+        }
+
+        function overview(): void {
+            root.overview();
         }
 
     }

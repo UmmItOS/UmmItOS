@@ -37,6 +37,12 @@ ShellRoot {
 
     SwitcherWindow {}
 
+    Variants {
+        model: Quickshell.screens
+
+        HotCorner {}
+    }
+
     CheatsheetWindow {}
 
     ScreenshotWindow {}
