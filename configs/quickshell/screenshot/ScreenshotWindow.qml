@@ -257,7 +257,9 @@ OverlayWindow {
         property real y: ty
 
         Behavior on x {
-            enabled: !win.snap
+            // Under the hand (a region) the corners are the pointer, with no
+            // lag at all; springs only carry the frame where nothing is held.
+            enabled: !win.snap && win.mode !== "region"
 
             SpringAnimation {
                 spring: Theme.spring.stiffness
@@ -265,7 +267,9 @@ OverlayWindow {
             }
         }
         Behavior on y {
-            enabled: !win.snap
+            // Under the hand (a region) the corners are the pointer, with no
+            // lag at all; springs only carry the frame where nothing is held.
+            enabled: !win.snap && win.mode !== "region"
 
             SpringAnimation {
                 spring: Theme.spring.stiffness
@@ -323,9 +327,9 @@ OverlayWindow {
             source: frozen
             blurEnabled: true
             blurMax: 64
-            // Softer when picking a window: the others have to stay
-            // recognisable to be chosen between.
-            blur: win.haze * (1 - win.release) * (win.mode === "window" ? 0.35 : 1)
+            // A soft veil rather than frosted glass, softer still when
+            // picking a window, so what is behind stays recognisable.
+            blur: win.haze * (1 - win.release) * (win.mode === "window" ? 0.25 : 0.45)
         }
 
         // The selection itself stays sharp: what you frame is what you get.
