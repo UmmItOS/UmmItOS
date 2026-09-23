@@ -17,7 +17,28 @@ Singleton {
 
     readonly property int cap: 60
 
+    // Apps whose group is open in the panel; the rest show their newest only.
+    property var expanded: ({})
+
+    function toggleGroup(app: string): void {
+        const next = Object.assign({}, expanded);
+        next[app] = !next[app];
+        expanded = next;
+    }
+
     function record(notification: var): void {
+        // Keep each app's notifications together, newest group first: the
+        // panel groups them by section, which needs them contiguous.
+        let first = -1, n = 0;
+        for (let i = 0; i < history.count; i++) {
+            if (history.get(i).appName === notification.appName) {
+                if (first < 0)
+                    first = i;
+                n++;
+            }
+        }
+        if (first > 0)
+            history.move(first, 0, n);
         history.insert(0, {
             key: Date.now() + "-" + notification.id,
             appName: notification.appName,
@@ -60,6 +81,9 @@ Singleton {
 
     IpcHandler {
         target: "notifications"
+
+
+
 
         function toggle(): void {
             root.panelOpen = !root.panelOpen;

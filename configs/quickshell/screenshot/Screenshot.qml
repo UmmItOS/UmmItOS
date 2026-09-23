@@ -91,13 +91,13 @@ Singleton {
     // A window shot is written by the shell itself (the window's own pixels,
     // transparency kept); this copies it and says so, as grim's path does.
     function saved(file: string): void {
-        shot.command = ["sh", "-c", 'wl-copy --type image/png < "$1" && notify-send "Screenshot saved" "$1"', "sh", file];
+        shot.command = ["sh", "-c", 'wl-copy --type image/png < "$1" && notify-send -a Screenshot -h string:image-path:"$1" "Screenshot saved" "$(basename "$1")"', "sh", file];
         shot.running = true;
     }
 
     function take(target: var): void {
         const file = newFile();
-        shot.command = ["sh", "-c", 'mkdir -p "$1" && f="$2" && shift 2 && grim "$@" "$f" && wl-copy --type image/png < "$f" && notify-send "Screenshot saved" "$f"', "sh", root.dir, file, ...target];
+        shot.command = ["sh", "-c", 'mkdir -p "$1" && f="$2" && shift 2 && grim "$@" "$f" && wl-copy --type image/png < "$f" && notify-send -a Screenshot -h string:image-path:"$f" "Screenshot saved" "$(basename "$f")"', "sh", root.dir, file, ...target];
         shot.running = true;
     }
 

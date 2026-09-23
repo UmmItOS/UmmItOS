@@ -178,6 +178,68 @@ OverlayWindow {
                 clip: true
                 spacing: Theme.spacing.small
                 model: Notifs.history
+
+                // One header per app; its cards stack under it, collapsed to
+                // the newest until the header is tapped.
+                section.property: "appName"
+                section.delegate: Item {
+                    id: head
+
+                    required property string section
+                    readonly property int count: {
+                        void Notifs.history.count;
+                        let c = 0;
+                        for (let i = 0; i < Notifs.history.count; i++)
+                            if (Notifs.history.get(i).appName === head.section)
+                                c++;
+                        return c;
+                    }
+                    readonly property bool open: Notifs.expanded[head.section] ?? false
+
+                    width: ListView.view.width
+                    implicitHeight: headRow.implicitHeight + Theme.spacing.small
+
+                    Row {
+                        id: headRow
+
+                        anchors.left: parent.left
+                        anchors.leftMargin: Theme.spacing.small
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: Theme.spacing.small
+
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: head.section + (head.count > 1 ? "  ·  " + head.count : "")
+                            color: Theme.dim
+                            font {
+                                family: Theme.font
+                                pixelSize: Theme.fontSize.smaller
+                                weight: Theme.weight.medium
+                                letterSpacing: Theme.tracking.wide
+                            }
+                        }
+
+                        MaterialIcon {
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: head.count > 1
+                            text: "expand_more"
+                            color: Theme.dim
+                            size: Theme.icon.small
+                            rotation: head.open ? 180 : 0
+
+                            Behavior on rotation {
+                                NumberAnimation {
+                                    duration: Theme.duration.expressiveFastSpatial
+                                }
+                            }
+                        }
+                    }
+
+                    TapHandler {
+                        enabled: head.count > 1
+                        onTapped: Notifs.toggleGroup(head.section)
+                    }
+                }
                 boundsBehavior: Flickable.StopAtBounds
 
                 // The same movement as the toasts, so a dismissed card leaves
@@ -227,8 +289,21 @@ OverlayWindow {
                     // delegate outlives its row while the remove transition plays.
                     required property var model
 
+                    // Collapsed groups show their newest card only.
+                    readonly property bool shownInGroup: (Notifs.expanded[card.model.appName ?? ""] ?? false) || card.ListView.previousSection !== card.ListView.section
+
                     width: ListView.view.width
-                    implicitHeight: body.implicitHeight + Theme.padding.large * 2
+                    implicitHeight: shownInGroup ? body.implicitHeight + Theme.padding.large * 2 : 0
+                    visible: implicitHeight > 0
+                    clip: true
+
+                    Behavior on implicitHeight {
+                        NumberAnimation {
+                            duration: Theme.duration.expressiveFastSpatial
+                            easing.type: Easing.BezierSpline
+                            easing.bezierCurve: Theme.curve.standard
+                        }
+                    }
                     radius: Theme.rounding.extraLarge
                     tone: Theme.scrim(0.35)
 

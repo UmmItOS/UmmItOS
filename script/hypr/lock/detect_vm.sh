@@ -33,7 +33,7 @@ check_qemu_and_lock() {
         echo -e "${BLUE}:: QEMU is running.${RESET}"
 
         # Display notification about QEMU running
-        notify-send "Lock" \
+        notify-send -a Lock "Lock" \
                     "$(cat ~/script/hypr/lock/message_lock_qemu)" \
                     --app-name="Lock"
     else
@@ -46,7 +46,7 @@ check_qemu_and_lock() {
         fi
 
         # Warn that the screen will lock in 15 seconds
-        notify-send "Lock" \
+        notify-send -a Lock "Lock" \
                     "$(cat ~/script/hypr/lock/message_lock)" \
                     --app-name="Lock"
 
