@@ -70,14 +70,29 @@ Scope {
                 return;
             root.lastState = state;
 
-            if (state === UPowerDeviceState.Charging)
-                root.pluggedIn();
-            if (state === UPowerDeviceState.Charging)
-                root.notify("low", "Charging", root.percent() + "%" + (root.battery.timeToFull > 0 ? " · " + Math.round(root.battery.timeToFull / 60) + " min to full" : ""));
-            else if (state === UPowerDeviceState.Discharging)
-                root.notify("low", "On battery", root.percent() + "%" + (root.battery.timeToEmpty > 0 ? " · " + Math.round(root.battery.timeToEmpty / 60) + " min left" : ""));
-            else if (state === UPowerDeviceState.FullyCharged)
+            // Plugging and unplugging are read from the charger below; the
+            // battery's own state follows seconds later.
+            if (state === UPowerDeviceState.FullyCharged)
                 root.notify("low", "Battery full", "Charged. You can unplug.");
+        }
+    }
+
+    // The charger reports the moment the plug goes in or out; the battery's
+    // state lags it by a few seconds, which made the ripple and "Charging"
+    // late.
+    Connections {
+        target: UPower
+        enabled: root.present
+
+        function onOnBatteryChanged() {
+            if (!root.primed)
+                return;
+            if (!UPower.onBattery) {
+                root.pluggedIn();
+                root.notify("low", "Charging", root.percent() + "%");
+            } else {
+                root.notify("low", "On battery", root.percent() + "%");
+            }
         }
     }
 

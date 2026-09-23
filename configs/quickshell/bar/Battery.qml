@@ -11,7 +11,9 @@ RowLayout {
     // Not `state`: every Item already has one, for its States.
     readonly property int charge: battery ? battery.state : UPowerDeviceState.Unknown
 
-    readonly property bool charging: charge === UPowerDeviceState.Charging || charge === UPowerDeviceState.PendingCharge
+    // Charging as soon as the charger is in (UPower.onBattery flips the
+    // moment the plug does), not when the battery gets round to saying so.
+    readonly property bool charging: !full && (!UPower.onBattery || charge === UPowerDeviceState.Charging)
     readonly property bool full: charge === UPowerDeviceState.FullyCharged
     readonly property bool low: pct < 0.2 && !charging && !full
 
