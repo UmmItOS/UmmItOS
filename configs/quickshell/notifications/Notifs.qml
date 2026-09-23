@@ -82,7 +82,6 @@ Singleton {
     IpcHandler {
         target: "notifications"
 
-
         function toggle(): void {
             root.panelOpen = !root.panelOpen;
         }
