@@ -72,6 +72,7 @@ It must run inside a Hyprland session (it calls `hyprctl`) and needs `jq`. Befor
 - **Check a change without restarting:** `Hyprland --verify-config -c configs/hypr/hyprland.lua` reports unknown keys and Lua errors. `hyprctl keyword` does not work under Lua; use `hyprctl eval '<lua>'` or `hyprctl dispatch '<hl.dsp… expression>'`.
 - **Every bind has a `description` that starts with its cheat sheet group** (`Shell: Session menu`). Under Lua `hyprctl binds` reports every dispatcher as `__lua`, so the cheat sheet (`cheatsheet/`, Super+/) reads the group from that prefix. A bind without a description is missing from it.
 - **Keys:** use key names (`Return`, not `code:36`, which loads as an empty key). 0.56.2 ignores `mouse = true` on `hl.bind`; `hl.dsp.window.drag()` and `resize()` handle the button themselves.
+- **`~/.config/hypr` is a copy, not a symlink, and holds the user's own values** (monitor layout, `qt5ct`, portal autostarts, touchpad, opacity, no permission rules). Mirror a repo change into the matching live file by hand, back it up first, and never overwrite the live file with the repo's. Change the Hyprland config only when asked: a shell look is fixed in QML, not by changing global settings such as `decoration:blur`, which also affect every window.
 - **End-to-end test:** run a nested `Hyprland -c <copy>.lua` from a copy that leaves out `require("hyprland.autostart")` (it would start a second `qs`), drive it with `hyprctl -i <instance> dispatch '…'`, then `hl.dsp.exit()`.
 
 ## The shell
@@ -100,17 +101,18 @@ grep -A5 'name: "workspaces"' /usr/lib/qt6/qml/Quickshell/Hyprland/_Ipc/*.qmltyp
 ### How input reaches the shell
 
 - Keybinds in `configs/hypr/hyprland/shortcuts.lua` call `qs -c ummitos ipc call <target> <fn>`. Adding a keybindable surface means adding an `IpcHandler` to its singleton. **Do not name an IPC function `show`**, because `qs ipc show` is a CLI subcommand and claims the name first.
-- Alt+Tab uses `GlobalShortcut` (`bind = ALT, TAB, global, quickshell:switcherNext`). It commits on a release bind (`bindrt = ALT, Alt_L, …`) because Hyprland's bind layer consumes the release. Every commit path goes through `Switcher.release()`, which respects the pin.
+- Alt+Tab uses `GlobalShortcut` (`hl.dsp.global("quickshell:switcherNext")` in `shortcuts.lua`). It commits on a release bind (`"ALT + Alt_L"` with `release = true, transparent = true`) because Hyprland's bind layer consumes the release. Every commit path goes through `Switcher.release()`, which respects the pin.
 - **Closing on an outside click:** bar flyouts are `PopupWindow`s and use `grabFocus: true`. `HyprlandFocusGrab` only owns layer surfaces, so it works for `PanelWindow` surfaces such as `NotificationPanel` but silently does nothing on an xdg-popup.
 
 ### Design system
 
-`Theme.qml` is the single source of truth for colour, `rounding`, `spacing`, `padding`, `fontSize`, `icon`, `duration`, `curve` (M3 bezier control points), `tracking`, `weight` and `barHeight`. **Surface files contain no magic numbers.** If you need a new value, add a token for it.
+`Theme.qml` is the single source of truth for colour, `rounding`, `spacing`, `padding`, `fontSize`, `icon`, `duration`, `curve` (M3 bezier control points), `tracking`, `weight`, `barHeight`, `glass` (a card's sheen on a blurred panel) and `blur` (a surface's own blur). **Surface files contain no magic numbers.** If you need a new value, add a token for it.
 
 - **No borders anywhere, deliberately.** Depth comes from elevation (`bg` → `bgAlt` → `bgTray`) and spacing. Do not add `border.width`.
 - The accent is a fill colour, chosen from the bar's palette button and saved to `Quickshell.statePath("accent.txt")`; `#5003c0` is the default. `accentText` and `accent2` are derived from it, so never hardcode a purple: read the tokens and it follows the user's choice.
 - The cheat sheet's turning ring is the one deliberate border, by request.
-- Blur is automatic. One Hyprland `hl.layer_rule` in `configs/hypr/hyprland/appearance.lua` matches `ummitos-.*`, so set `WlrLayershell.namespace: "ummitos-<name>"` on new surfaces.
+- Blur is automatic, but light: it is Hyprland's global blur, shared with every window. A surface that needs more (the dashboard) draws the wallpaper under itself through a `MultiEffect` blur (`Theme.blur`) instead of changing Hyprland's setting.
+- One Hyprland `hl.layer_rule` in `configs/hypr/hyprland/appearance.lua` matches `ummitos-.*`, so set `WlrLayershell.namespace: "ummitos-<name>"` on new surfaces.
 
 ### Screenshots
 
@@ -154,7 +156,7 @@ For things that need input you cannot give from a terminal, mark every temporary
 - **`width`, `height` and friends are FINAL.** Declaring a property with such a name on a subclass fails the whole file with "Cannot override FINAL property".
 - **QML JavaScript has no object spread** (`{...a}`); build the object and assign fields.
 - **`clip: true` clips to a rectangle.** Inside rounded surfaces, clip with a `ClippingRectangle` of the same radius, or corners show.
-- **A blurred shape is cut off at its own bounds**, which reads as a square edge. For soft light use a radial gradient that fades to zero before the edge (a `Canvas`).
+- **A blurred shape is cut off at its own bounds**, which reads as a square edge. For soft light use a radial gradient that fades to zero before the edge (a `Canvas`). To glow an outline, capture it with a `ShaderEffectSource` whose `sourceRect` is padded past the item, then blur that; feeding one `MultiEffect` straight into another (with `layer.enabled` on the first) hid the first one.
 - **`ScreencopyView` captures whatever is on screen, including the shell.** Capture only when your own overlay is fully gone, or you photograph yourself.
 - **State paths are per shell id.** `Quickshell.statePath()` resolves under `~/.local/state/quickshell/by-shell/<id>/`, and the id changes with how `qs` was started. Find the live one from the instance's own log, not by guessing.
 - **Bluetooth needs `bluetoothd` running before `qs` starts.** Otherwise the adapter stays null until the shell restarts.
