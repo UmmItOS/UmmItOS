@@ -37,6 +37,50 @@ OverlayWindow {
     property real release: 0
     property string pendingGeometry: ""
 
+    // The clock the tendrils sway and the beads pulse to; runs only while
+    // the overlay is up.
+    property real phase: 0
+
+    NumberAnimation on phase {
+        running: win.visible
+        from: 0
+        to: 1
+        duration: 2600
+        loops: Animation.Infinite
+    }
+
+    readonly property real rootWidth: Theme.spacing.extraSmall + 1
+    readonly property real tipWidth: 1.2
+
+    // A tendril's outline from its root (ax, ay) to its tip (cx, cy): the same
+    // curve the threads always took, bent sideways by a wave that travels
+    // toward the tip and fades to nothing at both ends, so it stays tied.
+    // Its width narrows along the way, and a short tendril (reeled in) barely
+    // sways at all.
+    function tendril(ax: real, ay: real, cx: real, cy: real, t0: real, seed: real): list<point> {
+        const x1 = ax + (cx - ax) * 0.7, y1 = ay;
+        const x2 = cx, y2 = ay + (cy - ay) * 0.4;
+        const reach = Math.hypot(cx - ax, cy - ay);
+        const sway = Math.min(18, reach * 0.04);
+        const n = 40;
+        const left = [], right = [];
+        for (let i = 0; i <= n; i++) {
+            const t = i / n, u = 1 - t;
+            const bx = u * u * u * ax + 3 * u * u * t * x1 + 3 * u * t * t * x2 + t * t * t * cx;
+            const by = u * u * u * ay + 3 * u * u * t * y1 + 3 * u * t * t * y2 + t * t * t * cy;
+            let dx = 3 * u * u * (x1 - ax) + 6 * u * t * (x2 - x1) + 3 * t * t * (cx - x2);
+            let dy = 3 * u * u * (y1 - ay) + 6 * u * t * (y2 - y1) + 3 * t * t * (cy - y2);
+            const d = Math.hypot(dx, dy) || 1;
+            const nx = -dy / d, ny = dx / d;
+            const wave = sway * Math.sin(Math.PI * t) * Math.sin(2 * Math.PI * (1.6 * t - t0) + seed);
+            const half = (rootWidth * u + tipWidth * t) / 2;
+            const px = bx + nx * wave, py = by + ny * wave;
+            left.push(Qt.point(px + nx * half, py + ny * half));
+            right.push(Qt.point(px - nx * half, py - ny * half));
+        }
+        return left.concat(right.reverse());
+    }
+
     // Where a thread starts: at its screen corner, sliding into its selection
     // corner as the release plays.
     function anchorOf(sx: real, corner: real): real {
@@ -287,27 +331,25 @@ OverlayWindow {
             anchors.fill: parent
             preferredRendererType: Shape.CurveRenderer
 
+            // A tendril, not a wire: filled rather than stroked so it can
+            // taper from a thick root at the screen corner to a fine tip at
+            // the selection, and swayed by a wave that runs root to tip.
             component Thread: ShapePath {
                 required property real sx
                 required property real sy
                 required property QtObject corner
+                // Offsets the wave so the four do not move in step.
+                property real seed: 0
 
-                strokeColor: Theme.accentText
-                strokeWidth: 1.5
-                fillColor: "transparent"
                 readonly property real ax: win.anchorOf(sx, corner.x)
                 readonly property real ay: win.anchorOf(sy, corner.y)
 
-                startX: ax
-                startY: ay
+                strokeColor: "transparent"
+                strokeWidth: 0
+                fillColor: Theme.accentText
 
-                PathCubic {
-                    x: corner.x
-                    y: corner.y
-                    control1X: ax + (corner.x - ax) * 0.7
-                    control1Y: ay
-                    control2X: corner.x
-                    control2Y: ay + (corner.y - ay) * 0.4
+                PathPolyline {
+                    path: win.tendril(ax, ay, corner.x, corner.y, win.phase, seed)
                 }
             }
 
@@ -315,21 +357,25 @@ OverlayWindow {
                 sx: 0
                 sy: 0
                 corner: tl
+                seed: 0
             }
             Thread {
                 sx: win.width
                 sy: 0
                 corner: tr
+                seed: 1.7
             }
             Thread {
                 sx: 0
                 sy: win.height
                 corner: bl
+                seed: 3.1
             }
             Thread {
                 sx: win.width
                 sy: win.height
                 corner: br
+                seed: 4.6
             }
 
             // The selection's own edges.
@@ -365,9 +411,12 @@ OverlayWindow {
 
             Rectangle {
                 required property QtObject modelData
+                required property int index
 
                 x: modelData.x - width / 2
                 y: modelData.y - height / 2
+                // A slow heartbeat, each bead a little out of step.
+                scale: 1 + 0.2 * Math.sin(2 * Math.PI * (win.phase * 2) + index)
                 width: Theme.spacing.medium
                 height: width
                 radius: width / 2
