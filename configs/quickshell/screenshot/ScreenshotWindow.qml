@@ -41,6 +41,20 @@ OverlayWindow {
     // The clock the tendrils sway and the beads pulse to; runs only while
     // the overlay is up.
     property real phase: 0
+    // The blur's own slow gathering, a second long, so it is watched rather
+    // than noticed; it lifts with the release as before.
+    property real haze: 0
+
+    NumberAnimation {
+        id: hazeIn
+        target: win
+        property: "haze"
+        from: 0
+        to: 1
+        duration: Theme.duration.extraLarge
+        easing.type: Easing.BezierSpline
+        easing.bezierCurve: Theme.curve.standardDecel
+    }
 
     NumberAnimation on phase {
         running: win.visible
@@ -150,6 +164,7 @@ OverlayWindow {
     onOpened: {
         cutting = null;
         frozen.captureFrame();
+        hazeIn.restart();
         finishing.stop();
         release = 0;
         dragging = false;
@@ -302,8 +317,8 @@ OverlayWindow {
             anchors.fill: parent
             source: frozen
             blurEnabled: true
-            blurMax: 48
-            blur: 0.7 * Math.min(1, win.reveal) * (1 - win.release)
+            blurMax: 64
+            blur: win.haze * (1 - win.release)
         }
 
         // The selection itself stays sharp: what you frame is what you get.
