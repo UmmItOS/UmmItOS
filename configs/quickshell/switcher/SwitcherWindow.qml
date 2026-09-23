@@ -35,10 +35,14 @@ OverlayWindow {
         // opening next (Alt+Tab) must start from the plain grid, or it came up
         // as one giant card.
         zoomAnim.stop();
-        if (Switcher.overviewing)
+        if (Switcher.overviewing) {
             zoomFrom(1);
-        else
+        } else {
             zoom = 0;
+            // No full-screen picture was taken for Alt+Tab; a stale one from
+            // an earlier overview must not be laid over its zoom.
+            Switcher.startIndex = -1;
+        }
     }
 
     // The overview zooms: the current workspace's card starts filling the
@@ -65,8 +69,10 @@ OverlayWindow {
         zoomAnim.start();
     }
 
+    // Every close zooms into the chosen workspace: the overview's, and
+    // Alt+Tab's as the key comes up.
     onShownChanged: {
-        if (!shown && Switcher.overviewing)
+        if (!shown)
             zoomFrom(0);
     }
 
