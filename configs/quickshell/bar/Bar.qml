@@ -151,15 +151,22 @@ PanelWindow {
                     tnum: 1
                 })
             }
+        }
 
-            TapHandler {
-                onTapped: Dashboard.toggleTab(0)
+        Text {
+            Layout.alignment: Qt.AlignHCenter
+            text: Qt.formatDateTime(clock.date, "ddd d MMM")
+            color: Theme.dim
+            font {
+                family: Theme.font
+                pixelSize: Theme.fontSize.small
+                weight: Theme.weight.medium
+                letterSpacing: Theme.tracking.wide
             }
         }
 
-        Calendar {
-            Layout.alignment: Qt.AlignHCenter
-            now: clock.date
+        TapHandler {
+            onTapped: Dashboard.toggleTab(0)
         }
     }
 }

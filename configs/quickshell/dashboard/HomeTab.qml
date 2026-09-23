@@ -20,15 +20,18 @@ ColumnLayout {
         Layout.fillHeight: true
         spacing: Theme.spacing.medium
 
-        // Clock
+        // Clock, and the month its date sits in.
         Rectangle {
             Layout.fillHeight: true
-            implicitWidth: 210
+            implicitWidth: 210 + calendar.implicitWidth + Theme.padding.large
             radius: Theme.rounding.extraLarge
             color: Theme.bgAlt
 
             Column {
-                anchors.centerIn: parent
+                // Centred in the card's first 210 px, as it was before the
+                // calendar joined it.
+                x: (210 - width) / 2
+                anchors.verticalCenter: parent.verticalCenter
                 spacing: -8
 
                 Text {
@@ -63,6 +66,17 @@ ColumnLayout {
                     font.family: Theme.font
                     font.pixelSize: Theme.fontSize.normal
                 }
+            }
+
+            MonthCalendar {
+                id: calendar
+
+                anchors {
+                    right: parent.right
+                    verticalCenter: parent.verticalCenter
+                    rightMargin: Theme.padding.large
+                }
+                now: clock.date
             }
         }
 
