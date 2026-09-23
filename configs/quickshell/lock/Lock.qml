@@ -101,8 +101,6 @@ Singleton {
             return root.locked;
         }
 
-
-
         function preview(): void {
             root.previewing = !root.previewing;
         }
