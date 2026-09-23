@@ -54,16 +54,11 @@ Scope {
         // at y=0 and would otherwise sit on top of the tray and the clock.
         margins.top: Theme.barHeight + Theme.spacing.small
         margins.right: Theme.spacing.small
-        // Mapped until the last toast has finished leaving: unmapping on an
-        // empty model cut the final remove transition off before it played.
-        // Driven by the server's count, not the ListView's: a view in a hidden
-        // window does not update its count, so it never showed the window.
-        readonly property int toasts: server.trackedNotifications.values.length
-        visible: toasts > 0 || linger.running
-        onToastsChanged: {
-            if (toasts === 0)
-                linger.restart();
-        }
+        // Always mapped: a view in an unmapped window skips its add
+        // transition, so the first toast used to appear without sliding in.
+        // Transparent, and the mask passes input through everywhere but the
+        // toasts, so an idle window costs nothing visible.
+        visible: true
         implicitWidth: 420
         // A fixed column, not the height of the toasts: shrinking the window
         // as one leaves clipped it mid-slide. Input only lands on the toasts.
@@ -72,11 +67,6 @@ Scope {
             item: list.contentItem
         }
         color: "transparent"
-
-        Timer {
-            id: linger
-            interval: Theme.duration.expressiveFastSpatial
-        }
 
         // A ListView, not a column of Repeater items: a toast that is removed
         // from a Layout simply stops existing, and the ones under it snap up.
@@ -94,6 +84,7 @@ Scope {
 
 
             add: Transition {
+                id: entrance
                 NumberAnimation {
                     property: "opacity"
                     from: 0
@@ -155,8 +146,31 @@ Scope {
                 // A delegate outlives its model entry: the remove transition
                 // still needs it on screen after the notification is gone, so
                 // every read of modelData has to survive it being null.
-                readonly property bool critical: card.modelData?.urgency === NotificationUrgency.Critical
-                readonly property string appIcon: card.modelData?.appIcon ? Quickshell.iconPath(card.modelData?.appIcon, true) : ""
+                // What the card shows, copied while the notification is alive:
+                // the object is gone before the exit animation ends, and
+                // reading it live left an empty box fading out.
+                property var kept: ({})
+
+                function keep(): void {
+                    const n = card.modelData;
+                    // A destroyed notification is not null, it just reads
+                    // empty; copying then wiped the text mid-exit.
+                    if (n && n.appName !== undefined)
+                        kept = {
+                            appName: n.appName,
+                            summary: n.summary,
+                            body: Notifs.safeBody(n.body),
+                            image: n.image,
+                            appIcon: n.appIcon,
+                            critical: n.urgency === NotificationUrgency.Critical
+                        };
+                }
+
+                Component.onCompleted: keep()
+                onModelDataChanged: keep()
+
+                readonly property bool critical: card.kept.critical ?? false
+                readonly property string appIcon: card.kept.appIcon ? Quickshell.iconPath(card.kept.appIcon, true) : ""
                 // Delegates are created on arrival, so this is the arrival time.
                 readonly property string time: Qt.formatDateTime(new Date(), "HH:mm")
                 // Clicking the body invokes the "default" action, which is
@@ -225,7 +239,7 @@ Scope {
 
                         Text {
                             Layout.fillWidth: true
-                            text: card.modelData?.appName ?? ""
+                            text: card.kept.appName ?? ""
                             color: Theme.dim
                             font.family: Theme.font
                             font.pixelSize: Theme.fontSize.small
@@ -267,7 +281,7 @@ Scope {
                     Text {
                         Layout.fillWidth: true
                         Layout.topMargin: Theme.spacing.extraSmall
-                        text: card.modelData?.summary ?? ""
+                        text: card.kept.summary ?? ""
                         color: card.critical ? Theme.urgent : Theme.accentText
                         font.family: Theme.fontDisplay
                         font.pixelSize: Theme.fontSize.larger
@@ -277,7 +291,7 @@ Scope {
 
                     Text {
                         Layout.fillWidth: true
-                        text: Notifs.safeBody(card.modelData?.body ?? "")
+                        text: card.kept.body ?? ""
                         color: Theme.fg
                         font.family: Theme.font
                         font.pixelSize: Theme.fontSize.normal
@@ -302,7 +316,7 @@ Scope {
                             id: preview
 
                             anchors.fill: parent
-                            source: card.modelData ? card.modelData.image : ""
+                            source: card.kept.image ?? ""
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: true
                             sourceSize.width: 240
