@@ -130,6 +130,33 @@ OverlayWindow {
             maskSource: ring
         }
 
+        // The same turning gradient, faint, through the whole sheet: the glass
+        // takes on the colours as they pass, but stays dark.
+        Item {
+            id: fillMask
+
+            anchors.fill: ringFill
+            visible: false
+            layer.enabled: true
+
+            Rectangle {
+                anchors {
+                    fill: parent
+                    margins: ring.thickness
+                }
+                radius: sheet.radius
+                color: "white"
+            }
+        }
+
+        MultiEffect {
+            anchors.fill: ringFill
+            source: ringFill
+            maskEnabled: true
+            maskSource: fillMask
+            opacity: 0.35
+        }
+
         Surface {
             id: sheet
 
