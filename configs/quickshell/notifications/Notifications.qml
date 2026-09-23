@@ -153,7 +153,9 @@ Scope {
                 radius: Theme.rounding.extraLarge
                 // Critical reads through its summary colour and its own
                 // longer timeout, not an outline.
-                color: Theme.bgAlt
+                // See-through enough that the compositor blur behind it reads
+                // as frosted glass; bgAlt was near opaque and hid it.
+                color: Theme.scrim(0.45)
 
                 HoverHandler {
                     id: hover
