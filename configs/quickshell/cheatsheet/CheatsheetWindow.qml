@@ -58,12 +58,14 @@ OverlayWindow {
             anchors.fill: parent
         }
 
-        // The window border's turning gradient, as a ring round the sheet. The
-        // sheet is translucent, so the gradient cannot simply sit behind it:
-        // it is drawn off screen and cut to a thin outline by a mask, leaving
-        // the inside the usual dark glass. borderangle 50 is 5s a turn.
+        // A comet orbiting the sheet: a dark ring in the accent's own hue, one
+        // bright head with a fading tail, turning every 5s like borderangle 50.
+        // The sheet is translucent, so the light is drawn off screen and cut to
+        // a thin outline by a mask, leaving the inside the usual dark glass.
         Item {
             id: ringFill
+
+            readonly property color base: Qt.darker(Theme.accent, 3)
 
             anchors {
                 fill: sheet
@@ -73,6 +75,8 @@ OverlayWindow {
             layer.enabled: true
             clip: true
 
+            // A square wider than the sheet's diagonal, dark except for one
+            // edge: turning it sweeps that edge round the ring as the comet.
             Rectangle {
                 anchors.centerIn: parent
                 width: Math.hypot(parent.width, parent.height)
@@ -82,19 +86,19 @@ OverlayWindow {
 
                     GradientStop {
                         position: 0
-                        color: Theme.ring[0]
+                        color: Theme.accentText
                     }
                     GradientStop {
-                        position: 0.33
-                        color: Theme.ring[1]
+                        position: 0.12
+                        color: Theme.accent
                     }
                     GradientStop {
-                        position: 0.66
-                        color: Theme.ring[2]
+                        position: 0.4
+                        color: ringFill.base
                     }
                     GradientStop {
                         position: 1
-                        color: Theme.ring[3]
+                        color: ringFill.base
                     }
                 }
 
@@ -128,6 +132,13 @@ OverlayWindow {
             source: ringFill
             maskEnabled: true
             maskSource: ring
+            // The head throws a little light off the edge.
+            shadowEnabled: true
+            shadowColor: Theme.accent
+            shadowBlur: 0.6
+            shadowOpacity: 0.7
+            shadowHorizontalOffset: 0
+            shadowVerticalOffset: 0
         }
 
         Surface {
