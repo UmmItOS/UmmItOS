@@ -27,11 +27,33 @@ Item {
 
     // Every showing starts from the plain wallpaper, including the preview,
     // whose content outlives each opening.
+    // Every opening holds on the plain desktop picture first, which looks
+    // exactly like the desktop, until the blurred wallpaper under it has
+    // loaded and drawn once. Fading straight away mixed the picture with the
+    // not-yet-drawn layer beneath, which showed as a dark flash, then a jump.
     function enter(): void {
         snapping = true;
         haze = 0;
         snapping = false;
-        haze = 1;
+        begin.restart();
+    }
+
+    Timer {
+        id: begin
+
+        property int tries: 0
+
+        interval: 16
+        onTriggered: {
+            // Two frames once the wallpaper is ready; never more than ~300ms.
+            if ((wall.status !== Image.Ready && tries < 18) || tries < 2) {
+                tries++;
+                restart();
+                return;
+            }
+            tries = 0;
+            root.haze = 1;
+        }
     }
 
     Component.onCompleted: enter()
@@ -94,7 +116,8 @@ Item {
     Image {
         anchors.fill: parent
         source: Lock.shot > 0 && root.screenName !== "" ? Lock.shotOf(root.screenName) : ""
-        cache: false
+        // From the cache the lock filled before it opened: already decoded.
+        cache: true
         fillMode: Image.PreserveAspectCrop
         opacity: 1 - root.haze
     }

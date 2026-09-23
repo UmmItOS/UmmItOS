@@ -74,9 +74,51 @@ Singleton {
         // than one that fades in from black.
         onExited: {
             root.shot++;
-            root.preparing = false;
-            then?.();
+            waitLimit.restart();
         }
+    }
+
+    // Each picture decoded into the image cache before the lock shows. The
+    // lock used to open while its picture was still loading, so its first
+    // frames showed the dimmed wallpaper and then jumped to the desktop.
+    Instantiator {
+        id: preload
+
+        model: Quickshell.screens
+
+        Image {
+            required property var modelData
+
+            asynchronous: true
+            source: root.shot > 0 ? root.shotOf(modelData.name) : ""
+            onStatusChanged: root.readyCheck()
+        }
+    }
+
+    function readyCheck(): void {
+        if (!preparing)
+            return;
+        for (let i = 0; i < preload.count; i++) {
+            const s = preload.objectAt(i)?.status;
+            if (s !== Image.Ready && s !== Image.Error)
+                return;
+        }
+        waitLimit.stop();
+        release2();
+    }
+
+    function release2(): void {
+        preparing = false;
+        const next = grab.then;
+        grab.then = null;
+        next?.();
+    }
+
+    // Never keeps the lock waiting on a picture for long.
+    Timer {
+        id: waitLimit
+        interval: 300
+        onTriggered: root.release2()
     }
 
     Process {
@@ -149,7 +191,6 @@ Singleton {
         function isLocked(): bool {
             return root.locked;
         }
-
 
         function preview(): void {
             root.preview();
