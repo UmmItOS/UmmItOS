@@ -32,7 +32,7 @@ Item {
 
     RowLayout {
         anchors.fill: parent
-        spacing: Theme.spacing.large
+        spacing: Theme.spacing.extraLargeIncreased
         visible: root.player
 
         // The art inside a ring of bars that move with the music, mirrored
@@ -40,11 +40,9 @@ Item {
         Item {
             id: disc
 
-            // Sized to leave the text room since the calendar joined the
-            // clock card and this card lost width.
-            readonly property int art: 124
+            readonly property int art: 170
             readonly property int gap: Theme.spacing.small
-            readonly property int reach: 26
+            readonly property int reach: 34
             readonly property int count: Cava.bars * 2
 
             Layout.alignment: Qt.AlignVCenter
