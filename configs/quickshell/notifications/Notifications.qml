@@ -22,6 +22,9 @@ Scope {
         // The record is taken here because the object itself does not survive
         // expiry, and the panel needs something that does.
         onNotification: notification => {
+            // The notices that replaced hyprctl notify keep a sound of their own.
+            if (["Color picker", "Screen recording", "Update"].includes(notification.appName))
+                Quickshell.execDetached(["pw-play", Quickshell.shellDir + "/toast/pop.ogg"]);
             Notifs.record(notification);
             notification.tracked = !Notifs.dnd;
         }

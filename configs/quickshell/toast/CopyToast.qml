@@ -14,7 +14,14 @@ Scope {
 
     property int serial: 0
 
+    // The shell's own chime for small notices: an original two-note pop,
+    // distinct from the charging chime (toast/pop.ogg).
+    function pop(): void {
+        Quickshell.execDetached(["pw-play", Qt.resolvedUrl("pop.ogg").toString().replace("file://", "")]);
+    }
+
     function show(kind: string): void {
+        pop();
         const image = kind === "image";
         // Newest at index 0, which the bottom-to-top list draws lowest.
         pills.insert(0, {
