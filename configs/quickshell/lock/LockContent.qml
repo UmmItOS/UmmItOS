@@ -15,16 +15,46 @@ Item {
         return -fraction * height;
     }
 
-    // Comes in the way the screenshot overlay does: the wallpaper blurring
-    // into place, the rest fading up.
+    // 0 is the plain wallpaper, 1 the lock. Locking runs it up (the desktop's
+    // own wallpaper blurring and dimming, the text fading in); a right
+    // password runs it back down before the lock lets go, so both ways are a
+    // fade rather than a cut.
     property real haze: 0
+    property bool snapping: false
 
-    NumberAnimation on haze {
-        from: 0
-        to: 1
-        duration: Theme.duration.extraLarge
-        easing.type: Easing.BezierSpline
-        easing.bezierCurve: Theme.curve.standardDecel
+    // Every showing starts from the plain wallpaper, including the preview,
+    // whose content outlives each opening.
+    function enter(): void {
+        snapping = true;
+        haze = 0;
+        snapping = false;
+        haze = 1;
+    }
+
+    Component.onCompleted: enter()
+
+    Connections {
+        target: Lock
+
+        function onUnlockingChanged(): void {
+            if (Lock.unlocking)
+                root.haze = 0;
+        }
+
+        function onShownChanged(): void {
+            if (Lock.shown && !Lock.unlocking)
+                root.enter();
+        }
+    }
+
+    Behavior on haze {
+        enabled: !root.snapping
+
+        NumberAnimation {
+            duration: Lock.unlocking ? Theme.duration.expressiveDefaultSpatial : Theme.duration.extraLarge
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Lock.unlocking ? Theme.curve.emphasizedAccel : Theme.curve.standardDecel
+        }
     }
 
     Image {
@@ -45,9 +75,9 @@ Item {
         blurEnabled: true
         blurMax: 48
         blur: 0.55 * root.haze
-        brightness: -0.2
-        contrast: 0.15
-        saturation: 0.21
+        brightness: -0.2 * root.haze
+        contrast: 0.15 * root.haze
+        saturation: 0.21 * root.haze
     }
 
     Item {

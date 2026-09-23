@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Pam
 import QtQuick
+import ".."
 
 // The lock's state and its password check. The surfaces only draw it.
 Singleton {
@@ -14,6 +15,10 @@ Singleton {
     // locking anything. A right password closes it.
     property bool previewing: false
     readonly property bool shown: locked || previewing
+
+    // Set on a right password: the surfaces play their way out, then the
+    // lock is released, so unlocking is a fade and not a cut.
+    property bool unlocking: false
 
     property bool checking: false
     property bool failed: false
@@ -49,6 +54,16 @@ Singleton {
         wrong();
     }
 
+    Timer {
+        id: release
+        interval: Theme.duration.expressiveDefaultSpatial
+        onTriggered: {
+            root.locked = false;
+            root.previewing = false;
+            root.unlocking = false;
+        }
+    }
+
     // A private PAM stack in the shell's own folder, so no root-owned
     // /etc/pam.d file is needed. pam_unix checks through setuid unix_chkpwd.
     PamContext {
@@ -69,8 +84,8 @@ Singleton {
             root.checking = false;
             root.failed = false;
             root.attempts = 0;
-            root.locked = false;
-            root.previewing = false;
+            root.unlocking = true;
+            release.restart();
         }
         onError: root.fail()
     }
@@ -85,6 +100,7 @@ Singleton {
         function isLocked(): bool {
             return root.locked;
         }
+
 
 
         function preview(): void {
