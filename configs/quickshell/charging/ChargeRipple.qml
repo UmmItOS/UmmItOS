@@ -21,23 +21,42 @@ Scope {
         seed();
         playing = true;
         run.restart();
-        Quickshell.execDetached(["canberra-gtk-play", "-i", "power-plug"]);
+        // An original chime, synthesised for this: two soft bell notes a
+        // fifth apart (see charging/plug.ogg).
+        Quickshell.execDetached(["pw-play", Qt.resolvedUrl("plug.ogg").toString().replace("file://", "")]);
     }
 
-    // Sparkles, fixed for one ripple: an angle across the upper half, a depth
-    // inside the ring, a size and a twinkle phase.
+    // Sparkle dust scattered over the whole screen, as a distance from the
+    // origin (0-1 of the reach) and an angle. Each grain lights as the ring
+    // passes it, twinkles, and fades, so the ring leaves glitter behind.
     property var sparks: []
+    // Slow ripples along the ring's edge, so the glow is uneven like light
+    // through water rather than a drawn circle.
+    property var wobble: []
 
     function seed(): void {
         const s = [];
-        for (let i = 0; i < 280; i++)
+        for (let i = 0; i < 700; i++)
             s.push({
                 a: Math.PI + Math.random() * Math.PI,
-                d: Math.random(),
-                size: 0.6 + Math.random() * 1.8,
-                phase: Math.random() * Math.PI * 2
+                r: Math.sqrt(Math.random()),
+                size: 1 + Math.random() * 2,
+                phase: Math.random() * Math.PI * 2,
+                speed: 25 + Math.random() * 35
             });
         sparks = s;
+        wobble = [0, 1, 2].map(() => ({
+                    k: 3 + Math.floor(Math.random() * 6),
+                    phase: Math.random() * Math.PI * 2
+                }));
+    }
+
+    // 0.4-1.0 around the arc: how bright the edge is at angle `a`.
+    function strength(a: real): real {
+        let v = 0;
+        for (const w of wobble)
+            v += Math.sin(a * w.k + w.phase);
+        return 0.7 + 0.3 * v / 3;
     }
 
     NumberAnimation {
@@ -46,7 +65,7 @@ Scope {
         property: "progress"
         from: 0
         to: 1
-        duration: Theme.duration.extraLarge * 1.6
+        duration: Theme.duration.extraLarge * 2
         easing.type: Easing.BezierSpline
         easing.bezierCurve: Theme.curve.standardDecel
         onFinished: root.playing = false
@@ -93,33 +112,56 @@ Scope {
                 const p = root.progress;
                 const ox = width / 2, oy = height + Theme.spacing.large;
                 const reach = Math.hypot(width / 2, height) * 1.05;
-                const r = reach * p;
-                const band = reach * 0.22;
-                // Full strength while it spreads, gone by the end.
-                const fade = p < 0.55 ? 1 : 1 - (p - 0.55) / 0.45;
+                // The ring runs ahead of the clock a little so it has left
+                // the screen while its glitter is still settling.
+                const r = reach * Math.min(1, p * 1.25);
+                const band = reach * 0.2;
+                const fade = p < 0.6 ? 1 : 1 - (p - 0.6) / 0.4;
                 const c = Theme.accentText;
 
-                // The glow: a band that brightens toward the leading edge.
-                const inner = Math.max(0, r - band);
-                const g = ctx.createRadialGradient(ox, oy, inner, ox, oy, r + 1);
-                g.addColorStop(0, Qt.rgba(c.r, c.g, c.b, 0));
-                g.addColorStop(0.75, Qt.rgba(c.r, c.g, c.b, 0.16 * fade));
-                g.addColorStop(0.97, Qt.rgba(1, 1, 1, 0.22 * fade));
-                g.addColorStop(1, Qt.rgba(1, 1, 1, 0));
-                ctx.fillStyle = g;
-                ctx.beginPath();
-                ctx.arc(ox, oy, r + 1, 0, Math.PI * 2);
-                ctx.fill();
-
-                // The sparkles, riding inside the band and twinkling.
-                for (const s of root.sparks) {
-                    const sr = r - s.d * band;
-                    if (sr <= 0)
+                // The glow behind the edge, and a fainter echo trailing it.
+                const rings = [[r, 1], [r * 0.72, 0.35]];
+                for (const [rr, k] of rings) {
+                    if (rr <= 1)
                         continue;
-                    const tw = 0.5 + 0.5 * Math.sin(s.phase + p * 40);
-                    ctx.fillStyle = Qt.rgba(1, 1, 1, 0.85 * fade * tw * (1 - s.d * 0.7));
+                    const g = ctx.createRadialGradient(ox, oy, Math.max(0, rr - band), ox, oy, rr + 2);
+                    g.addColorStop(0, Qt.rgba(c.r, c.g, c.b, 0));
+                    g.addColorStop(0.7, Qt.rgba(c.r, c.g, c.b, 0.14 * k * fade));
+                    g.addColorStop(0.96, Qt.rgba(c.r, c.g, c.b, 0.3 * k * fade));
+                    g.addColorStop(1, Qt.rgba(1, 1, 1, 0));
+                    ctx.fillStyle = g;
                     ctx.beginPath();
-                    ctx.arc(ox + sr * Math.cos(s.a), oy + sr * Math.sin(s.a), s.size, 0, Math.PI * 2);
+                    ctx.arc(ox, oy, rr + 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // The bright rim: short strokes whose brightness follows the
+                // wobble, so the edge shimmers instead of being a clean line.
+                const steps = 90;
+                ctx.lineWidth = 2;
+                for (let i = 0; i < steps; i++) {
+                    const a0 = Math.PI + Math.PI * i / steps;
+                    const a1 = Math.PI + Math.PI * (i + 1) / steps;
+                    ctx.strokeStyle = Qt.rgba(1, 1, 1, 0.55 * fade * root.strength(a0) * root.strength(a0 + p * 3));
+                    ctx.beginPath();
+                    ctx.arc(ox, oy, r, a0, a1);
+                    ctx.stroke();
+                }
+
+                // The glitter: each grain lights when the rim reaches it and
+                // twinkles out over the next half second.
+                for (const s of root.sparks) {
+                    const sr = s.r * reach;
+                    const since = (r - sr) / reach;
+                    if (since < 0)
+                        continue;
+                    const life = Math.max(0, 1 - since / 0.5);
+                    if (life <= 0)
+                        continue;
+                    const tw = 0.55 + 0.45 * Math.sin(s.phase + p * s.speed);
+                    ctx.fillStyle = Qt.rgba(1, 1, 1, Math.min(1, 1.2 * life) * tw * fade);
+                    ctx.beginPath();
+                    ctx.arc(ox + sr * Math.cos(s.a), oy + sr * Math.sin(s.a), s.size * (0.6 + 0.4 * life), 0, Math.PI * 2);
                     ctx.fill();
                 }
             }
