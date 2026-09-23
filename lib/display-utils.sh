@@ -118,7 +118,7 @@ show_monitor_info() {
 
 # Function to show current HYPRSHOT_DIR
 show_hyprshot_info() {
-    local env_file="$HOME/.config/hypr/hyprland/env.conf"
+    local env_file="$HOME/.config/hypr/hyprland/env.lua"
     echo "${COLOR_BLUE}Current HYPRSHOT_DIR setting from $env_file:${COLOR_RESET}"
     if [[ -f "$env_file" ]]; then
         grep "HYPRSHOT_DIR" "$env_file" || echo "${COLOR_YELLOW}   HYPRSHOT_DIR line not found in $env_file${COLOR_RESET}"

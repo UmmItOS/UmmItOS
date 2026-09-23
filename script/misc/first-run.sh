@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # First Hyprland login: offer the optional tuning pass once, then never again.
-# Launched by exec-once in hypr/hyprland/exec.conf.
+# Launched at login by hypr/hyprland/autostart.lua.
 
 state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/ummitos"
 sentinel="$state_dir/first-run-done"

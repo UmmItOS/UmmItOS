@@ -1,0 +1,12 @@
+hl.config({
+    misc = {
+        enable_swallow = true,
+        force_default_wallpaper = 0,
+        disable_hyprland_logo = true,
+        -- The lock screen is the shell. If it ever dies while locked, a
+        -- restarted shell may take the lock over and unlock with the
+        -- password, instead of leaving the session stuck behind Hyprland's
+        -- "lock client gone" screen.
+        allow_session_lock_restore = true,
+    },
+})

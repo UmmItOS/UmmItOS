@@ -8,6 +8,17 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/lib/common.sh"
 source "$SCRIPT_DIR/lib/display-utils.sh"
 
+# The first hl.monitor line of hyprland.lua, which the monitor step rewrites.
+monitor_line() {
+    grep -m1 '^hl\.monitor(' "$1"
+}
+
+# The HYPRSHOT_DIR value from env.lua: the path itself when it is a quoted
+# string, otherwise the Lua expression as written.
+hyprshot_dir() {
+    grep -m1 '^hl\.env("HYPRSHOT_DIR"' "$1" | sed -E 's/^hl\.env\("HYPRSHOT_DIR",[[:space:]]*(.*)\)[[:space:]]*$/\1/; s/^"(.*)"$/\1/'
+}
+
 # Function to display the post-installation banner
 display_post_install_banner() {
     cat <<EOF
@@ -28,9 +39,9 @@ run_interactive_configuration() {
     clear
 
     # Hyprland Main Configuration (Monitor line)
-    print_header "Hyprland Main Configuration (hyprland.conf)"
+    print_header "Hyprland Main Configuration (hyprland.lua)"
     echo "${COLOR_YELLOW}This section will attempt to update the primary monitor configuration in your main Hyprland config.${COLOR_RESET}"
-    local hyprland_conf_file_path="$HOME/.config/hypr/hyprland.conf"
+    local hyprland_conf_file_path="$HOME/.config/hypr/hyprland.lua"
     echo "${COLOR_GREY}   Configuration file: ${COLOR_GREEN}${hyprland_conf_file_path}${COLOR_RESET}"
     echo ""
     if [[  ! -f "$hyprland_conf_file_path"  ]]; then
@@ -41,8 +52,8 @@ run_interactive_configuration() {
             echo "${COLOR_YELLOW}Please install jq (e.g., 'sudo pacman -S jq') to use this feature.${COLOR_RESET}"
         else
             local current_monitor_line_val
-            current_monitor_line_val=$(sed -n '3p' "$hyprland_conf_file_path")
-            echo "${COLOR_BLUE}Current monitor line (line 3) in ${hyprland_conf_file_path}:${COLOR_RESET}"
+            current_monitor_line_val=$(monitor_line "$hyprland_conf_file_path")
+            echo "${COLOR_BLUE}Current monitor line in ${hyprland_conf_file_path}:${COLOR_RESET}"
             echo "${COLOR_GREY}   $current_monitor_line_val${COLOR_RESET}"
             echo ""
             
@@ -69,7 +80,7 @@ run_interactive_configuration() {
                       scale_val="$scale"
                     fi
 
-                    new_monitor_line_val="monitor=$name,${width}x${height}@${refresh_rate},${x}x${y},${scale_val}"
+                    new_monitor_line_val="hl.monitor({ output = \"$name\", mode = \"${width}x${height}@${refresh_rate}\", position = \"${x}x${y}\", scale = ${scale_val} })"
                 fi
             fi
             
@@ -80,15 +91,19 @@ run_interactive_configuration() {
                 echo "${COLOR_BLUE}Detected focused monitor configuration:${COLOR_RESET}"
                 echo "   ${COLOR_CYAN}$new_monitor_line_val${COLOR_RESET}"
                 echo ""
-                if prompt_yna "Do you want to update line 3 of ${hyprland_conf_file_path} with this detected configuration?"; then
+                if prompt_yna "Do you want to replace the first hl.monitor line of ${hyprland_conf_file_path} with this detected configuration?"; then
                     backup_file "$hyprland_conf_file_path"
-                    sed -i "3s/.*/$new_monitor_line_val/" "$hyprland_conf_file_path"
+                    local monitor_line_no
+                    monitor_line_no=$(grep -n -m1 '^hl\.monitor(' "$hyprland_conf_file_path" | cut -d: -f1)
+                    if [[ -n "$monitor_line_no" ]]; then
+                        MONITOR_LINE="$new_monitor_line_val" awk -v n="$monitor_line_no" 'NR == n { print ENVIRON["MONITOR_LINE"]; next } { print }' "$hyprland_conf_file_path" > "$hyprland_conf_file_path.tmp" && mv "$hyprland_conf_file_path.tmp" "$hyprland_conf_file_path"
+                    fi
                     local updated_line_val
-                    updated_line_val=$(sed -n '3p' "$hyprland_conf_file_path")
+                    updated_line_val=$(monitor_line "$hyprland_conf_file_path")
                     if [[  "$updated_line_val" == "$new_monitor_line_val"  ]]; then
                         echo "${COLOR_GREEN}   Successfully updated monitor line in ${hyprland_conf_file_path}.${COLOR_RESET}"
                     else
-                        echo "${COLOR_DARK_RED}   Failed to verify monitor line update. Current line 3 is:${COLOR_RESET}"
+                        echo "${COLOR_DARK_RED}   Failed to verify monitor line update. Current monitor line is:${COLOR_RESET}"
                         echo "      ${COLOR_GREY}$updated_line_val${COLOR_RESET}"
                         echo "${COLOR_YELLOW}      Please check manually. Original file backed up.${COLOR_RESET}"
                     fi
@@ -104,17 +119,16 @@ run_interactive_configuration() {
     print_header "Hyprshot Configuration"
     echo "${COLOR_YELLOW}Hyprshot needs a directory to save screenshots.${COLOR_RESET}"
     pause_and_continue "Press Enter to continue to Hyprshot Configuration..."
-    echo "${COLOR_GREY}This is configured in: ${COLOR_GREEN}~/.config/hypr/hyprland/env.conf${COLOR_RESET}"
+    echo "${COLOR_GREY}This is configured in: ${COLOR_GREEN}~/.config/hypr/hyprland/env.lua${COLOR_RESET}"
     echo ""
-    check_config_exists "$HOME/.config/hypr/hyprland/env.conf"
+    check_config_exists "$HOME/.config/hypr/hyprland/env.lua"
     show_hyprshot_info
     
     # Get current HYPRSHOT_DIR value directly
     local current_hyprshot_dir_val=""
-    local env_file="$HOME/.config/hypr/hyprland/env.conf"
+    local env_file="$HOME/.config/hypr/hyprland/env.lua"
     if [[  -f "$env_file"  ]]; then
-        # Extracts the path from a line like "env = HYPRSHOT_DIR, /path/to/dir"
-        current_hyprshot_dir_val=$(grep -E "^[[:space:]]*env[[:space:]]*=[[:space:]]*HYPRSHOT_DIR[[:space:]]*,.*" "$env_file" | sed -E 's/^[[:space:]]*env[[:space:]]*=[[:space:]]*HYPRSHOT_DIR[[:space:]]*,[[:space:]]*(.*)[[:space:]]*$/\1/' | head -n 1)
+        current_hyprshot_dir_val=$(hyprshot_dir "$env_file")
     fi
     
     local desired_hyprshot_dir
@@ -138,12 +152,12 @@ run_interactive_configuration() {
             echo "${COLOR_GREEN}Directory '${desired_hyprshot_dir}' already exists.${COLOR_RESET}"
         fi
         
-        local env_conf_file_path="$HOME/.config/hypr/hyprland/env.conf"
+        local env_conf_file_path="$HOME/.config/hypr/hyprland/env.lua"
         if [[  -f "$env_conf_file_path"  ]]; then
             backup_file "$env_conf_file_path"
-            sed -i -E "s|^([[:space:]]*env[[:space:]]*=[[:space:]]*HYPRSHOT_DIR[[:space:]]*,)[[:space:]]*.*$|\1 $desired_hyprshot_dir|" "$env_conf_file_path"
+            HYPRSHOT_LINE="hl.env(\"HYPRSHOT_DIR\", \"$desired_hyprshot_dir\")" awk '/^hl\.env\("HYPRSHOT_DIR"/ { print ENVIRON["HYPRSHOT_LINE"]; next } { print }' "$env_conf_file_path" > "$env_conf_file_path.tmp" && mv "$env_conf_file_path.tmp" "$env_conf_file_path"
             local updated_hyprshot_dir_val
-            updated_hyprshot_dir_val=$(grep -E "^[[:space:]]*env[[:space:]]*=[[:space:]]*HYPRSHOT_DIR[[:space:]]*,.*" "$env_conf_file_path" | sed -E 's/^[[:space:]]*env[[:space:]]*=[[:space:]]*HYPRSHOT_DIR[[:space:]]*,[[:space:]]*(.*)[[:space:]]*$/\1/' | head -n 1)
+            updated_hyprshot_dir_val=$(hyprshot_dir "$env_conf_file_path")
             if [[  "$updated_hyprshot_dir_val" == "$desired_hyprshot_dir"  ]]; then
                 echo "${COLOR_GREEN}Successfully updated HYPRSHOT_DIR in ${env_conf_file_path} to '${desired_hyprshot_dir}'${COLOR_RESET}"
             else
@@ -188,22 +202,22 @@ display_usage() {
 show_current_settings() {
     print_header "Current Detected Settings"
 
-    echo "${COLOR_MAGENTA}Hyprland Main Monitor (hyprland.conf line 3):${COLOR_RESET}"
-    local hyprland_conf_file="$HOME/.config/hypr/hyprland.conf"
+    echo "${COLOR_MAGENTA}Hyprland Main Monitor (hyprland.lua):${COLOR_RESET}"
+    local hyprland_conf_file="$HOME/.config/hypr/hyprland.lua"
     if [[  -f "$hyprland_conf_file"  ]]; then
         local current_monitor_line
-        current_monitor_line=$(sed -n '3p' "$hyprland_conf_file")
+        current_monitor_line=$(monitor_line "$hyprland_conf_file")
         echo "   ${COLOR_CYAN}$current_monitor_line${COLOR_RESET}"
     else
         echo "   ${COLOR_DARK_RED}${hyprland_conf_file} not found.${COLOR_RESET}"
     fi
     echo ""
     
-    echo "${COLOR_MAGENTA}Hyprshot Screenshot Directory (env.conf):${COLOR_RESET}"
+    echo "${COLOR_MAGENTA}Hyprshot Screenshot Directory (env.lua):${COLOR_RESET}"
     local current_hyprshot_dir=""
-    local env_file="$HOME/.config/hypr/hyprland/env.conf"
+    local env_file="$HOME/.config/hypr/hyprland/env.lua"
     if [[  -f "$env_file"  ]]; then
-        current_hyprshot_dir=$(grep -E "^[[:space:]]*env[[:space:]]*=[[:space:]]*HYPRSHOT_DIR[[:space:]]*,.*" "$env_file" | sed -E 's/^[[:space:]]*env[[:space:]]*=[[:space:]]*HYPRSHOT_DIR[[:space:]]*,[[:space:]]*(.*)[[:space:]]*$/\1/' | head -n 1)
+        current_hyprshot_dir=$(hyprshot_dir "$env_file")
     fi
     if [[  -n "$current_hyprshot_dir"  ]]; then
         echo "   ${COLOR_CYAN}$current_hyprshot_dir${COLOR_RESET}"
