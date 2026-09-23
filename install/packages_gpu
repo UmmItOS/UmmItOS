@@ -1,9 +1,7 @@
 extra/vulkan-radeon
 extra/mesa
-extra/vulkan-radeon
 extra/xf86-video-amdgpu
 
 multilib/lib32-vulkan-radeon
 multilib/lib32-mesa
 multilib/lib32-mesa-demos
-multilib/lib32-vulkan-radeon
