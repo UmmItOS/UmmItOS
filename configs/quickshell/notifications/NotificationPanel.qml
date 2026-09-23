@@ -49,7 +49,8 @@ OverlayWindow {
             margins: win.inset
         }
         radius: Theme.rounding.extraExtraLarge
-        tone: Theme.bg
+        // Glass, like the toasts: the blur behind should show.
+        tone: Theme.scrim(0.45)
         lift: 1.1
 
         // Slides in from the edge it lives on. A translate, not `x`: the
@@ -229,7 +230,7 @@ OverlayWindow {
                     width: ListView.view.width
                     implicitHeight: body.implicitHeight + Theme.padding.large * 2
                     radius: Theme.rounding.extraLarge
-                    tone: Theme.bgAlt
+                    tone: Theme.scrim(0.35)
 
                     ColumnLayout {
                         id: body
