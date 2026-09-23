@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 
+import Quickshell.Widgets
 import QtQuick
 import QtQuick.Effects
 import QtQuick.Layouts
@@ -165,66 +166,73 @@ OverlayWindow {
             radius: Theme.rounding.extraLarge
             tone: Theme.bg
             lift: 1.1
-            clip: true
 
             HoverHandler {
                 id: pointer
             }
 
-            // A soft light under the pointer, eased so it trails a little, and
-            // gone when the pointer leaves: the sheet notices where you are.
-            Item {
-                id: spot
+            // Clipped to the sheet's rounded shape; a plain clip is square and
+            // lit the corners the rounding leaves empty.
+            ClippingRectangle {
+                anchors.fill: parent
+                radius: sheet.radius
+                color: "transparent"
 
-                readonly property int size: 360
+                // A soft light under the pointer, eased so it trails a little, and
+                // gone when the pointer leaves: the sheet notices where you are.
+                Item {
+                    id: spot
 
-                width: spot.size
-                height: spot.size
-                x: pointer.point.position.x - spot.size / 2
-                y: pointer.point.position.y - spot.size / 2
-                opacity: pointer.hovered ? 1 : 0
+                    readonly property int size: 360
 
-                Behavior on x {
-                    NumberAnimation {
-                        duration: Theme.duration.expressiveFastSpatial
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: Theme.curve.emphasizedDecel
+                    width: spot.size
+                    height: spot.size
+                    x: pointer.point.position.x - spot.size / 2
+                    y: pointer.point.position.y - spot.size / 2
+                    opacity: pointer.hovered ? 1 : 0
+
+                    Behavior on x {
+                        NumberAnimation {
+                            duration: Theme.duration.expressiveFastSpatial
+                            easing.type: Easing.BezierSpline
+                            easing.bezierCurve: Theme.curve.emphasizedDecel
+                        }
                     }
-                }
-                Behavior on y {
-                    NumberAnimation {
-                        duration: Theme.duration.expressiveFastSpatial
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: Theme.curve.emphasizedDecel
+                    Behavior on y {
+                        NumberAnimation {
+                            duration: Theme.duration.expressiveFastSpatial
+                            easing.type: Easing.BezierSpline
+                            easing.bezierCurve: Theme.curve.emphasizedDecel
+                        }
                     }
-                }
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: Theme.duration.expressiveDefaultEffects
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: Theme.duration.expressiveDefaultEffects
+                        }
                     }
-                }
 
-                Rectangle {
-                    id: glow
+                    Rectangle {
+                        id: glow
 
-                    anchors.centerIn: parent
-                    width: spot.size / 2
-                    height: width
-                    radius: width / 2
-                    color: Theme.accentText
-                    opacity: 0.22
-                    visible: false
-                    layer.enabled: true
-                }
+                        anchors.centerIn: parent
+                        width: spot.size / 2
+                        height: width
+                        radius: width / 2
+                        color: Theme.accentText
+                        opacity: 0.22
+                        visible: false
+                        layer.enabled: true
+                    }
 
-                MultiEffect {
-                    anchors.fill: parent
-                    source: glow
-                    blurEnabled: true
-                    blurMax: 64
-                    blur: 1
-                    autoPaddingEnabled: true
-                    opacity: glow.opacity
+                    MultiEffect {
+                        anchors.fill: parent
+                        source: glow
+                        blurEnabled: true
+                        blurMax: 64
+                        blur: 1
+                        autoPaddingEnabled: true
+                        opacity: glow.opacity
+                    }
                 }
             }
 
