@@ -14,18 +14,38 @@ Singleton {
 
     readonly property var order: ["Shell", "Apps", "Window", "Workspace", "Utilities", "Media"]
 
-    // The config starts every description with its group ("Shell: Session
-    // menu"). Under the Lua config hyprctl reports every bind's dispatcher as
-    // "__lua", so the description is the only place that can say.
-    function split(description: string): var {
-        const m = description.match(/^(\w+):\s*(.*)$/);
-        return m && order.includes(m[1]) ? {
-            group: m[1],
-            text: m[2]
-        } : {
-            group: "Window",
-            text: description
+    // The Lua config starts every description with its group ("Shell:
+    // Session menu"), since under Lua hyprctl reports every dispatcher as
+    // "__lua". A description without one (the old hyprlang config) is
+    // grouped by what the bind runs instead.
+    function split(bind: var): var {
+        const m = bind.description.match(/^(\w+):\s*(.*)$/);
+        if (m && order.includes(m[1]))
+            return {
+                group: m[1],
+                text: m[2]
+            };
+        return {
+            group: groupOf(bind),
+            text: bind.description
         };
+    }
+
+    function groupOf(bind: var): string {
+        const d = bind.dispatcher;
+        const a = bind.arg ?? "";
+        // Media first: the brightness keys also call the shell's IPC.
+        if (/^(brightnessctl|wpctl|playerctl)/.test(a))
+            return "Media";
+        if (/wf-recorder|hyprpicker|woomer|smile|ipc call screenshot/.test(a))
+            return "Utilities";
+        if (d === "global" || a.includes("qs -c ummitos ipc"))
+            return "Shell";
+        if (d === "workspace" || d === "movetoworkspace" || d === "togglespecialworkspace")
+            return "Workspace";
+        if (d === "exec")
+            return "Apps";
+        return "Window";
     }
 
     function keysOf(bind: var): list<string> {
@@ -46,7 +66,7 @@ Singleton {
             "TAB": "Tab",
             "slash": "/"
         };
-        let key = named[bind.key] ?? bind.key;
+        let key = bind.keycode === 36 ? "Enter" : bind.keycode === 61 ? "/" : (named[bind.key] ?? bind.key);
         // Media keys by what they are for, short enough to leave the
         // description room.
         const media = {
@@ -73,7 +93,7 @@ Singleton {
     function build(binds: var): void {
         const byGroup = {};
         for (const b of binds.filter(b => b.has_description)) {
-            const parts = split(b.description);
+            const parts = split(b);
             const g = parts.group;
             const description = parts.text;
             const keys = keysOf(b);
