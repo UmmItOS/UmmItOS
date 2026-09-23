@@ -80,8 +80,9 @@ Singleton {
             cornerHits++;
         if (open)
             return cancel();
-        if (grab.running)
+        if (grab.running || warming)
             return;
+        warming = true;
         // A full-resolution picture of the screen first, for the zoom to
         // start from (uncompressed; ~25ms). Opens either way.
         shotReady = false;
@@ -95,16 +96,37 @@ Singleton {
     readonly property string shotUrl: "file://" + shotPath + "?" + shotCount
     // The workspace the overview opened on: the picture only matches it.
     property int startIndex: -1
+    // Between the corner firing and the overview showing: the previews start
+    // their captures and the picture decodes off the UI thread, so none of
+    // that lands on the zoom's first frames and stutters it.
+    property bool warming: false
+
+    // Called by the window once the picture has decoded (or the fallback
+    // below gives up waiting).
+    function reveal(): void {
+        if (!warming)
+            return;
+        warming = false;
+        overviewing = true;
+        step(0);
+        startIndex = index;
+        pinned = true;
+    }
+
+    Timer {
+        id: warmLimit
+        interval: 150
+        onTriggered: root.reveal()
+    }
 
     Process {
         id: grab
         onExited: code => {
             root.shotCount++;
             root.shotReady = code === 0;
-            root.overviewing = true;
-            root.step(0);
-            root.startIndex = root.index;
-            root.pinned = true;
+            if (!root.shotReady)
+                return root.reveal();
+            warmLimit.restart();
         }
     }
 

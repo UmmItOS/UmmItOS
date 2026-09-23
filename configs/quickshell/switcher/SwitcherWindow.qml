@@ -187,6 +187,12 @@ OverlayWindow {
             z: 1
             source: Switcher.shotReady ? Switcher.shotUrl : ""
             cache: false
+            // Decoded off the UI thread while the overview waits to open.
+            asynchronous: true
+            onStatusChanged: {
+                if (status === Image.Ready || status === Image.Error)
+                    Switcher.reveal();
+            }
             fillMode: Image.PreserveAspectCrop
             visible: win.zoom > 0 && Switcher.index === Switcher.startIndex
             opacity: Math.min(1, win.zoom * 1.6)
@@ -273,7 +279,7 @@ OverlayWindow {
                                     // Empty while unmapped: every entry is a live
                                     // capture, and they would otherwise run all day
                                     // behind a switcher nobody can see.
-                                    readonly property var windows: cell.modelData && win.visible ? [...cell.modelData.toplevels.values].slice(0, 4) : []
+                                    readonly property var windows: cell.modelData && (win.visible || Switcher.warming) ? [...cell.modelData.toplevels.values].slice(0, 4) : []
 
                                     // The focused card grows by shrinking its inset
                                     // inside a fixed cell. Animating `scale` instead
