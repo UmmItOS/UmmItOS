@@ -38,6 +38,9 @@ Singleton {
     readonly property color urgent: "#ff6b6b"
     readonly property color warn: "#ffc46b"
     readonly property color good: "#6bdf9a"
+    // Hyprland's active border (windows.conf col.active_border), same hues
+    // and order, darkened: the cheat sheet wears it as a turning ring.
+    readonly property list<color> ring: ["#4a3d94", "#5a4f8c", "#12131b", "#2f4a7d"]
 
     // Proportional for prose, monospace for anything that should not jitter as
     // it updates (clock, percentages, counters). SF Pro ships with apple-fonts,
