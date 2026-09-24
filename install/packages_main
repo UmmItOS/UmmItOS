@@ -6,7 +6,6 @@ extra/vim
 extra/neovim
 extra/cava
 extra/cliphist
-extra/clipmenu
 extra/gdm
 extra/yazi
 extra/hyprland
@@ -37,7 +36,6 @@ extra/zoxide
 extra/bluez
 extra/bluez-utils
 
-aur/hyprswitch
 aur/smile
 aur/woomer
 aur/bibata-cursor-theme
