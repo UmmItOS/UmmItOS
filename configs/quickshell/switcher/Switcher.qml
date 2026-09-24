@@ -182,14 +182,6 @@ Singleton {
     IpcHandler {
         target: "switcher"
 
-        function next(): void {
-            root.cycle(1);
-        }
-
-        function prev(): void {
-            root.cycle(-1);
-        }
-
         function commit(): void {
             root.commit();
         }
