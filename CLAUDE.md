@@ -23,7 +23,7 @@ qs -c ummitos ipc call <target> <fn>
 qs log -c ummitos                 # The running instance's log; reloads, warnings, errors
 ```
 
-There are no tests, no lint config and no CI. Verification means running `shellcheck` and running the shell, then reading its log and taking screenshots (`grim`).
+There are no tests, no lint config and no CI. Verification means running `shellcheck` and running the shell, then reading its log and taking screenshots (`grim`). `/usr/lib/qt6/bin/qmllint -I /usr/lib/qt6/qml -I configs/quickshell <files>` finds unused imports and unqualified ids, but its hundreds of "member not found" warnings on `Theme.spacing.*` and friends are false: the token groups are plain `QtObject`s it cannot see into.
 
 **Never start a second `qs -c ummitos` while one is running**, not even with `timeout` as a syntax check. When it exits, it takes the running instance down with it. To check something in isolation, symlink the config under a different name (`~/.config/quickshell/ummitos-test`) or run a standalone file with `qs -p file.qml`, and remove it afterwards.
 
@@ -94,7 +94,7 @@ grep -A5 'name: "workspaces"' /usr/lib/qt6/qml/Quickshell/Hyprland/_Ipc/*.qmltyp
 - **Every singleton and shared component must be listed in `configs/quickshell/qmldir`.** If one is missing, it fails to resolve, and the error does not name the real cause.
 - **Singletons are lazy.** A singleton that nothing references never runs. A background watcher with no UI (`services/BatteryNotifier.qml`) is therefore a `Scope` instantiated in `shell.qml`, not a singleton.
 - **Notices go through the shell, never `hyprctl notify`.** Scripts and QML send `notify-send -a "<App name>" …` (always with `-a`, or the panel groups them under "notify-send"); a preview image goes in `-h string:image-path:<file>`, not `-i`. Clipboard copies are the exception: `script/cliphist/clip-store.sh` calls `qs -c ummitos ipc call copied text|image`, which stacks pills bottom-right (`toast/CopyToast.qml`). The notification panel groups history by app, which relies on `Notifs.record()` keeping each app's entries contiguous.
-- **`services/`** holds shared data: `SysInfo` (proc polling), `Net` (bandwidth, one sampler however many bars), `Players` (the active MPRIS player), `Cava` (audio levels for the media ring) and `BatteryNotifier`. Anything that polls runs only while something on screen shows it: `SysInfo.active`, `Players.watched` and `Cava.running` are all switched by the dashboard.
+- **`services/`** holds shared data: `SysInfo` (proc polling), `Net` (bandwidth, one sampler however many bars), `Players` (the active MPRIS player), `Cava` (audio levels for the media ring) and `BatteryNotifier`. Anything that polls runs only while something on screen shows it: the dashboard binds `SysInfo.active` to its System tab and `Players.watched` (which gates `Cava.running`) to its Dashboard tab, not just to being open.
 - **Shared components** at the root are `Surface` (the material), `Flyout` (the bar dropdown used by Wi-Fi, Bluetooth and Volume), `FlyoutRow` and `FlyoutEmpty` (its list row and empty state), `Toggle`, `Slider`, `Spinner`, `MaterialIcon` and `Reveal` (the open/close animation). Reuse these rather than building one-off versions.
 - **Surfaces extend `OverlayWindow`.** It takes `shown` (the singleton's open flag) and `name`, and it keeps the window mapped while `reveal` animates to 0. Content drives its opacity and scale from `reveal`. Put per-open resets in `onOpened`, not `onVisibleChanged`: a reopen during the exit never unmaps the window, so a visibility hook would not run. While closing, it drops keyboard focus and passes pointer input through. Select on hover with `pointerMoved()`, never `onEntered`. Hyprland's layer animation is off for `ummitos-*` (`no_anim` in `appearance.lua`) so the two animations don't stack.
 
@@ -102,6 +102,7 @@ grep -A5 'name: "workspaces"' /usr/lib/qt6/qml/Quickshell/Hyprland/_Ipc/*.qmltyp
 
 - Keybinds in `configs/hypr/hyprland/shortcuts.lua` call `qs -c ummitos ipc call <target> <fn>`. Adding a keybindable surface means adding an `IpcHandler` to its singleton. **Do not name an IPC function `show`**, because `qs ipc show` is a CLI subcommand and claims the name first.
 - Alt+Tab uses `GlobalShortcut` (`hl.dsp.global("quickshell:switcherNext")` in `shortcuts.lua`). It commits on a release bind (`"ALT + Alt_L"` with `release = true, transparent = true`) because Hyprland's bind layer consumes the release. Every commit path goes through `Switcher.release()`, which respects the pin.
+- **Tray menus are drawn by the shell** (`bar/TrayMenu.qml`, a `Flyout` over `QsMenuOpener`), not by `QsMenuAnchor`: Qt's native menus follow the platform theme, which for this Qt 6 shell is plain light. `bar/Tray.qml` also swaps in a glyph or the app's desktop icon when a tray icon is missing, and on start re-registers `org.kde.StatusNotifierItem-*` names the new watcher does not list (apps such as Proton VPN register once and vanish after a shell restart).
 - **Closing on an outside click:** bar flyouts are `PopupWindow`s and use `grabFocus: true`. `HyprlandFocusGrab` only owns layer surfaces, so it works for `PanelWindow` surfaces such as `NotificationPanel` but silently does nothing on an xdg-popup.
 
 ### Design system
@@ -160,6 +161,11 @@ For things that need input you cannot give from a terminal, mark every temporary
 - **`ScreencopyView` captures whatever is on screen, including the shell.** Capture only when your own overlay is fully gone, or you photograph yourself.
 - **State paths are per shell id.** `Quickshell.statePath()` resolves under `~/.local/state/quickshell/by-shell/<id>/`, and the id changes with how `qs` was started. Find the live one from the instance's own log, not by guessing.
 - **Bluetooth needs `bluetoothd` running before `qs` starts.** Otherwise the adapter stays null until the shell restarts.
+- **A missing theme icon is not an error.** `image://icon/<name>` for a name the theme lacks loads as Qt's magenta checkerboard with `status === Image.Ready`. Check `Quickshell.iconPath(name, true) !== ""` first. A tray pixmap that never arrived has a `image://qspixmap/…/0` source.
+- **`itemAt()` in a binding runs once.** It is a call, not a property, so a binding on `repeater.itemAt(i)` evaluated before the Repeater built its items stays null. Read through `repeater.count` so it re-runs.
+- **Several `Binding`s writing one property need `restoreMode: Binding.RestoreNone`.** With the default, the one switching off restores the value it saw when it switched on, in an order nothing guarantees, and leaves a stale value.
+- **A flag in a singleton read by a `Variants` delegate is read once per screen.** Clearing it in the first screen's handler starves the others; clear it with `Qt.callLater` in the singleton.
+- **Notifications are replaced in place.** `notify-send -r`, players and progress notices update the same `Notification` object, so anything copied from it must be refreshed on `summaryChanged`/`bodyChanged`/`imageChanged`.
 
 ## Hard rules
 
