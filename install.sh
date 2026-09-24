@@ -41,7 +41,7 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     # Only allow Arch Linux to run the script
     if [[ -f /etc/arch-release ]]; then
         clear
-        draw_header_cli
+        draw_header CLI
         prompt_installation
         main
     else

@@ -94,26 +94,12 @@ display_completion_message() {
 
 # Draw header
 draw_header() {
+    # $1 names the installer: "Menu" or "CLI".
+    local title="UmmItOS $1 Installer :D"
+    local left=$(( (62 - ${#title}) / 2 ))
     echo -e "${COLOR_BLUE}╔══════════════════════════════════════════════════════════════╗"
-    echo -e "║                    UmmItOS Menu Installer :D                 ║"
+    printf '║%*s%s%*s║\n' "$left" "" "$title" "$(( 62 - left - ${#title} ))" ""
     echo -e "╚══════════════════════════════════════════════════════════════╝${COLOR_RESET}\n"
-}
-
-draw_header_cli() {
-    echo -e "${COLOR_BLUE}╔══════════════════════════════════════════════════════════════╗"
-    echo -e "║                    UmmItOS CLI Installer :D                  ║"
-    echo -e "╚══════════════════════════════════════════════════════════════╝${COLOR_RESET}\n"
-}
-
-# Function to show current monitor info
-show_monitor_info() {
-    echo "${COLOR_BLUE}Current monitor information:${COLOR_RESET}"
-    echo ""
-    if command_exists hyprctl; then
-        hyprctl monitors
-    else
-        echo "${COLOR_YELLOW}   Hyprctl not available. Please run 'hyprctl monitors' after logging into Hyprland.${COLOR_RESET}"
-    fi
 }
 
 # Function to show current HYPRSHOT_DIR

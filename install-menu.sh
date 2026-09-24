@@ -23,7 +23,7 @@ simple_menu() {
     
     while true; do
         clear
-        draw_header
+        draw_header Menu
         echo -e "${COLOR_YELLOW}${title}${COLOR_RESET}\n"
         
         # Display options
@@ -109,7 +109,7 @@ enable_service() {
 
 show_post_install_info() {
     clear
-    draw_header
+    draw_header Menu
 
     echo -e "${COLOR_GREEN}Installation Complete!${COLOR_RESET}\n"
     echo -e "${COLOR_YELLOW}Post-installation notes:${COLOR_RESET}"
@@ -221,7 +221,7 @@ trap 'clear; echo -e "\n${COLOR_GREEN}Installation cancelled. Goodbye!${COLOR_RE
 # Welcome message
 welcome() {
     clear
-    draw_header
+    draw_header Menu
     echo -e "${COLOR_YELLOW}Welcome to the System Installation Script!${COLOR_RESET}\n"
     echo -e "This script will help you:"
     echo -e "• Install essential packages"
