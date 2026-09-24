@@ -43,10 +43,13 @@ PopupWindow {
     // The grab closes the window itself, which leaves the caller still thinking
     // it is open until the state is handed back.
     onVisibleChanged: {
-        if (root.visible)
+        if (root.visible) {
             entrance.restart();
-        else
+            Notifs.flyoutLeft = root.anchorItem.mapToItem(null, root.anchorItem.width / 2, 0).x - root.implicitWidth / 2;
+        } else {
+            Notifs.flyoutLeft = -1;
             root.closeRequested();
+        }
     }
 
     Surface {

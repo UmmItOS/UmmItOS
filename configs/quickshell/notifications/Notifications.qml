@@ -46,6 +46,12 @@ Scope {
     }
 
     PanelWindow {
+        id: toasts
+
+        readonly property int toastWidth: 420
+        // How far the toasts step left to clear an open bar dropdown.
+        readonly property real clearance: Notifs.flyoutLeft < 0 ? 0 : Math.max(0, width - Notifs.flyoutLeft + Theme.spacing.small)
+
         WlrLayershell.namespace: "ummitos-notifications"
         anchors {
             top: true
@@ -62,7 +68,9 @@ Scope {
         // Transparent, and the mask passes input through everywhere but the
         // toasts, so an idle window costs nothing visible.
         visible: true
-        implicitWidth: 420
+        // The full width, though only the toasts are drawn or take input, so
+        // they can step left of a dropdown without the surface moving.
+        implicitWidth: screen?.width ?? 1920
         // A fixed column, not the height of the toasts: shrinking the window
         // as one leaves clipped it mid-slide. Input only lands on the toasts.
         implicitHeight: (screen?.height ?? 1080) - Theme.barHeight - Theme.spacing.small * 2
@@ -78,11 +86,23 @@ Scope {
             id: list
 
             anchors {
-                fill: parent
+                top: parent.top
+                bottom: parent.bottom
+                right: parent.right
                 margins: Theme.padding.medium
+                rightMargin: Theme.padding.medium + toasts.clearance
             }
+            width: toasts.toastWidth - Theme.padding.medium * 2
             spacing: Theme.spacing.small
             interactive: false
+
+            Behavior on anchors.rightMargin {
+                NumberAnimation {
+                    duration: Theme.duration.expressiveDefaultSpatial
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curve.expressiveDefaultSpatial
+                }
+            }
             model: server.trackedNotifications
 
             add: Transition {
