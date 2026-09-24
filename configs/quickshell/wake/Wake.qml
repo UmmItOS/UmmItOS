@@ -17,20 +17,19 @@ Singleton {
     // below ease on their own, and everything that draws the wake reads them.
     property real dark: 0
     readonly property real progress: 1 - dark
-    // Three beats, each starting while the one before finishes so they flow:
-    // the line draws out from the centre…
-    readonly property real draw: 1 - Math.pow(1 - Math.min(1, progress / 0.3), 3)
-    // …then the black opens from it in one soft circle, and the screen
-    // inside comes from blurred and dim to sharp as it does, finishing
-    // together.
+    // Each stage moves at one steady rate from start to end, like counting
+    // 0, 1, 2 … 100, rather than easing in and rushing through the middle.
+    // The line draws out from the centre…
+    readonly property real draw: beat(0, 0.3)
+    // …then, starting while it finishes, the black opens in one soft circle
+    // whose edge travels at a constant speed, and the screen inside fades
+    // from blurred and dim to sharp at a constant rate, finishing together.
     readonly property real open: beat(0.22, 1)
     readonly property real haze: 1 - beat(0.3, 1)
 
-    // In-out sine between two points of the progress: gentle at both ends,
-    // never starting from a standstill mid-way.
+    // Linear between two points of the progress, clamped to 0 … 1.
     function beat(from: real, to: real): real {
-        const t = Math.min(1, Math.max(0, (progress - from) / (to - from)));
-        return (1 - Math.cos(Math.PI * t)) / 2;
+        return Math.min(1, Math.max(0, (progress - from) / (to - from)));
     }
 
     // Each screen pictured just before going black, so the opening can show

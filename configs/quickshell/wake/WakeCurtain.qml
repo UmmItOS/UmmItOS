@@ -29,7 +29,7 @@ Item {
 
     // The haze: the picture blurred, taken in by the shader, which dims it.
     Item {
-        id: haze
+        id: blurred
 
         anchors.fill: parent
 
@@ -57,7 +57,7 @@ Item {
         id: hazeShot
 
         anchors.fill: parent
-        sourceItem: haze
+        sourceItem: blurred
         hideSource: true
         visible: false
     }
