@@ -2,12 +2,11 @@ import QtQuick
 import QtQuick.Effects
 import ".."
 
-// The wake, drawn in three beats timed by Wake. A soft line of light draws
-// out from the centre of the black; the black opens from it in a soft
-// circle onto a dim, blurred screen; then a second circle, behind the
-// first, clears that haze to the sharp screen. Both circles are one shader
-// pass (wake.frag), and the line is blurred once and only scaled, so
-// nothing is re-drawn or resized per frame.
+// The wake, timed by Wake: a soft line of light draws out from the centre
+// of the black, then the black opens from it in one soft circle, the screen
+// inside coming from blurred and dim to sharp as it opens. The circle and
+// haze are one shader pass (curtain.frag), and the line is blurred once and
+// only scaled, so nothing is re-drawn or resized per frame.
 Item {
     id: root
 
@@ -68,13 +67,13 @@ Item {
 
         property var source: hazeShot
         property size size: Qt.size(width, height)
-        property real rOpen: root.radius(Wake.lids)
-        property real rClear: root.radius(Wake.circle)
+        property real reveal: root.radius(Wake.open)
         property real soft: Theme.wakeSoft
+        property real haze: Wake.haze
         property real dim: Theme.wakeDim
         property real hasPicture: before.status === Image.Ready ? 1 : 0
 
-        fragmentShader: "wake.frag.qsb"
+        fragmentShader: "curtain.frag.qsb"
     }
 
     // The line: a pill of light blurred once at full width and grown by
@@ -96,7 +95,7 @@ Item {
         source: pill
         autoPaddingEnabled: true
         blurEnabled: true
-        visible: Wake.draw > 0 && Wake.lids < 0.5
+        visible: Wake.draw > 0 && Wake.open < 0.5
         transform: Scale {
             origin.x: root.width / 2
             xScale: Wake.draw
@@ -108,13 +107,13 @@ Item {
         blurMax: Theme.wakeGlow
         blur: 1
         brightness: 0.2
-        opacity: 1 - Wake.lids * 2
+        opacity: 1 - Wake.open * 2
     }
 
     // …and a tighter core, so it reads as light, not haze.
     Glow {
         blurMax: Theme.spacing.large
         blur: 0.6
-        opacity: (1 - Wake.lids * 2) * 0.8
+        opacity: (1 - Wake.open * 2) * 0.8
     }
 }

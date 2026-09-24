@@ -20,10 +20,11 @@ Singleton {
     // Three beats, each starting while the one before finishes so they flow:
     // the line draws out from the centre…
     readonly property real draw: 1 - Math.pow(1 - Math.min(1, progress / 0.3), 3)
-    // …the black opens from it in a soft circle onto a dim, blurred screen…
-    readonly property real lids: beat(0.22, 0.65)
-    // …and a soft circle from the centre clears that haze to the sharp screen.
-    readonly property real circle: beat(0.5, 1)
+    // …then the black opens from it in one soft circle, and the screen
+    // inside comes from blurred and dim to sharp as it does, finishing
+    // together.
+    readonly property real open: beat(0.22, 1)
+    readonly property real haze: 1 - beat(0.3, 1)
 
     // In-out sine between two points of the progress: gentle at both ends,
     // never starting from a standstill mid-way.
