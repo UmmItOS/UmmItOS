@@ -62,6 +62,9 @@ ShellRoot {
     // Wi-Fi and Bluetooth coming and going.
     ConnectionNotifier {}
 
+    // A nudge once the last full upgrade is over a week old.
+    UpdateReminder {}
+
     CopyToast {}
 
     ChargeRipple {
