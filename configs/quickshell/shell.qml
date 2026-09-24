@@ -15,6 +15,7 @@ import "screenshot"
 import "session"
 import "switcher"
 import "toast"
+import "wake"
 
 ShellRoot {
     // One bar per connected screen. Plugging a monitor in adds one.
@@ -64,6 +65,9 @@ ShellRoot {
 
     // A nudge once the last full upgrade is over a week old.
     UpdateReminder {}
+
+    // The screen fading up from black after sleep.
+    WakeWindow {}
 
     CopyToast {}
 

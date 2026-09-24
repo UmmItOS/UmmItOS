@@ -408,4 +408,13 @@ Item {
             font.pixelSize: Theme.fontSize.normal
         }
     }
+
+    // Waking: the lock covers every other layer, so it carries the fade up
+    // from black itself.
+    Rectangle {
+        anchors.fill: parent
+        color: "black"
+        opacity: Wake.dark
+        visible: opacity > 0
+    }
 }

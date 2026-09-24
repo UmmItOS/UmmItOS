@@ -191,6 +191,8 @@ Singleton {
         readonly property int expressiveSlowEffects: 300
         // One turn of a spinner.
         readonly property int spin: 900
+        // The screen coming up out of black on wake.
+        readonly property int wake: 1100
         // Gap between siblings entering one after another.
         readonly property int stagger: 40
     }
