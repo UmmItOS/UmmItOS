@@ -2,41 +2,58 @@ import QtQuick
 import QtQuick.Effects
 import ".."
 
-// The black, and the wake drawn on it in two beats (timed by Wake): a soft
-// line of light draws out from the centre, then opens outward, a slit
-// rounding into a circle whose edge is a wide shadow rather than a line.
-// Both are painted once and only scaled, so nothing is re-drawn or resized
-// per frame.
+// The wake, drawn in three beats timed by Wake. A soft line of light draws
+// out from the centre of the black; flat lids part up and down from it onto
+// a dim, blurred screen; then a soft circle from the centre clears that
+// haze to the sharp screen. The line and the circle's gradient are painted
+// once and only scaled, and the lids only slide, so nothing is re-drawn or
+// resized per frame.
 Item {
     id: root
 
     property real dark: 0
-
-    // The hole's scale that makes its fully open core span a length.
-    function scaleFor(length: real): real {
-        return length / 2 / (hole.width / 2 * hole.inner);
-    }
-
-    // As a slit it spans the line; at the end the circle's soft edge has
-    // left the corners.
-    readonly property real startX: scaleFor(width)
-    readonly property real endScale: scaleFor(Math.hypot(width, height))
+    // The screen as it was before going black, shown blurred as the haze;
+    // empty where there is none (the lock), which leaves the haze plain dim.
+    property string picture: ""
 
     visible: dark > 0
 
-    Rectangle {
-        id: black
+    // The haze: the picture blurred, under a dimming veil. Captured below
+    // and shown through the inverted circle, so the circle clears it.
+    Item {
+        id: haze
 
         anchors.fill: parent
-        color: "black"
-        visible: false
-        layer.enabled: true
+
+        Image {
+            id: shot
+
+            anchors.fill: parent
+            source: root.picture
+            asynchronous: true
+            cache: false
+            visible: false
+        }
+
+        MultiEffect {
+            anchors.fill: parent
+            source: shot
+            visible: shot.status === Image.Ready
+            blurEnabled: true
+            blurMax: Theme.blur.max
+            blur: 1
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            color: "black"
+            opacity: Theme.wakeDim
+        }
     }
 
-    // The hole: opaque in the middle, fading to nothing at its rim; the
-    // mask is inverted, so the black shows where this is clear. Kept
-    // visible (a Canvas under a hidden item never paints) and taken into
-    // the mask by the ShaderEffectSource below.
+    // The circle: opaque in the middle, fading to nothing at its rim; with
+    // the mask inverted, the haze shows where this is clear. Kept visible
+    // (a Canvas under a hidden item never paints) and taken in below.
     Item {
         id: mask
 
@@ -46,18 +63,20 @@ Item {
             id: hole
 
             // The fraction of the radius that is fully open; the rest is
-            // the shadow of the edge.
+            // the circle's soft edge.
             readonly property real inner: 0.55
+            // Large enough that the soft edge has left the corners.
+            readonly property real endScale: Math.hypot(root.width, root.height) / 2 / (width / 2 * inner)
 
             anchors.centerIn: parent
             width: Theme.wakeHole
             height: width
-            visible: Wake.open > 0
+            visible: Wake.circle > 0
             transform: Scale {
                 origin.x: hole.width / 2
                 origin.y: hole.height / 2
-                xScale: root.startX + (root.endScale - root.startX) * Wake.open
-                yScale: root.endScale * Wake.open
+                xScale: hole.endScale * Wake.circle
+                yScale: hole.endScale * Wake.circle
             }
             onPaint: {
                 const ctx = getContext("2d");
@@ -74,6 +93,15 @@ Item {
     }
 
     ShaderEffectSource {
+        id: hazeShot
+
+        anchors.fill: parent
+        sourceItem: haze
+        hideSource: true
+        visible: false
+    }
+
+    ShaderEffectSource {
         id: maskShot
 
         anchors.fill: parent
@@ -84,7 +112,7 @@ Item {
 
     MultiEffect {
         anchors.fill: parent
-        source: black
+        source: hazeShot
         maskEnabled: true
         maskSource: maskShot
         maskInverted: true
@@ -92,8 +120,61 @@ Item {
         maskSpreadAtMin: 1
     }
 
+    // Each lid is the black plus the soft shadow its edge melts into the
+    // opening with. It keeps its size and slides fully off screen, shadow
+    // included, so nothing is left to vanish at the end.
+    component Lid: Item {
+        id: lid
+
+        required property bool upper
+
+        anchors.left: parent.left
+        anchors.right: parent.right
+        height: root.height / 2 + Theme.wakeFeather
+        y: lid.upper ? 0 : root.height / 2 - Theme.wakeFeather
+
+        transform: Translate {
+            y: (lid.upper ? -1 : 1) * lid.height * Wake.lids
+        }
+
+        Rectangle {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            y: lid.upper ? 0 : Theme.wakeFeather
+            height: root.height / 2
+            color: "black"
+        }
+
+        Rectangle {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            y: lid.upper ? root.height / 2 : 0
+            height: Theme.wakeFeather
+            // Only once the lids part; closed, the line sits on plain black.
+            opacity: Math.min(1, Wake.lids * 4)
+            gradient: Gradient {
+                GradientStop {
+                    position: 0
+                    color: lid.upper ? "black" : "transparent"
+                }
+                GradientStop {
+                    position: 1
+                    color: lid.upper ? "transparent" : "black"
+                }
+            }
+        }
+    }
+
+    Lid {
+        upper: true
+    }
+
+    Lid {
+        upper: false
+    }
+
     // The line: a pill of light blurred once at full width and grown by
-    // stretching it from the centre. It fades as the slit opens under it.
+    // stretching it from the centre. It fades as the lids part.
     Rectangle {
         id: pill
 
@@ -111,7 +192,7 @@ Item {
         source: pill
         autoPaddingEnabled: true
         blurEnabled: true
-        visible: Wake.draw > 0 && Wake.open < 1
+        visible: Wake.draw > 0 && Wake.lids < 0.5
         transform: Scale {
             origin.x: root.width / 2
             xScale: Wake.draw
@@ -123,13 +204,13 @@ Item {
         blurMax: Theme.wakeGlow
         blur: 1
         brightness: 0.2
-        opacity: 1 - Wake.open * 2
+        opacity: 1 - Wake.lids * 2
     }
 
     // …and a tighter core, so it reads as light, not haze.
     Glow {
         blurMax: Theme.spacing.large
         blur: 0.6
-        opacity: (1 - Wake.open * 2) * 0.8
+        opacity: (1 - Wake.lids * 2) * 0.8
     }
 }
