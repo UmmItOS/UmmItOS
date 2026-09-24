@@ -18,7 +18,6 @@ Item {
     readonly property real draw: ease(Math.min(1, progress / 0.4), false)
     readonly property real open: ease(Math.max(0, (progress - 0.25) / 0.75), true)
 
-    readonly property real half: height / 2 * (1 - open)
     readonly property real glow: 1 - open
 
     // Out-cubic for the line (quick, then settling); in-out-sine for the
@@ -31,61 +30,59 @@ Item {
 
     visible: dark > 0
 
-    Rectangle {
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: parent.top
-        height: root.half
-        color: "black"
-    }
+    // Each lid is the black plus the deep, wide shadow its edge melts into
+    // the opening with. It keeps its size and slides away with a transform
+    // (geometry changes every frame jank), all the way off screen, shadow
+    // included, so nothing is left to vanish at the end.
+    component Lid: Item {
+        id: lid
 
-    Rectangle {
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        height: root.half
-        color: "black"
-    }
-
-    // Each lid's edge melts into the opening as a deep, wide shadow, so the
-    // parting is soft rather than two hard bars. Only the line is light.
-    component Edge: Item {
-        id: edge
-
-        // The y of the lid's edge, and which way it spills into the opening.
-        required property real at
-        required property bool down
+        required property bool upper
 
         anchors.left: parent.left
         anchors.right: parent.right
-        y: edge.down ? edge.at : edge.at - height
-        height: Theme.wakeFeather
+        height: root.height / 2 + Theme.wakeFeather
+        y: lid.upper ? 0 : root.height / 2 - Theme.wakeFeather
+
+        transform: Translate {
+            y: (lid.upper ? -1 : 1) * lid.height * root.open
+        }
 
         Rectangle {
-            anchors.fill: parent
+            anchors.left: parent.left
+            anchors.right: parent.right
+            y: lid.upper ? 0 : Theme.wakeFeather
+            height: root.height / 2
+            color: "black"
+        }
+
+        Rectangle {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            y: lid.upper ? root.height / 2 : 0
+            height: Theme.wakeFeather
+            // The shadow only exists once the lids part; closed, the line
+            // sits on plain black.
+            opacity: Math.min(1, root.open * 4)
             gradient: Gradient {
                 GradientStop {
                     position: 0
-                    color: edge.down ? "black" : "transparent"
+                    color: lid.upper ? "black" : "transparent"
                 }
                 GradientStop {
                     position: 1
-                    color: edge.down ? "transparent" : "black"
+                    color: lid.upper ? "transparent" : "black"
                 }
             }
         }
     }
 
-    Edge {
-        at: root.half
-        down: true
-        visible: root.open > 0
+    Lid {
+        upper: true
     }
 
-    Edge {
-        at: root.height - root.half
-        down: false
-        visible: root.open > 0
+    Lid {
+        upper: false
     }
 
     // The line itself: a pill of light, blurred so its ends and edges glow
