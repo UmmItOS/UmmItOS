@@ -33,7 +33,7 @@ Singleton {
         to: 0
         duration: Theme.duration.wake
         easing.type: Easing.BezierSpline
-        easing.bezierCurve: Theme.curve.standardDecel
+        easing.bezierCurve: Theme.curve.emphasizedDecel
     }
 
     IpcHandler {

@@ -4,6 +4,7 @@ import QtQuick
 import QtQuick.Effects
 import "../bar"
 import ".."
+import "../wake"
 
 // What the lock shows, laid out as hyprlock was: the blurred wallpaper, the
 // battery top right, and a centred column of date, time, avatar, name, hint
@@ -409,12 +410,10 @@ Item {
         }
     }
 
-    // Waking: the lock covers every other layer, so it carries the fade up
-    // from black itself.
-    Rectangle {
+    // Waking: the lock covers every other layer, so it carries the opening
+    // itself.
+    WakeCurtain {
         anchors.fill: parent
-        color: "black"
-        opacity: Wake.dark
-        visible: opacity > 0
+        dark: Wake.dark
     }
 }

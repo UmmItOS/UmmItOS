@@ -24,6 +24,11 @@ Variants {
             right: true
         }
         mask: Region {}
-        color: Qt.rgba(0, 0, 0, Wake.dark)
+        color: "transparent"
+
+        WakeCurtain {
+            anchors.fill: parent
+            dark: Wake.dark
+        }
     }
 }
