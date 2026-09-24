@@ -6,23 +6,50 @@ import QtQuick
 import ".."
 
 // The screen coming up out of black when the laptop wakes, the way a Pixel
-// does: hold() blacks it out on the way to sleep, play() fades the black
-// away once it is back. Drawn by WakeWindow over the desktop and by
-// LockContent over the lock, which covers every other layer.
+// does: hold() pictures each screen and then blacks it out on the way to
+// sleep; play() opens a soft circle out of the black, through which the
+// picture comes from blurred and dim to sharp. Drawn by WakeWindow over the
+// desktop and by LockContent (circle only) over the lock.
 Singleton {
     id: root
 
     // 1 is fully black, 0 is nothing drawn.
     property real dark: 0
 
+    // Each screen pictured just before going black, so the opening can show
+    // it blurred and then sharpen it (the live screen cannot be blurred from
+    // here; the picture then swaps for it unseen). Uncompressed, like the
+    // lock's, because PNG encoding was slow enough to see.
+    readonly property string shotDir: Quickshell.env("XDG_RUNTIME_DIR") + "/ummitos-wake"
+    property int shot: 0
+
+    function shotOf(screenName: string): string {
+        return "file://" + shotDir + "/" + screenName + ".ppm?" + shot;
+    }
+
     function hold(): void {
         fade.stop();
-        dark = 1;
         safety.restart();
+        if (dark > 0 || capture.running)
+            return;
+        capture.command = ["sh", "-c", 'd="$1"; shift; mkdir -p -m 700 "$d"; for o; do grim -t ppm -o "$o" "$d/$o.ppm" & done; wait', "sh", shotDir, ...Quickshell.screens.map(s => s.name)];
+        capture.running = true;
+    }
+
+    // Black only once the picture is taken, or it would picture the black.
+    Process {
+        id: capture
+        onExited: {
+            root.shot++;
+            // A play() that arrived meanwhile has already started opening.
+            if (!fade.running)
+                root.dark = 1;
+        }
     }
 
     function play(): void {
         safety.stop();
+        capture.running = false;
         if (dark === 0)
             dark = 1;
         fade.restart();

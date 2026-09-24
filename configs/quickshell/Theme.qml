@@ -139,10 +139,10 @@ Singleton {
     // gaps_out (20) plus border_size (3). Things meant to sit inside that
     // frame, not over it, keep at least this far in.
     readonly property int windowInset: 23
-    // How far the light at each edge of the waking screen spills.
-    readonly property int wakeGlow: 90
-    // The soft shadow at each lid's edge, instead of a hard black line.
-    readonly property int wakeFeather: 220
+    // The waking circle's gradient, painted once at this size and scaled.
+    readonly property int wakeHole: 512
+    // How dark the waking picture starts, before it brightens to the screen.
+    readonly property real wakeDim: 0.35
 
     // How far a pressed control sinks under the finger.
     readonly property real pressScale: 0.92
@@ -196,7 +196,7 @@ Singleton {
         // One turn of a spinner.
         readonly property int spin: 900
         // The screen coming up out of black on wake.
-        readonly property int wake: 2000
+        readonly property int wake: 1500
         // How long a wake hold() may stay black without a play().
         readonly property int wakeSafety: 6000
         // Gap between siblings entering one after another.
