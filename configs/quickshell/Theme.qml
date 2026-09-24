@@ -142,7 +142,7 @@ Singleton {
     // How far the light at each edge of the waking screen spills.
     readonly property int wakeGlow: 90
     // The soft shadow at each lid's edge, instead of a hard black line.
-    readonly property int wakeFeather: 140
+    readonly property int wakeFeather: 220
 
     // How far a pressed control sinks under the finger.
     readonly property real pressScale: 0.92

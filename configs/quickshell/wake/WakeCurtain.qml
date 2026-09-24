@@ -4,8 +4,7 @@ import ".."
 
 // Waking as eyes opening, in two beats. A soft line of light first draws
 // itself out from the centre of the black; then the black parts up and down
-// from it like eyelids, each edge carrying a wide glow in the accent colour
-// that fades as it opens. `dark` runs 1 → 0, linearly; each beat eases on
+// from it like eyelids, their edges soft shadow while the line fades. `dark` runs 1 → 0, linearly; each beat eases on
 // its own here.
 Item {
     id: root
@@ -20,7 +19,6 @@ Item {
 
     readonly property real half: height / 2 * (1 - open)
     readonly property real glow: 1 - open
-    readonly property color light: Qt.alpha(Theme.accentText, 0.4)
 
     // Out-cubic for the line (quick, then settling); in-out-cubic for the
     // lids (a gentle start and a soft landing).
@@ -48,8 +46,8 @@ Item {
         color: "black"
     }
 
-    // Each lid's edge fades into the opening like a shadow, and carries a
-    // wide, faint light, so the parting is soft rather than two hard bars.
+    // Each lid's edge melts into the opening as a deep, wide shadow, so the
+    // parting is soft rather than two hard bars. Only the line is light.
     component Edge: Item {
         id: edge
 
@@ -72,21 +70,6 @@ Item {
                 GradientStop {
                     position: 1
                     color: edge.down ? "transparent" : "black"
-                }
-            }
-        }
-
-        Rectangle {
-            anchors.fill: parent
-            opacity: root.glow
-            gradient: Gradient {
-                GradientStop {
-                    position: 0
-                    color: edge.down ? root.light : "transparent"
-                }
-                GradientStop {
-                    position: 1
-                    color: edge.down ? "transparent" : root.light
                 }
             }
         }
