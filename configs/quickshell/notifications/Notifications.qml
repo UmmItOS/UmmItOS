@@ -31,7 +31,10 @@ Scope {
             const ownSound = ["vesktop", "discord", "telegram", "telegramdesktop", "org.telegram.desktop"].some(a => app.includes(a) || entry.includes(a)) || hints["suppress-sound"] || hints["sound-file"] || hints["sound-name"];
             const charging = app === "battery" && notification.summary === "Charging";
             let sound = "";
-            if (["color picker", "screen recording", "update"].includes(app))
+            // The screenshot tool has its own shutter, like an app with its own sound.
+            if (app === "screenshot")
+                sound = "/screenshot/shutter.ogg";
+            else if (["color picker", "screen recording", "update"].includes(app))
                 sound = "/toast/pop.ogg";
             else if (!ownSound && !charging)
                 sound = "/notifications/chime.ogg";
