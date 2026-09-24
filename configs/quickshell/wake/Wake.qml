@@ -7,14 +7,15 @@ import ".."
 
 // The screen coming up out of black when the laptop wakes, the way a Pixel
 // does: hold() pictures each screen and then blacks it out on the way to
-// sleep; play() opens a soft circle out of the black, through which the
-// picture comes from blurred and dim to sharp. Drawn by WakeWindow over the
-// desktop and by LockContent (circle only) over the lock.
+// sleep; play() draws a line of light and opens a soft circle out of the
+// black from it, the picture inside coming from blurred and dim to sharp.
+// Drawn by WakeWindow over the desktop and by LockContent over the lock
+// (with a plain dim veil there, having no picture of the lock).
 Singleton {
     id: root
 
-    // 1 is fully black, 0 is nothing drawn. Runs linearly; the two beats
-    // below ease on their own, and everything that draws the wake reads them.
+    // 1 is fully black, 0 is nothing drawn. Runs linearly, and so do the
+    // stages below, which everything that draws the wake reads.
     property real dark: 0
     readonly property real progress: 1 - dark
     // Each stage moves at one steady rate from start to end, like counting
@@ -43,9 +44,23 @@ Singleton {
         return "file://" + shotDir + "/" + screenName + ".ppm?" + shot;
     }
 
+    // Emitted as the wake starts to open, for anything that should ignore
+    // the reconnecting that follows a resume (the connection notices).
+    signal woke
+
+    // A play() that arrived while the picture was still being taken; the
+    // capture finishing starts it.
+    property bool pending: false
+
     function hold(): void {
-        fade.stop();
         safety.restart();
+        pending = false;
+        // Mid-opening: straight back to black, keeping the picture it has.
+        if (fade.running) {
+            fade.stop();
+            dark = 1;
+            return;
+        }
         if (dark > 0 || capture.running)
             return;
         capture.command = ["sh", "-c", 'd="$1"; shift; mkdir -p -m 700 "$d"; for o; do grim -t ppm -o "$o" "$d/$o.ppm" & done; wait', "sh", shotDir, ...Quickshell.screens.map(s => s.name)];
@@ -55,19 +70,32 @@ Singleton {
     // Black only once the picture is taken, or it would picture the black.
     Process {
         id: capture
-        onExited: {
-            root.shot++;
-            // A play() that arrived meanwhile has already started opening.
-            if (!fade.running)
-                root.dark = 1;
+        // Only a clean exit counts as a new picture; otherwise the curtain
+        // uses the plain dim veil rather than a half-written file.
+        onExited: code => {
+            root.shot = code === 0 ? root.shot + 1 : 0;
+            root.dark = 1;
+            if (root.pending) {
+                root.pending = false;
+                root.open_();
+            }
         }
     }
 
     function play(): void {
         safety.stop();
-        capture.running = false;
+        // Let the picture finish rather than kill it half-written.
+        if (capture.running) {
+            pending = true;
+            return;
+        }
+        open_();
+    }
+
+    function open_(): void {
         if (dark === 0)
             dark = 1;
+        woke();
         fade.restart();
     }
 
@@ -87,16 +115,21 @@ Singleton {
         onTriggered: root.play()
     }
 
+    // The pictures live in $XDG_RUNTIME_DIR, which is RAM; gone once used.
+    Process {
+        id: forget
+        command: ["rm", "-rf", root.shotDir]
+    }
+
     NumberAnimation {
         id: fade
         target: root
         property: "dark"
         to: 0
         duration: Theme.duration.wake
-        // Linear here: WakeCurtain eases each of its two beats itself.
         easing.type: Easing.Linear
+        onFinished: forget.running = true
     }
-
 
     IpcHandler {
         target: "wake"

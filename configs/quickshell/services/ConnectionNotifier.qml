@@ -2,6 +2,7 @@ import Quickshell
 import Quickshell.Bluetooth as Bluez
 import Quickshell.Networking
 import QtQuick
+import ".."
 
 // Says when Wi-Fi joins or leaves a network and when a Bluetooth device
 // connects or drops, through notify-send like the battery notices. Changes
@@ -12,11 +13,15 @@ Scope {
 
     readonly property var wifi: Networking.devices.values.find(d => d.type === DeviceType.Wifi) ?? null
     readonly property string network: root.wifi?.networks.values.find(n => n.connected)?.name ?? ""
-    readonly property var devices: [...Bluez.Bluetooth.devices.values].filter(d => d.connected).map(d => d.name || d.address)
+    // Connected devices by address, which is stable and unique (two identical
+    // earbuds share a name, and a name can arrive after connecting). Joined
+    // into a string so it only changes when the connected set does, not on
+    // every scan result.
+    readonly property string devices: [...Bluez.Bluetooth.devices.values].filter(d => d.connected).map(d => d.address).sort().join("\n")
 
     // What was last said, compared against once things settle.
     property string lastNetwork: ""
-    property var lastDevices: []
+    property string lastDevices: ""
     // Nothing should fire because the shell started or reloaded.
     property bool primed: false
 
@@ -24,7 +29,19 @@ Scope {
         Quickshell.execDetached(["notify-send", "-a", app, summary, body]);
     }
 
+    function nameOf(address: string): string {
+        const d = [...Bluez.Bluetooth.devices.values].find(d => d.address === address);
+        return d?.name || address;
+    }
+
     function settleNow(): void {
+        // Right after a wake, Wi-Fi and Bluetooth reconnect on their own;
+        // that is not news, so the new state just becomes the baseline.
+        if (quiet.running) {
+            root.lastNetwork = root.network;
+            root.lastDevices = root.devices;
+            return;
+        }
         if (root.network !== root.lastNetwork) {
             if (root.network !== "")
                 root.notify("Wi-Fi", "Wi-Fi connected", root.network);
@@ -32,17 +49,31 @@ Scope {
                 root.notify("Wi-Fi", "Wi-Fi disconnected", root.lastNetwork);
             root.lastNetwork = root.network;
         }
-        for (const name of root.devices)
-            if (!root.lastDevices.includes(name))
-                root.notify("Bluetooth", "Connected", name);
-        for (const name of root.lastDevices)
-            if (!root.devices.includes(name))
-                root.notify("Bluetooth", "Disconnected", name);
+        const now = root.devices ? root.devices.split("\n") : [];
+        const before = root.lastDevices ? root.lastDevices.split("\n") : [];
+        for (const address of now)
+            if (!before.includes(address))
+                root.notify("Bluetooth", "Connected", root.nameOf(address));
+        for (const address of before)
+            if (!now.includes(address))
+                root.notify("Bluetooth", "Disconnected", root.nameOf(address));
         root.lastDevices = root.devices;
     }
 
     onNetworkChanged: if (primed) settle.restart()
     onDevicesChanged: if (primed) settle.restart()
+
+    Connections {
+        target: Wake
+        function onWoke(): void {
+            quiet.restart();
+        }
+    }
+
+    Timer {
+        id: quiet
+        interval: 15000
+    }
 
     Timer {
         id: settle

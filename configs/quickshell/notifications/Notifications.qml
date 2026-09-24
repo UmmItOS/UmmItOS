@@ -40,7 +40,9 @@ Scope {
                 sound = "/notifications/chime.ogg";
             if (sound !== "" && !Notifs.dnd)
                 Quickshell.execDetached(["pw-play", Quickshell.shellDir + sound]);
-            Notifs.record(notification);
+            // Transient notices (the update nag) show but are not kept.
+            if (!notification.transient)
+                Notifs.record(notification);
             notification.tracked = !Notifs.dnd;
         }
     }
@@ -49,8 +51,21 @@ Scope {
         id: toasts
 
         readonly property int toastWidth: 420
-        // How far the toasts step left to clear an open bar dropdown.
-        readonly property real clearance: Notifs.flyoutLeft < 0 ? 0 : Math.max(0, width - Notifs.flyoutLeft + Theme.spacing.small)
+        // The toast column's edges in screen x when not stepped aside.
+        readonly property real columnRight: width - Theme.padding.medium
+        readonly property real columnLeft: columnRight - toastWidth + Theme.padding.medium * 2
+        // How far the toasts step left to clear an open bar dropdown: only
+        // one that actually overlaps the column, on this screen, and never
+        // so far that the column leaves the screen's left edge.
+        readonly property real clearance: {
+            const f = Notifs.flyout;
+            if (!f || Notifs.flyoutRight <= columnLeft)
+                return 0;
+            if (Notifs.flyoutScreen !== "" && screen && Notifs.flyoutScreen !== screen.name)
+                return 0;
+            const needed = columnRight - Notifs.flyoutLeft + Theme.spacing.small;
+            return Math.max(0, Math.min(needed, columnLeft - Theme.padding.medium));
+        }
 
         WlrLayershell.namespace: "ummitos-notifications"
         anchors {
@@ -74,8 +89,14 @@ Scope {
         // A fixed column, not the height of the toasts: shrinking the window
         // as one leaves clipped it mid-slide. Input only lands on the toasts.
         implicitHeight: (screen?.height ?? 1080) - Theme.barHeight - Theme.spacing.small * 2
+        // Bound to the list's own position, so input follows the toasts as
+        // they step aside (a region on the contentItem did not see its
+        // parent move).
         mask: Region {
-            item: list.contentItem
+            x: list.x
+            y: list.y
+            width: list.width
+            height: list.contentHeight
         }
         color: "transparent"
 

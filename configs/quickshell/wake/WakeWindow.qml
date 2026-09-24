@@ -7,12 +7,17 @@ import ".."
 // taken before sleep as its haze. It takes no input, so a click during the
 // wake reaches whatever is under it.
 //
+// It exists only while the wake runs, and not at all while the session is
+// locked (the lock covers every layer and draws the wake itself): mapped all
+// the time, an Overlay layer the size of the screen would cost a blend every
+// frame and stop direct scanout for fullscreen games and video. The curtain
+// is loaded with it, so the picture and the effects' buffers go too.
+//
 // Its namespace is deliberately outside Hyprland's `ummitos-.*` rule: that
 // rule blurs (and, with blur brightness, darkens) whatever a surface covers
 // until its alpha falls below 0.1, then stops at once, so the end of the
-// fade jumped. The wake draws its own blur. The same rule's no_anim is not
-// needed: the sheet stays mapped (transparent when idle, like the toasts),
-// so Hyprland never animates it in or out.
+// fade jumped. The wake draws its own blur. Hyprland's layer animation does
+// play as it maps, but that is on the way into black, before sleep.
 Variants {
     model: Quickshell.screens
 
@@ -20,9 +25,10 @@ Variants {
         id: win
 
         required property var modelData
+        readonly property bool active: Wake.dark > 0 && !Lock.locked
 
         screen: modelData
-        visible: true
+        visible: win.active
         WlrLayershell.namespace: "wake-curtain"
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
@@ -36,10 +42,14 @@ Variants {
         mask: Region {}
         color: "transparent"
 
-        WakeCurtain {
+        Loader {
             anchors.fill: parent
-            dark: Wake.dark
-            picture: Wake.shot > 0 ? Wake.shotOf(win.modelData.name) : ""
+            active: win.active
+
+            sourceComponent: WakeCurtain {
+                dark: Wake.dark
+                picture: Wake.shot > 0 ? Wake.shotOf(win.modelData.name) : ""
+            }
         }
     }
 }

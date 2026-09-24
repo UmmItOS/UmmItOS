@@ -45,11 +45,27 @@ PopupWindow {
     onVisibleChanged: {
         if (root.visible) {
             entrance.restart();
-            Notifs.flyoutLeft = root.anchorItem.mapToItem(null, root.anchorItem.width / 2, 0).x - root.implicitWidth / 2;
+            // Centred under its item, but kept on screen the way the
+            // compositor slides a popup that would overflow.
+            const screenWidth = root.anchorItem.Window.width;
+            const centre = root.anchorItem.mapToItem(null, root.anchorItem.width / 2, 0).x;
+            const left = Math.max(0, Math.min(centre - root.implicitWidth / 2, screenWidth - root.implicitWidth));
+            Notifs.flyoutLeft = left;
+            Notifs.flyoutRight = left + root.implicitWidth;
+            Notifs.flyoutScreen = root.anchorItem.Window.window?.screen?.name ?? "";
+            Notifs.flyout = root;
         } else {
-            Notifs.flyoutLeft = -1;
+            root.release();
             root.closeRequested();
         }
+    }
+
+    // A dropdown destroyed while open (its screen unplugged) lets go too.
+    Component.onDestruction: release()
+
+    function release(): void {
+        if (Notifs.flyout === root)
+            Notifs.flyout = null;
     }
 
     Surface {

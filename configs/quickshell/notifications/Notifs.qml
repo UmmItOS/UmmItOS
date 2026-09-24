@@ -14,10 +14,14 @@ Singleton {
     readonly property ListModel history: ListModel {}
     property bool dnd: false
     property bool panelOpen: false
-    // The screen x of an open bar dropdown's left edge, or -1. The dropdown
-    // is an xdg-popup, which Hyprland draws above every layer, so the toasts
-    // step aside rather than be covered.
-    property real flyoutLeft: -1
+    // The open bar dropdown, if any, and where it sits. A dropdown is an
+    // xdg-popup, which Hyprland draws above every layer, so the toasts step
+    // aside rather than be covered. Only the dropdown that set these clears
+    // them, so switching straight from one to another cannot undo the new one.
+    property var flyout: null
+    property real flyoutLeft: 0
+    property real flyoutRight: 0
+    property string flyoutScreen: ""
 
     readonly property int cap: 60
 
