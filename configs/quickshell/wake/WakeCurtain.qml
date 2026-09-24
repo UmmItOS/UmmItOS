@@ -12,20 +12,21 @@ Item {
     property real dark: 0
     readonly property real progress: 1 - dark
 
-    // Share of the whole spent drawing the line before the lids move.
-    readonly property real drawShare: 0.3
-    readonly property real draw: ease(Math.min(1, progress / drawShare), false)
-    readonly property real open: ease(Math.max(0, (progress - drawShare) / (1 - drawShare)), true)
+    // The line draws over the first 40%; the lids start at 25%, while it is
+    // still finishing, so the two beats flow into one another instead of
+    // stopping between them.
+    readonly property real draw: ease(Math.min(1, progress / 0.4), false)
+    readonly property real open: ease(Math.max(0, (progress - 0.25) / 0.75), true)
 
     readonly property real half: height / 2 * (1 - open)
     readonly property real glow: 1 - open
 
-    // Out-cubic for the line (quick, then settling); in-out-cubic for the
-    // lids (a gentle start and a soft landing).
-    function ease(t: real, both: bool): real {
-        if (!both)
+    // Out-cubic for the line (quick, then settling); in-out-sine for the
+    // lids, whose start is gentle but never a standstill.
+    function ease(t: real, lids: bool): real {
+        if (!lids)
             return 1 - Math.pow(1 - t, 3);
-        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        return (1 - Math.cos(Math.PI * t)) / 2;
     }
 
     visible: dark > 0
@@ -87,13 +88,15 @@ Item {
         visible: root.open > 0
     }
 
-    // The line itself: a pill of light grown from the centre, blurred so its
-    // ends and edges glow instead of cutting. Drawn off screen, shown blurred.
+    // The line itself: a pill of light, blurred so its ends and edges glow
+    // instead of cutting. Blurred once at full width and grown by stretching
+    // it from the centre: resizing it rebuilt the blur every frame, which
+    // stuttered.
     Rectangle {
         id: pill
 
         anchors.centerIn: parent
-        width: Math.max(1, parent.width * root.draw)
+        width: parent.width
         height: Theme.spacing.small
         radius: height / 2
         color: Theme.accent2
@@ -111,6 +114,10 @@ Item {
         brightness: 0.2
         opacity: root.glow
         visible: root.draw > 0
+        transform: Scale {
+            origin.x: root.width / 2
+            xScale: root.draw
+        }
     }
 
     // A thinner, less blurred core, so the line reads as light, not haze.
@@ -123,5 +130,9 @@ Item {
         blur: 0.6
         opacity: root.glow * 0.8
         visible: root.draw > 0
+        transform: Scale {
+            origin.x: root.width / 2
+            xScale: root.draw
+        }
     }
 }
