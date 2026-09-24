@@ -59,6 +59,9 @@ ShellRoot {
         onPluggedIn: ripple.play()
     }
 
+    // Wi-Fi and Bluetooth coming and going.
+    ConnectionNotifier {}
+
     CopyToast {}
 
     ChargeRipple {

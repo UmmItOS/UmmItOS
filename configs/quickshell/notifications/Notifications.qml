@@ -34,7 +34,7 @@ Scope {
             // The screenshot tool has its own shutter, like an app with its own sound.
             if (app === "screenshot")
                 sound = "/screenshot/shutter.ogg";
-            else if (["color picker", "screen recording", "update"].includes(app))
+            else if (["color picker", "screen recording", "update", "wi-fi", "bluetooth"].includes(app))
                 sound = "/toast/pop.ogg";
             else if (!ownSound && !charging)
                 sound = "/notifications/chime.ogg";
