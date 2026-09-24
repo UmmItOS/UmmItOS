@@ -165,6 +165,8 @@ For things that need input you cannot give from a terminal, mark every temporary
 - **`itemAt()` in a binding runs once.** It is a call, not a property, so a binding on `repeater.itemAt(i)` evaluated before the Repeater built its items stays null. Read through `repeater.count` so it re-runs.
 - **Several `Binding`s writing one property need `restoreMode: Binding.RestoreNone`.** With the default, the one switching off restores the value it saw when it switched on, in an order nothing guarantees, and leaves a stale value.
 - **A flag in a singleton read by a `Variants` delegate is read once per screen.** Clearing it in the first screen's handler starves the others; clear it with `Qt.callLater` in the singleton.
+- **A `Canvas` under a hidden item never paints.** For a mask or effect source drawn with a `Canvas`, keep it visible and capture it with a `ShaderEffectSource { hideSource: true }`, rather than `visible: false` plus `layer.enabled`.
+- **Animate transforms, not geometry.** Growing an item by `width`/`height` every frame re-lays it out, and resizing a blurred source rebuilds its blur texture every frame; both stutter. Draw it once at full size and animate a `Scale` or `Translate`.
 - **Notifications are replaced in place.** `notify-send -r`, players and progress notices update the same `Notification` object, so anything copied from it must be refreshed on `summaryChanged`/`bodyChanged`/`imageChanged`.
 
 ## Hard rules
