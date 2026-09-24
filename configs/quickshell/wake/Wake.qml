@@ -13,8 +13,15 @@ import ".."
 Singleton {
     id: root
 
-    // 1 is fully black, 0 is nothing drawn.
+    // 1 is fully black, 0 is nothing drawn. Runs linearly; the two beats
+    // below ease on their own, and everything that draws the wake reads them.
     property real dark: 0
+    readonly property real progress: 1 - dark
+    // First the line draws out from the centre (the first 35%)…
+    readonly property real draw: 1 - Math.pow(1 - Math.min(1, progress / 0.35), 3)
+    // …then, starting while it finishes, opens from a slit into a circle,
+    // gently at first and never from a standstill.
+    readonly property real open: (1 - Math.cos(Math.PI * Math.max(0, (progress - 0.25) / 0.75))) / 2
 
     // Each screen pictured just before going black, so the opening can show
     // it blurred and then sharpen it (the live screen cannot be blurred from

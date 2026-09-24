@@ -16,8 +16,8 @@ Variants {
 
         required property var modelData
 
-        // 1 → 0 with the opening; blur and dimming ease out ahead of it.
-        readonly property real haze: Math.pow(Wake.dark, 1.5)
+        // 1 → 0 as the opening widens.
+        readonly property real haze: 1 - Wake.open
 
         screen: modelData
         visible: Wake.dark > 0
@@ -54,7 +54,7 @@ Variants {
             brightness: -Theme.wakeDim * win.haze
             // Gone before the black is, so the swap to the live screen,
             // which it matches, is never seen.
-            opacity: Math.min(1, Wake.dark * 4)
+            opacity: Math.min(1, (1 - Wake.open) * 4)
         }
 
         WakeCurtain {
