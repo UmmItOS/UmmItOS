@@ -141,12 +141,10 @@ Singleton {
     readonly property int windowInset: 23
     // How far the waking line's soft light spills.
     readonly property int wakeGlow: 90
-    // The soft shadow at each waking lid's edge, instead of a hard line.
-    readonly property int wakeFeather: 220
-    // The waking circle's gradient, painted once at this size and scaled.
-    readonly property int wakeHole: 512
+    // How wide the soft edge of each waking circle is.
+    readonly property int wakeSoft: 320
     // How dark the waking picture starts, before it brightens to the screen.
-    readonly property real wakeDim: 0.55
+    readonly property real wakeDim: 0.3
 
     // How far a pressed control sinks under the finger.
     readonly property real pressScale: 0.92

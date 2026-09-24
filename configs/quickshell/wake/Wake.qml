@@ -20,7 +20,7 @@ Singleton {
     // Three beats, each starting while the one before finishes so they flow:
     // the line draws out from the centre…
     readonly property real draw: 1 - Math.pow(1 - Math.min(1, progress / 0.3), 3)
-    // …the lids part up and down from it onto a dim, blurred screen…
+    // …the black opens from it in a soft circle onto a dim, blurred screen…
     readonly property real lids: beat(0.22, 0.65)
     // …and a soft circle from the centre clears that haze to the sharp screen.
     readonly property real circle: beat(0.5, 1)
@@ -96,6 +96,7 @@ Singleton {
         // Linear here: WakeCurtain eases each of its two beats itself.
         easing.type: Easing.Linear
     }
+
 
     IpcHandler {
         target: "wake"
