@@ -86,18 +86,23 @@ RowLayout {
                 size: Theme.icon.small
             }
 
+            property bool menuOpen: false
+
             onClicked: event => {
                 if (event.button === Qt.RightButton && entry.modelData.hasMenu) {
-                    menu.open();
+                    entry.menuOpen = !entry.menuOpen;
                 } else {
                     entry.modelData.activate();
                 }
             }
 
-            QsMenuAnchor {
-                id: menu
+            TrayMenu {
+                anchorItem: entry
                 menu: entry.modelData.menu
-                anchor.item: entry
+                title: entry.modelData.tooltipTitle || entry.modelData.title || entry.modelData.id.replace(/_status_icon_\d+$/, "")
+                visible: entry.menuOpen
+                onCloseRequested: entry.menuOpen = false
+                onDone: entry.menuOpen = false
             }
         }
     }

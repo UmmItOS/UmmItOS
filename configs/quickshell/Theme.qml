@@ -168,6 +168,8 @@ Singleton {
         readonly property int field: 34
         // A round icon button.
         readonly property int button: 40
+        // A tray app's right-click menu.
+        readonly property int menu: 300
         // A pill-shaped button or search field.
         readonly property int pill: 44
         // Room for a live number ("12.4 M", "100 %") so it does not jitter.
