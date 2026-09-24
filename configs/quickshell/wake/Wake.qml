@@ -18,12 +18,30 @@ Singleton {
     function hold(): void {
         fade.stop();
         dark = 1;
+        safety.restart();
     }
 
     function play(): void {
+        safety.stop();
         if (dark === 0)
             dark = 1;
         fade.restart();
+    }
+
+    // hold() on its own must never leave the screen black. Timers run on
+    // the monotonic clock, which stops while suspended, so a real sleep
+    // still reaches play() from hypridle long before this.
+    Timer {
+        id: safety
+        interval: Theme.duration.wakeSafety
+        onTriggered: root.play()
+    }
+
+    // The whole thing in one go, for trying it out.
+    Timer {
+        id: trial
+        interval: Theme.duration.normal
+        onTriggered: root.play()
     }
 
     NumberAnimation {
@@ -33,7 +51,7 @@ Singleton {
         to: 0
         duration: Theme.duration.wake
         easing.type: Easing.BezierSpline
-        easing.bezierCurve: Theme.curve.emphasizedDecel
+        easing.bezierCurve: Theme.curve.emphasized
     }
 
     IpcHandler {
@@ -45,6 +63,11 @@ Singleton {
 
         function play(): void {
             root.play();
+        }
+
+        function test(): void {
+            root.hold();
+            trial.restart();
         }
     }
 }

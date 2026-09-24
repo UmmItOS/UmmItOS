@@ -33,6 +33,42 @@ Item {
         color: "black"
     }
 
+    // Each lid's edge fades out into the opening like a shadow, so the
+    // parting reads as soft rather than as two hard black bars.
+    Rectangle {
+        anchors.left: parent.left
+        anchors.right: parent.right
+        y: root.half
+        height: Theme.wakeFeather * root.dark
+        gradient: Gradient {
+            GradientStop {
+                position: 0
+                color: "black"
+            }
+            GradientStop {
+                position: 1
+                color: "transparent"
+            }
+        }
+    }
+
+    Rectangle {
+        anchors.left: parent.left
+        anchors.right: parent.right
+        y: root.height - root.half - height
+        height: Theme.wakeFeather * root.dark
+        gradient: Gradient {
+            GradientStop {
+                position: 0
+                color: "transparent"
+            }
+            GradientStop {
+                position: 1
+                color: "black"
+            }
+        }
+    }
+
     component Edge: Item {
         id: edge
 
