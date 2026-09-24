@@ -265,7 +265,9 @@ OverlayWindow {
     }
 
     function commit(): void {
-        if (finishing.running)
+        // Closed (Escape, a click away) while the whole-screen timer was
+        // still counting down: nothing is taken.
+        if (finishing.running || !win.shown)
             return;
         // A window shot needs a window: nothing is taken before one is picked.
         if (mode === "window" && !picked)
@@ -660,8 +662,6 @@ OverlayWindow {
         color: "transparent"
 
         ScreencopyView {
-            id: cutView
-
             anchors.fill: parent
             captureSource: win.cutting?.toplevel ?? null
             live: false

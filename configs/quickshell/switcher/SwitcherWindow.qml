@@ -277,6 +277,9 @@ OverlayWindow {
                                     property: "focusCell"
                                     value: cell
                                     when: cell.current
+                                    // Two cells swap in one pass in no set order; restoring
+                                    // would let the old cell put back a stale one.
+                                    restoreMode: Binding.RestoreNone
                                 }
 
                                 width: grid.cellWidth

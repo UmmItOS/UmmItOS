@@ -171,6 +171,23 @@ Scope {
                 Component.onCompleted: keep()
                 onModelDataChanged: keep()
 
+                // An app replacing its notification (notify-send -r, a player,
+                // a progress notice) updates the same object in place.
+                Connections {
+                    target: card.modelData
+                    ignoreUnknownSignals: true
+
+                    function onSummaryChanged(): void {
+                        card.keep();
+                    }
+                    function onBodyChanged(): void {
+                        card.keep();
+                    }
+                    function onImageChanged(): void {
+                        card.keep();
+                    }
+                }
+
                 readonly property bool critical: card.kept.critical ?? false
                 readonly property string appIcon: card.kept.appIcon ? Quickshell.iconPath(card.kept.appIcon, true) : ""
                 // Delegates are created on arrival, so this is the arrival time.

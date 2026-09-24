@@ -122,7 +122,6 @@ Singleton {
     }
 
     FileView {
-        id: brightnessMaxFile
         path: root.backlight === "" ? "" : root.backlight + "/max_brightness"
         printErrors: false
         onLoaded: root.brightnessMax = Math.max(1, Number(text().trim()))

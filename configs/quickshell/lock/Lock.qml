@@ -90,7 +90,10 @@ Singleton {
             required property var modelData
 
             asynchronous: true
-            source: root.shot > 0 ? root.shotOf(modelData.name) : ""
+            cache: false
+            // Only held while locking or locked; after that the full-size
+            // pictures are let go rather than kept decoded all session.
+            source: root.shot > 0 && (root.locked || root.preparing) ? root.shotOf(modelData.name) : ""
             onStatusChanged: root.readyCheck()
         }
     }

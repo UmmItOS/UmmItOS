@@ -50,7 +50,6 @@ Variants {
                 if (!path)
                     return;
                 const reveal = Wallpapers.reveal;
-                Wallpapers.reveal = false;
                 // The old script's two options, half and half: "center", or
                 // awww's "random", which picks one of its own transitions.
                 const mode = !reveal ? "" : Math.random() < 0.5 ? "center" : ["grow", "wipe", "fade"][Math.floor(Math.random() * 3)];

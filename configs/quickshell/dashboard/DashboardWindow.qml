@@ -18,10 +18,18 @@ OverlayWindow {
 
     readonly property var tabs: ["Dashboard", "System", "Workspaces"]
 
-    // Polling /proc and hwmon only matters while the panel is on screen.
-    onVisibleChanged: {
-        SysInfo.active = visible;
-        Players.watched = visible;
+    // Polling /proc and hwmon, and the player's clock and cava, only matter
+    // while the tab that shows them is on screen.
+    Binding {
+        target: SysInfo
+        property: "active"
+        value: win.visible && Dashboard.tab === 1
+    }
+
+    Binding {
+        target: Players
+        property: "watched"
+        value: win.visible && Dashboard.tab === 0
     }
 
     MouseArea {

@@ -195,8 +195,6 @@ OverlayWindow {
             width: picker.width / 2
 
             Text {
-                id: nameText
-
                 width: parent.width
                 visible: search.text === ""
                 text: picker.labelOf(picker.focusedPath)

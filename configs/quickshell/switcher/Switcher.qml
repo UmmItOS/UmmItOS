@@ -57,6 +57,14 @@ Singleton {
         commit();
     }
 
+    // Alt+Tab's way in. The overview's flag outlives its close by the length
+    // of the exit, so an Alt+Tab inside that time would open looking like it.
+    function cycle(delta: int): void {
+        if (!open)
+            overviewing = false;
+        step(delta);
+    }
+
     function commit(): void {
         if (!open)
             return;
@@ -141,14 +149,18 @@ Singleton {
     Timer {
         id: overviewDone
         interval: Theme.duration.expressiveDefaultSpatial
-        onTriggered: root.overviewing = false
+        // The picture is let go too, not kept decoded until the next overview.
+        onTriggered: {
+            root.overviewing = false;
+            root.shotReady = false;
+        }
     }
 
     GlobalShortcut {
         appid: "quickshell"
         name: "switcherNext"
         description: "Cycle workspaces forward"
-        onPressed: root.step(1)
+        onPressed: root.cycle(1)
     }
 
     // Hyprland's bind layer consumes Alt+Tab, so the Alt release may never
@@ -164,18 +176,18 @@ Singleton {
         appid: "quickshell"
         name: "switcherPrev"
         description: "Cycle workspaces backward"
-        onPressed: root.step(-1)
+        onPressed: root.cycle(-1)
     }
 
     IpcHandler {
         target: "switcher"
 
         function next(): void {
-            root.step(1);
+            root.cycle(1);
         }
 
         function prev(): void {
-            root.step(-1);
+            root.cycle(-1);
         }
 
         function commit(): void {

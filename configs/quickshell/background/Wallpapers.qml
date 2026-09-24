@@ -54,6 +54,8 @@ Singleton {
             while (next === actual)
                 next = list[Math.floor(Math.random() * list.length)];
         set(next);
+        // Cleared once every screen has read it, not by the first to swap.
+        Qt.callLater(() => reveal = false);
     }
 
     function preview(path: string): void {
