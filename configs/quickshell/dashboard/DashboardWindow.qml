@@ -157,7 +157,10 @@ OverlayWindow {
                 Rectangle {
                     id: indicator
 
-                    readonly property Item target: tabs.itemAt(Dashboard.tab)
+                    // itemAt() is a call, not a property: read through count so
+                    // the binding runs again once the Repeater has built the
+                    // words, or the first open finds no word to sit under.
+                    readonly property Item target: tabs.count > Dashboard.tab ? tabs.itemAt(Dashboard.tab) : null
 
                     anchors.bottom: parent.bottom
                     x: target?.x ?? 0
