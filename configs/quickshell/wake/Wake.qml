@@ -50,8 +50,8 @@ Singleton {
         property: "dark"
         to: 0
         duration: Theme.duration.wake
-        easing.type: Easing.BezierSpline
-        easing.bezierCurve: Theme.curve.emphasized
+        // Linear here: WakeCurtain eases each of its two beats itself.
+        easing.type: Easing.Linear
     }
 
     IpcHandler {

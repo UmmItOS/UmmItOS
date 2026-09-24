@@ -196,7 +196,7 @@ Singleton {
         // One turn of a spinner.
         readonly property int spin: 900
         // The screen coming up out of black on wake.
-        readonly property int wake: 1600
+        readonly property int wake: 2000
         // How long a wake hold() may stay black without a play().
         readonly property int wakeSafety: 6000
         // Gap between siblings entering one after another.
