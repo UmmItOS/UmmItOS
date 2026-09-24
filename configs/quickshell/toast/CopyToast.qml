@@ -21,8 +21,11 @@ Scope {
     }
 
     function show(kind: string): void {
-        pop();
         const image = kind === "image";
+        // An image copy is nearly always a screenshot, which already has
+        // its shutter; a second sound on top reads as noise.
+        if (!image)
+            pop();
         // Newest at index 0, which the bottom-to-top list draws lowest.
         pills.insert(0, {
             key: ++serial,
