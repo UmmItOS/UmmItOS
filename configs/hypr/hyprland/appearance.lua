@@ -11,6 +11,14 @@ hl.layer_rule({
     no_anim = true,
 })
 
+-- Blur switches on in one step where a surface passes ignore_alpha, which drew a
+-- hard line across the picker's fading wash; the picker dims itself instead.
+hl.layer_rule({
+    name = "ummitos-picker-noblur",
+    match = { namespace = "ummitos-wallpaper-picker" },
+    blur = false,
+})
+
 hl.config({
     general = {
         gaps_in = 5,

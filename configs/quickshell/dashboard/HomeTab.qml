@@ -21,11 +21,9 @@ ColumnLayout {
         spacing: Theme.spacing.medium
 
         // Clock
-        Rectangle {
+        SoftCard {
             Layout.fillHeight: true
             implicitWidth: 210
-            radius: Theme.rounding.extraLarge
-            color: Theme.glass
 
             Column {
                 anchors.centerIn: parent
@@ -68,11 +66,9 @@ ColumnLayout {
         }
 
         // The month the date sits in, a card of its own.
-        Rectangle {
+        SoftCard {
             Layout.fillHeight: true
             implicitWidth: calendar.implicitWidth + Theme.padding.large * 2
-            radius: Theme.rounding.extraLarge
-            color: Theme.glass
 
             MonthCalendar {
                 id: calendar
@@ -83,11 +79,9 @@ ColumnLayout {
             }
         }
 
-        Rectangle {
+        SoftCard {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            radius: Theme.rounding.extraLarge
-            color: Theme.glass
 
             MediaPanel {
                 anchors {
