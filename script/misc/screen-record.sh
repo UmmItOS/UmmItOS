@@ -14,14 +14,23 @@ unmix() {
     fi
 }
 
+# A broken mic sends one stuck full-scale value, which drowns everything mixed with it.
+mic_dead() {
+    local mean
+    mean=$(ffmpeg -hide_banner -f pulse -i "$1" -t 0.5 -af volumedetect -f null - 2>&1 | sed -n 's/.*mean_volume: \(-\?[0-9.]*\) dB/\1/p')
+    [[ -n "$mean" ]] && awk -v m="$mean" 'BEGIN { exit !(m > -3) }'
+}
+
 if pid=$(pgrep -x wl-screenrec); then
     kill -INT "$pid"
     # The file is only complete once the recorder has exited.
     while kill -0 "$pid" 2>/dev/null; do sleep 0.1; done
     file=$(cat "$state/path" 2>/dev/null)
-    rm -f "$state/path"
+    note=$(cat "$state/note" 2>/dev/null)
+    rm -f "$state/path" "$state/note"
     unmix
-    notify-send -a "Screen recording" "Recording saved" "$file"
+    notify-send -a "Screen recording" "Recording saved" "$file${note:+
+$note}"
     echo "$(date '+%F %T') saved $file" >> "$log"
     exit 0
 fi
@@ -36,6 +45,16 @@ mkdir -p "$dir" "$state"
 file="$dir/Recording_$(date +%Y-%m-%d_%H-%M-%S).mp4"
 output=$(hyprctl -j monitors | jq -r '.[] | select(.focused) | .name')
 echo "$file" > "$state/path"
+
+# Said when saving, not now: a notice now would be in the video.
+if [[ "$mic" == 1 ]] && mic_dead "$(pactl get-default-source)"; then
+    mic=0
+    if [[ "$system" == 1 ]]; then
+        echo "The microphone gave no sound, so only system sound was recorded." > "$state/note"
+    else
+        echo "The microphone gave no sound, so the video is silent." > "$state/note"
+    fi
+fi
 
 # wl-screenrec takes one audio device, so both are mixed into a temporary sink.
 audio=()
