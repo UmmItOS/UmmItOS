@@ -11,7 +11,7 @@ record_or_stop() {
     fi
 
     # Check if recording should start or stop
-    if pgrep -x wf-recorder > /dev/null; then
+    if ! pgrep -x wf-recorder > /dev/null; then
         # Start recording
         local filename
         filename="$recording_dir/wf-recorder-$(date +'%Y-%m-%d-%H-%M-%S').mp4"
@@ -33,8 +33,8 @@ record_or_stop() {
             local filename
             filename=$(find "$recording_dir" -maxdepth 1 -type f -printf '%T@ %p\n' | sort -rn | head -n1 | cut -d' ' -f2-)
             echo "Video recording ended and saved to $filename"
-            notify-send -a "Screen recording" "Recording saved" "$recording_dir/$filename"
-            echo "<NOTICE> $(date +"%Y-%m-%d %H:%M:%S"): Video recording ended and saved to: $recording_dir/$filename - wf-recorder" >> ~/script/misc/wf-recorder.log
+            notify-send -a "Screen recording" "Recording saved" "$filename"
+            echo "<NOTICE> $(date +"%Y-%m-%d %H:%M:%S"): Video recording ended and saved to: $filename - wf-recorder" >> ~/script/misc/wf-recorder.log
         else
             echo "wf-recorder is not running."
             echo "<NOTICE> $(date +"%Y-%m-%d %H:%M:%S"): wf-recorder is not running - wf-recorder" >> ~/script/misc/wf-recorder.log
