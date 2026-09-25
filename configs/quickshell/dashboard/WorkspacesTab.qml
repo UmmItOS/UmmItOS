@@ -11,7 +11,7 @@ GridView {
     cellWidth: width / 4
     cellHeight: 120
     clip: true
-    model: Hyprland.workspaces
+    model: [...Hyprland.workspaces.values].filter(w => w && w.id > 0)
 
     delegate: Item {
         id: cell

@@ -228,6 +228,9 @@ RowLayout {
                         TextInput {
                             id: psk
 
+                            // A long passphrase scrolls; the dots scrolled off
+                            // must not draw outside the field.
+                            clip: true
                             anchors {
                                 fill: parent
                                 leftMargin: Theme.padding.large

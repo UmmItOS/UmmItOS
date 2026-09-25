@@ -12,7 +12,9 @@ RowLayout {
     spacing: Theme.spacing.small
 
     Repeater {
-        model: Hyprland.workspaces
+        // Special workspaces (scratchpads) have negative ids and are not
+        // places to switch to.
+        model: [...Hyprland.workspaces.values].filter(w => w && w.id > 0)
 
         Rectangle {
             id: pill

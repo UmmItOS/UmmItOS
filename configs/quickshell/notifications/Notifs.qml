@@ -51,7 +51,11 @@ Singleton {
             appName: notification.appName,
             summary: notification.summary,
             body: safeBody(notification.body),
-            image: notification.image,
+            // Pixels sent inline (image://qsimage/…) live only as long as the
+            // notification does; kept, they failed and warned on every redraw.
+            // ponytail: history drops those previews; save them to the cache
+            // if they are missed.
+            image: notification.image.startsWith("image://qsimage/") ? "" : notification.image,
             appIcon: notification.appIcon,
             critical: notification.urgency === 2,
             time: Qt.formatDateTime(new Date(), "HH:mm")

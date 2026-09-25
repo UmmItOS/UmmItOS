@@ -27,7 +27,7 @@ Singleton {
 
     // Entries go null while Hyprland creates and destroys workspaces, so the
     // list is filtered before anything reads an id off it.
-    readonly property var workspaces: [...Hyprland.workspaces.values].filter(w => w).sort((a, b) => a.id - b.id)
+    readonly property var workspaces: [...Hyprland.workspaces.values].filter(w => w && w.id > 0).sort((a, b) => a.id - b.id)
 
     function step(delta: int): void {
         const count = workspaces.length;

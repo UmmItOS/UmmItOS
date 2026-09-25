@@ -32,7 +32,10 @@ PopupWindow {
     }
 
     implicitWidth: 380
-    implicitHeight: root.hug ? head.implicitHeight + body.implicitHeight + Theme.spacing.medium + Theme.padding.large * 2 : 420
+    implicitHeight: root.hug ? Math.min(head.implicitHeight + body.implicitHeight + Theme.spacing.medium + Theme.padding.large * 2, root.maxHeight) : 420
+    // Hugging never grows past the screen under the bar; content that can be
+    // that long (a tray menu) scrolls inside.
+    readonly property real maxHeight: (root.screen?.height ?? 1080) - Theme.barHeight - Theme.spacing.small * 2
     color: "transparent"
 
     // PopupWindow's own grab, not HyprlandFocusGrab: the Hyprland grab owns
@@ -114,6 +117,10 @@ PopupWindow {
                 spacing: Theme.spacing.medium
 
                 Text {
+                    // A tray menu's title is the app's tooltip, any length.
+                    Layout.fillWidth: true
+                    Layout.maximumWidth: implicitWidth
+                    elide: Text.ElideRight
                     text: root.title
                     color: Theme.fg
                     font {

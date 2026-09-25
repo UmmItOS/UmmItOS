@@ -216,6 +216,15 @@ OverlayWindow {
 
 
 
+    // A close while letting go (Escape, or the IPC toggle) cancels the shot:
+    // without this the finish ran on and saved it anyway.
+    onShownChanged: {
+        if (!shown) {
+            finishing.stop();
+            cutting = null;
+        }
+    }
+
     onOpened: {
         cutting = null;
         // Only a closed overlay captures: reopened mid-fade it is still on

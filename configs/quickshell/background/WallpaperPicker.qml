@@ -121,8 +121,11 @@ OverlayWindow {
     // Closing without pressing Enter restores the confirmed wallpaper. On the
     // flag, not on unmapping, so it does not wait out the exit animation.
     onShownChanged: {
-        if (!shown)
+        if (!shown) {
+            // A preview still pending would land after the restore and stick.
+            previewDebounce.stop();
             Wallpapers.clearPreview();
+        }
     }
 
     anchors.top: false
@@ -208,6 +211,7 @@ OverlayWindow {
                 id: search
 
                 width: parent.width
+                clip: true
                 visible: text !== ""
                 color: Theme.accentText
                 font.family: Theme.fontDisplay
@@ -456,6 +460,9 @@ OverlayWindow {
 
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
+                            width: picker.focusedWidth - Theme.padding.large * 2
+                            horizontalAlignment: Text.AlignHCenter
+                            elide: Text.ElideRight
                             text: picker.labelOf(cell.modelData)
                             color: Theme.fg
                             font.family: Theme.fontDisplay

@@ -114,6 +114,16 @@ BarButton {
                     }
 
                     onTextEdited: bad = false
+
+                    // Typing breaks the text binding, and a swatch picked after
+                    // a bad entry left the field red; follow every change.
+                    Connections {
+                        target: Theme
+                        function onAccentChanged(): void {
+                            field.text = Theme.accent.toString();
+                            field.bad = false;
+                        }
+                    }
                     Keys.onReturnPressed: {
                         const c = root.parse(text);
                         bad = c === null;

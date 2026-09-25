@@ -90,18 +90,14 @@ Singleton {
     // A window shot is written by the shell itself (the window's own pixels,
     // transparency kept); this copies it and says so, as grim's path does.
     function saved(file: string): void {
-        shot.command = ["sh", "-c", 'wl-copy --type image/png < "$1" && notify-send -a Screenshot -h string:image-path:"$1" "Screenshot saved" "$(basename "$1")"', "sh", file];
-        shot.running = true;
+        Quickshell.execDetached(["sh", "-c", 'wl-copy --type image/png < "$1" && notify-send -a Screenshot -h string:image-path:"$1" "Screenshot saved" "$(basename "$1")"', "sh", file]);
     }
 
     function take(target: var): void {
         const file = newFile();
-        shot.command = ["sh", "-c", 'mkdir -p "$1" && f="$2" && shift 2 && grim "$@" "$f" && wl-copy --type image/png < "$f" && notify-send -a Screenshot -h string:image-path:"$f" "Screenshot saved" "$(basename "$f")"', "sh", root.dir, file, ...target];
-        shot.running = true;
-    }
-
-    Process {
-        id: shot
+        // Detached, one per shot: a shared Process dropped a second shot
+        // taken while the first was still saving.
+        Quickshell.execDetached(["sh", "-c", 'mkdir -p "$1" && f="$2" && shift 2 && grim "$@" "$f" && wl-copy --type image/png < "$f" && notify-send -a Screenshot -h string:image-path:"$f" "Screenshot saved" "$(basename "$f")"', "sh", root.dir, file, ...target]);
     }
 
     // grabToImage cannot create the folder, so it is made up front.

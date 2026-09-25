@@ -427,7 +427,7 @@ OverlayWindow {
                                         Text {
                                             id: countText
                                             anchors.centerIn: parent
-                                            text: card.windows.length
+                                            text: cell.modelData?.toplevels.values.length ?? 0
                                             color: Theme.fg
                                             font {
                                                 family: Theme.font

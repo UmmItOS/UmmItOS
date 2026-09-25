@@ -37,6 +37,10 @@ Singleton {
     readonly property string shotDir: Quickshell.env("XDG_RUNTIME_DIR") + "/ummitos-lock"
     property int shot: 0
     property bool preparing: false
+    // This lock's pictures are written. Until then the preload must not ask
+    // for the last lock's files, which are gone: their error would count as
+    // loaded and let the lock show before its own capture.
+    property bool captured: false
 
     function shotOf(screenName: string): string {
         return "file://" + shotDir + "/" + screenName + ".ppm?" + shot;
@@ -45,6 +49,7 @@ Singleton {
     // Photograph every screen, then run `then`.
     function capture(then: var): void {
         preparing = true;
+        captured = false;
         grab.then = then;
         grab.command = ["sh", "-c", 'mkdir -p -m 700 "$1" && d="$1" && shift && for o; do grim -t ppm -o "$o" "$d/$o.ppm"; done', "sh", shotDir, ...Quickshell.screens.map(s => s.name)];
         grab.running = true;
@@ -74,6 +79,7 @@ Singleton {
         // than one that fades in from black.
         onExited: {
             root.shot++;
+            root.captured = true;
             waitLimit.restart();
         }
     }
@@ -93,13 +99,13 @@ Singleton {
             cache: false
             // Only held while locking or locked; after that the full-size
             // pictures are let go rather than kept decoded all session.
-            source: root.shot > 0 && (root.locked || root.preparing) ? root.shotOf(modelData.name) : ""
+            source: root.captured && (root.locked || root.preparing) ? root.shotOf(modelData.name) : ""
             onStatusChanged: root.readyCheck()
         }
     }
 
     function readyCheck(): void {
-        if (!preparing)
+        if (!preparing || !captured)
             return;
         for (let i = 0; i < preload.count; i++) {
             const s = preload.objectAt(i)?.status;

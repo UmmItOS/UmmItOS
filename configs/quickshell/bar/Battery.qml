@@ -13,7 +13,9 @@ RowLayout {
 
     // Charging as soon as the charger is in (UPower.onBattery flips the
     // moment the plug does), not when the battery gets round to saying so.
-    readonly property bool charging: !full && (!UPower.onBattery || charge === UPowerDeviceState.Charging)
+    // Not while held at a charge limit (PendingCharge): plugged in, but not
+    // filling, and it would otherwise breathe all day.
+    readonly property bool charging: !full && charge !== UPowerDeviceState.PendingCharge && (!UPower.onBattery || charge === UPowerDeviceState.Charging)
     // The driver can say "fully charged" for a moment on plug-in, well short
     // of full; believe it only when the level agrees.
     readonly property bool full: charge === UPowerDeviceState.FullyCharged && Math.round(pct * 100) >= 99
@@ -86,7 +88,8 @@ RowLayout {
         // Breathes for as long as it charges, by request. Slow on purpose:
         // every frame of it redraws the bar, so a calm rhythm costs less.
         SequentialAnimation on opacity {
-            running: root.charging
+            // Not behind the lock, where nobody sees the bar it redraws.
+            running: root.charging && !Lock.locked
             loops: Animation.Infinite
             alwaysRunToEnd: true
 

@@ -176,7 +176,6 @@ OverlayWindow {
                 Layout.preferredHeight: Math.min(contentHeight, win.listRoom)
                 visible: Notifs.history.count > 0
                 clip: true
-                spacing: Theme.spacing.small
                 model: Notifs.history
 
                 // One header per app; its cards stack under it, collapsed to
@@ -282,7 +281,7 @@ OverlayWindow {
                     }
                 }
 
-                delegate: Surface {
+                delegate: Item {
                     id: card
 
                     // Roles of the history ListModel. Read with a fallback: a
@@ -296,7 +295,10 @@ OverlayWindow {
                     // Height snaps and the card fades in. Animating the height
                     // resized the panel window every frame (the window hugs the
                     // list), and Hyprland re-blurring it each time was the lag.
-                    implicitHeight: shownInGroup ? body.implicitHeight + Theme.padding.large * 2 : 0
+                    // The gap under a card is its own: ListView adds its spacing
+                    // after hidden (collapsed) cards too, which left a gap under
+                    // a collapsed group that grew with every card in it.
+                    implicitHeight: shownInGroup ? surface.implicitHeight + Theme.spacing.small : 0
                     visible: shownInGroup
                     opacity: shownInGroup ? 1 : 0
 
@@ -305,137 +307,144 @@ OverlayWindow {
                             duration: Theme.duration.expressiveDefaultEffects
                         }
                     }
-                    radius: Theme.rounding.extraLarge
-                    tone: Theme.scrim(0.35)
 
-                    ColumnLayout {
-                        id: body
-                        anchors {
-                            left: parent.left
-                            right: parent.right
-                            verticalCenter: parent.verticalCenter
-                            margins: Theme.padding.large
-                        }
-                        spacing: Theme.spacing.extraSmall
+                    Surface {
+                        id: surface
 
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: Theme.spacing.small
+                        width: parent.width
+                        implicitHeight: body.implicitHeight + Theme.padding.large * 2
+                        radius: Theme.rounding.extraLarge
+                        tone: Theme.scrim(0.35)
 
-                            IconImage {
-                                id: icon
-                                implicitSize: Theme.icon.tiny
-                                source: card.model.appIcon ? Quickshell.iconPath(card.model.appIcon, true) : ""
-                                visible: status === Image.Ready
+                        ColumnLayout {
+                            id: body
+                            anchors {
+                                left: parent.left
+                                right: parent.right
+                                verticalCenter: parent.verticalCenter
+                                margins: Theme.padding.large
                             }
+                            spacing: Theme.spacing.extraSmall
 
-                            MaterialIcon {
-                                visible: !icon.visible
-                                text: "notifications"
-                                color: Theme.dim
-                                size: Theme.icon.small
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: Theme.spacing.small
+
+                                IconImage {
+                                    id: icon
+                                    implicitSize: Theme.icon.tiny
+                                    source: card.model.appIcon ? Quickshell.iconPath(card.model.appIcon, true) : ""
+                                    visible: status === Image.Ready
+                                }
+
+                                MaterialIcon {
+                                    visible: !icon.visible
+                                    text: "notifications"
+                                    color: Theme.dim
+                                    size: Theme.icon.small
+                                }
+
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: card.model.appName ?? ""
+                                    color: Theme.dim
+                                    font {
+                                        family: Theme.font
+                                        pixelSize: Theme.fontSize.smaller
+                                        weight: Theme.weight.medium
+                                        letterSpacing: Theme.tracking.wide
+                                    }
+                                    elide: Text.ElideRight
+                                }
+
+                                Text {
+                                    text: card.model.time ?? ""
+                                    color: Theme.dim
+                                    font {
+                                        family: Theme.font
+                                        pixelSize: Theme.fontSize.small
+                                        features: ({
+                                                tnum: 1
+                                            })
+                                    }
+                                }
+
+                                MaterialIcon {
+                                    text: "close"
+                                    color: Theme.dim
+                                    size: Theme.icon.small
+                                    opacity: cardHover.hovered ? 1 : 0
+
+                                    Behavior on opacity {
+                                        NumberAnimation {
+                                            duration: Theme.duration.expressiveFastEffects
+                                        }
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        anchors.margins: -4
+                                        onClicked: Notifs.forget(card.model.key)
+                                    }
+                                }
                             }
 
                             Text {
                                 Layout.fillWidth: true
-                                text: card.model.appName ?? ""
-                                color: Theme.dim
+                                Layout.topMargin: Theme.spacing.extraSmall
+                                text: card.model.summary ?? ""
+                                color: card.model.critical ? Theme.urgent : Theme.accentText
                                 font {
-                                    family: Theme.font
-                                    pixelSize: Theme.fontSize.smaller
-                                    weight: Theme.weight.medium
-                                    letterSpacing: Theme.tracking.wide
+                                    family: Theme.fontDisplay
+                                    pixelSize: Theme.fontSize.larger
+                                    weight: Theme.weight.bold
                                 }
                                 elide: Text.ElideRight
                             }
 
                             Text {
-                                text: card.model.time ?? ""
-                                color: Theme.dim
+                                Layout.fillWidth: true
+                                text: card.model.body ?? ""
+                                color: Theme.fg
                                 font {
                                     family: Theme.font
-                                    pixelSize: Theme.fontSize.small
-                                    features: ({
-                                            tnum: 1
-                                        })
+                                    pixelSize: Theme.fontSize.normal
                                 }
+                                textFormat: Text.StyledText
+                                wrapMode: Text.Wrap
+                                maximumLineCount: 4
+                                elide: Text.ElideRight
+                                visible: text !== ""
+                                onLinkActivated: link => Notifs.openLink(link)
                             }
 
-                            MaterialIcon {
-                                text: "close"
-                                color: Theme.dim
-                                size: Theme.icon.small
-                                opacity: cardHover.hovered ? 1 : 0
+                            // The same preview the toast showed: album art, a
+                            // screenshot, an avatar. Shown only once the file has
+                            // actually loaded — the server hands out a temporary
+                            // path, and a history entry can outlive it.
+                            ClippingRectangle {
+                                Layout.topMargin: Theme.spacing.small
+                                implicitWidth: Theme.control.thumbWidth
+                                implicitHeight: Theme.control.thumbHeight
+                                radius: Theme.rounding.medium
+                                color: "transparent"
+                                visible: preview.status === Image.Ready
 
-                                Behavior on opacity {
-                                    NumberAnimation {
-                                        duration: Theme.duration.expressiveFastEffects
-                                    }
-                                }
-
-                                MouseArea {
+                                Image {
+                                    id: preview
                                     anchors.fill: parent
-                                    anchors.margins: -4
-                                    onClicked: Notifs.forget(card.model.key)
+                                    source: card.model.image ? card.model.image : ""
+                                    fillMode: Image.PreserveAspectCrop
+                                    asynchronous: true
+                                    sourceSize.width: 240
+                                    sourceSize.height: 136
                                 }
                             }
                         }
 
-                        Text {
-                            Layout.fillWidth: true
-                            Layout.topMargin: Theme.spacing.extraSmall
-                            text: card.model.summary ?? ""
-                            color: card.model.critical ? Theme.urgent : Theme.accentText
-                            font {
-                                family: Theme.fontDisplay
-                                pixelSize: Theme.fontSize.larger
-                                weight: Theme.weight.bold
-                            }
-                            elide: Text.ElideRight
+                        HoverHandler {
+                            id: cardHover
                         }
-
-                        Text {
-                            Layout.fillWidth: true
-                            text: card.model.body ?? ""
-                            color: Theme.fg
-                            font {
-                                family: Theme.font
-                                pixelSize: Theme.fontSize.normal
-                            }
-                            textFormat: Text.StyledText
-                            wrapMode: Text.Wrap
-                            maximumLineCount: 4
-                            elide: Text.ElideRight
-                            visible: text !== ""
-                            onLinkActivated: link => Notifs.openLink(link)
-                        }
-
-                        // The same preview the toast showed: album art, a
-                        // screenshot, an avatar. Shown only once the file has
-                        // actually loaded — the server hands out a temporary
-                        // path, and a history entry can outlive it.
-                        ClippingRectangle {
-                            Layout.topMargin: Theme.spacing.small
-                            implicitWidth: Theme.control.thumbWidth
-                            implicitHeight: Theme.control.thumbHeight
-                            radius: Theme.rounding.medium
-                            color: "transparent"
-                            visible: preview.status === Image.Ready
-
-                            Image {
-                                id: preview
-                                anchors.fill: parent
-                                source: card.model.image ? card.model.image : ""
-                                fillMode: Image.PreserveAspectCrop
-                                asynchronous: true
-                                sourceSize.width: 240
-                                sourceSize.height: 136
-                            }
-                        }
-                    }
-
-                    HoverHandler {
-                        id: cardHover
                     }
                 }
             }

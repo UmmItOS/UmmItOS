@@ -26,9 +26,13 @@ OverlayWindow {
     // first. With one, a match at the start of the name beats one at the start
     // of a later word, which beats one anywhere in the name, which beats a
     // keyword; use breaks ties, then the alphabet.
+    // The use counts as they were on opening: a launch counts itself while the
+    // grid fades out, and ranking live re-sorted the tiles under the fade.
+    property var used: ({})
+
     readonly property var results: {
         const f = filter.toLowerCase();
-        const used = Launcher.launches;
+        const used = win.used;
         const rank = a => {
             if (f === "")
                 return 0;
@@ -51,6 +55,7 @@ OverlayWindow {
     }
 
     onOpened: {
+        used = Launcher.launches;
         filter = "";
         search.text = "";
         grid.currentIndex = 0;
