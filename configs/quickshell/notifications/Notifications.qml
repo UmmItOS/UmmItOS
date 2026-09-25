@@ -399,7 +399,8 @@ Scope {
 
                                 Layout.fillWidth: true
                                 Layout.maximumWidth: implicitWidth
-                                implicitWidth: label.implicitWidth + Theme.padding.large * 2
+                                // Measured apart from the label, which is squeezed to this width.
+                                implicitWidth: Math.ceil(measure.advanceWidth) + Theme.padding.large * 2
                                 implicitHeight: Theme.control.field
                                 radius: Theme.rounding.full
                                 color: actionHover.hovered ? Theme.accent : Theme.bgTray
@@ -412,6 +413,12 @@ Scope {
 
                                 HoverHandler {
                                     id: actionHover
+                                }
+
+                                TextMetrics {
+                                    id: measure
+                                    text: label.text
+                                    font: label.font
                                 }
 
                                 Text {
