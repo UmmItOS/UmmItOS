@@ -28,7 +28,7 @@ bind("Shell", "ALT + W", shell("wallpaper", "toggle"), "Wallpaper picker")
 bind("Utilities", "ALT + E", run("smile"), "Emoji picker (Smile)")
 bind("Utilities", "ALT + P", run("bash ~/script/hypr/hyprpicker/hyprpicker.sh"), "Color picker (Hyprpicker)")
 bind("Utilities", "ALT + O", run("woomer"), "Screen magnifier (woomer)")
-bind("Utilities", mainMod .. " + SHIFT + R", run("bash ~/script/misc/wf-recorder.sh"), "Start/stop screen recording")
+bind("Utilities", mainMod .. " + SHIFT + R", run("bash ~/script/misc/screen-record.sh"), "Start/stop screen recording")
 bind("Apps", mainMod .. " + SHIFT + Return", run("kitty -e ~/script/misc/update.sh"), "Upgrade UmmItOS")
 
 -- Screenshots, drawn by the shell

@@ -135,7 +135,7 @@ One short line, only for a why the code cannot show (a trap, a workaround, a rea
 
 Before theorising about why a surface misbehaves, read its actual state. Add a temporary `function probe(): string` to the singleton's `IpcHandler` that returns `JSON.stringify({…})` of the internal values, call it between steps, and delete it afterwards.
 
-For things that need input you cannot give from a terminal, mark every temporary line `// PROBE` (an `IpcHandler` that calls the function a click would, a `console.log`) and remove them with `sed -i '/\/\/ PROBE/d'`. `hyprctl dispatch movecursor x y` moves the pointer. Animations are checked by recording: `wf-recorder -f rec.mp4`, then `ffmpeg -i rec.mp4 -vf "fps=6,scale=320:-1,tile=4x3" -frames:v 1 grid.png` for a contact sheet. Never delete a user's files by guessing which one a test made; list the folder before and after and remove only the difference.
+For things that need input you cannot give from a terminal, mark every temporary line `// PROBE` (an `IpcHandler` that calls the function a click would, a `console.log`) and remove them with `sed -i '/\/\/ PROBE/d'`. `hyprctl dispatch movecursor x y` moves the pointer. Animations are checked by recording: `wl-screenrec -f rec.mp4`, then `ffmpeg -i rec.mp4 -vf "fps=6,scale=320:-1,tile=4x3" -frames:v 1 grid.png` for a contact sheet. Never delete a user's files by guessing which one a test made; list the folder before and after and remove only the difference.
 
 ## Traps found the hard way
 

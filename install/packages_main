@@ -21,7 +21,6 @@ extra/papirus-icon-theme
 extra/orchis-theme
 extra/quickshell
 extra/fastfetch
-extra/wf-recorder
 extra/pipewire-jack
 extra/pipewire-alsa
 extra/pipewire-pulse
@@ -38,6 +37,7 @@ extra/bluez-utils
 
 aur/smile
 aur/woomer
+aur/wl-screenrec
 aur/bibata-cursor-theme
 aur/apple-fonts
 extra/wl-clipboard

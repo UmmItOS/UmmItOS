@@ -33,7 +33,7 @@ Singleton {
         // Media first: the brightness keys also call the shell's IPC.
         if (/^(brightnessctl|wpctl|playerctl)/.test(a))
             return "Media";
-        if (/wf-recorder|hyprpicker|woomer|smile|ipc call screenshot/.test(a))
+        if (/screen-record|hyprpicker|woomer|smile|ipc call screenshot/.test(a))
             return "Utilities";
         if (d === "global" || a.includes("qs -c ummitos ipc"))
             return "Shell";
