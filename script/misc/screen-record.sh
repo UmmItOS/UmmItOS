@@ -14,14 +14,6 @@ unmix() {
     fi
 }
 
-# A broken mic sends one stuck full-scale value, which drowns everything mixed with it;
-# one that cannot be read at all counts as dead too.
-mic_dead() {
-    local mean
-    mean=$(ffmpeg -hide_banner -f pulse -i "$1" -t 0.5 -af volumedetect -f null - 2>&1 | sed -n 's/.*mean_volume: \(-\?[0-9.]*\) dB/\1/p')
-    [[ -z "$mean" ]] || awk -v m="$mean" 'BEGIN { exit !(m > -3) }'
-}
-
 if pid=$(pgrep -x wl-screenrec); then
     kill -INT "$pid"
     # The file is only complete once the recorder has exited.
@@ -48,12 +40,13 @@ output=$(hyprctl -j monitors | jq -r '.[] | select(.focused) | .name')
 echo "$file" > "$state/path"
 
 # Said when saving, not now: a notice now would be in the video.
-if [[ "$mic" == 1 ]] && mic_dead "$(pactl get-default-source)"; then
+# A broken mic's stuck signal would drown everything mixed with it.
+if [[ "$mic" == 1 ]] && ! "$HOME/script/misc/mic-check.sh"; then
     mic=0
     if [[ "$system" == 1 ]]; then
-        echo "The microphone gave no sound, so only system sound was recorded." > "$state/note"
+        echo "The microphone is not working, so only system sound was recorded. Reboot to fix it." > "$state/note"
     else
-        echo "The microphone gave no sound, so the video is silent." > "$state/note"
+        echo "The microphone is not working, so the video is silent. Reboot to fix it." > "$state/note"
     fi
 fi
 

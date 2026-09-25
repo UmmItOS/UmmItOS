@@ -80,6 +80,7 @@ ShellRoot {
 
     // Wi-Fi and Bluetooth coming and going.
     ConnectionNotifier {}
+    MicNotifier {}
 
     // A nudge once the last full upgrade is over a week old.
     UpdateReminder {}
