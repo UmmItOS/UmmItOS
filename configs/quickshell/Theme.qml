@@ -147,9 +147,9 @@ Singleton {
 
     // A wallpaper card's inner shadow along its edge; lighter on the focused one.
     readonly property QtObject cardEdge: QtObject {
-        readonly property int spread: 40
-        readonly property real strength: 0.85
-        readonly property real strengthFocused: 0.55
+        readonly property int spread: 72
+        readonly property real strength: 0.6
+        readonly property real strengthFocused: 0.4
     }
     // The lecture pen (draw/).
     readonly property QtObject draw: QtObject {
