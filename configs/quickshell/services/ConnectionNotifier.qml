@@ -37,7 +37,12 @@ Scope {
     function settleNow(): void {
         // Right after a wake, Wi-Fi and Bluetooth reconnect on their own;
         // that is not news, so the new state just becomes the baseline.
-        if (quiet.running) {
+        // Also quiet from going to sleep until the wake is over (Wake.dark),
+        // and when the settle fired late: Wi-Fi drops on the way to sleep,
+        // and that timer, frozen by the suspend, fired on waking, before
+        // `woke`, as "Wi-Fi disconnected".
+        const late = Date.now() - settle.since > settle.interval * 3;
+        if (quiet.running || Wake.dark > 0 || late) {
             root.lastNetwork = root.network;
             root.lastDevices = root.devices;
             return;
@@ -60,8 +65,8 @@ Scope {
         root.lastDevices = root.devices;
     }
 
-    onNetworkChanged: if (primed) settle.restart()
-    onDevicesChanged: if (primed) settle.restart()
+    onNetworkChanged: if (primed) settle.start_()
+    onDevicesChanged: if (primed) settle.start_()
 
     Connections {
         target: Wake
@@ -78,6 +83,14 @@ Scope {
     Timer {
         id: settle
         interval: 1500
+
+        property real since: 0
+
+        function start_(): void {
+            since = Date.now();
+            restart();
+        }
+
         onTriggered: root.settleNow()
     }
 
