@@ -3,7 +3,6 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import Quickshell.Widgets
 import QtQuick
-import QtQuick.Effects
 import ".."
 
 OverlayWindow {
@@ -402,34 +401,6 @@ OverlayWindow {
                 }
                 z: focused ? 1 : 0
 
-                Image {
-                    id: glowSource
-
-                    anchors.fill: card
-                    visible: false
-                    source: cell.isUp ? "" : "file://" + picker.coverOf(cell.modelData)
-                    fillMode: Image.PreserveAspectCrop
-                    asynchronous: true
-                    sourceSize.width: Theme.cardGlow.sourceWidth
-                }
-
-                MultiEffect {
-                    anchors.fill: card
-                    anchors.margins: -Theme.cardGlow.spread
-                    source: glowSource
-                    visible: glowSource.status === Image.Ready
-                    blurEnabled: true
-                    blurMax: Theme.cardGlow.blur
-                    blur: 1
-                    opacity: cell.focused ? Theme.cardGlow.alphaFocused : Theme.cardGlow.alpha
-
-                    Behavior on opacity {
-                        NumberAnimation {
-                            duration: Theme.duration.expressiveDefaultSpatial
-                        }
-                    }
-                }
-
                 ClippingRectangle {
                     id: card
 
@@ -455,6 +426,25 @@ OverlayWindow {
                         asynchronous: true
                         sourceSize.width: picker.focusedWidth
                         sourceSize.height: picker.focusedHeight
+                    }
+
+                    ShaderEffect {
+                        anchors.fill: parent
+                        visible: !cell.isUp
+
+                        property size size: Qt.size(width, height)
+                        property real radius: card.radius
+                        property real spread: Theme.cardEdge.spread
+                        property real strength: cell.focused ? Theme.cardEdge.strengthFocused : Theme.cardEdge.strength
+                        property color ink: Theme.scrim(1)
+
+                        fragmentShader: "edge.frag.qsb"
+
+                        Behavior on strength {
+                            NumberAnimation {
+                                duration: Theme.duration.expressiveDefaultSpatial
+                            }
+                        }
                     }
 
                     Column {
