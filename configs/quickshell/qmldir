@@ -25,3 +25,4 @@ singleton Cheatsheet 1.0 cheatsheet/Cheatsheet.qml
 singleton Screenshot 1.0 screenshot/Screenshot.qml
 singleton Lock 1.0 lock/Lock.qml
 singleton Wake 1.0 wake/Wake.qml
+singleton Audio 1.0 services/Audio.qml

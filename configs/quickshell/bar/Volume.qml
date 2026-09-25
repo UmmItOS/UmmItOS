@@ -29,7 +29,7 @@ RowLayout {
 
     function setVolume(value: real): void {
         if (root.audio)
-            root.audio.volume = Math.max(0, Math.min(1, value));
+            root.audio.volume = Math.max(0, Math.min(Audio.limit, value));
     }
 
     function glyphFor(level: real, muted: bool): string {
@@ -142,9 +142,10 @@ RowLayout {
             Slider {
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignVCenter
-                value: root.level
+                // The whole track is the chosen limit, not 100%.
+                value: root.level / Audio.limit
                 fill: root.muted ? Theme.dim : Theme.accentText
-                onMoved: value => root.setVolume(value)
+                onMoved: value => root.setVolume(value * Audio.limit)
             }
 
             Text {
@@ -159,6 +160,109 @@ RowLayout {
                     features: ({
                             tnum: 1
                         })
+                }
+            }
+        }
+
+        Text {
+            Layout.fillWidth: true
+            Layout.topMargin: Theme.spacing.small
+            text: "Volume limit"
+            color: Theme.dim
+            font {
+                family: Theme.font
+                pixelSize: Theme.fontSize.small
+                weight: Theme.weight.medium
+                letterSpacing: Theme.tracking.wider
+            }
+        }
+
+        // One choice of four: the accent pill slides to the picked one.
+        Item {
+            id: limits
+
+            readonly property real cell: width / Audio.limits.length
+
+            Layout.fillWidth: true
+            implicitHeight: Theme.control.field
+
+            Rectangle {
+                anchors.fill: parent
+                radius: Theme.rounding.full
+                color: Theme.bgTray
+            }
+
+            Rectangle {
+                width: limits.cell
+                height: parent.height
+                radius: Theme.rounding.full
+                color: Theme.accent
+                transform: Translate {
+                    x: Audio.limits.indexOf(Audio.limit) * limits.cell
+
+                    Behavior on x {
+                        NumberAnimation {
+                            duration: Theme.duration.expressiveFastSpatial
+                            easing.type: Easing.BezierSpline
+                            easing.bezierCurve: Theme.curve.emphasized
+                        }
+                    }
+                }
+            }
+
+            Row {
+                anchors.fill: parent
+
+                Repeater {
+                    model: Audio.limits
+
+                    Item {
+                        id: choice
+
+                        required property real modelData
+                        readonly property bool picked: Audio.limit === choice.modelData
+
+                        width: limits.cell
+                        height: limits.height
+
+                        Rectangle {
+                            anchors.fill: parent
+                            radius: Theme.rounding.full
+                            color: Theme.glass
+                            visible: choiceHover.hovered && !choice.picked
+                        }
+
+                        Text {
+                            anchors.centerIn: parent
+                            scale: choiceTap.pressed ? Theme.popScale : 1
+                            text: Math.round(choice.modelData * 100) + "%"
+                            color: choice.picked || choiceHover.hovered ? Theme.fg : Theme.dim
+                            font {
+                                family: Theme.font
+                                pixelSize: Theme.fontSize.smaller
+                                weight: choice.picked ? Theme.weight.medium : Theme.weight.regular
+                                features: ({
+                                        tnum: 1
+                                    })
+                            }
+
+                            Behavior on scale {
+                                NumberAnimation {
+                                    duration: Theme.duration.expressiveFastEffects
+                                }
+                            }
+                        }
+
+                        HoverHandler {
+                            id: choiceHover
+                            cursorShape: Qt.PointingHandCursor
+                        }
+
+                        TapHandler {
+                            id: choiceTap
+                            onTapped: Audio.setLimit(choice.modelData)
+                        }
+                    }
                 }
             }
         }

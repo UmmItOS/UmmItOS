@@ -10,7 +10,8 @@ PanelWindow {
     id: win
 
     readonly property int segments: 16
-    readonly property int filled: Math.round(Osd.value * win.segments)
+    // Volume fills against its limit, so 300% of 400% is not a full bar.
+    readonly property int filled: Math.round(Osd.value / (Osd.kind === "volume" ? Audio.limit : 1) * win.segments)
     readonly property bool app: Osd.kind === "app"
 
     // Mapped until the fade ends.
