@@ -145,6 +145,16 @@ Singleton {
         readonly property int app: 60
     }
 
+    // A wallpaper card's glow in its own colours; a dark shadow vanished on the dark wash.
+    readonly property QtObject cardGlow: QtObject {
+        readonly property int blur: 64
+        // Decoded this small: it is blurred to mush anyway.
+        readonly property int sourceWidth: 96
+        readonly property real alpha: 0.45
+        readonly property real alphaFocused: 0.9
+        // How far past the card the glow starts, before the blur spreads it further.
+        readonly property int spread: 24
+    }
     // The lecture pen (draw/).
     readonly property QtObject draw: QtObject {
         readonly property var widths: [3, 6, 12]
