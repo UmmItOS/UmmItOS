@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Pipewire
 import QtQuick
+import ".."
 
 // Observes only: the keys already run wpctl and brightnessctl.
 Singleton {
@@ -34,7 +35,8 @@ Singleton {
             label = "";
         }
         kind = newKind;
-        value = Math.max(0, Math.min(1, newValue));
+        // Volume can pass 100%, up to the chosen limit.
+        value = Math.max(0, Math.min(newKind === "volume" ? Audio.limit : 1, newValue));
         muted = newMuted;
         shown = true;
         hide.restart();
