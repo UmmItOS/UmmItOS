@@ -147,6 +147,8 @@ Singleton {
 
     // How far in from a wallpaper card's edge its picture fades out, so no edge shows.
     readonly property int cardFeather: 56
+    // A desktop widget's width (a medium macOS widget).
+    readonly property int widgetWidth: 340
     // The lecture pen (draw/).
     readonly property QtObject draw: QtObject {
         readonly property var widths: [3, 6, 12]
@@ -196,6 +198,8 @@ Singleton {
         readonly property int wakeSafety: 6000
         // Gap between siblings entering one after another.
         readonly property int stagger: 40
+        // How often the desktop weather is fetched again.
+        readonly property int weatherRefresh: 1800000
     }
 
     // The lock screen's sizes, kept from hyprlock so the switch looks the same.

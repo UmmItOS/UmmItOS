@@ -28,3 +28,4 @@ singleton Wake 1.0 wake/Wake.qml
 singleton Audio 1.0 services/Audio.qml
 singleton Recorder 1.0 record/Recorder.qml
 singleton Draw 1.0 draw/Draw.qml
+singleton Weather 1.0 services/Weather.qml
