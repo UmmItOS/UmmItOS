@@ -153,6 +153,8 @@ Singleton {
         readonly property real highlightAlpha: 0.35
         readonly property real zoomMax: 6
         readonly property real zoomStep: 1.15
+        // Touchpad scroll arrives in pixels; this many make one zoom step.
+        readonly property real scrollPixels: 40
     }
     readonly property QtObject control: QtObject {
         // A list row in a flyout or the clipboard.

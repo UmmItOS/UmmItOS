@@ -46,6 +46,12 @@ OverlayWindow {
         ty = Math.max(height - height * zoom, Math.min(0, ty + dy));
     }
 
+    // About the pointer when it is on screen, else the middle.
+    function zoomBy(steps: real): void {
+        const inside = area.containsMouse;
+        zoomAt(inside ? area.mouseX : width / 2, inside ? area.mouseY : height / 2, steps * 3);
+    }
+
     function resetZoom(): void {
         zoom = 1;
         tx = ty = 0;
@@ -97,6 +103,10 @@ OverlayWindow {
                 win.highlighter = true;
             else if (event.key === Qt.Key_0)
                 win.resetZoom();
+            else if (event.key === Qt.Key_Plus || event.key === Qt.Key_Equal)
+                win.zoomBy(1);
+            else if (event.key === Qt.Key_Minus)
+                win.zoomBy(-1);
             else if (event.key >= Qt.Key_1 && event.key <= Qt.Key_5)
                 win.ink = event.key - Qt.Key_1;
             else
@@ -215,7 +225,17 @@ OverlayWindow {
                     win.strokes = win.strokes.concat([win.current]);
                 win.current = null;
             }
-            onWheel: wheel => win.zoomAt(wheel.x, wheel.y, wheel.angleDelta.y / 120)
+            // A touchpad can send pixels with no wheel steps at all.
+            onWheel: wheel => {
+                const steps = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y / 120 : wheel.pixelDelta.y / Theme.draw.scrollPixels;
+                if (steps !== 0)
+                    win.zoomAt(wheel.x, wheel.y, steps);
+            }
+
+            PinchHandler {
+                target: null
+                onScaleChanged: delta => win.zoomAt(centroid.position.x, centroid.position.y, Math.log(delta) / Math.log(Theme.draw.zoomStep))
+            }
         }
 
         // The pen itself, where the pointer is.
@@ -392,6 +412,11 @@ OverlayWindow {
                     onClicked: win.copy()
                 }
 
+                Tool {
+                    icon: "zoom_out"
+                    onClicked: win.zoomBy(-1)
+                }
+
                 Text {
                     Layout.preferredWidth: Theme.control.readout
                     horizontalAlignment: Text.AlignHCenter
@@ -406,6 +431,11 @@ OverlayWindow {
                     TapHandler {
                         onTapped: win.resetZoom()
                     }
+                }
+
+                Tool {
+                    icon: "zoom_in"
+                    onClicked: win.zoomBy(1)
                 }
 
                 Tool {
