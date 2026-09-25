@@ -22,8 +22,10 @@ hl.env("MOZ_ENABLE_WAYLAND", "1")
 
 -- Where screenshots are saved (read by the shell; the name predates it).
 -- post-install.sh rewrites this line; keep it one line.
-hl.env("HYPRSHOT_DIR", home .. "/Pictures/Screenshots")
+hl.env("HYPRSHOT_DIR", home .. "/Pictures")
 
 -- Default editor, terminal
 hl.env("EDITOR", "nvim")
 hl.env("TERM", "xterm-kitty")
+
+hl.env("GTK_USE_PORTAL", "1")

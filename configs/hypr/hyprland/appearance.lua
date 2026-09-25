@@ -48,7 +48,7 @@ hl.config({
             input_methods = true,
             input_methods_ignorealpha = 0.5,
         },
-        inactive_opacity = 0.8,
+        inactive_opacity = 0.7,
         active_opacity = 1,
         fullscreen_opacity = 1.0,
     },
