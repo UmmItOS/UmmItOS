@@ -14,11 +14,12 @@ unmix() {
     fi
 }
 
-# A broken mic sends one stuck full-scale value, which drowns everything mixed with it.
+# A broken mic sends one stuck full-scale value, which drowns everything mixed with it;
+# one that cannot be read at all counts as dead too.
 mic_dead() {
     local mean
     mean=$(ffmpeg -hide_banner -f pulse -i "$1" -t 0.5 -af volumedetect -f null - 2>&1 | sed -n 's/.*mean_volume: \(-\?[0-9.]*\) dB/\1/p')
-    [[ -n "$mean" ]] && awk -v m="$mean" 'BEGIN { exit !(m > -3) }'
+    [[ -z "$mean" ]] || awk -v m="$mean" 'BEGIN { exit !(m > -3) }'
 }
 
 if pid=$(pgrep -x wl-screenrec); then
