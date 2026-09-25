@@ -219,7 +219,12 @@ ensure_multilib() {
     local backup
     backup="/etc/pacman.conf.bak.$(date +%Y%m%d-%H%M%S)"
     sudo cp /etc/pacman.conf "$backup" && echo "${COLOR_GREY}Backed up /etc/pacman.conf to ${backup}${COLOR_RESET}"
-    sudo sed -i '/^#\[multilib\]$/{N;s/^#\[multilib\]\n#Include/[multilib]\nInclude/}' /etc/pacman.conf
+    # Uncomment the stock section, or add one where there is none (trimmed images).
+    if grep -q '^#\[multilib\]$' /etc/pacman.conf; then
+        sudo sed -i '/^#\[multilib\]$/{N;s/^#\[multilib\]\n#Include/[multilib]\nInclude/}' /etc/pacman.conf
+    else
+        printf '\n[multilib]\nInclude = /etc/pacman.d/mirrorlist\n' | sudo tee -a /etc/pacman.conf > /dev/null
+    fi
 
     if grep -q '^\[multilib\]$' /etc/pacman.conf && sudo pacman -Sy; then
         echo "${COLOR_GREEN}:: multilib enabled.${COLOR_RESET}"
