@@ -105,8 +105,8 @@ PopupWindow {
 
                 Text {
                     // A tray menu's title is the app's tooltip, any length.
-                    Layout.fillWidth: true
-                    Layout.maximumWidth: implicitWidth
+                    // Not fillWidth: sharing with the spinner cut short titles.
+                    Layout.minimumWidth: 0
                     elide: Text.ElideRight
                     text: root.title
                     color: Theme.fg

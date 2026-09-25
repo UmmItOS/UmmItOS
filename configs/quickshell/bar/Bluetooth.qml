@@ -99,9 +99,27 @@ RowLayout {
             clip: true
             spacing: Theme.spacing.extraSmall
             boundsBehavior: Flickable.StopAtBounds
+
+            // Rows moving to the top (the connected one) otherwise scroll it out of view.
+            property bool atTop: true
+            onMovementEnded: atTop = atYBeginning
+            onVisibleChanged: atTop = true
+            Connections {
+                target: root
+                function onDevicesChanged(): void {
+                    if (list.atTop)
+                        Qt.callLater(list.positionViewAtBeginning);
+                }
+            }
             // ScriptModel diffs, so surviving rows are kept, not rebuilt.
             model: ScriptModel {
                 values: root.devices
+            }
+            // Discovery takes seconds; until then only paired devices show.
+            footer: FlyoutSearching {
+                width: list.width
+                searching: root.searching
+                text: "Looking for devices"
             }
 
             delegate: FlyoutRow {
@@ -124,7 +142,7 @@ RowLayout {
 
                     MaterialIcon {
                         text: root.glyph(row.modelData)
-                        color: row.modelData.connected ? Theme.accentText : Theme.fg
+                        color: Theme.fg
                         size: Theme.icon.small
                     }
 
@@ -151,6 +169,18 @@ RowLayout {
                             features: ({
                                     tnum: 1
                                 })
+                        }
+                    }
+
+                    Text {
+                        visible: row.modelData.connected && !row.busy
+                        // Says what a click does.
+                        text: row.hovered ? "Disconnect" : "Connected"
+                        color: Theme.fg
+                        font {
+                            family: Theme.font
+                            pixelSize: Theme.fontSize.small
+                            weight: Theme.weight.medium
                         }
                     }
 

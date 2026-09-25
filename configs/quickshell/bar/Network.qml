@@ -117,9 +117,27 @@ RowLayout {
             clip: true
             spacing: Theme.spacing.extraSmall
             boundsBehavior: Flickable.StopAtBounds
+
+            // Rows moving to the top (the connected one) otherwise scroll it out of view.
+            property bool atTop: true
+            onMovementEnded: atTop = atYBeginning
+            onVisibleChanged: atTop = true
+            Connections {
+                target: root
+                function onNetworksChanged(): void {
+                    if (list.atTop)
+                        Qt.callLater(list.positionViewAtBeginning);
+                }
+            }
             // ScriptModel diffs, so surviving rows are kept, not rebuilt.
             model: ScriptModel {
                 values: root.networks
+            }
+            // The first scan takes seconds; until then only known networks show.
+            footer: FlyoutSearching {
+                width: list.width
+                searching: root.searching
+                text: "Searching for networks"
             }
 
             delegate: FlyoutRow {
@@ -164,7 +182,7 @@ RowLayout {
 
                         MaterialIcon {
                             text: root.bars(row.modelData.signalStrength)
-                            color: row.modelData.connected ? Theme.accentText : Theme.fg
+                            color: Theme.fg
                             size: Theme.icon.small
                         }
 
@@ -177,6 +195,18 @@ RowLayout {
                                 family: Theme.font
                                 pixelSize: Theme.fontSize.smaller
                                 weight: row.modelData.connected ? Theme.weight.medium : Theme.weight.regular
+                            }
+                        }
+
+                        Text {
+                            visible: row.modelData.connected && !row.busy
+                            // Says what a click does.
+                            text: row.hovered ? "Disconnect" : "Connected"
+                            color: Theme.fg
+                            font {
+                                family: Theme.font
+                                pixelSize: Theme.fontSize.small
+                                weight: Theme.weight.medium
                             }
                         }
 

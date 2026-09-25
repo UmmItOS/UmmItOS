@@ -8,7 +8,8 @@ Rectangle {
 
     implicitHeight: Theme.control.row
     radius: Theme.rounding.large
-    color: root.hovered || root.active ? Theme.bgTray : "transparent"
+    // The one in use is filled with the accent, so it cannot be missed.
+    color: root.active ? Theme.accent : root.hovered ? Theme.bgTray : "transparent"
 
     Behavior on color {
         ColorAnimation {
