@@ -52,7 +52,6 @@ PopupWindow {
             const left = Math.max(0, Math.min(centre - root.implicitWidth / 2, screenWidth - root.implicitWidth));
             Notifs.flyoutLeft = left;
             Notifs.flyoutRight = left + root.implicitWidth;
-            Notifs.flyoutScreen = root.anchorItem.Window.window?.screen?.name ?? "";
             Notifs.flyout = root;
         } else {
             root.release();

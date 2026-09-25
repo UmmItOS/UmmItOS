@@ -30,7 +30,9 @@ Flyout {
 
     QsMenuOpener {
         id: opener
-        menu: root.trail.length > 0 ? root.trail[root.trail.length - 1] : root.menu
+        // Only while open: an opener subscribes to the app's menu over D-Bus
+        // and keeps it live, one per tray item per bar, for nobody.
+        menu: !root.visible ? null : root.trail.length > 0 ? root.trail[root.trail.length - 1] : root.menu
     }
 
     FlyoutRow {

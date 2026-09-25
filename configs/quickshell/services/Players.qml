@@ -9,9 +9,15 @@ import QtQuick
 Singleton {
     id: root
 
-    // Whatever is playing; failing that, whatever is open.
+    // The player picked from the dashboard's chips, kept while it exists.
+    property var chosen: null
+
+    // The picked one; otherwise whatever is playing; failing that, whatever
+    // is open.
     readonly property var active: {
         const all = Mpris.players.values;
+        if (root.chosen && all.includes(root.chosen))
+            return root.chosen;
         return all.find(p => p.isPlaying) ?? all[0] ?? null;
     }
 

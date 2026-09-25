@@ -21,7 +21,6 @@ Singleton {
     property var flyout: null
     property real flyoutLeft: 0
     property real flyoutRight: 0
-    property string flyoutScreen: ""
 
     readonly property int cap: 60
 

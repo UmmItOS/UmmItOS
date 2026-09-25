@@ -1,6 +1,7 @@
 //@ pragma UseQApplication
 
 import Quickshell
+import QtQuick
 import "background"
 import "charging"
 import "cheatsheet"
@@ -59,6 +60,22 @@ ShellRoot {
     BatteryNotifier {
         onPluggedIn: ripple.play()
     }
+
+    // An app registers its tray icon once, with whichever tray host is up.
+    // When the shell restarts, some (Proton VPN, through libayatana) never
+    // register again and vanish. Offer the new host every tray icon on the
+    // bus that it does not already list.
+    Component.onCompleted: Quickshell.execDetached(["sh", "-c", `
+        sleep 1
+        w="org.kde.StatusNotifierWatcher"
+        reg=$(busctl --user get-property $w /StatusNotifierWatcher $w RegisteredStatusNotifierItems)
+        for n in $(busctl --user list --no-legend | awk '{print $1}' | grep '^org.kde.StatusNotifierItem-'); do
+            owner=$(busctl --user status "$n" | sed -n 's/^UniqueName=//p')
+            case "$reg" in *"$n"*|*"\"$owner/"*) continue ;; esac
+            busctl --user call $w /StatusNotifierWatcher $w RegisterStatusNotifierItem s "$n"
+        done`])
+    // Here and not in the tray: that has one copy per bar, and the copies
+    // raced each other on several screens.
 
     // Wi-Fi and Bluetooth coming and going.
     ConnectionNotifier {}

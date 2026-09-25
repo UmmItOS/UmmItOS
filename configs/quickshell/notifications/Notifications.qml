@@ -55,13 +55,11 @@ Scope {
         readonly property real columnRight: width - Theme.padding.medium
         readonly property real columnLeft: columnRight - toastWidth + Theme.padding.medium * 2
         // How far the toasts step left to clear an open bar dropdown: only
-        // one that actually overlaps the column, on this screen, and never
-        // so far that the column leaves the screen's left edge.
+        // one that actually overlaps the column, and never so far that the
+        // column leaves the screen's left edge.
         readonly property real clearance: {
             const f = Notifs.flyout;
             if (!f || Notifs.flyoutRight <= columnLeft)
-                return 0;
-            if (Notifs.flyoutScreen !== "" && screen && Notifs.flyoutScreen !== screen.name)
                 return 0;
             const needed = columnRight - Notifs.flyoutLeft + Theme.spacing.small;
             return Math.max(0, Math.min(needed, columnLeft - Theme.padding.medium));
@@ -384,7 +382,10 @@ Scope {
                         }
                     }
 
+                    // Kept inside the card: with several long labels the buttons
+                    // shrink and cut their text instead of running off.
                     RowLayout {
+                        Layout.fillWidth: true
                         Layout.topMargin: Theme.spacing.small
                         spacing: Theme.spacing.small
                         visible: card.modelData?.actions?.some(a => a.identifier !== "default") ?? false
@@ -396,6 +397,8 @@ Scope {
                                 id: action
                                 required property var modelData
 
+                                Layout.fillWidth: true
+                                Layout.maximumWidth: implicitWidth
                                 implicitWidth: label.implicitWidth + Theme.padding.large * 2
                                 implicitHeight: Theme.control.field
                                 radius: Theme.rounding.full
@@ -414,6 +417,8 @@ Scope {
                                 Text {
                                     id: label
                                     anchors.centerIn: parent
+                                    width: Math.min(implicitWidth, action.width - Theme.padding.large * 2)
+                                    elide: Text.ElideRight
                                     text: action.modelData.text
                                     color: actionHover.hovered ? Theme.bg : Theme.fg
                                     font.family: Theme.font

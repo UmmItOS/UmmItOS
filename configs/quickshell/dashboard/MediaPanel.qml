@@ -89,6 +89,8 @@ Item {
                 color: Theme.bgAlt
 
                 Image {
+                    id: art
+
                     anchors.fill: parent
                     source: root.player?.trackArtUrl ?? ""
                     fillMode: Image.PreserveAspectCrop
@@ -99,7 +101,9 @@ Item {
 
                 MaterialIcon {
                     anchors.centerIn: parent
-                    visible: !(root.player?.trackArtUrl ?? "")
+                    // No art, or art that failed to load (a deleted /tmp
+                    // file, a network error), both show the note.
+                    visible: art.status !== Image.Ready
                     text: "music_note"
                     color: Theme.dim
                     size: Theme.icon.extraLarge
@@ -257,9 +261,11 @@ Item {
                 }
             }
 
-            // One chip per player, so you can switch source.
+            // One chip per player, so you can switch source. Kept inside the
+            // column: with many players the chips shrink and cut their names.
             RowLayout {
                 Layout.alignment: Qt.AlignHCenter
+                Layout.maximumWidth: parent.width
                 Layout.topMargin: Theme.spacing.small
                 spacing: Theme.spacing.small
                 visible: Mpris.players.values.length > 1
@@ -273,6 +279,8 @@ Item {
 
                         readonly property bool current: modelData === root.player
 
+                        Layout.fillWidth: true
+                        Layout.maximumWidth: implicitWidth
                         implicitWidth: chipLabel.implicitWidth + Theme.padding.large * 2
                         implicitHeight: 28
                         radius: Theme.rounding.full
@@ -281,10 +289,16 @@ Item {
                         Text {
                             id: chipLabel
                             anchors.centerIn: parent
+                            width: Math.min(implicitWidth, chip.width - Theme.padding.large * 2)
+                            elide: Text.ElideRight
                             text: chip.modelData.identity
                             color: Theme.fg
                             font.family: Theme.font
                             font.pixelSize: Theme.fontSize.small
+                        }
+
+                        TapHandler {
+                            onTapped: Players.chosen = chip.modelData
                         }
                     }
                 }
