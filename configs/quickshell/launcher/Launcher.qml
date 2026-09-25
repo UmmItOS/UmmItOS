@@ -12,17 +12,14 @@ Singleton {
     property bool open: false
     property list<var> clipboard: []
 
-    // Set only after the decode process exits, so the Image never points at a
-    // file that is still being written. Binding it synchronously made the
-    // preview fail whenever the decode had not finished first.
+    // Set only once decoded, so the Image never reads a half-written file.
     property string decodedPath
     property string decodingId
     readonly property string cacheDir: Quickshell.cachePath("clipboard")
 
     function show(newMode: string): void {
         mode = newMode;
-        // Empty until the fresh list lands: Enter pressed before then must not
-        // copy whatever sat at that index last time.
+        // Empty until the fresh list lands, so Enter cannot copy a stale entry.
         if (newMode === "clipboard") {
             clipboard = [];
             clipList.running = true;
@@ -37,8 +34,7 @@ Singleton {
             show(newMode);
     }
 
-    // How often each app has been opened, by desktop id, so the grid can
-    // lead with the ones you use instead of the alphabet.
+    // Launch counts by desktop id.
     property var launches: ({})
 
     function launch(entry: var): void {
@@ -75,8 +71,7 @@ Singleton {
         decodedPath = "";
         decodeProc.running = false;
         decodeProc.forId = id;
-        // Written aside and moved into place, so an existing file is always a
-        // whole one and a second look at the same entry skips the decode.
+        // Written aside and moved in, so a file there is always whole.
         decodeProc.command = ["sh", "-c", 'mkdir -p "$1" && f="$1/$2.png" && { [ -s "$f" ] || { cliphist decode "$2" > "$f.part" && mv "$f.part" "$f"; }; }', "sh", cacheDir, id];
         decodeProc.running = true;
     }
@@ -132,8 +127,7 @@ Singleton {
     Process {
         id: decodeProc
 
-        // The entry this run was started for. By the time it exits the focus
-        // may have moved on, and its file must not be shown for another.
+        // Focus may have moved on by the time it exits.
         property string forId
 
         onExited: code => {

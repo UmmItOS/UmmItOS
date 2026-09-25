@@ -2,12 +2,7 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 
-// Nags, every half hour, once the last full upgrade is over a week old.
-// Sent transient (-e), so the nags show but do not fill the history.
-// pacman logs every -Syu (paru's included) to /var/log/pacman.log, so the
-// last "starting full system upgrade" line is when the system was last
-// brought up to date. The notice's button opens the same updater as
-// Super+Shift+Enter.
+// Weekly nag from pacman.log's last full upgrade; transient (-e).
 Scope {
     id: root
 

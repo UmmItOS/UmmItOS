@@ -8,9 +8,6 @@ import Quickshell.Wayland
 import QtQuick
 import ".."
 
-// Plugging in sends a ring of sparkling light up the screen from the bottom
-// edge, where a phone's port would be, with the charge underneath it. It is
-// drawn over everything and takes no input.
 Scope {
     id: root
 
@@ -21,17 +18,12 @@ Scope {
         seed();
         playing = true;
         run.restart();
-        // An original chime, synthesised for this: two soft bell notes a
-        // fifth apart (see charging/plug.ogg).
+        // Original chime, synthesised for this (plug.ogg).
         Quickshell.execDetached(["pw-play", Qt.resolvedUrl("plug.ogg").toString().replace("file://", "")]);
     }
 
-    // Sparkle dust scattered over the whole screen, as a distance from the
-    // origin (0-1 of the reach) and an angle. Each grain lights as the ring
-    // passes it, twinkles, and fades, so the ring leaves glitter behind.
+    // Grains as (distance 0-1, angle); each lights as the ring passes.
     property var sparks: []
-    // Slow ripples along the ring's edge, so the glow is uneven like light
-    // through water rather than a drawn circle.
     property var wobble: []
 
     function seed(): void {
@@ -112,8 +104,7 @@ Scope {
                 const p = root.progress;
                 const ox = width / 2, oy = height + Theme.spacing.large;
                 const reach = Math.hypot(width / 2, height) * 1.05;
-                // The ring runs ahead of the clock a little so it has left
-                // the screen while its glitter is still settling.
+                // Runs ahead so the ring leaves while the glitter settles.
                 const r = reach * Math.min(1, p * 1.25);
                 const band = reach * 0.2;
                 const fade = p < 0.6 ? 1 : 1 - (p - 0.6) / 0.4;
@@ -135,8 +126,6 @@ Scope {
                     ctx.fill();
                 }
 
-                // The bright rim: short strokes whose brightness follows the
-                // wobble, so the edge shimmers instead of being a clean line.
                 const steps = 90;
                 ctx.lineWidth = 2;
                 for (let i = 0; i < steps; i++) {
@@ -148,8 +137,6 @@ Scope {
                     ctx.stroke();
                 }
 
-                // The glitter: each grain lights when the rim reaches it and
-                // twinkles out over the next half second.
                 for (const s of root.sparks) {
                     const sr = s.r * reach;
                     const since = (r - sr) / reach;

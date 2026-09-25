@@ -4,23 +4,14 @@ import QtQuick
 import QtQuick.Layouts
 import ".."
 
-// Everything the machine can say about itself: the live gauges, what it is
-// running, and how full it is. The home tab answers "now"; this one answers
-// "what am I on".
 ColumnLayout {
     id: root
 
     spacing: Theme.spacing.medium
 
-    // On a card, like the facts below it: gauges floating on the panel while
-    // everything else sat on a surface was two languages on one tab. The card
-    // takes the slack, so the tab fills instead of trailing off into a third
-    // of a screen of nothing.
     Rectangle {
         Layout.fillWidth: true
         Layout.fillHeight: true
-        // Never shorter than a gauge, read from the gauges rather than
-        // repeating their size here.
         Layout.minimumHeight: gauges.implicitHeight + Theme.padding.extraLarge * 2
         radius: Theme.rounding.extraLarge
         color: Theme.glass
@@ -64,8 +55,6 @@ ColumnLayout {
         }
     }
 
-    // Three facts across rather than down: the gauges already own the height,
-    // and stacked rows overflowed the card into the meters below.
     Rectangle {
         Layout.fillWidth: true
         implicitHeight: 92
@@ -79,8 +68,6 @@ ColumnLayout {
             }
             spacing: Theme.spacing.extraLargeIncreased
 
-            // Centred as a group. Three facts each filling a third left the
-            // last one with a hand's width of nothing beside it.
             Item {
                 Layout.fillWidth: true
             }
@@ -133,9 +120,7 @@ ColumnLayout {
                         }
 
                         Text {
-                            // A Layout holds an item at its implicit width, so
-                            // elide never fires without a cap: a long value ran
-                            // off the card instead of ending in an ellipsis.
+                            // A Layout never elides without a width cap.
                             Layout.maximumWidth: root.width / 4
                             text: fact.modelData.value
                             color: Theme.fg
@@ -156,8 +141,4 @@ ColumnLayout {
         }
     }
 }
-
-// The memory and storage meters that used to sit on the home tab are gone: the
-// two gauges above already carry the same two numbers, and stacking a third row
-// of cards under them crashed the scene graph outright.
 

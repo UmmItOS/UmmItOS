@@ -13,8 +13,7 @@ Singleton {
         open = !open;
     }
 
-    // Opening from a bar item means opening on that item's tab, and clicking
-    // the same item again closes it rather than doing nothing.
+    // Clicking the same bar item again closes it.
     function toggleTab(index: int): void {
         if (open && tab === index) {
             open = false;
@@ -31,8 +30,7 @@ Singleton {
             root.toggle();
         }
 
-        // Not `show`: `qs ipc show` is a subcommand, and the CLI grabs the
-        // name before it reaches the handler.
+        // Not `show`: the qs CLI claims that name.
         function tab(index: int): void {
             root.tab = index;
             root.open = true;

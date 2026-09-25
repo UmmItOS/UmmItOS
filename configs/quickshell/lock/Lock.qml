@@ -11,13 +11,10 @@ Singleton {
     id: root
 
     property bool locked: false
-    // The same screen in an ordinary window, for working on the look without
-    // locking anything. A right password closes it.
+    // The lock in an ordinary window, to work on its look.
     property bool previewing: false
     readonly property bool shown: locked || previewing
 
-    // Set on a right password: the surfaces play their way out, then the
-    // lock is released, so unlocking is a fade and not a cut.
     property bool unlocking: false
 
     property bool checking: false
@@ -28,18 +25,11 @@ Singleton {
 
     signal wrong
 
-    // Uncompressed PPM: PNG encoding took ~0.6s a screen, which read as the
-    // lock lagging behind the key; PPM is ~25ms.
-    // Each screen as it was just before locking, so the lock can fade in
-    // from the desktop and back out to it. A lock surface is opaque, so
-    // without this the desktop could only pop back when the lock lets go.
-    // Kept in the runtime dir (private tmpfs) and deleted after unlocking.
+    // PPM, not PNG: PNG took ~0.6s a screen and read as lag.
     readonly property string shotDir: Quickshell.env("XDG_RUNTIME_DIR") + "/ummitos-lock"
     property int shot: 0
     property bool preparing: false
-    // This lock's pictures are written. Until then the preload must not ask
-    // for the last lock's files, which are gone: their error would count as
-    // loaded and let the lock show before its own capture.
+    // Gates the preload, or the last lock's deleted files count as loaded.
     property bool captured: false
 
     function shotOf(screenName: string): string {
@@ -75,8 +65,7 @@ Singleton {
 
         property var then: null
 
-        // Lock even if the picture failed: a lock that never comes is worse
-        // than one that fades in from black.
+        // Lock even if the picture failed.
         onExited: {
             root.shot++;
             root.captured = true;
@@ -84,9 +73,7 @@ Singleton {
         }
     }
 
-    // Each picture decoded into the image cache before the lock shows. The
-    // lock used to open while its picture was still loading, so its first
-    // frames showed the dimmed wallpaper and then jumped to the desktop.
+    // Decoded before the lock shows, or it opens on the plain wallpaper.
     Instantiator {
         id: preload
 
@@ -97,8 +84,7 @@ Singleton {
 
             asynchronous: true
             cache: false
-            // Only held while locking or locked; after that the full-size
-            // pictures are let go rather than kept decoded all session.
+            // Released after unlocking, not kept decoded all session.
             source: root.captured && (root.locked || root.preparing) ? root.shotOf(modelData.name) : ""
             onStatusChanged: root.readyCheck()
         }
@@ -164,8 +150,7 @@ Singleton {
         }
     }
 
-    // A private PAM stack in the shell's own folder, so no root-owned
-    // /etc/pam.d file is needed. pam_unix checks through setuid unix_chkpwd.
+    // A private PAM stack: no /etc/pam.d file needed.
     PamContext {
         id: pam
 

@@ -5,25 +5,20 @@ import Quickshell.Wayland
 import QtQuick
 import ".."
 
-// "Copied" confirmations for the clipboard watcher, stacked in the bottom-
-// right corner: each new one slides in at the bottom and pushes the ones
-// before it up a slot; each leaves on its own after a moment. Replaces
-// hyprctl notify, whose box cannot be placed or animated.
+// Clipboard "Copied" pills, bottom-right.
 Scope {
     id: root
 
     property int serial: 0
 
-    // The shell's own chime for small notices: an original two-note pop,
-    // distinct from the charging chime (toast/pop.ogg).
+    // Original two-note pop (pop.ogg).
     function pop(): void {
         Quickshell.execDetached(["pw-play", Qt.resolvedUrl("pop.ogg").toString().replace("file://", "")]);
     }
 
     function show(kind: string): void {
         const image = kind === "image";
-        // An image copy is nearly always a screenshot, which already has
-        // its shutter; a second sound on top reads as noise.
+        // Screenshots already have their shutter.
         if (!image)
             pop();
         // Newest at index 0, which the bottom-to-top list draws lowest.
@@ -51,9 +46,7 @@ Scope {
     PanelWindow {
         id: win
 
-        // Always mapped: a view in an unmapped window skips its add
-        // transition, so pills appeared without sliding in. Transparent and
-        // input-free, so idle it shows nothing.
+        // Always mapped: an unmapped view skips its add transition.
         visible: true
         screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
         WlrLayershell.namespace: "ummitos-copy-toast"

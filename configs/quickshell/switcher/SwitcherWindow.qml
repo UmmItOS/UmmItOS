@@ -15,10 +15,6 @@ OverlayWindow {
     name: "switcher"
     scrim: 0.45
 
-
-    // The cards carry no labels of their own. Nine small captions compete with
-    // the thing they caption; one large one, under the grid, changes as the
-    // selection moves and gives the workspace a name worth reading.
     function titleOf(ws: var): string {
         if (!ws)
             return "";
@@ -31,30 +27,24 @@ OverlayWindow {
 
     onOpened: {
         scope.forceActiveFocus();
-        // Closing the overview leaves the zoom at full screen; anything else
-        // opening next (Alt+Tab) must start from the plain grid, or it came up
-        // as one giant card.
+        // Reset, or the next Alt+Tab opens as one giant card.
         zoomAnim.stop();
         if (Switcher.overviewing) {
             zoom = 1;
             Qt.callLater(() => zoomFrom(1));
         } else {
             zoom = 0;
-            // No full-screen picture was taken for Alt+Tab; a stale one from
-            // an earlier overview must not be laid over its zoom.
+            // A stale overview picture must not cover Alt+Tab's zoom.
             Switcher.startIndex = -1;
         }
     }
 
-    // The overview zooms: the current workspace's card starts filling the
-    // screen and settles into the grid, and on the way out the chosen card
-    // grows back to fill it. 0 is the grid, 1 is the card at full screen.
+    // 0 is the grid, 1 the card at full screen.
     property real zoom: 0
     property Item focusCell: null
     property rect zoomCard: Qt.rect(0, 0, 1, 1)
 
-    // Measures where the current card sits, then runs the zoom. Called a
-    // frame late on open (see onOpened) so the grid has been laid out.
+    // Called a frame late, once the grid is laid out.
     function zoomFrom(start: real): void {
         const c = focusCell;
         if (c) {
@@ -67,8 +57,6 @@ OverlayWindow {
         zoomAnim.start();
     }
 
-    // Every close zooms into the chosen workspace: the overview's, and
-    // Alt+Tab's as the key comes up.
     onShownChanged: {
         if (!shown)
             zoomFrom(0);
@@ -83,8 +71,6 @@ OverlayWindow {
         easing.bezierCurve: Theme.curve.emphasizedDecel
     }
 
-    // The card's rectangle, in the stage's own coordinates, between its grid
-    // place and the whole screen.
     readonly property real zoomW: zoomCard.width + ((win.screen?.width ?? width) - zoomCard.width) * zoom
     readonly property real zoomScale: zoomW / zoomCard.width
     readonly property real zoomX: zoomCard.x + (-stage.x - zoomCard.x) * zoom
@@ -123,17 +109,13 @@ OverlayWindow {
 
         Keys.onReleased: event => {
             if (event.key === Qt.Key_Alt || event.key === Qt.Key_Meta) {
-                // release(), not commit(): the surface sees the Alt release
-                // too, and going straight to commit here ignored the pin no
-                // matter what the compositor's release bind did.
+                // release(), not commit(): it respects the pin.
                 Switcher.release();
                 event.accepted = true;
             }
         }
 
-        // A mouse target for the same thing P does. Holding Alt is exactly the
-        // state in which a keyboard shortcut is least reachable, so pinning
-        // needs something to click.
+        // Holding Alt, a click is easier than a key.
         Surface {
             id: pin
 
@@ -185,10 +167,7 @@ OverlayWindow {
             }
         }
 
-        // The screen as it was just before the overview opened, at full
-        // resolution, laid exactly over the zoomed card. The live card is a
-        // small capture, so stretched to full screen it looked like 144p; this
-        // is sharp there and hands over to the card as it shrinks.
+        // Full-resolution picture over the zoomed card; the live one is small.
         Image {
             x: stage.x + win.zoomX
             y: stage.y + win.zoomY
@@ -230,22 +209,12 @@ OverlayWindow {
                 anchors.horizontalCenter: parent.horizontalCenter
                 spacing: Theme.spacing.large
 
-                // Wraps at three across, the way a Windows switcher does, so
-                // cards keep a usable size instead of shrinking with every
-                // workspace. Rows are built by hand rather than with a Grid so
-                // a short last row sits centred under the others instead of
-                // hanging off the left edge.
+                // Rows by hand, so a short last row is centred.
                 readonly property int count: Math.max(1, Switcher.workspaces.length)
-                // Three across, the way a Windows switcher does — but a fourth
-                // column past eight workspaces, because a fourth row costs the
-                // cards more height than a fourth column costs them width.
+                // A fourth column past eight costs less than a fourth row.
                 readonly property int columns: count <= 3 ? count : count <= 8 ? 3 : 4
                 readonly property int rows: Math.ceil(count / columns)
 
-                // Cards take whatever the screen can give, capped so a lone
-                // workspace does not blow up to full width. The caption block
-                // is reserved first; it does not depend on the grid, so the
-                // height it takes is safe to read here.
                 readonly property int roomWide: (win.width - Theme.padding.extraLarge * 4) / columns - spacing
                 readonly property int roomTall: (win.height - caption.implicitHeight - Theme.spacing.extraLarge * 3 - Theme.padding.extraLarge * 2) / rows - spacing
                 readonly property int cellWidth: Math.min(620, roomWide, roomTall / 0.62)
@@ -277,8 +246,7 @@ OverlayWindow {
                                     property: "focusCell"
                                     value: cell
                                     when: cell.current
-                                    // Two cells swap in one pass in no set order; restoring
-                                    // would let the old cell put back a stale one.
+                                    // Two cells swap in no set order.
                                     restoreMode: Binding.RestoreNone
                                 }
 
@@ -289,28 +257,15 @@ OverlayWindow {
                                     id: card
 
                                     readonly property bool current: cell.current
-                                    // Empty while unmapped: every entry is a live
-                                    // capture, and they would otherwise run all day
-                                    // behind a switcher nobody can see.
+                                    // Empty while unmapped: each entry is a live capture.
                                     readonly property var windows: cell.modelData && (win.visible || Switcher.warming) ? [...cell.modelData.toplevels.values].slice(0, 4) : []
 
-                                    // The focused card grows by shrinking its inset
-                                    // inside a fixed cell. Animating `scale` instead
-                                    // would magnify the glow layer's texture rather
-                                    // than redraw at the new size, which is what made
-                                    // it look resampled — and a fixed cell means
-                                    // growing does not shove its neighbours around.
+                                    // Grows by its inset, not `scale`, which magnified the glow layer.
                                     anchors.fill: parent
                                     anchors.margins: current ? 0 : Theme.spacing.largeIncreased
                                     radius: Theme.rounding.extraLarge
                                     tone: Theme.bgAlt
 
-                                    // Selection is carried by light, not by paint. The
-                                    // unselected cards recede; the selected one is the
-                                    // only one at full strength. Filling it with accent
-                                    // instead would hide the very preview it points at.
-                                    // The overview marks its choice harder (the rest
-                                    // step well back); Alt+Tab keeps its original look.
                                     opacity: current ? 1 : Switcher.overviewing ? 0.35 : 0.5
 
                                     Behavior on opacity {
@@ -329,8 +284,7 @@ OverlayWindow {
                                         }
                                     }
 
-                                    // Off while zooming: a layer is rasterised at the
-                                    // card's own size, so scaling it magnifies pixels.
+                                    // Off while zooming: a scaled layer magnifies pixels.
                                     layer.enabled: card.current && win.zoom < 0.01
                                     layer.effect: MultiEffect {
                                         shadowEnabled: true
@@ -341,12 +295,7 @@ OverlayWindow {
                                         shadowHorizontalOffset: 0
                                     }
 
-                                    // Live captures of what is on that workspace, edge
-                                    // to edge: a preview inside a padded box inside a
-                                    // card is two frames too many. A workspace that is
-                                    // not being rendered hands back its last frame
-                                    // rather than a current one — a compositor limit,
-                                    // not something the shell can fix.
+                                    // An unrendered workspace returns its last frame; a compositor limit.
                                     ClippingRectangle {
                                         anchors.fill: parent
                                         anchors.margins: Theme.padding.small
@@ -362,11 +311,7 @@ OverlayWindow {
                                             Repeater {
                                                 model: card.windows
 
-                                                // The window at its own resolution, drawn through a
-                                                // mipmapped copy. Shrinking a whole window about 3x
-                                                // in one step (the compositor's, or Qt's plain smooth
-                                                // sampling) skips detail and leaves text soft; mipmaps
-                                                // pre-shrink it by halves and blend the nearest two.
+                                                // Mipmapped, or a 3x shrink leaves text soft.
                                                 Item {
                                                     id: tile
 
@@ -390,8 +335,6 @@ OverlayWindow {
                                                         hideSource: true
                                                         mipmap: true
                                                         smooth: true
-                                                        // Rendered at the capture's full size, so the
-                                                        // mipmaps start from every pixel of the window.
                                                         textureSize: view.hasContent ? view.sourceSize : Qt.size(width, height)
                                                     }
                                                 }
@@ -411,9 +354,6 @@ OverlayWindow {
                                         }
                                     }
 
-                                    // Window count, floated over the capture rather
-                                    // than given a row of its own — it is a footnote,
-                                    // and a footnote should not cost a band of card.
                                     Surface {
                                         anchors.top: parent.top
                                         anchors.right: parent.right
@@ -445,10 +385,7 @@ OverlayWindow {
                                     anchors.fill: parent
                                     hoverEnabled: true
 
-                                    // Only a pointer that has actually moved may
-                                    // change the selection: the focused card grows,
-                                    // and the geometry shifting under a still cursor
-                                    // used to snap the selection back.
+                                    // Only real pointer movement changes the selection.
                                     onPositionChanged: mouse => {
                                         if (win.pointerMoved(this, mouse.x, mouse.y))
                                             Switcher.index = cell.slot;
@@ -471,9 +408,7 @@ OverlayWindow {
                 Text {
                     id: captionTitle
                     anchors.horizontalCenter: parent.horizontalCenter
-                    // Capped against the window, not the grid: measuring against the
-                    // grid would make the cards depend on the caption and the
-                    // caption on the cards.
+                    // Against the window, not the grid, to avoid a cycle.
                     width: Math.min(implicitWidth, win.width * 0.7)
                     horizontalAlignment: Text.AlignHCenter
                     text: win.titleOf(caption.ws)
@@ -485,9 +420,6 @@ OverlayWindow {
                     }
                     elide: Text.ElideRight
 
-                    // The title crossfades where the cards slide: swapping the
-                    // text outright on every tab reads as a flicker at this
-                    // size.
                     Behavior on text {
                         SequentialAnimation {
                             NumberAnimation {
@@ -509,9 +441,6 @@ OverlayWindow {
 
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    // Window count only. Hyprland names workspaces by number,
-                    // and a bare number under the title is the index this
-                    // switcher deliberately does not show.
                     text: {
                         const ws = caption.ws;
                         if (!ws)
@@ -528,12 +457,9 @@ OverlayWindow {
                     }
                 }
 
-                // Only while pinned: the switcher no longer closes by itself,
-                // so it has to say how to leave.
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    // Hidden by opacity, not visibility: its line is always
-                    // reserved, or pinning would shrink every card to make room.
+                    // Opacity, not visibility, so the line stays reserved.
                     opacity: Switcher.pinned ? 1 : 0
                     text: "Pinned  ·  Enter to switch  ·  Esc to close"
                     color: Theme.dim
@@ -547,8 +473,6 @@ OverlayWindow {
         }
     }
 
-    // The hot corner answering: rings of light spread from the top-left
-    // corner when it fires, so the push is seen to have landed.
     Item {
         id: cornerRipple
 

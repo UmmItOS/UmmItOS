@@ -10,15 +10,9 @@ import ".."
 Item {
     id: root
 
-    // The bar shows the same player, so the choice of which one lives in a
-    // singleton rather than in both.
     readonly property var player: Players.active
 
-    // Some players publish no mpris:length at all — a browser tab is one — and
-    // quickshell then hands back the position as the length. That is what made
-    // the bar sit full at "0:45 / 0:45", vanish while seeking and come back on
-    // play. Without a real length there is nothing to draw a bar against, so
-    // only the elapsed time is shown.
+    // No real length (browser tabs): show elapsed time only.
     readonly property bool timed: (root.player?.lengthSupported ?? false) && (root.player?.length ?? 0) > 0
 
     Text {
@@ -35,8 +29,6 @@ Item {
         spacing: Theme.spacing.extraLargeIncreased
         visible: root.player
 
-        // The art inside a ring of bars that move with the music, mirrored
-        // left and right so the low end sits at the top and bottom.
         Item {
             id: disc
 
@@ -89,8 +81,7 @@ Item {
                 color: Theme.bgAlt
 
                 Image {
-                    // Not `art`: disc has a property of that name, and an id
-                    // shadows it, which sized the disc to nothing.
+                    // Not `art`: an id shadows disc's `art` property.
                     id: cover
 
                     anchors.fill: parent
@@ -103,8 +94,6 @@ Item {
 
                 MaterialIcon {
                     anchors.centerIn: parent
-                    // No art, or art that failed to load (a deleted /tmp
-                    // file, a network error), both show the note.
                     visible: cover.status !== Image.Ready
                     text: "music_note"
                     color: Theme.dim
@@ -114,8 +103,7 @@ Item {
         }
 
         ColumnLayout {
-            // Takes what the disc leaves, never its own natural width: a long
-            // title or the time row would otherwise push it past the card.
+            // Never its natural width, or a long title pushes past the card.
             Layout.fillWidth: true
             Layout.preferredWidth: 0
             Layout.minimumWidth: 0
@@ -233,9 +221,6 @@ Item {
                 visible: root.player !== null
 
                 Text {
-                    // Centred when it is alone, so an untimed player reads as
-                    // "here is the elapsed time" and not as a label that lost
-                    // the thing it was labelling.
                     Layout.fillWidth: !root.timed
                     horizontalAlignment: root.timed ? Text.AlignLeft : Text.AlignHCenter
                     text: Players.timeText(root.player?.position ?? 0)
@@ -263,8 +248,6 @@ Item {
                 }
             }
 
-            // One chip per player, so you can switch source. Kept inside the
-            // column: with many players the chips shrink and cut their names.
             RowLayout {
                 Layout.alignment: Qt.AlignHCenter
                 Layout.maximumWidth: parent.width

@@ -1,7 +1,5 @@
 import QtQuick
 
-// A switch, because a radio is a state rather than an action. Every dimension
-// follows from the knob, so one number resizes it.
 Rectangle {
     id: root
 

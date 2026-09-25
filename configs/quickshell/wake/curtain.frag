@@ -1,8 +1,6 @@
 #version 440
 
-// The waking screen in one pass: black outside a circle with a soft edge
-// `soft` pixels wide, and inside it the haze (the blurred, dimmed picture,
-// or a plain veil) at strength `haze`, over the live screen. Premultiplied.
+// Black outside a soft circle, the haze inside. Premultiplied.
 
 layout(location = 0) in vec2 qt_TexCoord0;
 layout(location = 0) out vec4 fragColor;

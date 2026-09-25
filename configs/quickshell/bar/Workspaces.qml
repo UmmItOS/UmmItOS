@@ -6,14 +6,11 @@ import QtQuick.Effects
 import QtQuick.Layouts
 import ".."
 
-// The focused workspace names itself; the rest are markers. Identity first,
-// so the bar answers "where am I" without being read left to right.
 RowLayout {
     spacing: Theme.spacing.small
 
     Repeater {
-        // Special workspaces (scratchpads) have negative ids and are not
-        // places to switch to.
+        // Special workspaces have negative ids.
         model: [...Hyprland.workspaces.values].filter(w => w && w.id > 0)
 
         Rectangle {
@@ -26,8 +23,7 @@ RowLayout {
             implicitHeight: focused ? 24 : 10
             Layout.alignment: Qt.AlignVCenter
             radius: height / 2
-            // Inactive dots are the accent's light tone, faded: bgTray was a
-            // near-match for the bar and vanished, plain white shouted.
+            // bgTray vanished against the bar; plain white shouted.
             color: focused ? Theme.accent : modelData?.urgent ? Theme.urgent : Qt.rgba(Theme.accentText.r, Theme.accentText.g, Theme.accentText.b, 0.28)
 
             Behavior on implicitWidth {
@@ -67,8 +63,6 @@ RowLayout {
                 }
             }
 
-            // The focused workspace is the one thing in the bar that should
-            // read as lit rather than filled.
             layer.enabled: pill.focused
             layer.effect: MultiEffect {
                 shadowEnabled: true

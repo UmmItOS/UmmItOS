@@ -5,10 +5,7 @@ import Quickshell.Io
 import Quickshell.Networking
 import QtQuick
 
-// Throughput read from /proc/net/dev. A singleton because there is a bar per
-// screen, and each used to read and parse the file every second on its own.
-// The rate is a difference between two samples, so the first sample only
-// establishes a baseline and shows nothing.
+// One sampler however many bars; the first sample is only a baseline.
 Singleton {
     id: root
 
@@ -55,8 +52,7 @@ Singleton {
         }
     }
 
-    // Reset the baseline when the interface changes, or the first reading is a
-    // meaningless jump between two different counters.
+    // Reset the baseline on a new interface.
     onDeviceChanged: {
         lastRx = -1;
         lastTx = -1;

@@ -5,10 +5,6 @@ import Quickshell.Widgets
 import QtQuick
 import ".."
 
-// The wallpaper is the content, so there is no panel around it: the strip sits
-// on the desktop under a gradient wash, with one metadata block anchored to the
-// left. Typing replaces the wallpaper's name with the query rather than opening
-// a search field, so there is no chrome until it is asked for.
 OverlayWindow {
     id: picker
 
@@ -21,9 +17,7 @@ OverlayWindow {
 
     property string filter: ""
 
-    // The folder being browsed. Entries are that folder's subfolders (paths
-    // ending in "/"), then its images; ".." leads back up. A search looks
-    // through every folder at once, so it needs no browsing.
+    // Folder paths end in "/"; ".." goes back up.
     property string folder: Wallpapers.dir
     readonly property bool atRoot: folder === Wallpapers.dir
     readonly property var matches: {
@@ -90,8 +84,7 @@ OverlayWindow {
 
     readonly property string focusedPath: matches[list.currentIndex] ?? ""
 
-    // The folder is rescanned on open, and the fresh list lands after the
-    // jump to the current wallpaper; land on it again.
+    // The rescan lands after the jump to the current one; land again.
     Connections {
         target: Wallpapers
 
@@ -101,8 +94,7 @@ OverlayWindow {
         }
     }
 
-    // Snaps to the current wallpaper rather than travelling there: setting
-    // currentIndex alone animates the carousel through every card between.
+    // Snap, or the carousel animates through every card between.
     function land(): void {
         const actual = Wallpapers.actual;
         folder = actual.startsWith(Wallpapers.dir + "/") ? actual.slice(0, actual.lastIndexOf("/")) : Wallpapers.dir;
@@ -111,15 +103,13 @@ OverlayWindow {
         list.positionViewAtIndex(i, PathView.Center);
     }
 
-
     onOpened: {
         filter = "";
         search.text = "";
         land();
         search.forceActiveFocus();
     }
-    // Closing without pressing Enter restores the confirmed wallpaper. On the
-    // flag, not on unmapping, so it does not wait out the exit animation.
+    // On the flag, not on unmapping, so it does not wait for the exit.
     onShownChanged: {
         if (!shown) {
             // A preview still pending would land after the restore and stick.
@@ -182,8 +172,7 @@ OverlayWindow {
         Keys.onRightPressed: list.incrementCurrentIndex()
         Keys.onReturnPressed: picker.apply(list.currentIndex)
 
-        // Metadata, bottom-left. The name doubles as the search field: type and
-        // it becomes the query, which is why there is no separate input.
+        // The name doubles as the search field.
         Column {
             id: meta
 
@@ -291,9 +280,6 @@ OverlayWindow {
             model: picker.matches
             clip: true
 
-            // Changing folder turns the strip like the cover of a book: into a
-            // folder it swings open from the left edge, back out it swings in
-            // from the right.
             transform: Rotation {
                 id: page
 
@@ -343,9 +329,7 @@ OverlayWindow {
             movementDirection: PathView.Shortest
             highlightMoveDuration: Theme.duration.expressiveDefaultSpatial
 
-            // Moving through the carousel previews on the desktop; Enter or a
-            // click commits. Debounced so holding an arrow key does not start a
-            // decode for every item passed.
+            // Debounced so a held arrow key does not decode every image.
             onCurrentIndexChanged: previewDebounce.restart()
 
             Timer {
@@ -411,8 +395,7 @@ OverlayWindow {
                 height: list.height
 
                 scale: PathView.itemScale ?? picker.shrink
-                // A Translate, not `y`: PathView positions the delegate on every
-                // update and overwrote the lift before it could show.
+                // Translate, not `y`: PathView overwrites y on every update.
                 transform: Translate {
                     y: cell.PathView.itemLift ?? 0
                 }
@@ -443,8 +426,6 @@ OverlayWindow {
                         sourceSize.height: picker.focusedHeight
                     }
 
-                    // A folder reads as one: its cover dimmed under a glyph
-                    // and its name.
                     Column {
                         anchors.centerIn: parent
                         visible: cell.isFolder || cell.isUp
@@ -471,8 +452,6 @@ OverlayWindow {
                         }
                     }
 
-                    // The wallpaper currently applied, so you can find your way
-                    // back while previewing others.
                     Rectangle {
                         anchors {
                             left: parent.left

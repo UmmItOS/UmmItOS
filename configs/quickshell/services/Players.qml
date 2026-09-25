@@ -4,16 +4,13 @@ import Quickshell
 import Quickshell.Services.Mpris
 import QtQuick
 
-// Which player the shell is talking about. The bar and the dashboard's media
-// tab have to agree, so the choice lives here rather than in both.
 Singleton {
     id: root
 
     // The player picked from the dashboard's chips, kept while it exists.
     property var chosen: null
 
-    // The picked one; otherwise whatever is playing; failing that, whatever
-    // is open.
+    // Picked, else playing, else any.
     readonly property var active: {
         const all = Mpris.players.values;
         if (root.chosen && all.includes(root.chosen))
@@ -29,9 +26,7 @@ Singleton {
         return m + ":" + (s < 10 ? "0" : "") + s;
     }
 
-    // Set while something shows the position. MPRIS position does not tick
-    // on its own, and ticking it for a closed dashboard is a wakeup a second
-    // for as long as music plays.
+    // MPRIS position does not tick; tick only while shown.
     property bool watched: false
 
     Timer {

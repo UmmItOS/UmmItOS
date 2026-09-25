@@ -4,20 +4,15 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 
-// Notification objects die when they expire, so the panel cannot hold them.
-// What it holds is a plain record taken as each one arrives.
+// Plain records: notification objects die when they expire.
 Singleton {
     id: root
 
-    // A ListModel, not a JS array: reassigning an array resets the view, so
-    // dismissing one card jumped the list to the top and reloaded every image.
+    // A ListModel: reassigning an array reset the view.
     readonly property ListModel history: ListModel {}
     property bool dnd: false
     property bool panelOpen: false
-    // The open bar dropdown, if any, and where it sits. A dropdown is an
-    // xdg-popup, which Hyprland draws above every layer, so the toasts step
-    // aside rather than be covered. Only the dropdown that set these clears
-    // them, so switching straight from one to another cannot undo the new one.
+    // Dropdowns draw above every layer, so the toasts step aside.
     property var flyout: null
     property real flyoutLeft: 0
     property real flyoutRight: 0
@@ -34,8 +29,7 @@ Singleton {
     }
 
     function record(notification: var): void {
-        // Keep each app's notifications together, newest group first: the
-        // panel groups them by section, which needs them contiguous.
+        // The panel's sections need each app's entries contiguous.
         let first = -1, n = 0;
         for (let i = 0; i < history.count; i++) {
             if (history.get(i).appName === notification.appName) {
@@ -51,10 +45,7 @@ Singleton {
             appName: notification.appName,
             summary: notification.summary,
             body: safeBody(notification.body),
-            // Pixels sent inline (image://qsimage/…) live only as long as the
-            // notification does; kept, they failed and warned on every redraw.
-            // ponytail: history drops those previews; save them to the cache
-            // if they are missed.
+            // ponytail: inline images die with the notification; drop, or cache if missed.
             image: notification.image.startsWith("image://qsimage/") ? "" : notification.image,
             appIcon: notification.appIcon,
             critical: notification.urgency === 2,
@@ -77,9 +68,7 @@ Singleton {
         history.clear();
     }
 
-    // Bodies are markup from any sender. StyledText loads <img> sources,
-    // remote ones included, so an image tag would tell its sender who read the
-    // notification and when. The preview has its own, local, image field.
+    // StyledText loads remote <img>, which would tell the sender it was read.
     function safeBody(body: string): string {
         return (body ?? "").replace(/<img\b[^>]*>/gi, "");
     }

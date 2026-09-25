@@ -8,12 +8,6 @@ import QtQuick
 import QtQuick.Layouts
 import ".."
 
-// A column down the right edge, under the bar: notifications arrive there, so
-// their history belongs in the same place rather than in a centred dialog.
-//
-// It hugs its contents rather than running the height of the screen. An empty
-// centre used to be a full-height slab with two words stranded in the middle
-// of it; now it is a header and a line, and it grows as the history does.
 OverlayWindow {
     id: win
 
@@ -25,8 +19,7 @@ OverlayWindow {
     anchors.left: false
     margins.top: Theme.barHeight
     implicitWidth: 440
-    // The column reports its content only; its own anchor margins and
-    // the surface inset have to be added back or the panel clips them.
+    // Add back the margins, or the panel clips them.
     implicitHeight: Math.min(shell.implicitHeight + (Theme.padding.large + inset) * 2, maxHeight)
     color: "transparent"
 
@@ -53,8 +46,7 @@ OverlayWindow {
         tone: Theme.scrim(0.45)
         lift: 1.1
 
-        // Slides in from the edge it lives on. A translate, not `x`: the
-        // anchors own `x`, so a binding on it is silently ignored.
+        // Translate, not `x`: the anchors own x.
         opacity: Math.min(1, win.reveal)
         transform: Translate {
             x: (1 - win.reveal) * sheet.width
@@ -171,15 +163,12 @@ OverlayWindow {
 
             ListView {
                 Layout.fillWidth: true
-                // Tall enough for the history, never taller than the screen.
-                // fillHeight would have stretched an empty list to the bottom.
+                // Not fillHeight: it stretched an empty list to the bottom.
                 Layout.preferredHeight: Math.min(contentHeight, win.listRoom)
                 visible: Notifs.history.count > 0
                 clip: true
                 model: Notifs.history
 
-                // One header per app; its cards stack under it, collapsed to
-                // the newest until the header is tapped.
                 section.property: "appName"
                 section.delegate: Item {
                     id: head
@@ -241,8 +230,6 @@ OverlayWindow {
                 }
                 boundsBehavior: Flickable.StopAtBounds
 
-                // The same movement as the toasts, so a dismissed card leaves
-                // and the rest close the gap instead of snapping.
                 add: Transition {
                     NumberAnimation {
                         property: "opacity"
@@ -272,8 +259,7 @@ OverlayWindow {
                         easing.type: Easing.BezierSpline
                         easing.bezierCurve: Theme.curve.standard
                     }
-                    // A card displaced mid-entrance keeps whatever opacity the
-                    // cancelled add left it at unless this finishes the job.
+                    // A displaced card keeps the cancelled add's opacity otherwise.
                     NumberAnimation {
                         property: "opacity"
                         to: 1
@@ -284,20 +270,14 @@ OverlayWindow {
                 delegate: Item {
                     id: card
 
-                    // Roles of the history ListModel. Read with a fallback: a
-                    // delegate outlives its row while the remove transition plays.
+                    // Read with fallbacks: a delegate outlives its row while removed.
                     required property var model
 
                     // Collapsed groups show their newest card only.
                     readonly property bool shownInGroup: (Notifs.expanded[card.model.appName ?? ""] ?? false) || card.ListView.previousSection !== card.ListView.section
 
                     width: ListView.view.width
-                    // Height snaps and the card fades in. Animating the height
-                    // resized the panel window every frame (the window hugs the
-                    // list), and Hyprland re-blurring it each time was the lag.
-                    // The gap under a card is its own: ListView adds its spacing
-                    // after hidden (collapsed) cards too, which left a gap under
-                    // a collapsed group that grew with every card in it.
+                    // Height snaps: animating it re-blurred the window every frame.
                     implicitHeight: shownInGroup ? surface.implicitHeight + Theme.spacing.small : 0
                     visible: shownInGroup
                     opacity: shownInGroup ? 1 : 0
@@ -418,10 +398,7 @@ OverlayWindow {
                                 onLinkActivated: link => Notifs.openLink(link)
                             }
 
-                            // The same preview the toast showed: album art, a
-                            // screenshot, an avatar. Shown only once the file has
-                            // actually loaded — the server hands out a temporary
-                            // path, and a history entry can outlive it.
+                            // Only once loaded: the server's temporary path can be gone.
                             ClippingRectangle {
                                 Layout.topMargin: Theme.spacing.small
                                 implicitWidth: Theme.control.thumbWidth

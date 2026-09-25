@@ -6,8 +6,6 @@ import QtQuick.Layouts
 import Quickshell.Networking
 import ".."
 
-// Opens a flyout under the bar, like Bluetooth and the volume control, rather
-// than a third kind of panel. Scanning only runs while the flyout is open.
 RowLayout {
     id: root
 
@@ -16,19 +14,14 @@ RowLayout {
     readonly property var active: root.wifi ? root.wifi.networks.values.find(n => n.connected) ?? null : null
     readonly property bool plugged: root.wired?.hasLink ?? false
 
-    // Connected first, then known, then by name. Not by signal: strength
-    // changes every scan, and each change rebuilt every row, including the
-    // one you were typing a password into. The bars already show strength.
+    // Not by signal: it changes every scan and rebuilt the rows.
     readonly property var networks: root.wifi ? [...root.wifi.networks.values].sort((a, b) => (b.connected - a.connected) || (b.known - a.known) || a.name.localeCompare(b.name)) : []
 
-    // The password prompt lives here, not in the row, so a row being
-    // recreated neither closes it nor loses what was typed.
+    // Here, not in the row, so a rebuilt row keeps the typed password.
     property string askingFor: ""
     property string pskDraft: ""
 
     property bool popupOpen: false
-    // A scan takes a few seconds. Without this the flyout shows an empty box
-    // and reads as broken rather than as working.
     property bool scanning: false
 
     readonly property bool searching: Networking.wifiEnabled && root.wifi && root.scanning
@@ -93,9 +86,7 @@ RowLayout {
         onToggled: Networking.wifiEnabled = !Networking.wifiEnabled
         onCloseRequested: root.popupOpen = false
 
-        // Scanning is only worth its cost while someone is looking at the list.
-        // Held only while this flyout is open, so the bar on another screen
-        // does not switch it off underneath.
+        // Only while this flyout is open, so another screen's bar cannot stop it.
         Binding {
             target: root.wifi
             property: "scannerEnabled"
@@ -126,9 +117,7 @@ RowLayout {
             clip: true
             spacing: Theme.spacing.extraSmall
             boundsBehavior: Flickable.StopAtBounds
-            // A ScriptModel, not the array: it diffs each new array against the last,
-            // so an entry that is still there keeps its row instead of every row
-            // being rebuilt whenever anything changes.
+            // ScriptModel diffs, so surviving rows are kept, not rebuilt.
             model: ScriptModel {
                 values: root.networks
             }
@@ -228,8 +217,6 @@ RowLayout {
                         TextInput {
                             id: psk
 
-                            // A long passphrase scrolls; the dots scrolled off
-                            // must not draw outside the field.
                             clip: true
                             anchors {
                                 fill: parent

@@ -6,8 +6,6 @@ import QtQuick.Effects
 import QtQuick.Layouts
 import ".."
 
-// The keybinds, as a sheet rather than a terminal table: groups in columns,
-// each bind a row of keycaps and what it does.
 OverlayWindow {
     id: win
 
@@ -59,10 +57,7 @@ OverlayWindow {
             anchors.fill: parent
         }
 
-        // Hyprland's active border, as a ring round the sheet: its four colours
-        // in a linear gradient turning about the centre, darkened, one turn
-        // every 5s like borderangle 50. The sheet is translucent, so the
-        // gradient is drawn off screen and cut to a thin outline by a mask.
+        // The window border's gradient, turning, cut to an outline by a mask.
         Item {
             id: ringFill
 
@@ -133,9 +128,7 @@ OverlayWindow {
             maskSource: ring
         }
 
-        // The same outline, blurred and lifted, spilling past the edge: the
-        // ring glows as it turns rather than only drawing a line. Captured
-        // with room round it, or the blur would stop at the ring's own edge.
+        // Captured with padding, or the blur stops at the ring's edge.
         ShaderEffectSource {
             id: lineShot
 
@@ -162,8 +155,6 @@ OverlayWindow {
             saturation: 0.4
         }
 
-        // The same turning gradient, faint, through the whole sheet: the glass
-        // takes on the colours as they pass, but stays dark.
         Item {
             id: fillMask
 
@@ -202,15 +193,12 @@ OverlayWindow {
                 id: pointer
             }
 
-            // Clipped to the sheet's rounded shape; a plain clip is square and
-            // lit the corners the rounding leaves empty.
+            // A plain clip is square and lights the empty corners.
             ClippingRectangle {
                 anchors.fill: parent
                 radius: sheet.radius
                 color: "transparent"
 
-                // A soft light under the pointer, eased so it trails a little, and
-                // gone when the pointer leaves: the sheet notices where you are.
                 Item {
                     id: spot
 
@@ -242,9 +230,7 @@ OverlayWindow {
                         }
                     }
 
-                    // A radial light that fades to nothing before its edge, so
-                    // it reads as a lamp rather than a shape. Painted once; only
-                    // the item moves.
+                    // Fades to zero before its edge, so it reads as light, not a shape.
                     Canvas {
                         id: glow
 

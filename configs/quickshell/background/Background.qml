@@ -25,9 +25,7 @@ Variants {
         }
         color: "black"
 
-        // Crossfade adapted from caelestia-dots/shell (GPL-3.0): each change
-        // stacks a new Image on top, fades it in once it has loaded, then
-        // destroys the one underneath. Their Anim.SlowEffects timing.
+        // Crossfade adapted from caelestia-dots/shell (GPL-3.0).
         Item {
             id: fader
             anchors.fill: parent
@@ -50,8 +48,6 @@ Variants {
                 if (!path)
                     return;
                 const reveal = Wallpapers.reveal;
-                // The old script's two options, half and half: "center", or
-                // awww's "random", which picks one of its own transitions.
                 const mode = !reveal ? "" : Math.random() < 0.5 ? "center" : ["grow", "wipe", "fade"][Math.floor(Math.random() * 3)];
                 const props = {
                     source: "file://" + path
@@ -72,8 +68,7 @@ Variants {
                     asynchronous: true
                     cache: false
                     opacity: 0
-                    // Decoding a 4K wallpaper at full size for a 1080p screen
-                    // costs several frames. 1.25x leaves room for the crop.
+                    // A full-size 4K decode costs frames; 1.25x leaves room for the crop.
                     sourceSize.width: fader.width * 1.25
                     sourceSize.height: fader.height * 1.25
 
@@ -102,11 +97,7 @@ Variants {
                 }
             }
 
-            // awww's transitions. "grow" and "center" show the new wallpaper
-            // through a disc growing from --transition-pos 0.977,0.969 or from
-            // the middle; "wipe" through an edge sweeping left to right; "fade"
-            // simply fades. The image is held still against the screen while
-            // the shape moves, so it is uncovered, not slid in.
+            // awww-style transitions; the image stays still while the shape moves.
             Component {
                 id: revealComp
 

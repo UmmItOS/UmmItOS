@@ -9,8 +9,6 @@ import Quickshell.Services.Pipewire
 import Quickshell.Widgets
 import ".."
 
-// The bar shows the level; the flyout is where the machine's audio actually
-// lives — which device it comes out of, and how loud each app is on its own.
 RowLayout {
     id: root
 
@@ -19,8 +17,6 @@ RowLayout {
     readonly property real level: root.audio ? root.audio.volume : 0
     readonly property bool muted: root.audio?.muted ?? false
 
-    // A device is a sink that is not a stream; an app playing sound is a sink
-    // that is. PipeWire draws no other distinction between the two.
     readonly property var devices: Pipewire.nodes.values.filter(n => n.audio && n.isSink && !n.isStream)
     readonly property var streams: Pipewire.nodes.values.filter(n => n.audio && n.isSink && n.isStream)
 
@@ -48,17 +44,14 @@ RowLayout {
         return node.properties["application.name"] || node.description || node.name;
     }
 
-    // Browsers give every tab its own stream but name them all alike, so an
-    // app with several is numbered: "Floorp 1", "Floorp 2".
+    // Browsers name every tab stream alike, so number them.
     function numberedLabel(node: var): string {
         const name = labelFor(node);
         const same = streams.filter(n => labelFor(n) === name);
         return same.length > 1 ? name + " " + (same.indexOf(node) + 1) : name;
     }
 
-    // What the app is playing, from its media player when it has one. MPRIS
-    // is per app, not per stream, so with several streams this is the app's
-    // current track, not necessarily this stream's.
+    // MPRIS is per app, not per stream.
     function titleFor(node: var): string {
         const name = labelFor(node).toLowerCase();
         const bin = (node.properties["application.process.binary"] || "").toLowerCase();
@@ -66,9 +59,7 @@ RowLayout {
         return p?.trackTitle ?? "";
     }
 
-    // PipeWire rarely sets application.icon-name, so the binary and the app
-    // name are tried in turn; the theme lookup returns "" when none of them
-    // names a real icon, and the row falls back to a glyph.
+    // PipeWire rarely sets application.icon-name.
     function iconFor(node: var): string {
         const props = node.properties;
         const name = props["application.icon-name"] || props["application.process.binary"] || props["application.name"] || "";
@@ -115,8 +106,6 @@ RowLayout {
         toggleVisible: false
         onCloseRequested: root.popupOpen = false
 
-        // Master. Mute is a button rather than a switch because it belongs to
-        // the slider beside it, not to the panel.
         RowLayout {
             Layout.fillWidth: true
             spacing: Theme.spacing.large
@@ -266,16 +255,11 @@ RowLayout {
         }
 
         Repeater {
-            // A ScriptModel, not the array: it diffs each new array against the last,
-            // so an entry that is still there keeps its row instead of every row
-            // being rebuilt whenever anything changes.
+            // ScriptModel diffs, so surviving rows are kept, not rebuilt.
             model: ScriptModel {
                 values: root.streams
             }
 
-            // One line, the same shape as the master row above it: what it is,
-            // how loud, and the number. The app's own icon identifies it, so
-            // the name can stay small.
             RowLayout {
                 id: stream
 
@@ -289,9 +273,7 @@ RowLayout {
                 Layout.rightMargin: Theme.padding.medium
                 spacing: Theme.spacing.medium
 
-                // The app icon, recoloured to the shell rather than left in
-                // whatever brand colours it ships with. Only its silhouette
-                // survives, which is the part that identifies it anyway.
+                // Recoloured to the shell; only the silhouette identifies it.
                 Item {
                     Layout.alignment: Qt.AlignVCenter
                     implicitWidth: Theme.icon.small
@@ -361,8 +343,6 @@ RowLayout {
                     Layout.alignment: Qt.AlignVCenter
                     value: stream.level
                     fill: stream.muted ? Theme.dim : Theme.accent2
-                    // The same readout the volume keys raise, carrying this
-                    // app's icon instead of the speaker.
                     onMoved: value => {
                         stream.modelData.audio.volume = value;
                         Osd.presentApp(root.iconFor(stream.modelData), root.labelFor(stream.modelData), value, stream.muted);

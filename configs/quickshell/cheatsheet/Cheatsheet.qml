@@ -4,8 +4,7 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 
-// Every keybind that carries a description, read from the running Hyprland
-// when the sheet opens, so it cannot drift from the config.
+// Read from the running Hyprland on open, so it never drifts.
 Singleton {
     id: root
 
@@ -14,10 +13,7 @@ Singleton {
 
     readonly property var order: ["Shell", "Apps", "Window", "Workspace", "Utilities", "Media"]
 
-    // The Lua config starts every description with its group ("Shell:
-    // Session menu"), since under Lua hyprctl reports every dispatcher as
-    // "__lua". A description without one (the old hyprlang config) is
-    // grouped by what the bind runs instead.
+    // Lua descriptions start with their group; hyprctl reports "__lua".
     function split(bind: var): var {
         const m = bind.description.match(/^(\w+):\s*(.*)$/);
         if (m && order.includes(m[1]))
@@ -67,8 +63,6 @@ Singleton {
             "slash": "/"
         };
         let key = bind.keycode === 36 ? "Enter" : bind.keycode === 61 ? "/" : (named[bind.key] ?? bind.key);
-        // Media keys by what they are for, short enough to leave the
-        // description room.
         const media = {
             "XF86MonBrightnessUp": "Bright +",
             "XF86MonBrightnessDown": "Bright −",
@@ -85,8 +79,7 @@ Singleton {
             key = key.slice(4).replace(/([a-z])([A-Z])/g, "$1 $2");
         else if (key.length === 1)
             key = key.toUpperCase();
-        // A bind on a modifier's own release (Alt for the switcher) would read
-        // "Alt Alt".
+        // A bind on a modifier's own release would read "Alt Alt".
         return mods.includes(key) ? mods : [...mods, key];
     }
 

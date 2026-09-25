@@ -105,6 +105,10 @@ grep -A5 'name: "workspaces"' /usr/lib/qt6/qml/Quickshell/Hyprland/_Ipc/*.qmltyp
 - **Tray menus are drawn by the shell** (`bar/TrayMenu.qml`, a `Flyout` over `QsMenuOpener`), not by `QsMenuAnchor`: Qt's native menus follow the platform theme, which for this Qt 6 shell is plain light. `bar/Tray.qml` also swaps in a glyph or the app's desktop icon when a tray icon is missing, and on start re-registers `org.kde.StatusNotifierItem-*` names the new watcher does not list (apps such as Proton VPN register once and vanish after a shell restart).
 - **Closing on an outside click:** bar flyouts are `PopupWindow`s and use `grabFocus: true`. `HyprlandFocusGrab` only owns layer surfaces, so it works for `PanelWindow` surfaces such as `NotificationPanel` but silently does nothing on an xdg-popup.
 
+### Comments
+
+One short line, only for a why the code cannot show (a trap, a workaround, a reason for a number). No multi-line blocks, no restating what the code does, no history of what was tried. If it needs a paragraph, it belongs in this file.
+
 ### Design system
 
 `Theme.qml` is the single source of truth for colour, `rounding`, `spacing`, `padding`, `fontSize`, `icon`, `duration`, `curve` (M3 bezier control points), `tracking`, `weight`, `barHeight`, `glass` (a card's sheen on a blurred panel) and `panelTint`. **Surface files contain no magic numbers.** If you need a new value, add a token for it.

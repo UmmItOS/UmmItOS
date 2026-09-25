@@ -2,25 +2,18 @@ import QtQuick
 import QtQuick.Effects
 import ".."
 
-// The wake, timed by Wake: a soft line of light draws out from the centre
-// of the black, then the black opens from it in one soft circle, the screen
-// inside coming from blurred and dim to sharp as it opens. The circle and
-// haze are one shader pass (curtain.frag), and the line is blurred once and
-// only scaled, so nothing is re-drawn or resized per frame.
+// Circle and haze are one shader pass; the line is only scaled.
 Item {
     id: root
 
     property real dark: 0
-    // The screen as it was before going black, shown blurred as the haze;
-    // empty where there is none (the lock), which leaves the haze plain dim.
+    // Empty on the lock, which leaves a plain veil.
     property string picture: ""
 
     // Half the diagonal: a circle this wide reaches the corners.
     readonly property real reach: Math.hypot(width, height) / 2
 
-    // A circle's radius for a beat's progress, starting fully closed
-    // (its soft edge ending at the centre) and ending with that edge past
-    // the corners.
+    // From fully closed to its soft edge past the corners.
     function radius(progress: real): real {
         return -Theme.wakeSoft + progress * (reach + Theme.wakeSoft);
     }
@@ -76,8 +69,7 @@ Item {
         fragmentShader: "curtain.frag.qsb"
     }
 
-    // The line: a pill of light blurred once at full width and grown by
-    // stretching it from the centre. It fades as the black opens.
+    // Blurred once at full width, then only scaled.
     Rectangle {
         id: pill
 

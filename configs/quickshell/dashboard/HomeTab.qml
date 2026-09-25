@@ -83,8 +83,6 @@ ColumnLayout {
             }
         }
 
-        // What is playing, where the clock is. Both answer "now"; the
-        // machine's own numbers answer something else and live under System.
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true

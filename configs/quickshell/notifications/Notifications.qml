@@ -18,13 +18,9 @@ Scope {
         imageSupported: true
         keepOnReload: false
 
-        // Without tracked = true the notification is dropped immediately.
-        // The record is taken here because the object itself does not survive
-        // expiry, and the panel needs something that does.
+        // Without tracked = true the notification is dropped at once.
         onNotification: notification => {
-            // Every notification sounds, like a phone, unless something else
-            // already does: the shell's own notices keep their pop, and apps
-            // that play their own sound (or ask not to have one) stay quiet.
+            // Apps that play their own sound stay quiet.
             const app = (notification.appName || "").toLowerCase();
             const entry = (notification.desktopEntry || "").toLowerCase();
             const hints = notification.hints ?? {};
@@ -54,9 +50,7 @@ Scope {
         // The toast column's edges in screen x when not stepped aside.
         readonly property real columnRight: width - Theme.padding.medium
         readonly property real columnLeft: columnRight - toastWidth + Theme.padding.medium * 2
-        // How far the toasts step left to clear an open bar dropdown: only
-        // one that actually overlaps the column, and never so far that the
-        // column leaves the screen's left edge.
+        // Only for a dropdown over the column, and never off screen.
         readonly property real clearance: {
             const f = Notifs.flyout;
             if (!f || Notifs.flyoutRight <= columnLeft)
@@ -72,24 +66,15 @@ Scope {
         }
         // Do not reserve screen space, and stay out of the way when empty.
         exclusionMode: ExclusionMode.Ignore
-        // Clear the bar. Ignoring the exclusion zone means this window starts
-        // at y=0 and would otherwise sit on top of the tray and the clock.
         margins.top: Theme.barHeight + Theme.spacing.small
         margins.right: Theme.spacing.small
-        // Always mapped: a view in an unmapped window skips its add
-        // transition, so the first toast used to appear without sliding in.
-        // Transparent, and the mask passes input through everywhere but the
-        // toasts, so an idle window costs nothing visible.
+        // Always mapped: an unmapped view skips its add transition.
         visible: true
-        // The full width, though only the toasts are drawn or take input, so
-        // they can step left of a dropdown without the surface moving.
+        // Full width, so toasts step left without the surface moving.
         implicitWidth: screen?.width ?? 1920
-        // A fixed column, not the height of the toasts: shrinking the window
-        // as one leaves clipped it mid-slide. Input only lands on the toasts.
+        // Fixed height: shrinking it clipped a toast mid-slide.
         implicitHeight: (screen?.height ?? 1080) - Theme.barHeight - Theme.spacing.small * 2
-        // Bound to the list's own position, so input follows the toasts as
-        // they step aside (a region on the contentItem did not see its
-        // parent move).
+        // On the list itself; a contentItem region missed it moving.
         mask: Region {
             x: list.x
             y: list.y
@@ -98,9 +83,7 @@ Scope {
         }
         color: "transparent"
 
-        // A ListView, not a column of Repeater items: a toast that is removed
-        // from a Layout simply stops existing, and the ones under it snap up.
-        // add/remove/displaced are what make that a movement instead of a jump.
+        // A ListView, so removals animate instead of snapping.
         ListView {
             id: list
 
@@ -163,8 +146,7 @@ Scope {
                     easing.type: Easing.BezierSpline
                     easing.bezierCurve: Theme.curve.standard
                 }
-                // Displacing a toast cancels its add transition; without these
-                // it would stay half faded and off to the side for good.
+                // A displaced toast otherwise stays half faded.
                 NumberAnimation {
                     properties: "opacity"
                     to: 1
@@ -184,18 +166,12 @@ Scope {
 
                 required property Notification modelData
 
-                // A delegate outlives its model entry: the remove transition
-                // still needs it on screen after the notification is gone, so
-                // every read of modelData has to survive it being null.
-                // What the card shows, copied while the notification is alive:
-                // the object is gone before the exit animation ends, and
-                // reading it live left an empty box fading out.
+                // Copied while alive: the object dies before the exit ends.
                 property var kept: ({})
 
                 function keep(): void {
                     const n = card.modelData;
-                    // A destroyed notification is not null, it just reads
-                    // empty; copying then wiped the text mid-exit.
+                    // A destroyed notification reads empty, not null.
                     if (n && n.appName !== undefined)
                         kept = {
                             appName: n.appName,
@@ -210,8 +186,7 @@ Scope {
                 Component.onCompleted: keep()
                 onModelDataChanged: keep()
 
-                // An app replacing its notification (notify-send -r, a player,
-                // a progress notice) updates the same object in place.
+                // Replaced notifications update the same object in place.
                 Connections {
                     target: card.modelData
                     ignoreUnknownSignals: true
@@ -231,17 +206,11 @@ Scope {
                 readonly property string appIcon: card.kept.appIcon ? Quickshell.iconPath(card.kept.appIcon, true) : ""
                 // Delegates are created on arrival, so this is the arrival time.
                 readonly property string time: Qt.formatDateTime(new Date(), "HH:mm")
-                // Clicking the body invokes the "default" action, which is
-                // how an app asks to be raised on the relevant view.
                 readonly property var defaultAction: card.modelData?.actions?.find(a => a.identifier === "default") ?? null
 
                 width: list.width
                 implicitHeight: body.implicitHeight + Theme.padding.large * 2
                 radius: Theme.rounding.extraLarge
-                // Critical reads through its summary colour and its own
-                // longer timeout, not an outline.
-                // See-through enough that the compositor blur behind it reads
-                // as frosted glass; bgAlt was near opaque and hid it.
                 color: Theme.scrim(0.45)
 
                 HoverHandler {
@@ -256,8 +225,7 @@ Scope {
                     }
                 }
 
-                // What the sender asked for, in ms: -1 leaves it to us, 0 means
-                // never. Critical ones never expire either; that is the spec.
+                // In ms: -1 is ours to choose, 0 never expires.
                 readonly property real timeout: card.modelData?.expireTimeout ?? -1
 
                 // Reading a notification should not race its own timer.
@@ -382,8 +350,6 @@ Scope {
                         }
                     }
 
-                    // Kept inside the card: with several long labels the buttons
-                    // shrink and cut their text instead of running off.
                     RowLayout {
                         Layout.fillWidth: true
                         Layout.topMargin: Theme.spacing.small

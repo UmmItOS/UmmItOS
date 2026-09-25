@@ -16,8 +16,7 @@ OverlayWindow {
 
     readonly property var tabs: ["Dashboard", "System", "Workspaces"]
 
-    // Polling /proc and hwmon, and the player's clock and cava, only matter
-    // while the tab that shows them is on screen.
+    // Polling runs only while the tab showing it is on screen.
     Binding {
         target: SysInfo
         property: "active"
@@ -43,8 +42,6 @@ OverlayWindow {
         scale: Theme.popScale + (1 - Theme.popScale) * win.reveal
 
         anchors.top: parent.top
-        // Under the bar, read from the token so a taller bar does not end up
-        // on top of it. Capped to the screen, which can be smaller than this.
         anchors.topMargin: Theme.barHeight + Theme.spacing.small
         width: Math.min(1100, parent.width - Theme.padding.extraLarge * 2)
         height: Math.min(520, parent.height - anchors.topMargin - Theme.padding.extraLarge)
@@ -70,9 +67,6 @@ OverlayWindow {
             }
             spacing: 0
 
-            // The tabs are the page's headline: the words themselves, set large,
-            // with the current one lit and a short bar sliding under it. No tray
-            // around them; the panel is already the container.
             Item {
                 Layout.fillWidth: true
                 implicitHeight: tabRow.implicitHeight + Theme.spacing.small + indicator.height
@@ -126,14 +120,10 @@ OverlayWindow {
                     }
                 }
 
-                // Slides and stretches to the next word, so it travels rather
-                // than blinks.
                 Rectangle {
                     id: indicator
 
-                    // itemAt() is a call, not a property: read through count so
-                    // the binding runs again once the Repeater has built the
-                    // words, or the first open finds no word to sit under.
+                    // itemAt() is a call; read through count so it re-runs.
                     readonly property Item target: tabs.count > Dashboard.tab ? tabs.itemAt(Dashboard.tab) : null
 
                     anchors.bottom: parent.bottom
@@ -143,8 +133,7 @@ OverlayWindow {
                     radius: Theme.rounding.full
                     color: Theme.accentText
 
-                    // Only while open: a bar item opens the dashboard onto its
-                    // tab, and the bar should already be there, not travelling.
+                    // Only while open, so a tab opened from the bar does not slide in.
                     Behavior on x {
                         enabled: Dashboard.open
 
@@ -176,8 +165,6 @@ OverlayWindow {
                 Layout.topMargin: Theme.padding.large
                 currentIndex: Dashboard.tab
 
-                // The new page drifts in from the side the pill moved toward,
-                // so the content and the control agree on direction.
                 onCurrentIndexChanged: {
                     if (!Dashboard.open) {
                         last = currentIndex;

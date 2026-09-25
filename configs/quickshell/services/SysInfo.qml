@@ -38,9 +38,7 @@ Singleton {
         return (bytes / (1024 * 1024)).toFixed(0) + "MiB";
     }
 
-    // `active` means a panel is on screen and wants live numbers. Nothing
-    // else reads these, so with it off nothing is polled at all; turning it on
-    // samples straight away, so the dashboard opens on real values.
+    // Nothing polls while off; turning on samples at once.
     property bool active: false
 
     property real lastIdle: 0

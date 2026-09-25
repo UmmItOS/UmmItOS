@@ -6,9 +6,7 @@ import "../bar"
 import ".."
 import "../wake"
 
-// What the lock shows, laid out as hyprlock was: the blurred wallpaper, the
-// battery top right, and a centred column of date, time, avatar, name, hint
-// and password field. Each piece sits at hyprlock's offset from the centre.
+// hyprlock's layout, offset for offset.
 Item {
     id: root
 
@@ -19,19 +17,11 @@ Item {
         return -fraction * height;
     }
 
-    // 0 is the plain wallpaper, 1 the lock. Locking runs it up (the desktop's
-    // own wallpaper blurring and dimming, the text fading in); a right
-    // password runs it back down before the lock lets go, so both ways are a
-    // fade rather than a cut.
+    // 0 is the desktop, 1 the lock; both ways fade.
     property real haze: 0
     property bool snapping: false
 
-    // Every showing starts from the plain wallpaper, including the preview,
-    // whose content outlives each opening.
-    // Every opening holds on the plain desktop picture first, which looks
-    // exactly like the desktop, until the blurred wallpaper under it has
-    // loaded and drawn once. Fading straight away mixed the picture with the
-    // not-yet-drawn layer beneath, which showed as a dark flash, then a jump.
+    // Hold on the desktop picture until the blur has drawn once.
     function enter(): void {
         snapping = true;
         haze = 0;
@@ -94,9 +84,7 @@ Item {
         visible: false
     }
 
-    // hyprlock's background: a light blur (size 1, 2 passes), a little
-    // contrast, and brightness 0.8 as a multiply, which is a 20% black veil.
-    // Vibrancy only touched the colourful parts, so saturation is left alone.
+    // hyprlock's background: light blur, some contrast, brightness 0.8.
     MultiEffect {
         anchors.fill: parent
         source: wall
@@ -112,8 +100,6 @@ Item {
         opacity: 0.2
     }
 
-    // The desktop as it was, on top, fading out as the lock comes in and back
-    // in before it lets go: both ways start and end on what was on screen.
     Image {
         anchors.fill: parent
         source: Lock.shot > 0 && root.screenName !== "" ? Lock.shotOf(root.screenName) : ""
@@ -127,9 +113,7 @@ Item {
         anchors.fill: parent
         opacity: root.haze
 
-        // hyprlock's shadow, per element as hyprlock.conf set it: black,
-        // centred, a tight blur of `size` px run `passes` times (and boosted,
-        // hyprlock's default 1.2), rather than one soft shadow for the lot.
+        // hyprlock's per-element shadow.
         component Shade: MultiEffect {
             required property int size
             required property int passes
@@ -208,8 +192,7 @@ Item {
             }
         }
 
-        // The avatar keeps hyprlock's thin ring, by request: the one other
-        // border in the shell besides the cheat sheet's.
+        // The ring is a deliberate border, by request.
         ClippingRectangle {
             anchors.centerIn: parent
             anchors.verticalCenterOffset: root.at(-0.15)
@@ -286,8 +269,7 @@ Item {
             id: shake
         }
 
-        // Appears at once when typing starts, and only takes its time going
-        // away again (hyprlock's fade_on_empty): a slow fade-in read as lag.
+        // In at once, out slowly: a slow fade-in read as lag.
         Behavior on opacity {
             NumberAnimation {
                 duration: field.opacity < 0.5 ? Theme.duration.expressiveFastEffects : Theme.duration.extraLarge
@@ -347,8 +329,7 @@ Item {
             echoMode: TextInput.Password
             horizontalAlignment: TextInput.AlignHCenter
             verticalAlignment: TextInput.AlignVCenter
-            // The typing is drawn by the dots below, so each can arrive with
-            // its own little spring; the input itself stays invisible.
+            // Typing is drawn by the dots below.
             color: "transparent"
             font.pixelSize: Theme.fontSize.larger
             font.letterSpacing: Theme.spacing.extraSmall
@@ -365,9 +346,7 @@ Item {
             Keys.onEscapePressed: text = ""
         }
 
-        // One dot per character, each popping in on a spring as it is typed,
-        // but never more than fit inside the field: past that the row stays
-        // full instead of running out of the box.
+        // Never more dots than fit in the field.
         Row {
             readonly property int fits: Math.max(1, Math.floor((field.width - Theme.padding.large * 2 + spacing) / (Theme.spacing.medium + spacing)))
 
@@ -410,8 +389,7 @@ Item {
         }
     }
 
-    // Waking: the lock covers every other layer, so it carries the opening
-    // itself.
+    // The lock covers every layer, so it draws the wake itself.
     WakeCurtain {
         anchors.fill: parent
         dark: Wake.dark

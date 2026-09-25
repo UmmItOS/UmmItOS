@@ -1,7 +1,5 @@
 import QtQuick
 
-// One line in a flyout list, lit while hovered or while it is the active one
-// (the network you are on, the device that is connected).
 Rectangle {
     id: root
 

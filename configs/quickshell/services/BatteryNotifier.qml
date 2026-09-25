@@ -2,10 +2,7 @@ import Quickshell
 import Quickshell.Services.UPower
 import QtQuick
 
-// The notifications a laptop is expected to make on its own: plugged in,
-// unplugged, full, low, nearly empty. Sent through notify-send rather than
-// raised directly, so they land in the same server, toast and history as
-// everything else.
+// Through notify-send, so they land in the history too.
 Scope {
     id: root
 
@@ -19,16 +16,14 @@ Scope {
     // Nothing should fire because the shell restarted.
     property bool primed: false
     property int lastState: -1
-    // The lowest band already warned about, so a battery hovering at 20% does
-    // not warn once a second. Cleared when it charges back above the band.
+    // Lowest band warned about, so hovering at 20% warns once.
     property int warned: 100
 
     // For the charging ripple.
     signal pluggedIn
 
     function notify(urgency: string, summary: string, body: string): void {
-        // No -i: the icon hint comes back as an image the card tries to draw,
-        // and a name the theme does not have renders as a broken checkerboard.
+        // No -i: a missing theme icon renders as a checkerboard.
         Quickshell.execDetached(["notify-send", "-a", "Battery", "-u", urgency, summary, body]);
     }
 
@@ -70,17 +65,13 @@ Scope {
                 return;
             root.lastState = state;
 
-            // Plugging and unplugging are read from the charger below; the
-            // battery's own state follows seconds later.
             // Not the brief "fully charged" some drivers report on plug-in.
             if (state === UPowerDeviceState.FullyCharged && root.percent() >= 99)
                 root.notify("low", "Battery full", "Charged. You can unplug.");
         }
     }
 
-    // The charger reports the moment the plug goes in or out; the battery's
-    // state lags it by a few seconds, which made the ripple and "Charging"
-    // late.
+    // The charger reports at once; the battery lags seconds behind.
     Connections {
         target: UPower
         enabled: root.present

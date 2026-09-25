@@ -61,10 +61,7 @@ ShellRoot {
         onPluggedIn: ripple.play()
     }
 
-    // An app registers its tray icon once, with whichever tray host is up.
-    // When the shell restarts, some (Proton VPN, through libayatana) never
-    // register again and vanish. Offer the new host every tray icon on the
-    // bus that it does not already list.
+    // Re-offer tray icons the new host lacks: some apps register only once.
     Component.onCompleted: Quickshell.execDetached(["sh", "-c", `
         sleep 1
         w="org.kde.StatusNotifierWatcher"
@@ -74,8 +71,6 @@ ShellRoot {
             case "$reg" in *"$n"*|*"\"$owner/"*) continue ;; esac
             busctl --user call $w /StatusNotifierWatcher $w RegisterStatusNotifierItem s "$n"
         done`])
-    // Here and not in the tray: that has one copy per bar, and the copies
-    // raced each other on several screens.
 
     // Wi-Fi and Bluetooth coming and going.
     ConnectionNotifier {}

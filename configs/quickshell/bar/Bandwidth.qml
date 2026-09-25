@@ -8,8 +8,7 @@ import ".."
 RowLayout {
     id: root
 
-    // One decimal below ten, none above, so the string length barely moves and
-    // the two readouts stay the same visual weight.
+    // One decimal below ten keeps the string length steady.
     function human(bytes: real): string {
         if (bytes >= 1048576) {
             const m = bytes / 1048576;
@@ -27,15 +26,11 @@ RowLayout {
 
     spacing: 0
 
-    // Each arrow sits with its own number and the pair is spaced apart from the
-    // other, so it reads as two readouts rather than four loose items.
     component Rate: RowLayout {
         required property string glyph
         required property real value
 
-        // Nothing here may fill: a child that wants to grow makes this whole
-        // row growable, which propagates up and eats the bar's centring
-        // spacers. The number carries a fixed width instead.
+        // Nothing here may fill: it would eat the bar's centring.
         spacing: Theme.spacing.extraSmall
 
         MaterialIcon {
@@ -78,8 +73,6 @@ RowLayout {
         value: Net.upRate
     }
 
-    // The bar's only other live numbers are the machine's own, so this is where
-    // they hang: CPU, memory, storage, temperatures.
     TapHandler {
         onTapped: Dashboard.toggleTab(1)
     }

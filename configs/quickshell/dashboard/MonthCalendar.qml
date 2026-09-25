@@ -6,8 +6,6 @@ import QtQuick.Layouts
 import ".."
 import "../bar"
 
-// The month the clock's date sits in. Opens on this month every time; the
-// arrows or the wheel page through the others.
 ColumnLayout {
     id: root
 

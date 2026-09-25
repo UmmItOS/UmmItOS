@@ -6,9 +6,6 @@ import QtQuick.Effects
 import QtQuick.Layouts
 import ".."
 
-// One row of tiles rather than a 3x2 grid: six actions read faster in a
-// line, and the row matches the bar's cluster language. Focus starts on Lock,
-// the only action here you cannot regret.
 OverlayWindow {
     id: win
 
@@ -66,10 +63,7 @@ OverlayWindow {
                     implicitWidth: 156
                     implicitHeight: 156
 
-                    // A stagger reads as the menu assembling itself; everything
-                    // arriving on the same frame reads as a screenshot. Replayed
-                    // on every open, and a Translate rather than `y`, which the
-                    // RowLayout owns.
+                    // Translate, not `y`: the RowLayout owns y.
                     opacity: 0
                     transform: Translate {
                         id: lift

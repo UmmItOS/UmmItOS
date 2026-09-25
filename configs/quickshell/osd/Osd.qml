@@ -5,15 +5,10 @@ import Quickshell.Io
 import Quickshell.Services.Pipewire
 import QtQuick
 
-// Watches volume and brightness and asks the OSD to appear. It never changes
-// either one: the keys already run wpctl and brightnessctl, so this only
-// observes, and an adjustment made any other way shows up just the same.
+// Observes only: the keys already run wpctl and brightnessctl.
 Singleton {
     id: root
 
-    // "volume" | "brightness" | "app". An app carries its own icon and name,
-    // because "61%" over a speaker glyph says nothing about which of four
-    // things playing sound just got quieter.
     property string kind: "volume"
     property string icon: ""
     property string label: ""
@@ -45,8 +40,6 @@ Singleton {
         hide.restart();
     }
 
-    // Dragging one app's volume gets the same readout as the volume keys, with
-    // that app's icon in place of the speaker.
     function presentApp(iconPath: string, name: string, newValue: real, newMuted: bool): void {
         icon = iconPath;
         label = name;
@@ -59,9 +52,7 @@ Singleton {
         onTriggered: root.shown = false
     }
 
-    // One pass to settle the starting values, then arm. Again whenever the
-    // output device changes: a new sink's volume binding in reads as a change,
-    // and plugging in headphones should not flash a volume nobody touched.
+    // Settle before arming, or a new sink flashes a volume nobody touched.
     Timer {
         id: arm
         running: true
@@ -87,13 +78,10 @@ Singleton {
         }
     }
 
-    // Brightness has no property to bind to. sysfs does not reliably emit
-    // inotify events for backlight attributes, so this reads the file rather
-    // than trusting a watch; it is a handful of bytes.
+    // sysfs backlight emits no reliable inotify events, so it is read.
     property real brightnessMax: 1
     property real brightnessRaw: 0
-    // Resolved at startup: the device is amdgpu_bl1 here, intel_backlight
-    // elsewhere. Hardcoding one name would make this laptop-specific.
+    // amdgpu_bl1 here, intel_backlight elsewhere.
     property string backlight: ""
 
     Process {
@@ -104,8 +92,7 @@ Singleton {
         }
     }
 
-    // The brightness keys report in over IPC, so this only catches changes
-    // made some other way, and can afford to be slow.
+    // The keys report over IPC, so this can be slow.
     Timer {
         running: root.backlight !== ""
         interval: 2000

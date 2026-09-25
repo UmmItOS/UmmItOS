@@ -2,11 +2,7 @@ import Quickshell
 import QtQuick
 import QtQuick.Layouts
 
-// The bar's drop-down: a titled panel hanging off a bar item, carrying a radio
-// switch in its header and closing on a click anywhere outside it.
-//
-// Wi-Fi and Bluetooth are the same object with different contents, so the shell
-// holds one of these rather than two near-identical windows.
+// The bar's dropdown, shared by Wi-Fi, Bluetooth, Volume and the tray.
 PopupWindow {
     id: root
 
@@ -17,8 +13,7 @@ PopupWindow {
     property bool busy: false
     property bool checked: false
     property bool toggleVisible: true
-    // Size to the content instead of the default panel height. A list that
-    // scrolls wants the fixed height; a stack of rows does not.
+    // Size to the content; a scrolling list wants the fixed height.
     property bool hug: false
 
     signal toggled
@@ -33,23 +28,18 @@ PopupWindow {
 
     implicitWidth: 380
     implicitHeight: root.hug ? Math.min(head.implicitHeight + body.implicitHeight + Theme.spacing.medium + Theme.padding.large * 2, root.maxHeight) : 420
-    // Hugging never grows past the screen under the bar; content that can be
-    // that long (a tray menu) scrolls inside.
+    // Never taller than the screen; long content scrolls inside.
     readonly property real maxHeight: (root.screen?.height ?? 1080) - Theme.barHeight - Theme.spacing.small * 2
     color: "transparent"
 
-    // PopupWindow's own grab, not HyprlandFocusGrab: the Hyprland grab owns
-    // layer surfaces, and an xdg-popup it cannot own never closes on an
-    // outside click.
+    // Not HyprlandFocusGrab: it only owns layer surfaces, not popups.
     grabFocus: true
 
-    // The grab closes the window itself, which leaves the caller still thinking
-    // it is open until the state is handed back.
+    // The grab closes the window itself, so hand the state back.
     onVisibleChanged: {
         if (root.visible) {
             entrance.restart();
-            // Centred under its item, but kept on screen the way the
-            // compositor slides a popup that would overflow.
+            // Kept on screen, as the compositor would slide it.
             const screenWidth = root.anchorItem.Window.width;
             const centre = root.anchorItem.mapToItem(null, root.anchorItem.width / 2, 0).x;
             const left = Math.max(0, Math.min(centre - root.implicitWidth / 2, screenWidth - root.implicitWidth));
@@ -76,10 +66,7 @@ PopupWindow {
         anchors.fill: parent
         radius: Theme.rounding.extraLarge
 
-        // Drops out of the bar. Opening only: an outside click dismisses the
-        // popup in the compositor, which unmaps it before anything could play.
-        // Restarted from the start on every open, so a quick reopen never
-        // picks up where a hidden animation left off.
+        // Opening only: an outside click unmaps the popup at once.
         transformOrigin: Item.Top
 
         ParallelAnimation {
@@ -130,8 +117,6 @@ PopupWindow {
                     }
                 }
 
-                // The spinner sits next to the title rather than in the list, so
-                // a slow scan reads as work in progress and not as an empty box.
                 Item {
                     Layout.fillWidth: true
                     implicitHeight: 1

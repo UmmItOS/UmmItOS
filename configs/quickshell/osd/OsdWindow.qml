@@ -6,9 +6,6 @@ import Quickshell.Widgets
 import QtQuick
 import ".."
 
-// A square that appears where you are already looking, says one number, and
-// leaves. Segmented rather than continuous: at a glance you read the count of
-// filled blocks, which is faster than judging the length of a bar.
 PanelWindow {
     id: win
 
@@ -16,11 +13,9 @@ PanelWindow {
     readonly property int filled: Math.round(Osd.value * win.segments)
     readonly property bool app: Osd.kind === "app"
 
-    // Stay mapped until the fade finishes, or the card vanishes instantly
-    // instead of animating out.
+    // Mapped until the fade ends.
     visible: Osd.shown || card.opacity > 0.01
-    // No anchors: layer-shell centres the surface, which is where a transient
-    // readout belongs.
+    // No anchors: layer-shell centres it.
     WlrLayershell.namespace: "ummitos-osd"
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
@@ -41,10 +36,7 @@ PanelWindow {
         opacity: Osd.shown ? 1 : 0
         scale: Osd.shown ? 1 : Theme.popScale
 
-        // Both the same length. They used to be 200ms and 500ms, so the card
-        // finished fading while it was still scaling, `visible` unmapped it
-        // mid-animation, and the next one started from whatever scale it was
-        // caught at — which is what read as a stutter.
+        // Same length as the scale, or the unmap cut it mid-animation.
         Behavior on opacity {
             NumberAnimation {
                 duration: Theme.duration.expressiveFastSpatial
@@ -60,8 +52,6 @@ PanelWindow {
             }
         }
 
-        // The number is what gets read, so it is the anchor; the icon says
-        // which control you are holding and the segments give the shape of it.
         Column {
             anchors.centerIn: parent
             spacing: Theme.spacing.medium
@@ -71,9 +61,6 @@ PanelWindow {
                 implicitWidth: Theme.icon.huge
                 implicitHeight: Theme.icon.huge
 
-                // In its own colours. The flyout tints its tiny row icons so a
-                // list of them stays calm; at this size the icon is the subject
-                // and a grey silhouette just looks broken.
                 IconImage {
                     id: appIcon
 
@@ -138,8 +125,6 @@ PanelWindow {
                 }
             }
 
-            // Which app, when it is an app. Nothing when it is the machine:
-            // a label saying "Volume" under a speaker icon is furniture.
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: card.width - Theme.padding.extraLarge * 2

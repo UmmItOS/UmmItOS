@@ -9,10 +9,6 @@ import QtQuick.Effects
 import QtQuick.Shapes
 import ".."
 
-// Pick a region, a window or the whole screen over a frozen copy of it. The four corners of the
-// selection hang from the four corners of the screen on curved threads, and
-// every corner trails the pointer on a spring, so the selection is pulled
-// into place rather than drawn.
 OverlayWindow {
     id: win
 
@@ -20,30 +16,21 @@ OverlayWindow {
     name: "screenshot"
     screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
 
-    // Where the drag started and where the pointer is. Before a drag the
-    // selection is a point under the pointer, so the threads already follow it.
     property point from: Qt.point(width / 2, height / 2)
     property point to: from
     property bool dragging: false
-    // A press seen inside the overlay. A release without one (left over from
-    // the keys or a click elsewhere) must not take anything.
+    // A release with no press here (from the keys) takes nothing.
     property bool pressed: false
-    // While set, corners jump instead of springing: used to place the frame
-    // just outside a window before it settles onto it.
+    // Corners jump instead of springing while set.
     property bool snap: false
     // The window being cut out for a window shot.
     property var cutting: null
-    // 0 while picking; runs to 1 after release, reeling the threads into the
-    // selection and lifting the dim before the shot is taken.
+    // 0 while picking, 1 once released.
     property real release: 0
     property string pendingGeometry: ""
 
-    // The clock the tendrils sway and the beads pulse to; runs only while
-    // the overlay is up.
     property real phase: 0
-    // Region zoom: the frozen screen is drawn at `zoom`, shifted by (tx, ty),
-    // so view = screen * zoom + t. The selection lives in view coordinates
-    // and is mapped back to the screen when taken.
+    // view = screen * zoom + t.
     property real zoom: 1
     property real tx: 0
     property real ty: 0
@@ -63,8 +50,6 @@ OverlayWindow {
         ty = Math.max(h - h * z, Math.min(0, py - (py - ty) * z / zoom));
         zoom = z;
     }
-    // The blur's own slow gathering, two seconds long, so it is watched
-    // rather than noticed; it lifts with the release as before.
     property real haze: 0
 
     NumberAnimation {
@@ -88,16 +73,8 @@ OverlayWindow {
     readonly property real rootWidth: Theme.spacing.medium + 2
     readonly property real tipWidth: 4
 
-    // A tendril's outline from its root (ax, ay) to its tip (cx, cy): the same
-    // curve the threads always took, bent sideways by a wave that travels
-    // toward the tip and fades to nothing at both ends, so it stays tied.
-    // Its width narrows along the way, and a short tendril (reeled in) barely
-    // sways at all.
-    // Opening: 0 → 1, the tendrils growing out of the screen corners.
     property real sprout: 0
 
-    // The blur leads by 0.3s, then the tendrils grow out and join while it
-    // keeps gathering.
     readonly property int sproutDelay: Theme.duration.expressiveSlowEffects
     readonly property int sproutDuration: Theme.duration.extraLarge + Theme.duration.small
 
@@ -118,8 +95,7 @@ OverlayWindow {
         }
     }
 
-    // How far a tendril has grown. All four grow together over the whole
-    // opening; a stagger left the first ones rushing in.
+    // All four grow together; a stagger rushed the first ones.
     function grownOf(order: int): real {
         return sprout;
     }
@@ -149,8 +125,6 @@ OverlayWindow {
         return left.concat(right.reverse());
     }
 
-    // Where a thread starts: at its screen corner, sliding into its selection
-    // corner as the release plays.
     function anchorOf(sx: real, corner: real): real {
         return sx + (corner - sx) * release;
     }
@@ -189,8 +163,7 @@ OverlayWindow {
         frame(b);
     }
 
-    // Opening onto a window: the frame appears a little outside it and
-    // springs in to hug it, instead of flying there from the middle.
+    // Starts a little outside the window and springs in.
     function focusFirst(b: var): void {
         if (!b)
             return;
@@ -212,12 +185,7 @@ OverlayWindow {
             focusFirst(boxes[0] ?? null);
     }
 
-
-
-
-
-    // A close while letting go (Escape, or the IPC toggle) cancels the shot:
-    // without this the finish ran on and saved it anyway.
+    // A close mid-finish cancels the shot.
     onShownChanged: {
         if (!shown) {
             finishing.stop();
@@ -227,9 +195,7 @@ OverlayWindow {
 
     onOpened: {
         cutting = null;
-        // Only a closed overlay captures: reopened mid-fade it is still on
-        // screen, and the capture would be of the overlay itself, which is
-        // what made quick repeats flash and lose the effect.
+        // Only a closed overlay captures, or it photographs itself.
         if (!visible) {
             frozen.captureFrame();
             haze = 0;
@@ -244,9 +210,7 @@ OverlayWindow {
         dragging = false;
         picked = null;
         pressed = false;
-        // Every mode starts as a point in the middle, so the frame is seen to
-        // travel to what it takes. The screen's size, not the window's: the
-        // window can still be unsized here, which put the point in the corner.
+        // The screen's size: the window may be unsized yet.
         from = to = Qt.point((screen?.width ?? width) / 2, (screen?.height ?? height) / 2);
         scope.forceActiveFocus();
         if (mode === "screen")
@@ -274,8 +238,6 @@ OverlayWindow {
     }
 
     function commit(): void {
-        // Closed (Escape, a click away) while the whole-screen timer was
-        // still counting down: nothing is taken.
         if (finishing.running || !win.shown)
             return;
         // A window shot needs a window: nothing is taken before one is picked.
@@ -291,8 +253,6 @@ OverlayWindow {
         finishing.start();
     }
 
-    // Letting go is a movement too, not a cut: the threads reel in, the dim
-    // lifts off the pick, and only then does the overlay leave.
     SequentialAnimation {
         id: finishing
 
@@ -329,8 +289,7 @@ OverlayWindow {
         property real y: ty
 
         Behavior on x {
-            // Under the hand (a region) the corners are the pointer, with no
-            // lag at all; springs only carry the frame where nothing is held.
+            // A region's corners are the pointer, no spring.
             enabled: !win.snap && win.mode !== "region"
 
             SpringAnimation {
@@ -339,8 +298,7 @@ OverlayWindow {
             }
         }
         Behavior on y {
-            // Under the hand (a region) the corners are the pointer, with no
-            // lag at all; springs only carry the frame where nothing is held.
+            // A region's corners are the pointer, no spring.
             enabled: !win.snap && win.mode !== "region"
 
             SpringAnimation {
@@ -379,13 +337,8 @@ OverlayWindow {
         opacity: Math.min(1, win.reveal)
 
         Keys.onEscapePressed: Screenshot.open = false
-        // Enter takes what the frame is on; in region mode with nothing
-        // dragged, that is the whole screen.
         Keys.onReturnPressed: win.commit()
 
-        // The screen as it was when the overlay opened. Drawn blurred, the
-        // blur growing in with the overlay and lifting with the release, so
-        // opening reads as the screen stepping back rather than a cut.
         ScreencopyView {
             id: frozen
             anchors.fill: parent
@@ -409,8 +362,6 @@ OverlayWindow {
             source: frozen
             blurEnabled: true
             blurMax: 64
-            // A soft veil rather than frosted glass, softer still when
-            // picking a window, so what is behind stays recognisable.
             blur: win.haze * (1 - win.release) * (win.mode === "window" ? 0.25 : 0.45)
         }
 
@@ -462,15 +413,11 @@ OverlayWindow {
             }
         }
 
-        // The threads: each leaves its screen corner along the edge and bends
-        // down into its selection corner.
         Shape {
             anchors.fill: parent
             preferredRendererType: Shape.CurveRenderer
 
-            // A tendril, not a wire: filled rather than stroked so it can
-            // taper from a thick root at the screen corner to a fine tip at
-            // the selection, and swayed by a wave that runs root to tip.
+            // Filled, not stroked, so it can taper.
             component Thread: ShapePath {
                 required property real sx
                 required property real sy
@@ -519,8 +466,6 @@ OverlayWindow {
                 order: 3
             }
 
-            // The selection's own edges, as thick as the tendrils' tips so
-            // the frame and the threads read as one thing.
             ShapePath {
                 strokeColor: Theme.accentText
                 strokeWidth: win.tipWidth
@@ -557,8 +502,6 @@ OverlayWindow {
 
                 x: modelData.x - width / 2
                 y: modelData.y - height / 2
-                // Grows in gently as its tendril's last stretch arrives, then
-                // keeps a slow heartbeat, each bead a little out of step.
                 readonly property real arrived: {
                     const x = Math.max(0, Math.min(1, (win.grownOf(index) - 0.6) / 0.4));
                     return x * x * (3 - 2 * x);
@@ -656,9 +599,7 @@ OverlayWindow {
         }
     }
 
-    // The window shot, rendered off screen: the window's own surface with
-    // Hyprland's rounded corners, so what is saved is the window alone, with
-    // transparent corners and whatever transparency the window has itself.
+    // Off screen, clipped to Hyprland's rounding; keeps transparency.
     ClippingRectangle {
         id: cutter
 

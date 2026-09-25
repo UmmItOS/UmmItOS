@@ -1,8 +1,5 @@
 import QtQuick
 
-// A level control: a track, a fill, and a knob that fattens under the finger.
-// The master volume and every app stream in the audio flyout are the same
-// slider with a different colour.
 Item {
     id: root
 
@@ -58,8 +55,7 @@ Item {
         // A slider thin enough to look right is thinner than a finger.
         anchors.margins: -Theme.spacing.small
 
-        // In track coordinates: the enlarged hit area starts left of the
-        // track, and reading its own x put every press a margin to the right.
+        // In track coordinates: the hit area starts left of the track.
         function apply(x: real): void {
             root.moved(Math.max(0, Math.min(1, drag.mapToItem(track, x, 0).x / track.width)));
         }

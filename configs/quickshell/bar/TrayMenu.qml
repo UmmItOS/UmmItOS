@@ -6,9 +6,7 @@ import QtQuick
 import QtQuick.Layouts
 import ".."
 
-// A tray app's menu, drawn by the shell. Qt's own menus follow the platform
-// theme, which for this Qt 6 shell is plain light; this one is the bar's
-// dropdown like Wi-Fi and Audio. Submenus open in place, with a way back.
+// Drawn by the shell: Qt's own menus follow the light platform theme.
 Flyout {
     id: root
 
@@ -30,8 +28,7 @@ Flyout {
 
     QsMenuOpener {
         id: opener
-        // Only while open: an opener subscribes to the app's menu over D-Bus
-        // and keeps it live, one per tray item per bar, for nobody.
+        // Only while open: an opener keeps the D-Bus menu live.
         menu: !root.visible ? null : root.trail.length > 0 ? root.trail[root.trail.length - 1] : root.menu
     }
 
@@ -129,8 +126,7 @@ Flyout {
                             }
 
                             IconImage {
-                                // A theme icon the theme lacks loads as Qt's
-                                // checkerboard rather than failing, so check first.
+                                // A missing theme icon loads as a checkerboard, not an error.
                                 readonly property var themed: item.modelData.icon.match(/^image:\/\/icon\/([^/].*)$/)
 
                                 visible: item.modelData.buttonType === QsMenuButtonType.None && item.modelData.icon !== "" && status === Image.Ready && (!themed || Quickshell.iconPath(themed[1], true) !== "")

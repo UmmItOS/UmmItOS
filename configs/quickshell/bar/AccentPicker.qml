@@ -4,14 +4,10 @@ import QtQuick
 import QtQuick.Layouts
 import ".."
 
-// The accent colour, chosen in place. Twelve swatches cover the common wish
-// without a colour wheel; the field takes anything else, as #hex or rgba().
 BarButton {
     id: root
 
-    // Brand purple first, then eleven fills taken from Color Hunt's popular
-    // palettes (colorhunt.co), round the wheel. Each is dark enough to carry
-    // white text, as the purple does.
+    // Brand purple, then Color Hunt fills dark enough for white text.
     readonly property var presets: ["#5003c0", "#ab03a9", "#d45060", "#972828", "#e45742", "#c49a45", "#2a835f", "#12544f", "#76c0ec", "#22396f", "#2f39a9", "#800020"]
 
     property bool popupOpen: false
@@ -83,8 +79,6 @@ BarButton {
             }
         }
 
-        // Anything the swatches do not cover. Enter applies; a value that does
-        // not parse turns the field red instead of silently doing nothing.
         Rectangle {
             Layout.fillWidth: true
             implicitHeight: Theme.control.field
@@ -115,8 +109,7 @@ BarButton {
 
                     onTextEdited: bad = false
 
-                    // Typing breaks the text binding, and a swatch picked after
-                    // a bad entry left the field red; follow every change.
+                    // Typing breaks the text binding; follow every accent change.
                     Connections {
                         target: Theme
                         function onAccentChanged(): void {

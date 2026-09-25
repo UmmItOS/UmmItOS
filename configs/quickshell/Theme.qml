@@ -11,10 +11,7 @@ Singleton {
     readonly property color bgAlt: Qt.rgba(30 / 255, 25 / 255, 45 / 255, 0.82)
     // One step brighter than bgAlt, for a tray sitting on top of a panel.
     readonly property color bgTray: Qt.rgba(44 / 255, 37 / 255, 62 / 255, 0.78)
-    // The accent is chosen in the bar and saved; brand purple until then. It
-    // is a fill colour. `accentText` and `accent2` are the same hue lifted so
-    // they stay readable as text on the dark ground, derived rather than
-    // stored, so any accent brings its own.
+    // Saved from the bar's picker; accentText/accent2 derive from it.
     readonly property color defaultAccent: "#5003c0"
     property string savedAccent: ""
     readonly property color accent: /^#[0-9a-f]{6}([0-9a-f]{2})?$/i.test(savedAccent) ? savedAccent : defaultAccent
@@ -42,16 +39,10 @@ Singleton {
     readonly property color urgent: "#ff6b6b"
     readonly property color warn: "#ffc46b"
     readonly property color good: "#6bdf9a"
-    // Hyprland's active border (appearance.lua col.active_border), same hues
-    // and order, darkened: the cheat sheet wears it as a turning ring.
+    // The window border's hues, darkened, for the cheat sheet ring.
     readonly property list<color> ring: ["#4a3d94", "#5a4f8c", "#12131b", "#2f4a7d"]
 
-    // Proportional for prose, monospace for anything that should not jitter as
-    // it updates (clock, percentages, counters). SF Pro ships with apple-fonts,
-    // already in install/packages_main.
-    // Overlay backdrops take the ink colour, never pure black: black reads as
-    // a hole punched in the desktop rather than the shell dimming it, and it
-    // kills the compositor blur behind the surface.
+    // Ink, not black: black reads as a hole and kills the blur behind.
     function scrim(alpha: real): color {
         return Qt.rgba(bg.r, bg.g, bg.b, alpha);
     }
@@ -59,8 +50,7 @@ Singleton {
     readonly property string font: "SF Pro Text"
     readonly property string fontDisplay: "SF Pro Display"
 
-    // Material 3 scales, values from caelestia-dots/shell
-    // (plugin/src/Caelestia/Config/tokens.hpp).
+    // Material 3 scales, from caelestia-dots/shell tokens.hpp.
     readonly property QtObject rounding: QtObject {
         readonly property int extraSmall: 4
         readonly property int small: 8
@@ -74,8 +64,7 @@ Singleton {
     }
 
     readonly property QtObject spacing: QtObject {
-        // Optical, not structural: a nudge for text that sits flush against a
-        // rounded edge and reads tighter than it measures.
+        // Optical nudge for text flush against a rounded edge.
         readonly property int hair: 2
         readonly property int extraSmall: 4
         readonly property int small: 8
@@ -110,10 +99,7 @@ Singleton {
         readonly property int huge: 46
     }
 
-    // Icons do not follow the text scale: a glyph needs more room than a
-    // letter at the same nominal size.
-    // Type is set, not just sized: small labels want air between letters and a
-    // little more weight, or they read as shrunken body copy.
+    // Small labels want wider tracking and more weight.
     readonly property QtObject tracking: QtObject {
         readonly property real normal: 0
         readonly property real wide: 0.4
@@ -126,12 +112,8 @@ Singleton {
         readonly property int bold: 700
     }
 
-    // Anything that positions itself under the bar reads this rather than
-    // repeating the number.
     readonly property int barHeight: 44
-    // Where tiled windows' borders sit, in from the screen edge: Hyprland's
-    // gaps_out (20) plus border_size (3). Things meant to sit inside that
-    // frame, not over it, keep at least this far in.
+    // Hyprland gaps_out (20) + border_size (3).
     readonly property int windowInset: 23
     // How far the waking line's soft light spills.
     readonly property int wakeGlow: 90
@@ -161,8 +143,6 @@ Singleton {
         readonly property int app: 60
     }
 
-    // Controls that recur across surfaces, so a row in the Wi-Fi list and one
-    // in the Bluetooth list stay the same height.
     readonly property QtObject control: QtObject {
         // A list row in a flyout or the clipboard.
         readonly property int row: 46
@@ -213,8 +193,7 @@ Singleton {
         readonly property int field: 60
     }
 
-    // Springs for things that should trail the pointer and settle, not just
-    // follow it: lower damping overshoots more.
+    // Lower damping overshoots more.
     readonly property QtObject spring: QtObject {
         readonly property real stiffness: 12
         readonly property real damping: 0.55

@@ -7,8 +7,7 @@ Item {
     id: root
 
     property real value: 0          // 0-1
-    // Snap to the first reading; animate only subsequent changes. Otherwise
-    // every open sweeps the arc up from zero.
+    // Snap to the first reading, or every open sweeps up from zero.
     property bool animated: false
 
     onValueChanged: {
@@ -20,8 +19,7 @@ Item {
     property color fill: Theme.accentText
 
     readonly property real ring: 10
-    // Clamped: a layout that squeezes the gauge below the ring width would
-    // otherwise hand Shape a negative radius, which takes the whole shell down.
+    // Clamped: a negative radius crashes the shell.
     readonly property real radius: Math.max(1, Math.min(width, height) / 2 - ring / 2)
 
     implicitWidth: 170

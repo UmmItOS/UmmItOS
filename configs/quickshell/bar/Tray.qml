@@ -10,14 +10,11 @@ import ".."
 RowLayout {
     id: root
 
-    // Glyphs for apps that ask for an icon the theme does not have, where a
-    // symbol in the bar's own style reads better than the app's logo.
     readonly property var glyphs: ({
             "Fcitx": "keyboard"
         })
 
-    // The app's own icon, from its desktop entry, for a tray item that sent
-    // nothing drawable. "ente_status_icon_1" → ente, then ente-desktop.
+    // "ente_status_icon_1" → ente, then ente-desktop.
     function appIcon(id: string): string {
         const stem = id.replace(/_status_icon_\d+$/, "").toLowerCase();
         const apps = DesktopEntries.applications.values;
@@ -35,11 +32,7 @@ RowLayout {
             required property SystemTrayItem modelData
 
             readonly property string source: modelData.icon
-            // A theme icon the theme lacks (fcitx5 asks for
-            // input-keyboard-symbolic, which Adwaita does not have), or a
-            // pixmap that never arrived: Quickshell numbers each pixmap it
-            // receives, and ente's Electron tray stays at 0. Both would draw
-            // Qt's magenta checkerboard.
+            // A theme icon the theme lacks, or a pixmap that never came (…/0).
             readonly property bool missing: {
                 const themed = source.match(/^image:\/\/icon\/([^/].*)$/);
                 if (themed)
@@ -66,8 +59,6 @@ RowLayout {
                 anchors.centerIn: parent
                 visible: !icon.visible
                 text: entry.glyph || "help_center"
-                // A chosen glyph stands for a real app; the question mark
-                // stays dim because it stands for nothing.
                 color: entry.glyph ? Theme.fg : Theme.dim
                 size: Theme.icon.small
             }

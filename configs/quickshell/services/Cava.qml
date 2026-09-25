@@ -4,9 +4,7 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 
-// Audio levels from cava, for the ring around the album art. cava reads
-// PipeWire and writes one line per frame of bar heights (0-100); it only runs
-// while something on screen shows it and music is actually playing.
+// Runs only while shown and playing.
 Singleton {
     id: root
 
@@ -15,9 +13,7 @@ Singleton {
 
     readonly property bool running: Players.watched && (Players.active?.isPlaying ?? false)
 
-    // Its own config, written beside the cache, so a user's cava config for
-    // the terminal is left alone. noise_reduction is cava's smoothing (default
-    // 77); at 20 the bars follow the beat instead of drifting after it.
+    // Own config, not the user's; noise_reduction 20 follows the beat.
     readonly property string config: `[general]
 bars = ${bars}
 framerate = 60

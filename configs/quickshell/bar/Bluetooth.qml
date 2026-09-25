@@ -6,11 +6,7 @@ import QtQuick.Layouts
 import Quickshell.Bluetooth as Bluez
 import ".."
 
-// Sits beside Wi-Fi and behaves the same way: a glyph in the bar and a flyout
-// under it, with discovery running only while someone is looking.
-//
-// The module is imported under a namespace because this file is called
-// Bluetooth too, and the local component would otherwise shadow the singleton.
+// Imported as Bluez: this file's name shadows the module.
 RowLayout {
     id: root
 
@@ -72,10 +68,7 @@ RowLayout {
         onToggled: root.adapter.enabled = !root.adapter.enabled
         onCloseRequested: root.popupOpen = false
 
-        // Scanning drains the radio; run it only while the list is up. Held
-        // only while this flyout is open, and handed back afterwards: every
-        // screen has a bar, and one that always wrote would stop a scan another
-        // screen, or another app, had started.
+        // Only while this flyout is open, so other screens' scans survive.
         Binding {
             target: root.adapter
             property: "discovering"
@@ -106,9 +99,7 @@ RowLayout {
             clip: true
             spacing: Theme.spacing.extraSmall
             boundsBehavior: Flickable.StopAtBounds
-            // A ScriptModel, not the array: it diffs each new array against the last,
-            // so an entry that is still there keeps its row instead of every row
-            // being rebuilt whenever anything changes.
+            // ScriptModel diffs, so surviving rows are kept, not rebuilt.
             model: ScriptModel {
                 values: root.devices
             }
@@ -122,7 +113,6 @@ RowLayout {
 
                 width: list.width
                 active: row.modelData.connected
-
 
                 RowLayout {
                     anchors {
@@ -185,8 +175,7 @@ RowLayout {
                 MouseArea {
                     anchors.fill: parent
                     enabled: !row.busy
-                    // Pairing first, then connecting: BlueZ refuses a connection
-                    // to a device it has never bonded with.
+                    // BlueZ will not connect a device it has not bonded with.
                     onClicked: {
                         if (row.modelData.connected)
                             row.modelData.disconnect();

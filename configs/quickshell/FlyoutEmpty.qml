@@ -1,8 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
 
-// What a flyout list shows with nothing to list: a glyph, or a spinner while
-// it is still looking, and a line saying which empty case this is.
 Item {
     id: root
 

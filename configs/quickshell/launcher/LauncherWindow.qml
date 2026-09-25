@@ -7,10 +7,6 @@ import QtQuick.Effects
 import QtQuick.Layouts
 import ".."
 
-// Full-bleed grid rather than a centred panel: at this size the icons do the
-// identifying, so the apps are the content and the chrome is one query line.
-// Tiles are bare — only the focused one takes a surface, so the grid reads as
-// content instead of a wall of buttons.
 OverlayWindow {
     id: win
 
@@ -22,12 +18,7 @@ OverlayWindow {
 
     readonly property int total: [...DesktopEntries.applications.values].filter(a => !a.noDisplay).length
 
-    // Ranked, not alphabetical. With no query the apps you open most come
-    // first. With one, a match at the start of the name beats one at the start
-    // of a later word, which beats one anywhere in the name, which beats a
-    // keyword; use breaks ties, then the alphabet.
-    // The use counts as they were on opening: a launch counts itself while the
-    // grid fades out, and ranking live re-sorted the tiles under the fade.
+    // Use counts from opening: a launch mid-fade re-sorted the tiles.
     property var used: ({})
 
     readonly property var results: {
@@ -43,8 +34,7 @@ OverlayWindow {
                 return 1;
             if (name.includes(f))
                 return 2;
-            // keywords and categories are lists, not strings: calling
-            // toLowerCase() on one throws and empties the whole binding.
+            // Keywords are a list; toLowerCase() on it throws.
             return [a.genericName ?? "", ...(a.keywords ?? [])].join(" ").toLowerCase().includes(f) ? 3 : -1;
         };
         return [...DesktopEntries.applications.values].filter(a => !a.noDisplay).map(a => ({
@@ -79,8 +69,6 @@ OverlayWindow {
         opacity: Math.min(1, win.reveal)
         scale: Theme.popScale + (1 - Theme.popScale) * win.reveal
 
-        // The query line. Oversized and left-anchored, so the eye starts at the
-        // same place whether you are typing or scanning.
         ColumnLayout {
             id: head
 
@@ -126,8 +114,6 @@ OverlayWindow {
                 }
             }
 
-            // Only while typing: the placeholder already says how many there
-            // are, so this is the answer to the query, not a second header.
             Text {
                 Layout.topMargin: Theme.spacing.extraSmall
                 opacity: search.text === "" ? 0 : 1

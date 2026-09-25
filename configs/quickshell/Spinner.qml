@@ -1,9 +1,6 @@
 import QtQuick
 
-// A turning icon, and nothing else. It is a separate component from the static
-// icon it replaces because a RotationAnimation leaves `rotation` at whatever
-// angle it stopped on: reuse one item for both states and the still icon
-// renders tilted.
+// Separate from the icon: RotationAnimation leaves `rotation` tilted.
 MaterialIcon {
     text: "progress_activity"
     color: Theme.dim

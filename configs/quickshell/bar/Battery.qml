@@ -11,18 +11,12 @@ RowLayout {
     // Not `state`: every Item already has one, for its States.
     readonly property int charge: battery ? battery.state : UPowerDeviceState.Unknown
 
-    // Charging as soon as the charger is in (UPower.onBattery flips the
-    // moment the plug does), not when the battery gets round to saying so.
-    // Not while held at a charge limit (PendingCharge): plugged in, but not
-    // filling, and it would otherwise breathe all day.
+    // Charging from the plug, not the battery's report; not at a charge limit.
     readonly property bool charging: !full && charge !== UPowerDeviceState.PendingCharge && (!UPower.onBattery || charge === UPowerDeviceState.Charging)
-    // The driver can say "fully charged" for a moment on plug-in, well short
-    // of full; believe it only when the level agrees.
+    // Drivers report "fully charged" briefly on plug-in; check the level.
     readonly property bool full: charge === UPowerDeviceState.FullyCharged && Math.round(pct * 100) >= 99
     readonly property bool low: pct < 0.2 && !charging && !full
 
-    // Green while it is filling or filled, amber on the way down, red when the
-    // number actually matters. Colour carries the state; the icon carries the level.
     readonly property color tone: {
         if (low)
             return Theme.urgent;
@@ -51,8 +45,6 @@ RowLayout {
         }
         if (pct < 0.1)
             return "battery_alert";
-        // Full only when it is: at 98% on battery the full glyph read as
-        // "charged" and hid that it was already draining.
         if (Math.round(pct * 100) >= 100)
             return "battery_full";
         if (pct >= 0.85)
@@ -85,8 +77,6 @@ RowLayout {
             }
         }
 
-        // Breathes for as long as it charges, by request. Slow on purpose:
-        // every frame of it redraws the bar, so a calm rhythm costs less.
         SequentialAnimation on opacity {
             // Not behind the lock, where nobody sees the bar it redraws.
             running: root.charging && !Lock.locked

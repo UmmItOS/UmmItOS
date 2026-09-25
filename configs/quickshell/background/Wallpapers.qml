@@ -13,9 +13,7 @@ Singleton {
     property list<string> list: []
     property bool pickerOpen
 
-    // `actual` is the confirmed wallpaper; `previewPath` is what the picker is
-    // hovering over. The background always draws `current`, so arrowing through
-    // the picker changes the wallpaper without committing to it.
+    // `actual` is confirmed; `previewPath` is what the picker hovers.
     property string actual
     property string previewPath
     readonly property string current: previewPath !== "" ? previewPath : actual
@@ -27,12 +25,9 @@ Singleton {
         return dot > 0 ? base.slice(0, dot) : base;
     }
 
-    // Set for one change: the random button reveals its pick through a
-    // growing circle, the way awww's transition used to. Everything else fades.
+    // Only the random pick reveals through a circle; the rest fade.
     property bool reveal: false
 
-    // The folder is read again whenever it is about to be used, so wallpapers
-    // added to ~/.wallpaper show up without restarting the shell.
     property bool pendingRandom: false
 
     onPickerOpenChanged: {
@@ -67,8 +62,7 @@ Singleton {
     }
 
     function set(path: string): void {
-        // Order matters: clearing previewPath first would drop `current` back to
-        // the old `actual` for one frame, flashing the previous wallpaper.
+        // Assign first, or `current` flashes the old wallpaper for a frame.
         actual = path;
         previewPath = "";
         stateFile.setText(path);
@@ -81,8 +75,7 @@ Singleton {
         command: ["find", root.dir, "-type", "f", "-regex", ".*\\.\\(jpg\\|png\\|jpeg\\)"]
         stdout: StdioCollector {
             onStreamFinished: {
-                // Only a real change replaces the list: a new array resets
-                // every view on it, even when it holds the same files.
+                // Only a real change: a new array resets every view on it.
                 const found = text.trim().split("\n").filter(l => l !== "");
                 if (found.join("\n") !== root.list.join("\n"))
                     root.list = found;

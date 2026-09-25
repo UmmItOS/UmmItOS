@@ -58,8 +58,7 @@ Singleton {
 
     function run(index: int): void {
         const action = actions[index];
-        // A closing menu still sits under the pointer for its exit; a second
-        // click must not run the action again.
+        // A second click during the exit must not run it again.
         if (!action || !open)
             return;
         open = false;
@@ -69,8 +68,7 @@ Singleton {
             lockLater.restart();
     }
 
-    // After the menu has faded, so it is not in the picture the lock fades
-    // in from.
+    // After the fade, so the menu is not in the lock's picture.
     Timer {
         id: lockLater
         interval: 400

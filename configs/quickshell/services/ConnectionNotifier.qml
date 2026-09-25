@@ -4,19 +4,13 @@ import Quickshell.Networking
 import QtQuick
 import ".."
 
-// Says when Wi-Fi joins or leaves a network and when a Bluetooth device
-// connects or drops, through notify-send like the battery notices. Changes
-// are compared after they settle, so hopping networks is one notice, not a
-// "disconnected" and a "connected".
+// Compared after settling, so hopping networks is one notice.
 Scope {
     id: root
 
     readonly property var wifi: Networking.devices.values.find(d => d.type === DeviceType.Wifi) ?? null
     readonly property string network: root.wifi?.networks.values.find(n => n.connected)?.name ?? ""
-    // Connected devices by address, which is stable and unique (two identical
-    // earbuds share a name, and a name can arrive after connecting). Joined
-    // into a string so it only changes when the connected set does, not on
-    // every scan result.
+    // By address: names repeat and can arrive late.
     readonly property string devices: [...Bluez.Bluetooth.devices.values].filter(d => d.connected).map(d => d.address).sort().join("\n")
 
     // What was last said, compared against once things settle.
@@ -35,12 +29,7 @@ Scope {
     }
 
     function settleNow(): void {
-        // Right after a wake, Wi-Fi and Bluetooth reconnect on their own;
-        // that is not news, so the new state just becomes the baseline.
-        // Also quiet from going to sleep until the wake is over (Wake.dark),
-        // and when the settle fired late: Wi-Fi drops on the way to sleep,
-        // and that timer, frozen by the suspend, fired on waking, before
-        // `woke`, as "Wi-Fi disconnected".
+        // Quiet after a wake, through sleep, and when the settle fired late.
         const late = Date.now() - settle.since > settle.interval * 3;
         if (quiet.running || Wake.dark > 0 || late) {
             root.lastNetwork = root.network;

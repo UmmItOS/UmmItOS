@@ -6,9 +6,6 @@ import QtQuick
 import QtQuick.Layouts
 import ".."
 
-// Clipboard entries are arbitrary content, so a row of elided single lines
-// throws most of them away. Two panes instead: scan the list on the left,
-// confirm the whole entry — text or the actual image — on the right.
 OverlayWindow {
     id: win
 
@@ -31,8 +28,7 @@ OverlayWindow {
         search.forceActiveFocus();
     }
 
-    // Decoding is deferred so holding a cursor key does not spawn a process
-    // per entry passed.
+    // Deferred so a held key does not decode every entry.
     onFocusedEntryChanged: decodeDebounce.restart()
 
     Timer {

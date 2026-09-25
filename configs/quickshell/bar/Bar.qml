@@ -4,9 +4,6 @@ import QtQuick
 import QtQuick.Layouts
 import ".."
 
-// Three clusters, not one stream: identity on the left, the clock as the
-// typographic anchor, status on the right. Grouping is carried by elevation
-// and space; nothing is outlined.
 PanelWindow {
     id: bar
 
@@ -29,8 +26,6 @@ PanelWindow {
         precision: SystemClock.Seconds
     }
 
-    // A rounded, slightly raised group. Used for the two icon clusters so they
-    // read as one object each rather than four loose glyphs.
     component Cluster: Rectangle {
         default property alias content: inner.data
 
@@ -129,11 +124,7 @@ PanelWindow {
         }
     }
 
-    // The anchor. A clock does not need an icon telling you it is a clock.
-    //
-    // It sits on the screen's centre line, not between two spacers: spacers
-    // split whatever the clusters leave over, so the clock drifted every time
-    // the left side grew a digit.
+    // On the screen's centre line, not between spacers, so it never drifts.
     ColumnLayout {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.verticalCenter: parent.verticalCenter
