@@ -12,7 +12,8 @@ hypridle call out to.
 | `misc/first-run.sh` | `autostart.lua`, once per user |
 | `misc/update.sh` | the bar's update button |
 | `misc/clear-clipboard.sh` | `update.sh`, offers to wipe the cliphist history |
-| `misc/screen-record.sh` | Super+Shift+R |
+| `misc/screen-record.sh` | Super+Shift+R, through the shell's recording dialog |
+| `misc/mic-check.sh` | `screen-record.sh` and the shell after each wake; fails when the mic is stuck |
 
 Scripts log to a `.log` file beside themselves. Check the log rather than relying
 on the notification, which only reports the last run.
