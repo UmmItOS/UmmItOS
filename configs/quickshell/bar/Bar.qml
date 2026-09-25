@@ -90,6 +90,8 @@ PanelWindow {
             }
 
             AccentPicker {}
+
+            WeatherPicker {}
         }
 
         Item {

@@ -9,14 +9,17 @@ import ".."
 Singleton {
     id: root
 
-    // Empty means wttr.in guesses from the IP address, which a VPN moves elsewhere.
+    // The place the user typed, shown under that name; no IP guess, which a VPN moves elsewhere.
     property string location: ""
     property var data: null
+    property bool failed: false
 
     readonly property bool ready: data !== null
     readonly property var now: data?.current_condition?.[0] ?? null
     readonly property var today: data?.weather?.[0] ?? null
-    readonly property string area: location !== "" ? location : (data?.nearest_area?.[0]?.areaName?.[0]?.value ?? "")
+    readonly property string area: location
+    // Where wttr.in matched the name, which may not be the place meant.
+    readonly property string matched: [data?.nearest_area?.[0]?.areaName?.[0]?.value, data?.nearest_area?.[0]?.country?.[0]?.value].filter(v => v).join(", ")
     readonly property string temp: now?.temp_C ?? ""
     readonly property string condition: (now?.weatherDesc?.[0]?.value ?? "").trim()
     readonly property int code: Number(now?.weatherCode ?? 113)
@@ -71,13 +74,16 @@ Singleton {
     }
 
     function refresh(): void {
-        if (!fetch.running)
+        if (location !== "" && !fetch.running)
             fetch.running = true;
     }
 
+    // An empty place turns the weather off.
     function setLocation(place: string): void {
         location = place.trim();
         locationFile.setText(location);
+        data = null;
+        failed = false;
         refresh();
     }
 
@@ -89,7 +95,10 @@ Singleton {
             onStreamFinished: {
                 try {
                     root.data = JSON.parse(text);
-                } catch (e) {}
+                    root.failed = false;
+                } catch (e) {
+                    root.failed = true;
+                }
             }
         }
     }
@@ -103,7 +112,6 @@ Singleton {
             root.location = text().trim();
             root.refresh();
         }
-        onLoadFailed: root.refresh()
     }
 
     Timer {
@@ -116,7 +124,7 @@ Singleton {
     IpcHandler {
         target: "weather"
 
-        // A place name wttr.in understands ("Hong Kong"); an empty string goes back to the IP guess.
+        // A place name wttr.in understands ("Hong Kong"); an empty string turns the weather off.
         function setLocation(place: string): void {
             root.setLocation(place);
         }

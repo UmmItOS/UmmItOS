@@ -18,11 +18,11 @@ Variants {
         exclusionMode: ExclusionMode.Ignore
         anchors {
             top: true
-            left: true
+            right: true
         }
         margins {
             top: Theme.barHeight + Theme.windowInset
-            left: Theme.windowInset
+            right: Theme.windowInset
         }
         implicitWidth: card.implicitWidth
         implicitHeight: card.implicitHeight
