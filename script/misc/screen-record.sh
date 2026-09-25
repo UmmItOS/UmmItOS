@@ -23,8 +23,10 @@ echo "$file" > "$state"
 notify-send -a "Screen recording" "Recording started" "Press Super+Shift+R again to stop."
 echo "$(date '+%F %T') started $file on $output" >> "$log"
 
+# The speakers' monitor, i.e. what the machine plays; plain --audio records the microphone.
+sound="$(pactl get-default-sink).monitor"
 # --low-power=off: AMD has no low-power H.264 encoder, so the first try always failed.
-if ! wl-screenrec --audio --low-power=off -o "$output" -f "$file" 2>> "$log"; then
+if ! wl-screenrec --audio --audio-device "$sound" --low-power=off -o "$output" -f "$file" 2>> "$log"; then
     rm -f "$state"
     notify-send -a "Screen recording" "Recording failed" "See $log"
 fi
