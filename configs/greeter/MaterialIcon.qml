@@ -1,0 +1,1 @@
+../quickshell/MaterialIcon.qml

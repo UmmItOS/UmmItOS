@@ -6,7 +6,8 @@ extra/vim
 extra/neovim
 extra/cava
 extra/cliphist
-extra/gdm
+extra/greetd
+extra/cage
 extra/yazi
 extra/hyprland
 extra/hypridle
@@ -20,6 +21,7 @@ extra/gnu-free-fonts
 extra/papirus-icon-theme
 extra/orchis-theme
 extra/quickshell
+extra/qt6-imageformats
 extra/fastfetch
 extra/pipewire-jack
 extra/pipewire-alsa

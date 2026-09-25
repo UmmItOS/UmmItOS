@@ -71,10 +71,8 @@ display_manager_banner() {
 ${COLOR_GREY}---------------------------------------------------------${COLOR_RESET}
 ${COLOR_BLUE}Part 3: Setting up Display Manager
 
-This section will setup the display manager to be used.
-The display manager is used to manage the display of the system.
-
-Our display manager is using GDM.${COLOR_RESET}
+This section sets up the login screen: greetd, showing the
+UmmItOS greeter (the lock screen's look, written in QML).${COLOR_RESET}
 
 ${COLOR_GREY}---------------------------------------------------------${COLOR_RESET}
 EOF

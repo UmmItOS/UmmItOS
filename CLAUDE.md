@@ -42,6 +42,10 @@ There are no tests, no lint config and no CI. Verification means running `shellc
 
 The order matters: `setup.sh` → `install.sh` → `install/install-packages.sh` → `install/oh-my-zsh.sh` → `install/copy-config.sh` → `install/setup-dm.sh` → reboot → `post-install.sh --start-config`.
 
+### Login screen (greetd)
+
+`install/setup-dm.sh` replaces GDM with greetd. greetd runs `cage -s -- qs -p /usr/share/ummitos/greeter` as the `greeter` user: `configs/greeter/` (copied there with `cp -rL`; its `Theme.qml`, `MaterialIcon.qml` and `avatar.webp` are symlinks into the shell, so the look has one source). The greeter cannot read `~`, so the shell's `services/GreeterSync.qml` copies the wallpaper and accent into `/var/lib/ummitos-greeter` (owned by the user) whenever they change. Its home is `/`, so the greetd command points `XDG_*_HOME` at `/tmp`, and sets `QT_WAYLAND_DISABLE_WINDOWDECORATION=1` because cage draws no title bars. `UMMITOS_GREETER_SESSION` swaps the session it launches, for testing a login without starting a second Hyprland. `qs -p configs/greeter` previews it in a session (no greetd, so it cannot log in).
+
 ### Package lists
 
 Each list is plain text, one `repo/pkgname` per line, and the installer reads it into an array.
