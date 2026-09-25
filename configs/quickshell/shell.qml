@@ -5,6 +5,7 @@ import QtQuick
 import "background"
 import "charging"
 import "cheatsheet"
+import "record"
 import "dashboard"
 import "bar"
 import "launcher"
@@ -49,6 +50,8 @@ ShellRoot {
     CheatsheetWindow {}
 
     ScreenshotWindow {}
+
+    RecordWindow {}
 
     LockScreen {}
 

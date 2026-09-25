@@ -128,6 +128,8 @@ Singleton {
     readonly property real pressScale: 0.92
     // Where an opening surface grows from, as a fraction of its full size.
     readonly property real popScale: 0.94
+    // A countdown number lands from this size.
+    readonly property real landScale: 1.6
 
     readonly property QtObject icon: QtObject {
         // An app's own icon beside its notification, at caption size.
@@ -152,6 +154,8 @@ Singleton {
         readonly property int button: 40
         // A tray app's right-click menu.
         readonly property int menu: 300
+        // A small centred dialog (the recording one).
+        readonly property int dialog: 420
         // A pill-shaped button or search field.
         readonly property int pill: 44
         // Room for a live number ("12.4 M", "100 %") so it does not jitter.
