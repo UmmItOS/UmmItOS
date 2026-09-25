@@ -34,9 +34,6 @@ Singleton {
     readonly property real panelTint: 0.45
     // A card on a blurred panel: a faint sheen, not a fill.
     readonly property color glass: Qt.rgba(1, 1, 1, 0.04)
-    // A SoftCard's fill: stronger than glass, as its edges fade to nothing.
-    readonly property color softGlass: Qt.rgba(1, 1, 1, 0.08)
-    readonly property int softSpread: 40
     readonly property color fg: "#e8e8f0"
     readonly property color dim: Qt.rgba(1, 1, 1, 0.45)
     readonly property color urgent: "#ff6b6b"

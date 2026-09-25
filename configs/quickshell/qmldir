@@ -19,7 +19,6 @@ OverlayWindow 1.0 OverlayWindow.qml
 singleton Net 1.0 services/Net.qml
 FlyoutEmpty 1.0 FlyoutEmpty.qml
 FlyoutRow 1.0 FlyoutRow.qml
-SoftCard 1.0 SoftCard.qml
 FlyoutSearching 1.0 FlyoutSearching.qml
 singleton Cava 1.0 services/Cava.qml
 singleton Cheatsheet 1.0 cheatsheet/Cheatsheet.qml

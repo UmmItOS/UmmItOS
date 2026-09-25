@@ -135,7 +135,7 @@ OverlayWindow {
         }
     }
 
-    // Enough wash to read type against any wallpaper, no edge, no card; no Hyprland blur (appearance.lua), whose cut-off drew a line.
+    // Enough wash to read type against any wallpaper, no edge, no card.
     Rectangle {
         anchors.fill: parent
         opacity: Math.min(1, picker.reveal)
@@ -146,11 +146,11 @@ OverlayWindow {
             }
             GradientStop {
                 position: 0.45
-                color: Qt.rgba(Theme.bg.r, Theme.bg.g, Theme.bg.b, 0.86)
+                color: Qt.rgba(Theme.bg.r, Theme.bg.g, Theme.bg.b, 0.72)
             }
             GradientStop {
                 position: 1
-                color: Qt.rgba(Theme.bg.r, Theme.bg.g, Theme.bg.b, 0.96)
+                color: Qt.rgba(Theme.bg.r, Theme.bg.g, Theme.bg.b, 0.94)
             }
         }
     }
