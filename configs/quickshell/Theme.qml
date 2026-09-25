@@ -145,6 +145,15 @@ Singleton {
         readonly property int app: 60
     }
 
+    // The lecture pen (draw/).
+    readonly property QtObject draw: QtObject {
+        readonly property var widths: [3, 6, 12]
+        // A highlighter is this much wider than the pen, and see-through.
+        readonly property real highlightWidth: 4
+        readonly property real highlightAlpha: 0.35
+        readonly property real zoomMax: 6
+        readonly property real zoomStep: 1.15
+    }
     readonly property QtObject control: QtObject {
         // A list row in a flyout or the clipboard.
         readonly property int row: 46

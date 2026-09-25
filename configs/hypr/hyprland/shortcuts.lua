@@ -22,6 +22,7 @@ bind("Apps", mainMod .. " + E", run("kitty -e yazi $HOME"), "Launch file manager
 bind("Shell", mainMod .. " + Return", shell("launcher", "apps"), "Application launcher")
 bind("Shell", mainMod .. " + X", shell("session", "toggle"), "Session menu")
 bind("Shell", mainMod .. " + slash", shell("cheatsheet", "toggle"), "Keybind cheat sheet")
+bind("Shell", mainMod .. " + D", shell("draw", "toggle"), "Draw on the screen")
 bind("Shell", mainMod .. " + L", shell("lock", "lock"), "Lock screen")
 bind("Shell", "ALT + V", shell("launcher", "clipboard"), "Clipboard manager")
 bind("Shell", "ALT + W", shell("wallpaper", "toggle"), "Wallpaper picker")

@@ -7,6 +7,7 @@ import "charging"
 import "cheatsheet"
 import "record"
 import "dashboard"
+import "draw"
 import "bar"
 import "launcher"
 import "lock"
@@ -52,6 +53,8 @@ ShellRoot {
     ScreenshotWindow {}
 
     RecordWindow {}
+
+    DrawWindow {}
 
     LockScreen {}
 
