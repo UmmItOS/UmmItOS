@@ -45,7 +45,7 @@ install_packages_with_paru() {
     fi
 
     if prompt_yna ":: Install these ${package_type} packages? - Total Package (${total_packages})"; then
-        paru -S "${packages[@]}"
+        paru -S --needed "${packages[@]}"
 
         pause_and_continue "${package_type} packages installed completed. Press any key to keep going :)"
         clear
@@ -106,6 +106,13 @@ install_gpu_packages() {
     local gpu_packages=()
 
     if read_packages_from_file "./install/packages_gpu" gpu_packages; then
+        if ! ensure_multilib; then
+            local kept=() package
+            for package in "${gpu_packages[@]}"; do
+                [[ $package == multilib/* ]] || kept+=("$package")
+            done
+            gpu_packages=("${kept[@]}")
+        fi
         display_packages gpu_packages "GPU"
         install_packages_with_paru gpu_packages "GPU"
     fi
@@ -144,6 +151,7 @@ install_all_packages() {
     fi
 
     enable_bluetooth
+    enable_networkmanager
     retire_old_notifier
 }
 

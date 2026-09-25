@@ -45,4 +45,10 @@ extra/libnotify
 extra/upower
 extra/networkmanager
 extra/fcitx5
+extra/wqy-zenhei
+extra/noto-fonts-emoji
+extra/xdg-desktop-portal-gtk
+extra/ffmpeg
+extra/libpulse
+extra/playerctl
 extra/fzf

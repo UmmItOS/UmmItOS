@@ -33,9 +33,8 @@ display_laptop_banner() {
     cat <<EOF
 ${COLOR_GREY}---------------------------------------------------------${COLOR_RESET}
 ${COLOR_BLUE}You saw this banner because you were detected as a laptop user.
-This script will install brightnessctl and playerctl packages.
-Which is useful for controlling screen brightness and media players.
-and my dotfiles also use these tools.${COLOR_RESET}
+This script will install brightnessctl, which the screen brightness
+keys and the shell's brightness readout use.${COLOR_RESET}
 ${COLOR_GREY}---------------------------------------------------------${COLOR_RESET}
 EOF
 }
