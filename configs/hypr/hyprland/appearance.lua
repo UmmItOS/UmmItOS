@@ -17,7 +17,9 @@ hl.config({
         gaps_out = 20,
         border_size = 3,
         col = {
-            active_border = { colors = { "rgb(A594F9)", "rgb(CDC1FF)", "rgb(24273A)", "rgb(8aadf4)" }, angle = 45 },
+            -- A dark tone of the accent, not a light one: a bright top edge read as a
+            -- white line under the bar.
+            active_border = { colors = { "rgb(4a2a8a)", "rgb(2d1a55)", "rgb(24273A)", "rgb(3a2470)" }, angle = 45 },
             inactive_border = { colors = { "rgb(24273A)", "rgb(24273A)", "rgb(24273A)", "rgb(27273A)" }, angle = 45 },
         },
         layout = "master",
