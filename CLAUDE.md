@@ -107,12 +107,12 @@ grep -A5 'name: "workspaces"' /usr/lib/qt6/qml/Quickshell/Hyprland/_Ipc/*.qmltyp
 
 ### Design system
 
-`Theme.qml` is the single source of truth for colour, `rounding`, `spacing`, `padding`, `fontSize`, `icon`, `duration`, `curve` (M3 bezier control points), `tracking`, `weight`, `barHeight`, `glass` (a card's sheen on a blurred panel) and `blur` (a surface's own blur). **Surface files contain no magic numbers.** If you need a new value, add a token for it.
+`Theme.qml` is the single source of truth for colour, `rounding`, `spacing`, `padding`, `fontSize`, `icon`, `duration`, `curve` (M3 bezier control points), `tracking`, `weight`, `barHeight`, `glass` (a card's sheen on a blurred panel) and `panelTint`. **Surface files contain no magic numbers.** If you need a new value, add a token for it.
 
 - **No borders anywhere, deliberately.** Depth comes from elevation (`bg` → `bgAlt` → `bgTray`) and spacing. Do not add `border.width`.
 - The accent is a fill colour, chosen from the bar's palette button and saved to `Quickshell.statePath("accent.txt")`; `#5003c0` is the default. `accentText` and `accent2` are derived from it, so never hardcode a purple: read the tokens and it follows the user's choice.
 - The cheat sheet's turning ring is the one deliberate border, by request.
-- Blur is automatic, but light: it is Hyprland's global blur, shared with every window. A surface that needs more (the dashboard) draws the wallpaper under itself through a `MultiEffect` blur (`Theme.blur`) instead of changing Hyprland's setting.
+- Blur is Hyprland's, shared with every window, so every surface shows what is really under it and all blur looks alike. Do not draw a surface's own blur of the wallpaper: it shows the bottom layer, not the windows under the surface.
 - One Hyprland `hl.layer_rule` in `configs/hypr/hyprland/appearance.lua` matches `ummitos-.*`, so set `WlrLayershell.namespace: "ummitos-<name>"` on new surfaces. The exception is a surface that fades its own transparency over the screen (the wake, `wake-curtain`): the rule blurs and darkens what it covers until its alpha drops below 0.1 (`ignore_alpha`), then stops at once, which reads as a jump at the end of the fade. Such a surface uses a namespace outside the rule and stays mapped, so Hyprland never animates it in or out either.
 
 ### Screenshots
