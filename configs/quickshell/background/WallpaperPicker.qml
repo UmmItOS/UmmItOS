@@ -418,9 +418,9 @@ OverlayWindow {
                     }
 
                     Image {
+                        id: picture
+
                         anchors.fill: parent
-                        visible: !cell.isUp
-                        opacity: cell.isFolder ? 0.45 : 1
                         source: cell.isUp ? "" : "file://" + picker.coverOf(cell.modelData)
                         fillMode: Image.PreserveAspectCrop
                         asynchronous: true
@@ -428,23 +428,27 @@ OverlayWindow {
                         sourceSize.height: picker.focusedHeight
                     }
 
+                    // As drawn, crop included; the Image's own texture is the uncropped file.
+                    ShaderEffectSource {
+                        id: pictureShot
+
+                        anchors.fill: parent
+                        sourceItem: picture
+                        hideSource: true
+                        visible: false
+                    }
+
                     ShaderEffect {
                         anchors.fill: parent
                         visible: !cell.isUp
+                        opacity: cell.isFolder ? 0.45 : 1
 
+                        property var source: pictureShot
                         property size size: Qt.size(width, height)
                         property real radius: card.radius
-                        property real spread: Theme.cardEdge.spread
-                        property real strength: cell.focused ? Theme.cardEdge.strengthFocused : Theme.cardEdge.strength
-                        property color ink: Theme.scrim(1)
+                        property real spread: Theme.cardFeather
 
-                        fragmentShader: "edge.frag.qsb"
-
-                        Behavior on strength {
-                            NumberAnimation {
-                                duration: Theme.duration.expressiveDefaultSpatial
-                            }
-                        }
+                        fragmentShader: "feather.frag.qsb"
                     }
 
                     Column {

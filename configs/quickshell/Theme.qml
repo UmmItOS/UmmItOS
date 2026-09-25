@@ -145,12 +145,8 @@ Singleton {
         readonly property int app: 60
     }
 
-    // A wallpaper card's inner shadow along its edge; lighter on the focused one.
-    readonly property QtObject cardEdge: QtObject {
-        readonly property int spread: 72
-        readonly property real strength: 0.6
-        readonly property real strengthFocused: 0.4
-    }
+    // How far in from a wallpaper card's edge its picture fades out, so no edge shows.
+    readonly property int cardFeather: 56
     // The lecture pen (draw/).
     readonly property QtObject draw: QtObject {
         readonly property var widths: [3, 6, 12]
