@@ -48,7 +48,7 @@ Item {
             source: before
             visible: before.status === Image.Ready
             blurEnabled: true
-            blurMax: Theme.blur.max
+            blurMax: Theme.wakeBlur
             blur: 1
         }
     }

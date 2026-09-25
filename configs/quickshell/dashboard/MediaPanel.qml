@@ -46,7 +46,7 @@ Item {
             readonly property int count: Cava.bars * 2
 
             Layout.alignment: Qt.AlignVCenter
-            implicitWidth: art + (gap + reach) * 2
+            implicitWidth: disc.art + (disc.gap + disc.reach) * 2
             implicitHeight: implicitWidth
 
             Repeater {
@@ -89,7 +89,9 @@ Item {
                 color: Theme.bgAlt
 
                 Image {
-                    id: art
+                    // Not `art`: disc has a property of that name, and an id
+                    // shadows it, which sized the disc to nothing.
+                    id: cover
 
                     anchors.fill: parent
                     source: root.player?.trackArtUrl ?? ""
@@ -103,7 +105,7 @@ Item {
                     anchors.centerIn: parent
                     // No art, or art that failed to load (a deleted /tmp
                     // file, a network error), both show the note.
-                    visible: art.status !== Image.Ready
+                    visible: cover.status !== Image.Ready
                     text: "music_note"
                     color: Theme.dim
                     size: Theme.icon.extraLarge

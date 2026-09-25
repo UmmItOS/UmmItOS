@@ -38,7 +38,7 @@ Singleton {
     // Blur a surface draws itself, over the wallpaper, when the compositor's
     // (shared with every window) is too light for it.
     readonly property QtObject blur: QtObject {
-        readonly property int max: 64
+        readonly property int max: 32
         // How much of the ink colour lies over it; lower shows more blur.
         readonly property real tint: 0.45
     }
@@ -143,6 +143,8 @@ Singleton {
     readonly property int wakeGlow: 90
     // How wide the soft edge of the waking circle is.
     readonly property int wakeSoft: 320
+    // The wake's haze: the screen before sleep, heavily blurred.
+    readonly property int wakeBlur: 64
     // How dark the waking picture starts, before it brightens to the screen.
     readonly property real wakeDim: 0.3
 
