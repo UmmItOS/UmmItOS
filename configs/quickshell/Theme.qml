@@ -218,7 +218,7 @@ Singleton {
         // A code's label, at most.
         readonly property int card: 340
         // The detail panel beside the codes.
-        readonly property int panel: 440
+        readonly property int panel: 500
         // The code's own picture in the panel.
         readonly property int picture: 168
         // Past this many bytes the hex dump stops and says how many are left.

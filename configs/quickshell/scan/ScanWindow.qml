@@ -93,6 +93,7 @@ OverlayWindow {
         return rows.join("\n");
     }
 
+
     Binding {
         target: Scan
         property: "showing"
@@ -121,8 +122,9 @@ OverlayWindow {
         Layout.fillWidth: true
         Layout.topMargin: Theme.spacing.medium
         color: Theme.fg
+        renderType: Text.NativeRendering
         font.family: Theme.font
-        font.pixelSize: Theme.fontSize.smaller
+        font.pixelSize: Theme.fontSize.normal
         font.weight: Theme.weight.bold
     }
 
@@ -135,8 +137,9 @@ OverlayWindow {
         color: Theme.fg
         selectionColor: Theme.accent
         selectedTextColor: Theme.accentOn
+        renderType: TextEdit.NativeRendering
         font.family: Theme.font
-        font.pixelSize: Theme.fontSize.normal
+        font.pixelSize: Theme.fontSize.larger
     }
 
     // A label over its value; the value can be selected and copied.
@@ -157,8 +160,9 @@ OverlayWindow {
             textFormat: Text.PlainText
             elide: Text.ElideRight
             color: Theme.dim
+            renderType: Text.NativeRendering
             font.family: field.code ? Theme.fontMono : Theme.font
-            font.pixelSize: Theme.fontSize.smaller
+            font.pixelSize: Theme.fontSize.normal
         }
 
         Value {
@@ -263,8 +267,9 @@ OverlayWindow {
                             textFormat: Text.PlainText
                             elide: Text.ElideRight
                             color: found.picked ? Theme.accentOn : Theme.fg
+                            renderType: Text.NativeRendering
                             font.family: Theme.font
-                            font.pixelSize: Theme.fontSize.smaller
+                            font.pixelSize: Theme.fontSize.normal
                             font.weight: Theme.weight.medium
                         }
                     }
@@ -347,6 +352,7 @@ OverlayWindow {
                         Text {
                             text: win.code?.type ?? ""
                             color: Theme.fg
+                            renderType: Text.NativeRendering
                             font.family: Theme.fontDisplay
                             font.pixelSize: Theme.fontSize.large
                             font.weight: Theme.weight.bold
@@ -356,8 +362,9 @@ OverlayWindow {
                             visible: win.count > 1
                             text: "Code " + (win.current + 1) + " of " + win.count
                             color: Theme.dim
+                            renderType: Text.NativeRendering
                             font.family: Theme.font
-                            font.pixelSize: Theme.fontSize.small
+                            font.pixelSize: Theme.fontSize.smaller
                             font.features: ({
                                     tnum: 1
                                 })
@@ -474,8 +481,9 @@ OverlayWindow {
                                 }
                                 text: win.hiding ? win.code.masked : (win.code?.data ?? "")
                                 wrapMode: TextEdit.WrapAnywhere
+                                renderType: TextEdit.NativeRendering
                                 font.family: Theme.fontMono
-                                font.pixelSize: Theme.fontSize.smaller
+                                font.pixelSize: Theme.fontSize.normal
                             }
                         }
 
@@ -488,8 +496,9 @@ OverlayWindow {
                                 return chars + (chars === 1 ? " character" : " characters") + (bytes !== chars ? " · " + bytes + " bytes" : "");
                             }
                             color: Theme.dim
+                            renderType: Text.NativeRendering
                             font.family: Theme.font
-                            font.pixelSize: Theme.fontSize.small
+                            font.pixelSize: Theme.fontSize.smaller
                             font.features: ({
                                     tnum: 1
                                 })
@@ -528,7 +537,7 @@ OverlayWindow {
                             visible: text !== ""
                             text: win.about(win.code?.format ?? "")
                             color: Theme.dim
-                            font.pixelSize: Theme.fontSize.smaller
+                            font.pixelSize: Theme.fontSize.normal
                         }
 
                         Field {
@@ -554,8 +563,9 @@ OverlayWindow {
                             text: win.hiding ? "Reveal the password to see the bytes." : win.hexDump(win.code?.data ?? "")
                             color: win.hiding ? Theme.dim : Theme.fg
                             wrapMode: TextEdit.NoWrap
+                            renderType: TextEdit.NativeRendering
                             font.family: win.hiding ? Theme.font : Theme.fontMono
-                            font.pixelSize: Theme.fontSize.small
+                            font.pixelSize: Theme.fontSize.smaller
                         }
                     }
                 }
@@ -571,8 +581,9 @@ OverlayWindow {
                         text: (win.count > 1 ? "Tab for the next code · " : "") + "Enter to " + win.verb(win.code?.kind ?? "").toLowerCase() + " · Esc to close"
                         color: Theme.dim
                         elide: Text.ElideRight
+                        renderType: Text.NativeRendering
                         font.family: Theme.font
-                        font.pixelSize: Theme.fontSize.small
+                        font.pixelSize: Theme.fontSize.smaller
                     }
 
                     RowLayout {
