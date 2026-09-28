@@ -123,6 +123,18 @@ One short line, only for a why the code cannot show (a trap, a workaround, a rea
 - Blur is Hyprland's, shared with every window, so every surface shows what is really under it and all blur looks alike. Do not draw a surface's own blur of the wallpaper: it shows the bottom layer, not the windows under the surface.
 - One Hyprland `hl.layer_rule` in `configs/hypr/hyprland/appearance.lua` matches `ummitos-.*`, so set `WlrLayershell.namespace: "ummitos-<name>"` on new surfaces. The exception is a surface that fades its own transparency over the screen (the wake, `wake-curtain`): the rule blurs and darkens what it covers until its alpha drops below 0.1 (`ignore_alpha`), then stops at once, which reads as a jump at the end of the fade. Such a surface uses a namespace outside the rule and stays mapped, so Hyprland never animates it in or out either.
 
+### Motion
+
+Motion is part of every surface by default, not an extra: anything new that appears, leaves, moves or changes state ships with its animation in the same change. A thing that snaps in, pops out or jumps is unfinished.
+
+- **Arrivals** slide or scale in, fade, and sharpen out of a blur (`MotionBlur`), all at once. Full-screen surfaces get this from `OverlayWindow`; anything else sets `layer.enabled: opacity < 1` with a `MotionBlur` effect and a fade from 0. Leaving plays the same in reverse.
+- **Timing and easing come from `Theme`**: `duration.*` and `curve.*`. Spatial moves (position, scale, size, rotation) always carry a curve, and are never linear. Use `emphasizedDecel` for arriving, `emphasizedAccel` for leaving, and `expressiveDefaultSpatial` (a small overshoot) only where a surface lands. Data (gauges, progress) and plain state changes do not overshoot. Fades and colour changes may be linear.
+- **Lists animate their changes**: `ListView` with `add`, `remove` and `displaced` transitions, a `ScriptModel` so rows survive updates, never a plain JS array that rebuilds every row.
+- **Every control answers the pointer**: a hover colour and `Theme.pressScale` on press, both animated; a pointing-hand cursor on anything clickable.
+- **Status breathes, gently.** A live indicator (recording, ready) may pulse or glow, kept small (a halo about 1.8× at 0.35 opacity, `duration.glow`), and runs only while it is on screen and not behind the lock.
+- **The mechanics**: animate transforms (`Scale`, `Translate`, opacity), not geometry. Gate a `Behavior` so the first value does not animate. Loop animations stop when nothing shows them. A new duration or curve is a new `Theme` token.
+- **Scope**: this is the shell's own motion. Hyprland's window animations (`animations.lua`) are Kin's own choice; do not retune them to match.
+
 ### Screenshots
 
 `Screenshot` has three modes, all drawn by one overlay (`ScreenshotWindow`): `region` (Shift+Print, drag; the wheel zooms), `window` (Super+Print or Super+Shift+W, pick one) and `screen` (Print). The overlay freezes the screen with a `ScreencopyView` captured once on open, blurs it, and hangs the selection from the screen corners on tendrils that trail the pointer on springs (except in region mode, where the corners are the pointer). A region or screen shot is taken with `grim` only after the overlay has left, so the overlay is never in it. A window shot does not use `grim`: it captures the window's own surface (`HyprlandToplevel.wayland`) off screen, clips it to Hyprland's corner radius and saves it with `grabToImage`, which keeps transparency. Files go to `HYPRSHOT_DIR` (the name predates the shell) and onto the clipboard.
