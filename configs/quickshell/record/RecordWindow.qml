@@ -156,6 +156,8 @@ OverlayWindow {
                     margins: Theme.padding.extraLarge
                 }
                 spacing: Theme.spacing.small
+                // Hidden is not enough: its checkboxes would still take clicks during the countdown.
+                enabled: !Recorder.counting
                 opacity: Recorder.counting ? 0 : 1
 
                 Behavior on opacity {

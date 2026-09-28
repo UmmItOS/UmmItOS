@@ -49,7 +49,7 @@ Rectangle {
             }
 
             MaterialIcon {
-                text: Weather.icon(Weather.code, new Date().getHours())
+                text: Weather.icon(Weather.code, Weather.hour)
                 color: Theme.accentText
                 fill: 1
                 size: Theme.icon.large

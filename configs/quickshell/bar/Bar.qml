@@ -98,6 +98,10 @@ PanelWindow {
             Layout.fillWidth: true
         }
 
+        RecordingPill {
+            Layout.alignment: Qt.AlignVCenter
+        }
+
         Cluster {
             Layout.alignment: Qt.AlignVCenter
 

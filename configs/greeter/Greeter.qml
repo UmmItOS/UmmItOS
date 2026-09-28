@@ -12,6 +12,8 @@ Item {
     // Kept current by the user's shell: the greeter user cannot read their home.
     readonly property string shared: "/var/lib/ummitos-greeter"
     property string user: ""
+    // A name typed here, not read from the shared file, can be retyped after a failure.
+    property bool typedUser: false
     property bool busy: false
     property string message: ""
     property string pending: ""
@@ -29,6 +31,13 @@ Item {
     }
 
     function refuse(text: string): void {
+        // Only an open session: cancelling an idle one could raise an error that lands back here.
+        if (Greetd.available && Greetd.state !== GreetdState.Inactive)
+            Greetd.cancelSession();
+        if (typedUser) {
+            user = "";
+            name.forceActiveFocus();
+        }
         busy = false;
         pending = "";
         message = text;
@@ -216,7 +225,10 @@ Item {
             font.weight: Theme.weight.medium
             focus: visible
             Keys.onReturnPressed: {
+                if (text.trim() === "")
+                    return;
                 root.user = text.trim();
+                root.typedUser = true;
                 input.forceActiveFocus();
             }
 

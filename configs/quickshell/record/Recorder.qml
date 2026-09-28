@@ -15,9 +15,15 @@ Singleton {
     // 5 to 1 while counting down, 0 otherwise.
     property int count: 0
     readonly property bool counting: count > 0
+    // Set by screen-record.sh; nothing else on screen shows a recording is running.
+    property bool recording: false
+    // When it started, in ms since the epoch, for the bar's elapsed time.
+    property real since: 0
+    // Between the countdown and the recorder starting, the keys must not reopen the dialog.
+    readonly property bool busy: counting || begin.running || recording
 
     function start(): void {
-        if (!open || counting)
+        if (!open || busy)
             return;
         choiceFile.setText(JSON.stringify({
             system: root.system,
@@ -29,6 +35,7 @@ Singleton {
 
     function cancel(): void {
         tick.stop();
+        begin.stop();
         count = 0;
         open = false;
     }
@@ -56,6 +63,21 @@ Singleton {
         onTriggered: Quickshell.execDetached(["bash", Quickshell.env("HOME") + "/script/misc/screen-record.sh", "start", root.system ? "1" : "0", root.mic ? "1" : "0"])
     }
 
+    // A recording already running when the shell (re)starts, dated by its state file.
+    Process {
+        running: true
+        command: ["sh", "-c", 'pgrep -x wl-screenrec > /dev/null && stat -c %Y "$XDG_RUNTIME_DIR/screen-record/path"']
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const seconds = Number(text.trim());
+                if (seconds > 0) {
+                    root.since = seconds * 1000;
+                    root.recording = true;
+                }
+            }
+        }
+    }
+
     FileView {
         id: choiceFile
         path: Quickshell.statePath("record.json")
@@ -74,8 +96,17 @@ Singleton {
         target: "record"
 
         function open(): void {
-            if (!root.counting)
+            if (!root.busy)
                 root.open = true;
+        }
+
+        function started(): void {
+            root.since = Date.now();
+            root.recording = true;
+        }
+
+        function stopped(): void {
+            root.recording = false;
         }
 
         function close(): void {

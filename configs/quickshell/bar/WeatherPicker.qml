@@ -8,7 +8,7 @@ BarButton {
 
     property bool popupOpen: false
 
-    icon: Weather.ready ? Weather.icon(Weather.code, new Date().getHours()) : "add_location_alt"
+    icon: Weather.ready ? Weather.icon(Weather.code, Weather.hour) : "add_location_alt"
     onClicked: popupOpen = !popupOpen
 
     Flyout {
@@ -19,6 +19,13 @@ BarButton {
         toggleVisible: false
         hug: true
         onCloseRequested: root.popupOpen = false
+        // Typing breaks the text binding, so each opening starts from the saved place.
+        onVisibleChanged: {
+            if (visible) {
+                field.text = Weather.location;
+                field.forceActiveFocus();
+            }
+        }
 
         Rectangle {
             Layout.fillWidth: true
@@ -53,6 +60,13 @@ BarButton {
                         pixelSize: Theme.fontSize.smaller
                     }
                     Keys.onReturnPressed: Weather.setLocation(text)
+
+                    Connections {
+                        target: Weather
+                        function onLocationChanged(): void {
+                            field.text = Weather.location;
+                        }
+                    }
 
                     Text {
                         anchors.fill: parent

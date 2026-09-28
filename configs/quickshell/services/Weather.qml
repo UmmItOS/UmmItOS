@@ -15,6 +15,8 @@ Singleton {
     property bool failed: false
 
     readonly property bool ready: data !== null
+    // Ticks each hour, so day and night icons switch even when the sky stays the same.
+    readonly property int hour: clock.date.getHours()
     readonly property var now: data?.current_condition?.[0] ?? null
     readonly property var today: data?.weather?.[0] ?? null
     readonly property string area: location
@@ -30,7 +32,7 @@ Singleton {
     readonly property var hours: {
         if (!data)
             return [];
-        const hour = new Date().getHours();
+        const hour = root.hour;
         const out = [{
                 label: "Now",
                 temp: temp,
@@ -74,25 +76,41 @@ Singleton {
     }
 
     function refresh(): void {
-        if (location !== "" && !fetch.running)
-            fetch.running = true;
+        if (location === "" || fetch.running)
+            return;
+        fetch.place = location;
+        fetch.running = true;
     }
 
     // An empty place turns the weather off.
     function setLocation(place: string): void {
         location = place.trim();
         locationFile.setText(location);
+        fetch.running = false;
         data = null;
         failed = false;
         refresh();
     }
 
+    SystemClock {
+        id: clock
+        precision: SystemClock.Hours
+    }
+
     Process {
         id: fetch
-        command: ["curl", "-sf", "--max-time", "15", "https://wttr.in/" + encodeURIComponent(root.location) + "?format=j1"]
+
+        // The place this fetch asked for; an answer for an older place is dropped.
+        property string place
+
+        command: ["curl", "-sf", "--max-time", "15", "https://wttr.in/" + encodeURIComponent(place) + "?format=j1"]
         stdout: StdioCollector {
             // A failed fetch keeps the last forecast rather than blanking the widget.
             onStreamFinished: {
+                if (fetch.place !== root.location) {
+                    Qt.callLater(root.refresh);
+                    return;
+                }
                 try {
                     root.data = JSON.parse(text);
                     root.failed = false;
@@ -110,6 +128,14 @@ Singleton {
         blockWrites: false
         onLoaded: {
             root.location = text().trim();
+            root.refresh();
+        }
+    }
+
+    // Timers stop while the laptop sleeps, so waking would show last night's forecast.
+    Connections {
+        target: Wake
+        function onWoke(): void {
             root.refresh();
         }
     }

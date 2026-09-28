@@ -53,7 +53,6 @@ Singleton {
     // Material 3 scales, from caelestia-dots/shell tokens.hpp.
     readonly property QtObject rounding: QtObject {
         readonly property int extraSmall: 4
-        readonly property int small: 8
         readonly property int medium: 12
         readonly property int large: 16
         readonly property int largeIncreased: 20
@@ -76,11 +75,9 @@ Singleton {
     }
 
     readonly property QtObject padding: QtObject {
-        readonly property int extraSmall: 4
         readonly property int small: 8
         readonly property int medium: 12
         readonly property int large: 16
-        readonly property int largeIncreased: 20
         readonly property int extraLarge: 32
     }
 
@@ -101,7 +98,6 @@ Singleton {
 
     // Small labels want wider tracking and more weight.
     readonly property QtObject tracking: QtObject {
-        readonly property real normal: 0
         readonly property real wide: 0.4
         readonly property real wider: 0.8
     }
@@ -183,7 +179,6 @@ Singleton {
     readonly property QtObject duration: QtObject {
         readonly property int small: 200
         readonly property int normal: 400
-        readonly property int large: 600
         readonly property int extraLarge: 1000
         readonly property int expressiveFastSpatial: 350
         readonly property int expressiveDefaultSpatial: 500

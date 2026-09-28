@@ -22,6 +22,7 @@ if pid=$(pgrep -x wl-screenrec); then
     note=$(cat "$state/note" 2>/dev/null)
     rm -f "$state/path" "$state/note"
     unmix
+    qs -c ummitos ipc call record stopped
     notify-send -a "Screen recording" "Recording saved" "$file${note:+
 $note}"
     echo "$(date '+%F %T') saved $file" >> "$log"
@@ -35,6 +36,8 @@ fi
 system=$2
 mic=$3
 mkdir -p "$dir" "$state"
+# A note left by a recording that failed must not reach this one.
+rm -f "$state/note"
 file="$dir/Recording_$(date +%Y-%m-%d_%H-%M-%S).mp4"
 output=$(hyprctl -j monitors | jq -r '.[] | select(.focused) | .name')
 echo "$file" > "$state/path"
@@ -66,10 +69,13 @@ elif [[ "$mic" == 1 ]]; then
 fi
 
 echo "$(date '+%F %T') started $file on $output (system=$system mic=$mic)" >> "$log"
+# The bar shows a recording pill while this runs; nothing else on screen says so.
+qs -c ummitos ipc call record started
 
 # --low-power=off: AMD has no low-power H.264 encoder, so the first try always failed.
 if ! wl-screenrec "${audio[@]}" --low-power=off -o "$output" -f "$file" 2>> "$log"; then
-    rm -f "$state/path"
+    rm -f "$state/path" "$state/note"
     unmix
+    qs -c ummitos ipc call record stopped
     notify-send -a "Screen recording" "Recording failed" "See $log"
 fi

@@ -181,6 +181,10 @@ RowLayout {
         Item {
             id: limits
 
+            // Only a change of limit slides the pill; the width arriving on first open must not.
+            property bool settled: false
+            onWidthChanged: if (width > 0) Qt.callLater(() => settled = true)
+
             readonly property real cell: width / Audio.limits.length
 
             Layout.fillWidth: true
@@ -201,6 +205,8 @@ RowLayout {
                     x: Audio.limits.indexOf(Audio.limit) * limits.cell
 
                     Behavior on x {
+                        enabled: limits.settled
+
                         NumberAnimation {
                             duration: Theme.duration.expressiveFastSpatial
                             easing.type: Easing.BezierSpline

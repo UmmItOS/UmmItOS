@@ -76,6 +76,7 @@ OverlayWindow {
             frozen.captureFrame();
         strokes = [];
         current = null;
+        panning = false;
         zoom = 1;
         tx = ty = 0;
         scope.forceActiveFocus();
@@ -215,6 +216,11 @@ OverlayWindow {
                     c.points = c.points.concat([stage.mapFromItem(area, mouse.x, mouse.y)]);
                     win.current = Object.assign({}, c);
                 }
+            }
+            // Closing mid-press never delivers the release; nothing may stay held.
+            onCanceled: {
+                win.panning = false;
+                win.current = null;
             }
             onReleased: mouse => {
                 if (mouse.button === Qt.RightButton) {
