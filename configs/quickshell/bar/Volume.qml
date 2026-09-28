@@ -177,102 +177,12 @@ RowLayout {
             }
         }
 
-        // One choice of four: the accent pill slides to the picked one.
-        Item {
-            id: limits
-
-            // Only a change of limit slides the pill; the width arriving on first open must not.
-            property bool settled: false
-            onWidthChanged: if (width > 0) Qt.callLater(() => settled = true)
-
-            readonly property real cell: width / Audio.limits.length
-
+        Segmented {
             Layout.fillWidth: true
-            implicitHeight: Theme.control.field
-
-            Rectangle {
-                anchors.fill: parent
-                radius: Theme.rounding.full
-                color: Theme.bgTray
-            }
-
-            Rectangle {
-                width: limits.cell
-                height: parent.height
-                radius: Theme.rounding.full
-                color: Theme.accent
-                transform: Translate {
-                    x: Audio.limits.indexOf(Audio.limit) * limits.cell
-
-                    Behavior on x {
-                        enabled: limits.settled
-
-                        NumberAnimation {
-                            duration: Theme.duration.expressiveFastSpatial
-                            easing.type: Easing.BezierSpline
-                            easing.bezierCurve: Theme.curve.emphasized
-                        }
-                    }
-                }
-            }
-
-            Row {
-                anchors.fill: parent
-
-                Repeater {
-                    model: Audio.limits
-
-                    Item {
-                        id: choice
-
-                        required property real modelData
-                        readonly property bool picked: Audio.limit === choice.modelData
-
-                        width: limits.cell
-                        height: limits.height
-
-                        Rectangle {
-                            anchors.fill: parent
-                            radius: Theme.rounding.full
-                            color: Theme.glass
-                            visible: choiceHover.hovered && !choice.picked
-                        }
-
-                        Text {
-                            anchors.centerIn: parent
-                            scale: choiceTap.pressed ? Theme.popScale : 1
-                            text: Math.round(choice.modelData * 100) + "%"
-                            color: choice.picked || choiceHover.hovered ? Theme.fg : Theme.dim
-                            font {
-                                family: Theme.font
-                                pixelSize: Theme.fontSize.smaller
-                                weight: choice.picked ? Theme.weight.medium : Theme.weight.regular
-                                features: ({
-                                        tnum: 1
-                                    })
-                            }
-
-                            Behavior on scale {
-                                NumberAnimation {
-                                    duration: Theme.duration.expressiveFastEffects
-                                    easing.type: Easing.BezierSpline
-                                    easing.bezierCurve: Theme.curve.standard
-                                }
-                            }
-                        }
-
-                        HoverHandler {
-                            id: choiceHover
-                            cursorShape: Qt.PointingHandCursor
-                        }
-
-                        TapHandler {
-                            id: choiceTap
-                            onTapped: Audio.setLimit(choice.modelData)
-                        }
-                    }
-                }
-            }
+            values: Audio.limits
+            labels: Audio.limits.map(l => Math.round(l * 100) + "%")
+            current: Audio.limit
+            onPicked: value => Audio.setLimit(value)
         }
 
         // Output devices. Only worth showing when there is a choice to make.

@@ -158,6 +158,14 @@ Singleton {
         // Touchpad scroll arrives in pixels; this many make one zoom step.
         readonly property real scrollPixels: 40
     }
+    // The settings panel (settings/).
+    readonly property QtObject settings: QtObject {
+        readonly property int width: 880
+        readonly property int height: 600
+        readonly property int sidebar: 200
+        // A setting's control column, so every chooser lines up.
+        readonly property int choice: 320
+    }
     readonly property QtObject control: QtObject {
         // A list row in a flyout or the clipboard.
         readonly property int row: 46

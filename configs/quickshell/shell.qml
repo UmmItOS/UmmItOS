@@ -17,6 +17,7 @@ import "osd"
 import "services"
 import "screenshot"
 import "session"
+import "settings"
 import "switcher"
 import "toast"
 import "wake"
@@ -54,6 +55,8 @@ ShellRoot {
     ScreenshotWindow {}
 
     RecordWindow {}
+
+    SettingsWindow {}
 
     DrawWindow {}
 

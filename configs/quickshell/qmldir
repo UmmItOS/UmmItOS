@@ -13,6 +13,7 @@ Spinner 1.0 Spinner.qml
 Toggle 1.0 Toggle.qml
 Flyout 1.0 Flyout.qml
 Slider 1.0 Slider.qml
+Segmented 1.0 Segmented.qml
 singleton Players 1.0 services/Players.qml
 Reveal 1.0 Reveal.qml
 MotionBlur 1.0 MotionBlur.qml
@@ -30,3 +31,4 @@ singleton Audio 1.0 services/Audio.qml
 singleton Recorder 1.0 record/Recorder.qml
 singleton Draw 1.0 draw/Draw.qml
 singleton Weather 1.0 services/Weather.qml
+singleton Settings 1.0 settings/Settings.qml

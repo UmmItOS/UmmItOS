@@ -28,13 +28,6 @@ Rectangle {
         precision: SystemClock.Seconds
     }
 
-    function elapsed(): string {
-        const s = Math.max(0, Math.floor((clock.date.getTime() - Recorder.since) / 1000));
-        const h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, sec = s % 60;
-        const two = n => String(n).padStart(2, "0");
-        return (h > 0 ? h + ":" + two(m) : m) + ":" + two(sec);
-    }
-
     Row {
         id: row
 
@@ -65,7 +58,7 @@ Rectangle {
 
         Text {
             anchors.verticalCenter: parent.verticalCenter
-            text: root.elapsed()
+            text: Recorder.elapsed(clock.date)
             color: Theme.fg
             font.family: Theme.font
             font.pixelSize: Theme.fontSize.smaller
@@ -82,6 +75,6 @@ Rectangle {
     }
 
     TapHandler {
-        onTapped: Quickshell.execDetached(["bash", Quickshell.env("HOME") + "/script/misc/screen-record.sh"])
+        onTapped: Recorder.stop()
     }
 }

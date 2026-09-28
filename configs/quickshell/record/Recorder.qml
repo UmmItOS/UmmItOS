@@ -35,6 +35,19 @@ Singleton {
         tick.restart();
     }
 
+    // How long the recording has run, as m:ss or h:mm:ss.
+    function elapsed(now: date): string {
+        const s = Math.max(0, Math.floor((now.getTime() - root.since) / 1000));
+        const h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, sec = s % 60;
+        const two = n => String(n).padStart(2, "0");
+        return (h > 0 ? h + ":" + two(m) : m) + ":" + two(sec);
+    }
+
+    // The script with no arguments stops a running recording and saves it.
+    function stop(): void {
+        Quickshell.execDetached(["bash", Quickshell.env("HOME") + "/script/misc/screen-record.sh"]);
+    }
+
     function cancel(): void {
         tick.stop();
         begin.stop();

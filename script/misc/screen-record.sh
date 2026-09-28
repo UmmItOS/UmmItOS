@@ -2,7 +2,21 @@
 # Super+Shift+R: stop the recording, or open the shell's recording dialog.
 # The dialog runs `screen-record.sh start <system 0|1> <mic 0|1>` after its countdown.
 
-dir="$HOME/Videos/Recordings"
+# The settings panel (Settings.qml) writes these; missing keys keep the defaults.
+folder="$HOME/Videos/Recordings"
+bitrate="5 MB"
+fps=60
+codec=auto
+cursor=1
+conf="${XDG_CONFIG_HOME:-$HOME/.config}/ummitos/recording.conf"
+if [[ -f "$conf" ]]; then
+    while IFS='=' read -r key value; do
+        case "$key" in
+            folder | bitrate | fps | codec | cursor) [[ -n "$value" ]] && printf -v "$key" '%s' "$value" ;;
+        esac
+    done < "$conf"
+fi
+dir="$folder"
 log="$HOME/script/misc/screen-record.log"
 state="${XDG_RUNTIME_DIR:-/tmp}/screen-record"
 
@@ -73,7 +87,11 @@ echo "$(date '+%F %T') started $file on $output (system=$system mic=$mic)" >> "$
 qs -c ummitos ipc call record started
 
 # --low-power=off: AMD has no low-power H.264 encoder, so the first try always failed.
-if ! wl-screenrec "${audio[@]}" --low-power=off -o "$output" -f "$file" 2>> "$log"; then
+video=(-b "$bitrate" --codec "$codec")
+[[ "$fps" != 0 ]] && video+=(-m "$fps")
+[[ "$cursor" == 0 ]] && video+=(--no-cursor)
+
+if ! wl-screenrec "${audio[@]}" "${video[@]}" --low-power=off -o "$output" -f "$file" 2>> "$log"; then
     rm -f "$state/path" "$state/note"
     unmix
     qs -c ummitos ipc call record stopped
