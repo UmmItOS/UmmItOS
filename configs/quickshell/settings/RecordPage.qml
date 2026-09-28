@@ -63,10 +63,44 @@ ColumnLayout {
         spacing: Theme.spacing.medium
 
         Rectangle {
+            id: dot
+
             implicitWidth: Theme.spacing.medium
             implicitHeight: implicitWidth
             radius: width / 2
             color: Recorder.recording ? Theme.urgent : Theme.good
+
+            // A halo that breathes out from the dot; scaled, never resized.
+            Rectangle {
+                id: halo
+
+                anchors.fill: parent
+                z: -1
+                radius: width / 2
+                color: dot.color
+
+                ParallelAnimation {
+                    running: Settings.open
+                    loops: Animation.Infinite
+
+                    NumberAnimation {
+                        target: halo
+                        property: "scale"
+                        from: 1
+                        to: 1.8
+                        duration: Theme.duration.glow
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curve.emphasizedDecel
+                    }
+                    NumberAnimation {
+                        target: halo
+                        property: "opacity"
+                        from: 0.35
+                        to: 0
+                        duration: Theme.duration.glow
+                    }
+                }
+            }
         }
 
         Text {

@@ -197,6 +197,8 @@ Singleton {
         readonly property int expressiveSlowEffects: 300
         // One turn of a spinner.
         readonly property int spin: 900
+        // One breath of a status dot's glow.
+        readonly property int glow: 1800
         // The screen coming up out of black on wake.
         readonly property int wake: 2400
         // How long a wake hold() may stay black without a play().
