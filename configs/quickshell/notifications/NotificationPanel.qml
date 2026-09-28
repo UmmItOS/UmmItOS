@@ -364,12 +364,11 @@ OverlayWindow {
 
                                 MaterialIcon {
                                     text: "close"
-                                    color: Theme.dim
+                                    color: cardHover.hovered ? Theme.fg : Theme.dim
                                     size: Theme.icon.small
-                                    opacity: cardHover.hovered ? 1 : 0
 
-                                    Behavior on opacity {
-                                        NumberAnimation {
+                                    Behavior on color {
+                                        ColorAnimation {
                                             duration: Theme.duration.expressiveFastEffects
                                         }
                                     }

@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
@@ -11,9 +13,8 @@ Scope {
 
     property int serial: 0
 
-    // Original two-note pop (pop.ogg).
     function pop(): void {
-        Quickshell.execDetached(["pw-play", Qt.resolvedUrl("pop.ogg").toString().replace("file://", "")]);
+        Quickshell.execDetached(["pw-play", Quickshell.shellDir + "/toast/pop.ogg"]);
     }
 
     function show(kind: string): void {

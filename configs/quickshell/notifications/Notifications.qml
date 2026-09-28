@@ -12,18 +12,55 @@ Scope {
     id: root
 
     // One entry per toast, so a replaced notification can leave its old toast up.
+    // Card state lives here: the view destroys delegates scrolled out of it.
     property var cards: []
     property int serial: 0
 
     function show(n: Notification): void {
-        cards = cards.concat([{
-                key: serial++,
-                n: n
+        // Once per notification: a replacement is the same object.
+        if (!root.cards.some(e => e.n === n))
+            n.closed.connect(() => root.cards = root.cards.filter(e => e.n !== n || e.detached));
+        root.cards = root.cards.concat([{
+                key: root.serial++,
+                n: n,
+                detached: false,
+                kept: root.snapshot(n)
             }]);
     }
 
     function drop(entry: var): void {
-        cards = cards.filter(e => e !== entry);
+        root.cards = root.cards.filter(e => e !== entry);
+    }
+
+    // Copied while alive: the object dies before the exit ends.
+    function snapshot(n: Notification): var {
+        return {
+            appName: n.appName,
+            summary: n.summary,
+            body: Notifs.safeBody(n.body),
+            image: n.image,
+            appIcon: n.appIcon,
+            critical: n.urgency === NotificationUrgency.Critical
+        };
+    }
+
+    function chime(notification: Notification): void {
+        // Apps that play their own sound stay quiet.
+        const app = (notification.appName || "").toLowerCase();
+        const entry = (notification.desktopEntry || "").toLowerCase();
+        const hints = notification.hints ?? {};
+        const ownSound = ["vesktop", "discord", "telegram", "telegramdesktop", "org.telegram.desktop"].some(a => app.includes(a) || entry.includes(a)) || hints["suppress-sound"] || hints["sound-file"] || hints["sound-name"];
+        const charging = app === "battery" && notification.summary === "Charging";
+        let sound = "";
+        // The screenshot tool has its own shutter, like an app with its own sound.
+        if (app === "screenshot")
+            sound = "/screenshot/shutter.ogg";
+        else if (["color picker", "screen recording", "update", "wi-fi", "bluetooth"].includes(app))
+            sound = "/toast/pop.ogg";
+        else if (!ownSound && !charging)
+            sound = "/notifications/chime.ogg";
+        if (sound !== "" && !Notifs.dnd)
+            Quickshell.execDetached(["pw-play", Quickshell.shellDir + sound]);
     }
 
     NotificationServer {
@@ -37,22 +74,7 @@ Scope {
 
         // Without tracked = true the notification is dropped at once.
         onNotification: notification => {
-            // Apps that play their own sound stay quiet.
-            const app = (notification.appName || "").toLowerCase();
-            const entry = (notification.desktopEntry || "").toLowerCase();
-            const hints = notification.hints ?? {};
-            const ownSound = ["vesktop", "discord", "telegram", "telegramdesktop", "org.telegram.desktop"].some(a => app.includes(a) || entry.includes(a)) || hints["suppress-sound"] || hints["sound-file"] || hints["sound-name"];
-            const charging = app === "battery" && notification.summary === "Charging";
-            let sound = "";
-            // The screenshot tool has its own shutter, like an app with its own sound.
-            if (app === "screenshot")
-                sound = "/screenshot/shutter.ogg";
-            else if (["color picker", "screen recording", "update", "wi-fi", "bluetooth"].includes(app))
-                sound = "/toast/pop.ogg";
-            else if (!ownSound && !charging)
-                sound = "/notifications/chime.ogg";
-            if (sound !== "" && !Notifs.dnd)
-                Quickshell.execDetached(["pw-play", Quickshell.shellDir + sound]);
+            root.chime(notification);
             // Transient notices (the update nag) show but are not kept.
             if (!notification.transient)
                 Notifs.record(notification);
@@ -72,7 +94,8 @@ Scope {
         // Only for a dropdown over the column, and never off screen.
         readonly property real clearance: {
             const f = Notifs.flyout;
-            if (!f || Notifs.flyoutRight <= columnLeft)
+            // Flyout edges are in its own screen's coordinates.
+            if (!f || Notifs.flyoutScreen !== (screen?.name ?? "") || Notifs.flyoutRight <= columnLeft)
                 return 0;
             const needed = columnRight - Notifs.flyoutLeft + Theme.spacing.small;
             return Math.max(0, Math.min(needed, columnLeft - Theme.padding.medium));
@@ -191,36 +214,36 @@ Scope {
                 }
                 required property var modelData
                 // Set once a replacement moved the notification to a new toast below this one.
-                property bool detached: false
+                property bool detached: modelData?.detached ?? false
                 readonly property Notification live: detached ? null : modelData?.n ?? null
+                property var kept: modelData?.kept ?? ({})
 
-                // Copied while alive: the object dies before the exit ends.
-                property var kept: ({})
-
-                function keep(): void {
-                    const n = card.live;
-                    // A destroyed notification reads empty, not null.
-                    if (n && n.appName !== undefined)
-                        kept = {
-                            appName: n.appName,
-                            summary: n.summary,
-                            body: Notifs.safeBody(n.body),
-                            image: n.image,
-                            appIcon: n.appIcon,
-                            critical: n.urgency === NotificationUrgency.Critical
-                        };
+                // A destroyed notification reads empty, not null.
+                function alive(): bool {
+                    return card.live !== null && card.live.appName !== undefined;
                 }
 
-                Component.onCompleted: keep()
+                function keep(): void {
+                    card.kept = card.modelData.kept = root.snapshot(card.live);
+                }
+
+                // Rebuilt after its notification closed, which dropped only the old delegate.
+                Component.onCompleted: {
+                    if (!card.detached && !card.alive())
+                        root.drop(card.modelData);
+                }
 
                 // A new message, not a progress update, gets its own toast; this one keeps the old text.
                 function changed(): void {
-                    const n = card.live;
-                    if (!n || n.appName === undefined)
+                    if (!card.alive())
                         return;
-                    const progress = n.hints?.value !== undefined;
+                    const n = card.live;
+                    const progress = n.hints.value !== undefined;
                     if (!progress && (n.summary !== card.kept.summary || Notifs.safeBody(n.body) !== card.kept.body)) {
-                        card.detached = true;
+                        card.detached = card.modelData.detached = true;
+                        if (!n.transient)
+                            Notifs.record(n);
+                        root.chime(n);
                         root.show(n);
                     } else {
                         card.keep();
@@ -241,9 +264,6 @@ Scope {
                     function onImageChanged(): void {
                         Qt.callLater(card.changed);
                     }
-                    function onClosed(): void {
-                        root.drop(card.modelData);
-                    }
                 }
 
                 readonly property bool critical: card.kept.critical ?? false
@@ -263,8 +283,9 @@ Scope {
 
                 TapHandler {
                     onTapped: {
-                        if (card.defaultAction)
-                        card.defaultAction.invoke();
+                        if (card.defaultAction) {
+                            card.defaultAction.invoke();
+                        }
                         card.detached ? root.drop(card.modelData) : card.live?.dismiss();
                     }
                 }
@@ -274,7 +295,7 @@ Scope {
 
                 // Reading a notification should not race its own timer.
                 Timer {
-                    running: !hover.hovered && (card.live !== null || card.detached) && !card.critical && card.timeout !== 0
+                    running: !hover.hovered && (card.detached || card.live !== null && !card.critical && card.timeout !== 0)
                     interval: card.timeout > 0 ? card.timeout : 6000
                     onTriggered: card.detached ? root.drop(card.modelData) : card.live?.expire()
                 }
@@ -330,12 +351,11 @@ Scope {
 
                         MaterialIcon {
                             text: "close"
-                            color: Theme.dim
+                            color: hover.hovered ? Theme.fg : Theme.dim
                             size: Theme.icon.small
-                            opacity: hover.hovered ? 1 : 0
 
-                            Behavior on opacity {
-                                NumberAnimation {
+                            Behavior on color {
+                                ColorAnimation {
                                     duration: Theme.duration.expressiveFastEffects
                                 }
                             }
@@ -413,7 +433,7 @@ Scope {
                                 implicitWidth: Math.ceil(measure.advanceWidth) + Theme.padding.large * 2
                                 implicitHeight: Theme.control.field
                                 radius: Theme.rounding.full
-                                color: actionHover.hovered ? Theme.accent : Theme.bgTray
+                                color: actionHover.hovered ? Theme.accentText : Theme.bgTray
 
                                 Behavior on color {
                                     ColorAnimation {
@@ -437,7 +457,7 @@ Scope {
                                     width: Math.min(implicitWidth, action.width - Theme.padding.large * 2)
                                     elide: Text.ElideRight
                                     text: action.modelData.text
-                                    color: actionHover.hovered ? Theme.bg : Theme.fg
+                                    color: actionHover.hovered ? Theme.scrim(1) : Theme.fg
                                     font.family: Theme.font
                                     font.pixelSize: Theme.fontSize.smaller
                                 }

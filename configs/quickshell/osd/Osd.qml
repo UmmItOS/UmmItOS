@@ -80,7 +80,7 @@ Singleton {
         }
     }
 
-    // sysfs backlight emits no reliable inotify events, so it is read.
+    // sysfs backlight emits no reliable inotify events, so the keys ask for a read.
     property real brightnessMax: 1
     property real brightnessRaw: 0
     // amdgpu_bl1 here, intel_backlight elsewhere.
@@ -92,14 +92,6 @@ Singleton {
         stdout: StdioCollector {
             onStreamFinished: root.backlight = text.trim().replace(/\/$/, "")
         }
-    }
-
-    // The keys report over IPC, so this can be slow.
-    Timer {
-        running: root.backlight !== ""
-        interval: 2000
-        repeat: true
-        onTriggered: brightnessFile.reload()
     }
 
     IpcHandler {
