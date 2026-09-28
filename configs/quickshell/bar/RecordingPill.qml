@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import Quickshell
 import QtQuick
 import ".."
@@ -6,7 +8,7 @@ import ".."
 Rectangle {
     id: root
 
-    visible: Recorder.recording
+    visible: opacity > 0
     opacity: Recorder.recording ? 1 : 0
     Behavior on opacity {
         NumberAnimation {
@@ -42,8 +44,9 @@ Rectangle {
             color: Theme.urgent
 
             SequentialAnimation on opacity {
-                running: Recorder.recording
+                running: Recorder.recording && !Lock.locked
                 loops: Animation.Infinite
+                alwaysRunToEnd: true
 
                 NumberAnimation {
                     to: 0.3

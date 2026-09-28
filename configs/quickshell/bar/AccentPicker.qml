@@ -17,8 +17,8 @@ BarButton {
         const s = input.trim();
         if (/^#([0-9a-f]{6}|[0-9a-f]{8})$/i.test(s))
             return s;
-        const m = s.match(/^rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*(?:,\s*([01]?(?:\.\d+)?))?\s*\)$/i);
-        if (!m || [m[1], m[2], m[3]].some(v => Number(v) > 255))
+        const m = s.match(/^rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*(?:,\s*(\d*\.?\d+))?\s*\)$/i);
+        if (!m || [m[1], m[2], m[3]].some(v => Number(v) > 255) || Number(m[4] ?? 1) > 1)
             return null;
         return Qt.rgba(m[1] / 255, m[2] / 255, m[3] / 255, m[4] === undefined ? 1 : Number(m[4]));
     }

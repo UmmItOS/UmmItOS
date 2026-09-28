@@ -295,6 +295,8 @@ RowLayout {
                 }
 
                 MouseArea {
+                    // Under the content, so the forget button gets its own click.
+                    z: -1
                     anchors {
                         left: parent.left
                         right: parent.right

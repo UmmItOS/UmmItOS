@@ -65,6 +65,7 @@ RowLayout {
         title: "Bluetooth"
         busy: root.searching && root.devices.length > 0
         checked: root.on
+        toggleVisible: root.adapter !== null
         onToggled: root.adapter.enabled = !root.adapter.enabled
         onCloseRequested: root.popupOpen = false
 
@@ -203,6 +204,8 @@ RowLayout {
                 }
 
                 MouseArea {
+                    // Under the content, so the forget button gets its own click.
+                    z: -1
                     anchors.fill: parent
                     enabled: !row.busy
                     // BlueZ will not connect a device it has not bonded with.

@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 
+import Quickshell
 import Quickshell.Hyprland
 import QtQuick
 import QtQuick.Effects
@@ -11,7 +12,9 @@ RowLayout {
 
     Repeater {
         // Special workspaces have negative ids.
-        model: [...Hyprland.workspaces.values].filter(w => w && w.id > 0)
+        model: ScriptModel {
+            values: [...Hyprland.workspaces.values].filter(w => w && w.id > 0)
+        }
 
         Rectangle {
             id: pill
@@ -19,8 +22,11 @@ RowLayout {
 
             readonly property bool focused: modelData?.focused ?? false
 
-            implicitWidth: focused ? Math.max(30, label.implicitWidth + Theme.padding.large) : 10
-            implicitHeight: focused ? 24 : 10
+            readonly property real targetWidth: focused ? Math.max(30, label.implicitWidth + Theme.padding.large) : 10
+            readonly property real targetHeight: focused ? 24 : 10
+
+            implicitWidth: targetWidth
+            implicitHeight: targetHeight
             Layout.alignment: Qt.AlignVCenter
             radius: height / 2
             // bgTray vanished against the bar; plain white shouted.
@@ -63,7 +69,8 @@ RowLayout {
                 }
             }
 
-            layer.enabled: pill.focused
+            // Only once grown: a resizing layer rebuilds its blur every frame.
+            layer.enabled: pill.focused && pill.implicitWidth === pill.targetWidth && pill.implicitHeight === pill.targetHeight
             layer.effect: MultiEffect {
                 shadowEnabled: true
                 shadowColor: Theme.accent
