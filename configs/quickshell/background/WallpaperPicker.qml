@@ -11,9 +11,9 @@ OverlayWindow {
     shown: Wallpapers.pickerOpen
     name: "wallpaper-picker"
 
-    readonly property int focusedWidth: 420
-    readonly property int focusedHeight: 236
-    readonly property real shrink: 0.5
+    readonly property int focusedWidth: Theme.picker.cardWidth
+    readonly property int focusedHeight: Theme.picker.cardHeight
+    readonly property real shrink: Theme.picker.shrink
 
     property string filter: ""
 
@@ -119,7 +119,7 @@ OverlayWindow {
     }
 
     anchors.top: false
-    implicitHeight: 460
+    implicitHeight: Theme.picker.height
     color: "transparent"
 
     function apply(index: int): void {
@@ -145,12 +145,12 @@ OverlayWindow {
                 color: "transparent"
             }
             GradientStop {
-                position: 0.45
-                color: Qt.rgba(Theme.bg.r, Theme.bg.g, Theme.bg.b, 0.72)
+                position: Theme.picker.fadeAt
+                color: Qt.rgba(Theme.bg.r, Theme.bg.g, Theme.bg.b, Theme.picker.fadeAlpha)
             }
             GradientStop {
                 position: 1
-                color: Qt.rgba(Theme.bg.r, Theme.bg.g, Theme.bg.b, 0.94)
+                color: Qt.rgba(Theme.bg.r, Theme.bg.g, Theme.bg.b, Theme.picker.floorAlpha)
             }
         }
     }
@@ -276,7 +276,7 @@ OverlayWindow {
                 bottom: meta.top
                 bottomMargin: Theme.spacing.extraLargeIncreased
             }
-            height: picker.focusedHeight + 40
+            height: picker.focusedHeight + Theme.picker.headroom
             model: picker.matches
             clip: true
 
@@ -298,7 +298,7 @@ OverlayWindow {
 
                 function open(direction: int): void {
                     page.hinge = direction;
-                    swing.from = direction * 80;
+                    swing.from = direction * Theme.picker.swing;
                     restart();
                 }
 
@@ -321,7 +321,7 @@ OverlayWindow {
             }
 
             // PathView wraps around at both ends; ListView cannot.
-            pathItemCount: Math.max(3, Math.floor(width / (picker.focusedWidth * 0.72)))
+            pathItemCount: Math.max(Theme.picker.minCards, Math.floor(width / (picker.focusedWidth * Theme.picker.cardSpan)))
             preferredHighlightBegin: 0.5
             preferredHighlightEnd: 0.5
             highlightRangeMode: PathView.StrictlyEnforceRange
@@ -334,7 +334,7 @@ OverlayWindow {
 
             Timer {
                 id: previewDebounce
-                interval: 140
+                interval: Theme.duration.previewDebounce
                 onTriggered: {
                     const path = picker.matches[list.currentIndex];
                     if (path && path !== ".." && !picker.isFolder(path))
@@ -364,7 +364,7 @@ OverlayWindow {
                 }
                 PathAttribute {
                     name: "itemLift"
-                    value: -18
+                    value: Theme.picker.focusLift
                 }
                 PathLine {
                     x: list.width
@@ -409,7 +409,7 @@ OverlayWindow {
                     implicitHeight: picker.focusedHeight
                     radius: Theme.rounding.large
                     color: cell.isUp ? Theme.bgTray : "transparent"
-                    opacity: cell.focused ? 1 : 0.62
+                    opacity: cell.focused ? 1 : Theme.picker.unfocused
 
                     Behavior on opacity {
                         NumberAnimation {
@@ -441,7 +441,7 @@ OverlayWindow {
                     ShaderEffect {
                         anchors.fill: parent
                         visible: !cell.isUp
-                        opacity: cell.isFolder ? 0.45 : 1
+                        opacity: cell.isFolder ? Theme.picker.folder : 1
 
                         property var source: pictureShot
                         property size size: Qt.size(width, height)
@@ -484,9 +484,9 @@ OverlayWindow {
                             margins: Theme.padding.medium
                         }
                         visible: cell.confirmed
-                        implicitWidth: 8
-                        implicitHeight: 8
-                        radius: 4
+                        implicitWidth: Theme.picker.dot
+                        implicitHeight: Theme.picker.dot
+                        radius: Theme.picker.dot / 2
                         color: Theme.accentText
                     }
                 }

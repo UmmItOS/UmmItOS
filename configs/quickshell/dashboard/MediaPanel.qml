@@ -62,9 +62,9 @@ Item {
         Item {
             id: disc
 
-            readonly property int art: 170
+            readonly property int art: Theme.dashboard.art
             readonly property int gap: Theme.spacing.small
-            readonly property int reach: 34
+            readonly property int reach: Theme.dashboard.artReach
             readonly property int count: Cava.bars * 2
 
             Layout.alignment: Qt.AlignVCenter
@@ -118,8 +118,8 @@ Item {
                     source: root.player?.trackArtUrl ?? ""
                     fillMode: Image.PreserveAspectCrop
                     asynchronous: true
-                    sourceSize.width: 380
-                    sourceSize.height: 380
+                    sourceSize.width: Theme.dashboard.artDecode
+                    sourceSize.height: Theme.dashboard.artDecode
                 }
 
                 MaterialIcon {
@@ -184,8 +184,8 @@ Item {
                 }
 
                 Rectangle {
-                    implicitWidth: 52
-                    implicitHeight: 52
+                    implicitWidth: Theme.dashboard.play
+                    implicitHeight: Theme.dashboard.play
                     radius: width / 2
                     enabled: root.player?.canTogglePlaying ?? false
                     color: enabled ? Theme.accent : Theme.bgAlt
@@ -244,7 +244,7 @@ Item {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.topMargin: Theme.spacing.medium
-                implicitHeight: 6
+                implicitHeight: Theme.dashboard.progress
                 radius: height / 2
                 color: Theme.bgAlt
                 visible: root.timed
@@ -318,7 +318,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.maximumWidth: implicitWidth
                         implicitWidth: chipLabel.implicitWidth + Theme.padding.large * 2
-                        implicitHeight: 28
+                        implicitHeight: Theme.dashboard.chip
                         radius: Theme.rounding.full
                         color: current ? Theme.accent : Theme.bgAlt
 

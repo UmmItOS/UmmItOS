@@ -101,7 +101,7 @@ Singleton {
     Process {
         id: clients
         // Workspace and windows in one call, so they cannot disagree.
-        command: ["sh", "-c", 'ws=$(hyprctl activeworkspace -j | jq .id) && hyprctl clients -j | jq --argjson ws "$ws" \'[.[] | select(.workspace.id == $ws and .mapped and (.hidden | not) and .size[0] > 40 and .size[1] > 40)]\'']
+        command: ["sh", "-c", `ws=$(hyprctl activeworkspace -j | jq .id) && hyprctl clients -j | jq --argjson ws "$ws" '[.[] | select(.workspace.id == $ws and .mapped and (.hidden | not) and .size[0] > ${Theme.screenshot.minWindow} and .size[1] > ${Theme.screenshot.minWindow})]'`]
         stdout: StdioCollector {
             onStreamFinished: {
                 try {

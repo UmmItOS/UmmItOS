@@ -31,7 +31,7 @@ Singleton {
             system: root.system,
             mic: root.mic
         }));
-        count = 5;
+        count = Theme.record.countdown;
         tick.restart();
     }
 

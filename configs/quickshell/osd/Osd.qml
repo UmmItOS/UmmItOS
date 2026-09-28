@@ -50,15 +50,14 @@ Singleton {
 
     Timer {
         id: hide
-        interval: 1400
+        interval: Theme.duration.osdHide
         onTriggered: root.shown = false
     }
 
-    // Settle before arming, or a new sink flashes a volume nobody touched.
     Timer {
         id: arm
         running: true
-        interval: 1200
+        interval: Theme.duration.osdArm
         onTriggered: root.primed = true
     }
 

@@ -41,7 +41,7 @@ OverlayWindow {
             anchors.fill: parent
             radius: Theme.rounding.extraExtraLarge
             tone: Theme.scrim(Theme.panelTint)
-            lift: 1.12
+            lift: Theme.lift.panel
         }
 
         // Swallow clicks so they do not reach the dismiss handler.

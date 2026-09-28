@@ -11,7 +11,7 @@ OverlayWindow {
 
     shown: Cheatsheet.open
     name: "cheatsheet"
-    scrim: 0.5
+    scrim: Theme.shade.normal
 
     onOpened: scope.forceActiveFocus()
 
@@ -44,7 +44,7 @@ OverlayWindow {
         id: scope
 
         anchors.centerIn: parent
-        width: Math.min(1400, parent.width - Theme.padding.extraLarge * 2)
+        width: Math.min(Theme.cheatsheet.width, parent.width - Theme.padding.extraLarge * 2)
         height: Math.min(sheet.implicitHeight, parent.height - Theme.padding.extraLarge * 2)
         focus: true
         opacity: Math.min(1, win.reveal)
@@ -98,7 +98,7 @@ OverlayWindow {
                     running: win.visible
                     from: 0
                     to: 360
-                    duration: 5000
+                    duration: Theme.duration.ringTurn
                     loops: Animation.Infinite
                 }
             }
@@ -108,7 +108,7 @@ OverlayWindow {
         Rectangle {
             id: ring
 
-            readonly property int thickness: Theme.spacing.hair + 1
+            readonly property int thickness: Theme.cheatsheet.ring
 
             anchors.fill: ringFill
             visible: false
@@ -132,7 +132,7 @@ OverlayWindow {
         ShaderEffectSource {
             id: lineShot
 
-            readonly property int pad: 48
+            readonly property int pad: Theme.cheatsheet.glowPad
 
             sourceItem: ringLine
             sourceRect: Qt.rect(-pad, -pad, ringLine.width + pad * 2, ringLine.height + pad * 2)
@@ -151,8 +151,8 @@ OverlayWindow {
             blurEnabled: true
             blurMax: lineShot.pad
             blur: 1
-            brightness: 0.45
-            saturation: 0.4
+            brightness: Theme.cheatsheet.glowBrightness
+            saturation: Theme.cheatsheet.glowSaturation
         }
 
         Item {
@@ -177,7 +177,7 @@ OverlayWindow {
             source: ringFill
             maskEnabled: true
             maskSource: fillMask
-            opacity: 0.5
+            opacity: Theme.cheatsheet.ringOpacity
         }
 
         Surface {
@@ -187,7 +187,7 @@ OverlayWindow {
             implicitHeight: body.implicitHeight + Theme.padding.extraLarge * 2
             radius: Theme.rounding.extraLarge
             tone: Theme.bg
-            lift: 1.1
+            lift: Theme.lift.sheet
 
             HoverHandler {
                 id: pointer
@@ -202,7 +202,7 @@ OverlayWindow {
                 Item {
                     id: spot
 
-                    readonly property int size: 360
+                    readonly property int size: Theme.cheatsheet.spot
 
                     width: spot.size
                     height: spot.size
@@ -240,8 +240,8 @@ OverlayWindow {
                             const r = width / 2;
                             const c = Theme.accentText;
                             const g = ctx.createRadialGradient(r, r, 0, r, r, r);
-                            g.addColorStop(0, Qt.rgba(c.r, c.g, c.b, 0.28));
-                            g.addColorStop(0.45, Qt.rgba(c.r, c.g, c.b, 0.1));
+                            g.addColorStop(0, Qt.rgba(c.r, c.g, c.b, Theme.cheatsheet.spotCore));
+                            g.addColorStop(Theme.cheatsheet.spotEdgeAt, Qt.rgba(c.r, c.g, c.b, Theme.cheatsheet.spotEdge));
                             g.addColorStop(1, Qt.rgba(c.r, c.g, c.b, 0));
                             ctx.clearRect(0, 0, width, height);
                             ctx.fillStyle = g;
@@ -299,7 +299,7 @@ OverlayWindow {
 
                     GridLayout {
                         Layout.fillWidth: true
-                        columns: Math.max(1, Math.floor(width / 440))
+                        columns: Math.max(1, Math.floor(width / Theme.cheatsheet.column))
                         columnSpacing: Theme.spacing.extraLarge
                         rowSpacing: Theme.spacing.extraLarge
 
@@ -335,7 +335,7 @@ OverlayWindow {
                                         spacing: Theme.spacing.medium
 
                                         Row {
-                                            Layout.preferredWidth: 180
+                                            Layout.preferredWidth: Theme.cheatsheet.keys
                                             spacing: Theme.spacing.extraSmall
 
                                             Repeater {

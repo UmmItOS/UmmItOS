@@ -57,7 +57,7 @@ ColumnLayout {
 
     Rectangle {
         Layout.fillWidth: true
-        implicitHeight: 92
+        implicitHeight: Theme.dashboard.systemCard
         radius: Theme.rounding.extraLarge
         color: Theme.glass
 
@@ -120,7 +120,7 @@ ColumnLayout {
 
                         Text {
                             // A Layout never elides without a width cap.
-                            Layout.maximumWidth: root.width / 4
+                            Layout.maximumWidth: root.width / Theme.dashboard.factShare
                             text: fact.value
                             color: Theme.fg
                             elide: Text.ElideRight

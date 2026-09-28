@@ -12,7 +12,7 @@ OverlayWindow {
 
     shown: Switcher.open
     name: "switcher"
-    scrim: 0.45
+    scrim: Theme.shade.light
 
     function titleOf(ws: var): string {
         if (!ws)
@@ -183,7 +183,7 @@ OverlayWindow {
             }
             fillMode: Image.PreserveAspectCrop
             visible: win.zoom > 0 && Switcher.index === Switcher.startIndex
-            opacity: Math.min(1, win.zoom * 1.6)
+            opacity: Math.min(1, win.zoom * Theme.switcher.shotFade)
         }
 
         Column {
@@ -210,14 +210,13 @@ OverlayWindow {
 
                 // Rows by hand, so a short last row is centred.
                 readonly property int count: Math.max(1, Switcher.workspaces.length)
-                // A fourth column past eight costs less than a fourth row.
-                readonly property int columns: count <= 3 ? count : count <= 8 ? 3 : 4
+                readonly property int columns: count <= Theme.switcher.columns ? count : count <= Theme.switcher.wideAfter ? Theme.switcher.columns : Theme.switcher.maxColumns
                 readonly property int rows: Math.ceil(count / columns)
 
                 readonly property int roomWide: (win.width - Theme.padding.extraLarge * 4) / columns - spacing
                 readonly property int roomTall: (win.height - caption.implicitHeight - Theme.spacing.extraLarge * 3 - Theme.padding.extraLarge * 2) / rows - spacing
-                readonly property int cellWidth: Math.min(620, roomWide, roomTall / 0.62)
-                readonly property int cellHeight: cellWidth * 0.62
+                readonly property int cellWidth: Math.min(Theme.switcher.cellMax, roomWide, roomTall / Theme.switcher.aspect)
+                readonly property int cellHeight: cellWidth * Theme.switcher.aspect
 
                 Repeater {
                     model: grid.rows
@@ -257,7 +256,7 @@ OverlayWindow {
 
                                     readonly property bool current: cell.current
                                     // Empty while unmapped: each entry is a live capture.
-                                    readonly property var windows: cell.modelData && (win.visible || Switcher.warming) ? [...cell.modelData.toplevels.values].slice(0, 4) : []
+                                    readonly property var windows: cell.modelData && (win.visible || Switcher.warming) ? [...cell.modelData.toplevels.values].slice(0, Theme.switcher.previews) : []
 
                                     // Grows by its inset, not `scale`, which magnified the glow layer.
                                     anchors.fill: parent
@@ -265,7 +264,7 @@ OverlayWindow {
                                     radius: Theme.rounding.extraLarge
                                     tone: Theme.bgAlt
 
-                                    opacity: current ? 1 : Switcher.overviewing ? 0.35 : 0.5
+                                    opacity: current ? 1 : Switcher.overviewing ? Theme.switcher.dimOverview : Theme.switcher.dim
 
                                     Behavior on opacity {
                                         NumberAnimation {
@@ -289,7 +288,7 @@ OverlayWindow {
                                         shadowEnabled: true
                                         shadowColor: Switcher.overviewing ? Theme.accentText : Theme.accent
                                         shadowBlur: 1
-                                        shadowOpacity: Switcher.overviewing ? 1 : 0.75
+                                        shadowOpacity: Switcher.overviewing ? 1 : Theme.switcher.glow
                                         shadowVerticalOffset: 0
                                         shadowHorizontalOffset: 0
                                     }
@@ -299,13 +298,13 @@ OverlayWindow {
                                         anchors.fill: parent
                                         anchors.margins: Theme.padding.small
                                         radius: card.radius - Theme.padding.small
-                                        color: Theme.scrim(0.45)
+                                        color: Theme.scrim(Theme.shade.light)
 
                                         Grid {
                                             id: tiles
                                             anchors.fill: parent
                                             columns: card.windows.length > 1 ? 2 : 1
-                                            spacing: 2
+                                            spacing: Theme.spacing.hair
 
                                             Repeater {
                                                 model: card.windows
@@ -411,7 +410,7 @@ OverlayWindow {
                     id: captionTitle
                     anchors.horizontalCenter: parent.horizontalCenter
                     // Against the window, not the grid, to avoid a cycle.
-                    width: Math.min(implicitWidth, win.width * 0.7)
+                    width: Math.min(implicitWidth, win.width * Theme.switcher.captionWidth)
                     horizontalAlignment: Text.AlignHCenter
                     text: win.titleOf(caption.ws)
                     color: Theme.fg
@@ -503,23 +502,23 @@ OverlayWindow {
         }
 
         Repeater {
-            model: 3
+            model: Theme.switcher.rings
 
             Rectangle {
                 required property int index
 
                 // Each ring a step behind the one before.
-                readonly property real k: Math.max(0, Math.min(1, cornerRipple.t * 1.4 - index * 0.2))
+                readonly property real k: Math.max(0, Math.min(1, cornerRipple.t * Theme.switcher.ringSpeed - index * Theme.switcher.ringStagger))
 
                 x: -width / 2
                 y: -height / 2
-                width: Theme.spacing.extraLarge * 12 * k
+                width: Theme.switcher.ringReach * k
                 height: width
                 radius: width / 2
                 color: "transparent"
                 border.width: Theme.spacing.extraSmall * (1 - k) + 1
                 border.color: Theme.accentText
-                opacity: (1 - k) * 0.9
+                opacity: (1 - k) * Theme.switcher.ringOpacity
             }
         }
     }

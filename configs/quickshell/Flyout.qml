@@ -28,10 +28,10 @@ PopupWindow {
         margins.top: Theme.spacing.small
     }
 
-    implicitWidth: 380
-    implicitHeight: root.hug ? Math.min(column.implicitHeight + Theme.padding.large * 2, root.maxHeight) : 420
+    implicitWidth: Theme.control.flyout
+    implicitHeight: root.hug ? Math.min(column.implicitHeight + Theme.padding.large * 2, root.maxHeight) : Theme.control.flyoutHeight
     // Never taller than the screen; long content scrolls inside.
-    readonly property real maxHeight: (root.screen?.height ?? 1080) - Theme.barHeight - Theme.spacing.small * 2
+    readonly property real maxHeight: (root.screen?.height ?? Theme.fallbackScreen.height) - Theme.barHeight - Theme.spacing.small * 2
     color: "transparent"
 
     // Not HyprlandFocusGrab: it only owns layer surfaces, not popups.
@@ -95,7 +95,7 @@ PopupWindow {
             }
         }
         tone: Theme.bg
-        lift: 1.12
+        lift: Theme.lift.panel
 
         ColumnLayout {
             id: column

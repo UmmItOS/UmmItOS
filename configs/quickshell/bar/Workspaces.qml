@@ -22,15 +22,15 @@ RowLayout {
 
             readonly property bool focused: modelData?.focused ?? false
 
-            readonly property real targetWidth: focused ? Math.max(30, label.implicitWidth + Theme.padding.large) : 10
-            readonly property real targetHeight: focused ? 24 : 10
+            readonly property real targetWidth: focused ? Math.max(Theme.bar.workspaceMin, label.implicitWidth + Theme.padding.large) : Theme.bar.workspaceDot
+            readonly property real targetHeight: focused ? Theme.bar.workspace : Theme.bar.workspaceDot
 
             implicitWidth: targetWidth
             implicitHeight: targetHeight
             Layout.alignment: Qt.AlignVCenter
             radius: height / 2
             // bgTray vanished against the bar; plain white shouted.
-            color: focused ? Theme.accent : modelData?.urgent ? Theme.urgent : Qt.rgba(Theme.accentText.r, Theme.accentText.g, Theme.accentText.b, 0.28)
+            color: focused ? Theme.accent : modelData?.urgent ? Theme.urgent : Qt.rgba(Theme.accentText.r, Theme.accentText.g, Theme.accentText.b, Theme.bar.workspaceIdle)
 
             Behavior on implicitWidth {
                 NumberAnimation {
@@ -74,15 +74,15 @@ RowLayout {
             layer.effect: MultiEffect {
                 shadowEnabled: true
                 shadowColor: Theme.accent
-                shadowBlur: 0.9
-                shadowOpacity: 0.55
+                shadowBlur: Theme.bar.workspaceGlowBlur
+                shadowOpacity: Theme.bar.workspaceGlow
                 shadowVerticalOffset: 0
                 shadowHorizontalOffset: 0
             }
 
             MouseArea {
                 anchors.fill: parent
-                anchors.margins: -4
+                anchors.margins: -Theme.hitSlop
                 cursorShape: Qt.PointingHandCursor
                 onClicked: pill.modelData?.activate()
             }

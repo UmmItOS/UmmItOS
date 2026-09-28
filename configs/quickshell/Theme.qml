@@ -135,6 +135,44 @@ Singleton {
     readonly property real landScale: 1.6
     // How out of focus a surface is when it starts to arrive (MotionBlur).
     readonly property int motionBlur: 40
+    // Pointer travel under this is jitter, not a move.
+    readonly property int pointerSlop: 2
+    // How far a small target's click area reaches past what it draws.
+    readonly property int hitSlop: 4
+    // A divider's thickness.
+    readonly property int hairline: 1
+    // A window's size before it knows its screen.
+    readonly property size fallbackScreen: Qt.size(1920, 1080)
+
+    // Qt.lighter() on a Surface's top edge; larger surfaces take less, or it shows as a band.
+    readonly property QtObject lift: QtObject {
+        readonly property real card: 1.22
+        readonly property real panel: 1.12
+        readonly property real sheet: 1.1
+        readonly property real osd: 1.3
+        // Where the lift has faded into the tone.
+        readonly property real reach: 0.6
+    }
+
+    // Scrim alphas behind full-screen surfaces.
+    readonly property QtObject shade: QtObject {
+        readonly property real light: 0.45
+        readonly property real normal: 0.5
+        readonly property real heavy: 0.78
+        // A card inside a glass panel.
+        readonly property real card: 0.35
+        // Outside a screenshot selection.
+        readonly property real outside: 0.6
+    }
+
+    // A live indicator's breath.
+    readonly property QtObject pulse: QtObject {
+        // How far a blinking icon dims.
+        readonly property real charging: 0.35
+        readonly property real recording: 0.3
+        readonly property real haloScale: 1.8
+        readonly property real haloOpacity: 0.35
+    }
 
     readonly property QtObject icon: QtObject {
         // An app's own icon beside its notification, at caption size.
@@ -148,6 +186,8 @@ Singleton {
         readonly property int huge: 52
         // Launcher tiles, where the icon is the content.
         readonly property int app: 60
+        // Material Symbols GRAD: a lighter stroke, which reads right on a dark ground.
+        readonly property int grade: -25
     }
 
     // How far in from a wallpaper card's edge its picture fades out, so no edge shows.
@@ -164,6 +204,10 @@ Singleton {
         readonly property real zoomStep: 1.15
         // Touchpad scroll arrives in pixels; this many make one zoom step.
         readonly property real scrollPixels: 40
+        // Zoom steps per keypress.
+        readonly property int keySteps: 3
+        // The toolbar steps back while a stroke is drawn.
+        readonly property real toolbarDrawing: 0.2
     }
     // The settings panel (settings/).
     readonly property QtObject settings: QtObject {
@@ -191,6 +235,244 @@ Singleton {
         // A notification's preview image.
         readonly property int thumbWidth: 120
         readonly property int thumbHeight: 68
+        readonly property int toggleKnob: 20
+        readonly property int toggleInset: 3
+        readonly property int slider: 28
+        readonly property int sliderTrack: 8
+        readonly property int sliderKnob: 16
+        // A bar dropdown; the height is for one that does not hug its content.
+        readonly property int flyout: 380
+        readonly property int flyoutHeight: 420
+    }
+
+    readonly property QtObject bar: QtObject {
+        // The pill round a group of bar items.
+        readonly property int cluster: 32
+        readonly property int accentColumns: 4
+        // Bytes per second; below it the bandwidth arrows stay idle.
+        readonly property int busyAt: 2048
+        readonly property int workspace: 24
+        readonly property int workspaceMin: 30
+        readonly property int workspaceDot: 10
+        readonly property real workspaceIdle: 0.28
+        readonly property real workspaceGlowBlur: 0.9
+        readonly property real workspaceGlow: 0.55
+    }
+
+    readonly property QtObject battery: QtObject {
+        // Percent; drivers report "fully charged" briefly on plug-in.
+        readonly property int full: 99
+        readonly property real low: 0.2
+        readonly property real critical: 0.15
+    }
+
+    readonly property QtObject volume: QtObject {
+        // Per wheel notch; touchpads send fractions of one.
+        readonly property real wheelStep: 0.05
+        // Below this reads as silent.
+        readonly property real silent: 0.01
+        // Above this the icon shows full waves.
+        readonly property real high: 0.5
+    }
+
+    readonly property QtObject osd: QtObject {
+        readonly property int size: 208
+        readonly property int segments: 16
+        readonly property int segmentWidth: 6
+        readonly property int segmentHeight: 14
+        readonly property real mutedIcon: 0.4
+        readonly property real brightnessHigh: 0.6
+        readonly property real brightnessMedium: 0.25
+    }
+
+    readonly property QtObject notification: QtObject {
+        // Toasts and the panel alike.
+        readonly property int width: 420
+        // How far a toast slides in from.
+        readonly property int slide: 60
+        readonly property int lines: 6
+        readonly property int collapsedLines: 4
+    }
+
+    // The copy notices (toast/).
+    readonly property QtObject toast: QtObject {
+        readonly property int width: 620
+        // A burst of copies should not climb up the whole screen.
+        readonly property int max: 5
+        // A leaving pill slides this share of the column.
+        readonly property real exit: 1 / 3
+    }
+
+    readonly property QtObject launcher: QtObject {
+        readonly property int cellMin: 190
+        readonly property int cellHeight: 168
+        readonly property int minColumns: 4
+        readonly property int nameLines: 2
+        readonly property real glow: 0.5
+        readonly property real activeScale: 1.04
+    }
+
+    readonly property QtObject clipboard: QtObject {
+        readonly property int width: 980
+        readonly property int height: 600
+        // The index; narrow on purpose, it is for scanning.
+        readonly property int index: 360
+        readonly property int decode: 1100
+        readonly property real lineHeight: 1.35
+    }
+
+    readonly property QtObject session: QtObject {
+        readonly property int tile: 156
+        readonly property real activeScale: 1.06
+        readonly property real glow: 0.6
+    }
+
+    readonly property QtObject cheatsheet: QtObject {
+        readonly property int width: 1400
+        readonly property int ring: 3
+        // Padding round the ring's capture, or its blur stops at the edge.
+        readonly property int glowPad: 48
+        readonly property real glowBrightness: 0.45
+        readonly property real glowSaturation: 0.4
+        readonly property real ringOpacity: 0.5
+        // The light that follows the pointer.
+        readonly property int spot: 360
+        readonly property real spotCore: 0.28
+        readonly property real spotEdge: 0.1
+        readonly property real spotEdgeAt: 0.45
+        readonly property int column: 440
+        readonly property int keys: 180
+    }
+
+    readonly property QtObject dashboard: QtObject {
+        readonly property int width: 1100
+        readonly property int height: 520
+        readonly property int clock: 210
+        readonly property int gauge: 170
+        readonly property int gaugeRing: 10
+        readonly property int gaugeStart: 130
+        readonly property int gaugeSweep: 280
+        // System facts: a value may take this share of the row.
+        readonly property int factShare: 4
+        readonly property int systemCard: 92
+        readonly property int workspaceColumns: 4
+        readonly property int workspaceCell: 120
+        readonly property int workspaceLines: 3
+        readonly property real otherMonth: 0.5
+        readonly property int art: 170
+        // How far the audio bars reach out from the art.
+        readonly property int artReach: 34
+        readonly property int artDecode: 380
+        readonly property int play: 52
+        readonly property int progress: 6
+        readonly property int chip: 28
+    }
+
+    readonly property QtObject switcher: QtObject {
+        // The hot corner's size.
+        readonly property int corner: 3
+        readonly property int columns: 3
+        // A fourth column past this many costs less than a fourth row.
+        readonly property int wideAfter: 8
+        readonly property int maxColumns: 4
+        readonly property int cellMax: 620
+        readonly property real aspect: 0.62
+        // Windows previewed per card.
+        readonly property int previews: 4
+        readonly property real dim: 0.5
+        readonly property real dimOverview: 0.35
+        readonly property real glow: 0.75
+        readonly property real captionWidth: 0.7
+        // The sharp picture fades in faster than the zoom.
+        readonly property real shotFade: 1.6
+        readonly property int rings: 3
+        readonly property int ringReach: 384
+        readonly property real ringSpeed: 1.4
+        readonly property real ringStagger: 0.2
+        readonly property real ringOpacity: 0.9
+    }
+
+    readonly property QtObject screenshot: QtObject {
+        readonly property real zoomMax: 4
+        readonly property real zoomStep: 1.15
+        // Smaller than this is a click, which takes the whole screen.
+        readonly property int minSelection: 4
+        // Smaller windows are popups and tooltips, not pickable.
+        readonly property int minWindow: 40
+        readonly property int blurMax: 64
+        readonly property real blur: 0.45
+        readonly property real blurWindow: 0.25
+        readonly property real hint: 0.75
+        readonly property int tendrilTip: 4
+        readonly property int tendrilSegments: 40
+        // Bezier control points as shares of the run.
+        readonly property real bendX: 0.7
+        readonly property real bendY: 0.4
+        readonly property int swayMax: 18
+        readonly property real sway: 0.04
+        readonly property real waves: 1.6
+        // Where in the sprout the corner dots arrive.
+        readonly property real cornersAt: 0.6
+        readonly property real cornerPulse: 0.2
+    }
+
+    readonly property QtObject wallpaper: QtObject {
+        // A full-size 4K decode costs frames; 1.25x leaves room for the crop.
+        readonly property real decodeScale: 1.25
+        // awww's corner origin; it measures y from the bottom, so 0.969 is near the top.
+        readonly property real originX: 0.977
+        readonly property real originY: 0.969
+    }
+
+    readonly property QtObject picker: QtObject {
+        readonly property int cardWidth: 420
+        readonly property int cardHeight: 236
+        readonly property real shrink: 0.5
+        readonly property int height: 460
+        // Room above the focused card for its lift.
+        readonly property int headroom: 40
+        readonly property real fadeAt: 0.45
+        readonly property real fadeAlpha: 0.72
+        readonly property real floorAlpha: 0.94
+        // The page turn's starting angle.
+        readonly property int swing: 80
+        // Cards on screen: the width over this share of a card.
+        readonly property real cardSpan: 0.72
+        readonly property int minCards: 3
+        readonly property int focusLift: -18
+        readonly property real unfocused: 0.62
+        readonly property real folder: 0.45
+        readonly property int dot: 8
+    }
+
+    readonly property QtObject charge: QtObject {
+        readonly property int sparks: 700
+        readonly property int steps: 90
+        readonly property int line: 2
+        // Past the farthest corner, so the ring leaves the screen.
+        readonly property real reach: 1.05
+        // The ring runs ahead so it leaves while the glitter settles.
+        readonly property real lead: 1.25
+        readonly property real band: 0.2
+        readonly property real echo: 0.72
+        readonly property real echoAlpha: 0.35
+        readonly property real fadeFrom: 0.6
+        readonly property real labelIn: 0.15
+    }
+
+    readonly property QtObject wake: QtObject {
+        // Beats along the wake's progress.
+        readonly property real drawEnd: 0.3
+        readonly property real openStart: 0.22
+        readonly property real hazeStart: 0.3
+        readonly property real haloBrightness: 0.2
+        readonly property real coreBlur: 0.6
+        readonly property real coreOpacity: 0.8
+    }
+
+    readonly property QtObject record: QtObject {
+        // Seconds counted down before recording starts.
+        readonly property int countdown: 5
     }
 
     readonly property QtObject duration: QtObject {
@@ -218,6 +500,31 @@ Singleton {
         readonly property int weatherRetry: 60000
         // How long the recorder may take to report in before its dialog opens again.
         readonly property int recordStart: 8000
+        // How long the panel's "Clear all?" waits for the second click.
+        readonly property int confirmHold: 3000
+        // A toast that set no timeout of its own.
+        readonly property int toast: 6000
+        readonly property int osdHide: 1400
+        // Settle before arming the OSD, or a new sink flashes a volume nobody touched.
+        readonly property int osdArm: 1200
+        // How long a Wi-Fi scan may run before the spinner gives up.
+        readonly property int scanGrace: 12000
+        // awww's --transition-duration 2.5.
+        readonly property int wallpaperReveal: 2500
+        readonly property int previewDebounce: 140
+        readonly property int decodeDebounce: 120
+        readonly property int ringTurn: 5000
+        // One sway of the screenshot tendrils.
+        readonly property int sway: 2600
+        // Held this long, so brushing past the hot corner does not count.
+        readonly property int hotCorner: 80
+        // The most the switcher waits for its previews to warm up.
+        readonly property int warmLimit: 150
+        // The most the lock waits on a picture before releasing.
+        readonly property int lockWait: 300
+        readonly property int frame: 16
+        // A wrong password's head shake, step by step.
+        readonly property list<int> shake: [50, 90, 80, 60]
     }
 
     // The lock screen's sizes, kept from hyprlock so the switch looks the same.
@@ -230,12 +537,47 @@ Singleton {
         readonly property int avatar: 100
         readonly property int ring: 3
         readonly property int field: 60
+        // hyprlock's background: light blur, some contrast, brightness 0.8.
+        readonly property int blurMax: 32
+        readonly property real blur: 0.3
+        readonly property real contrast: 0.08
+        readonly property real veil: 0.2
+        // hyprlock's per-element shadow: size, passes and how it spreads.
+        readonly property int shadow: 3
+        readonly property int shadowClock: 4
+        readonly property int shadowText: 2
+        readonly property int shadowPasses: 2
+        readonly property int shadowBlurMax: 16
+        readonly property real shadowOpacity: 0.85
+        readonly property real shadowScale: 1.02
+        // Positions as shares of the screen height, and widths of its width.
+        readonly property real margin: 0.01
+        readonly property real dateAt: 0.15
+        readonly property real clockAt: 0.05
+        readonly property real avatarAt: -0.15
+        readonly property real userAt: -0.21
+        readonly property real hintAt: -0.24
+        readonly property real fieldAt: -0.29
+        readonly property real fieldWidth: 0.15
+        readonly property color dateInk: Qt.rgba(1, 1, 1, 0.8)
+        readonly property color userInk: Qt.rgba(1, 1, 1, 0.9)
+        readonly property color hintInk: Qt.rgba(1, 1, 1, 0.6)
+        readonly property color placeholderInk: Qt.rgba(1, 1, 1, 0.5)
+        readonly property color ringInk: Qt.rgba(1, 1, 1, 0.3)
+        readonly property color glass: Qt.rgba(1, 1, 1, 0.1)
+        readonly property color glassStrong: Qt.rgba(1, 1, 1, 0.2)
+        readonly property color failed: Qt.rgba(root.urgent.r, root.urgent.g, root.urgent.b, 0.7)
+        // Frames to wait for the wallpaper (about lockWait) and after it is ready.
+        readonly property int maxFrames: 18
+        readonly property int settleFrames: 2
     }
 
     // Lower damping overshoots more.
     readonly property QtObject spring: QtObject {
         readonly property real stiffness: 12
         readonly property real damping: 0.55
+        // The password dots land with more bounce.
+        readonly property real dotDamping: damping * 0.6
     }
 
     // Bezier control points for Easing.BezierSpline.

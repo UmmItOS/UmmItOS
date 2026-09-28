@@ -5,8 +5,8 @@ Rectangle {
 
     property bool checked: false
 
-    readonly property int knob: 20
-    readonly property int inset: 3
+    readonly property int knob: Theme.control.toggleKnob
+    readonly property int inset: Theme.control.toggleInset
 
     signal toggled
 

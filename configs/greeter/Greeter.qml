@@ -114,15 +114,15 @@ Item {
         source: wall
         visible: wall.status === Image.Ready
         blurEnabled: true
-        blurMax: 32
-        blur: 0.3
-        contrast: 0.08
+        blurMax: Theme.lock.blurMax
+        blur: Theme.lock.blur
+        contrast: Theme.lock.contrast
     }
 
     Rectangle {
         anchors.fill: parent
         color: wall.status === Image.Ready ? "black" : Theme.bg
-        opacity: wall.status === Image.Ready ? 0.2 : 1
+        opacity: wall.status === Image.Ready ? Theme.lock.veil : 1
     }
 
     component Shade: MultiEffect {
@@ -132,10 +132,10 @@ Item {
         shadowColor: "black"
         shadowHorizontalOffset: 0
         shadowVerticalOffset: 0
-        blurMax: 16
-        shadowBlur: Math.min(1, size * passes / 16)
-        shadowOpacity: passes > 1 ? 1 : 0.85
-        shadowScale: 1.02
+        blurMax: Theme.lock.shadowBlurMax
+        shadowBlur: Math.min(1, size * passes / Theme.lock.shadowBlurMax)
+        shadowOpacity: passes > 1 ? 1 : Theme.lock.shadowOpacity
+        shadowScale: Theme.lock.shadowScale
     }
 
     SystemClock {
@@ -151,14 +151,14 @@ Item {
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: Qt.formatDateTime(clock.date, "dddd, MMMM d")
-            color: Qt.rgba(1, 1, 1, 0.8)
+            color: Theme.lock.dateInk
             font.family: Theme.fontDisplay
             font.pixelSize: Theme.lock.date
             font.weight: Theme.weight.medium
             layer.enabled: true
             layer.effect: Shade {
-                size: 3
-                passes: 2
+                size: Theme.lock.shadow
+                passes: Theme.lock.shadowPasses
             }
         }
 
@@ -171,8 +171,8 @@ Item {
             font.weight: Font.Light
             layer.enabled: true
             layer.effect: Shade {
-                size: 4
-                passes: 2
+                size: Theme.lock.shadowClock
+                passes: Theme.lock.shadowPasses
             }
         }
 
@@ -189,11 +189,11 @@ Item {
             radius: width / 2
             color: Theme.bgAlt
             border.width: Theme.lock.ring
-            border.color: Qt.rgba(1, 1, 1, 0.3)
+            border.color: Theme.lock.ringInk
             layer.enabled: true
             layer.effect: Shade {
-                size: 3
-                passes: 2
+                size: Theme.lock.shadow
+                passes: Theme.lock.shadowPasses
             }
 
             Image {
@@ -210,14 +210,14 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             visible: root.user !== ""
             text: root.user
-            color: Qt.rgba(1, 1, 1, 0.9)
+            color: Theme.lock.userInk
             font.family: Theme.fontDisplay
             font.pixelSize: Theme.lock.user
             font.weight: Theme.weight.medium
             layer.enabled: true
             layer.effect: Shade {
-                size: 2
-                passes: 2
+                size: Theme.lock.shadowText
+                passes: Theme.lock.shadowPasses
             }
         }
 
@@ -225,9 +225,9 @@ Item {
             id: name
             anchors.horizontalCenter: parent.horizontalCenter
             visible: root.user === ""
-            width: root.width * 0.15
+            width: root.width * Theme.lock.fieldWidth
             horizontalAlignment: TextInput.AlignHCenter
-            color: Qt.rgba(1, 1, 1, 0.9)
+            color: Theme.lock.userInk
             font.family: Theme.fontDisplay
             font.pixelSize: Theme.lock.user
             font.weight: Theme.weight.medium
@@ -244,7 +244,7 @@ Item {
                 anchors.centerIn: parent
                 visible: name.text === ""
                 text: "User name"
-                color: Qt.rgba(1, 1, 1, 0.5)
+                color: Theme.lock.placeholderInk
                 font: name.font
             }
         }
@@ -252,12 +252,12 @@ Item {
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: root.message !== "" ? root.message : root.busy ? "Signing in…" : "Enter your password to log in"
-            color: root.message !== "" ? Theme.urgent : Qt.rgba(1, 1, 1, 0.6)
+            color: root.message !== "" ? Theme.urgent : Theme.lock.hintInk
             font.family: Theme.fontDisplay
             font.pixelSize: Theme.lock.hint
             layer.enabled: true
             layer.effect: Shade {
-                size: 2
+                size: Theme.lock.shadowText
                 passes: 1
             }
         }
@@ -266,10 +266,10 @@ Item {
             id: field
 
             anchors.horizontalCenter: parent.horizontalCenter
-            width: root.width * 0.15
+            width: root.width * Theme.lock.fieldWidth
             height: Theme.lock.field
             radius: height / 2
-            color: root.busy ? Qt.rgba(1, 1, 1, 0.2) : root.message !== "" ? Qt.rgba(Theme.urgent.r, Theme.urgent.g, Theme.urgent.b, 0.7) : Qt.rgba(1, 1, 1, 0.1)
+            color: root.busy ? Theme.lock.glassStrong : root.message !== "" ? Theme.lock.failed : Theme.lock.glass
             transform: Translate {
                 id: shake
             }
@@ -288,7 +288,7 @@ Item {
                     target: shake
                     property: "x"
                     to: Theme.spacing.medium
-                    duration: 50
+                    duration: Theme.duration.shake[0]
                     easing.type: Easing.BezierSpline
                     easing.bezierCurve: Theme.curve.standard
                 }
@@ -296,7 +296,7 @@ Item {
                     target: shake
                     property: "x"
                     to: -Theme.spacing.medium
-                    duration: 90
+                    duration: Theme.duration.shake[1]
                     easing.type: Easing.BezierSpline
                     easing.bezierCurve: Theme.curve.standard
                 }
@@ -304,7 +304,7 @@ Item {
                     target: shake
                     property: "x"
                     to: Theme.spacing.small
-                    duration: 80
+                    duration: Theme.duration.shake[2]
                     easing.type: Easing.BezierSpline
                     easing.bezierCurve: Theme.curve.standard
                 }
@@ -312,7 +312,7 @@ Item {
                     target: shake
                     property: "x"
                     to: 0
-                    duration: 60
+                    duration: Theme.duration.shake[3]
                     easing.type: Easing.BezierSpline
                     easing.bezierCurve: Theme.curve.standard
                 }
@@ -370,7 +370,7 @@ Item {
         implicitWidth: Theme.control.button
         implicitHeight: Theme.control.button
         radius: width / 2
-        color: powerHover.hovered ? Qt.rgba(1, 1, 1, 0.2) : Qt.rgba(1, 1, 1, 0.1)
+        color: powerHover.hovered ? Theme.lock.glassStrong : Theme.lock.glass
 
         MaterialIcon {
             anchors.centerIn: parent

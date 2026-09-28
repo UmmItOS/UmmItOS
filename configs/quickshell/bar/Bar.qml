@@ -30,7 +30,7 @@ PanelWindow {
         default property alias content: inner.data
 
         implicitWidth: inner.implicitWidth + Theme.padding.large * 2
-        implicitHeight: 32
+        implicitHeight: Theme.bar.cluster
         radius: Theme.rounding.full
         color: "transparent"
 
@@ -145,7 +145,7 @@ PanelWindow {
 
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.verticalCenter: parent.verticalCenter
-        spacing: -2
+        spacing: -Theme.spacing.hair
 
         Text {
             Layout.alignment: Qt.AlignHCenter

@@ -74,7 +74,7 @@ RowLayout {
     Timer {
         id: scanGrace
 
-        interval: 12000
+        interval: Theme.duration.scanGrace
         onTriggered: root.scanning = false
     }
 

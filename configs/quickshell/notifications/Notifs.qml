@@ -19,8 +19,6 @@ Singleton {
     property string flyoutScreen: ""
 
     readonly property int cap: 60
-    // How long the panel's "Clear all?" waits for the second click.
-    readonly property int confirmHold: 3000
 
     // Apps whose group is open in the panel; the rest show their newest only.
     property var expanded: ({})

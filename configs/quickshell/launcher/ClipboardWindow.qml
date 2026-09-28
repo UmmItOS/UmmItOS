@@ -10,7 +10,7 @@ OverlayWindow {
 
     shown: Launcher.open && Launcher.mode === "clipboard"
     name: "clipboard"
-    scrim: 0.45
+    scrim: Theme.shade.light
 
     property string filter: ""
 
@@ -32,7 +32,7 @@ OverlayWindow {
 
     Timer {
         id: decodeDebounce
-        interval: 120
+        interval: Theme.duration.decodeDebounce
         onTriggered: {
             const entry = win.focusedEntry;
             if (entry && entry.image)
@@ -59,8 +59,8 @@ OverlayWindow {
         opacity: Math.min(1, win.reveal)
         scale: Theme.popScale + (1 - Theme.popScale) * win.reveal
 
-        width: 980
-        height: 600
+        width: Theme.clipboard.width
+        height: Theme.clipboard.height
         focus: true
 
         Keys.onEscapePressed: Launcher.open = false
@@ -75,17 +75,17 @@ OverlayWindow {
 
             // Left: the index. Narrow on purpose — it is for scanning, not reading.
             Rectangle {
-                Layout.preferredWidth: 360
+                Layout.preferredWidth: Theme.clipboard.index
                 Layout.fillHeight: true
                 topLeftRadius: Theme.rounding.extraLargeIncreased
                 bottomLeftRadius: Theme.rounding.extraLargeIncreased
                 gradient: Gradient {
                     GradientStop {
                         position: 0
-                        color: Qt.lighter(Theme.bg, 1.12)
+                        color: Qt.lighter(Theme.bg, Theme.lift.panel)
                     }
                     GradientStop {
-                        position: 0.6
+                        position: Theme.lift.reach
                         color: Theme.bg
                     }
                 }
@@ -162,7 +162,7 @@ OverlayWindow {
                             readonly property bool active: ListView.isCurrentItem
 
                             width: list.width
-                            height: 46
+                            height: Theme.control.row
                             radius: Theme.rounding.full
                             color: active ? Theme.bgTray : "transparent"
 
@@ -246,7 +246,7 @@ OverlayWindow {
                         fillMode: Image.PreserveAspectFit
                         asynchronous: true
                         cache: false
-                        sourceSize.width: 1100
+                        sourceSize.width: Theme.clipboard.decode
                     }
                 }
 
@@ -270,7 +270,7 @@ OverlayWindow {
                         font.family: Theme.font
                         font.pixelSize: Theme.fontSize.normal
                         wrapMode: Text.Wrap
-                        lineHeight: 1.35
+                        lineHeight: Theme.clipboard.lineHeight
                     }
                 }
 

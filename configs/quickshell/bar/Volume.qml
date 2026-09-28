@@ -21,9 +21,6 @@ RowLayout {
     readonly property var streams: Pipewire.nodes.values.filter(n => n.audio && n.isSink && n.isStream)
 
     property bool popupOpen: false
-    // Per wheel notch; touchpads send fractions of one.
-    readonly property real wheelStep: 0.05
-
     // Without a tracker the nodes' audio properties stay unbound and read empty.
     PwObjectTracker {
         objects: [...root.devices, ...root.streams]
@@ -37,9 +34,9 @@ RowLayout {
     function glyphFor(level: real, muted: bool): string {
         if (muted)
             return "volume_off";
-        if (level < 0.01)
+        if (level < Theme.volume.silent)
             return "volume_mute";
-        return level > 0.5 ? "volume_up" : "volume_down";
+        return level > Theme.volume.high ? "volume_up" : "volume_down";
     }
 
     function labelFor(node: var): string {
@@ -99,7 +96,7 @@ RowLayout {
     WheelHandler {
         onWheel: event => {
             if (event.angleDelta.y !== 0)
-                root.setVolume(root.level + root.wheelStep * event.angleDelta.y / 120);
+                root.setVolume(root.level + Theme.volume.wheelStep * event.angleDelta.y / 120);
         }
     }
 

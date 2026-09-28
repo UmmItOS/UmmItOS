@@ -45,7 +45,7 @@ OverlayWindow {
 
     // Zoom about the pointer, keeping the screen covering the view.
     function zoomAt(px: real, py: real, steps: real): void {
-        const z = Math.max(1, Math.min(4, zoom * Math.pow(1.15, steps)));
+        const z = Math.max(1, Math.min(Theme.screenshot.zoomMax, zoom * Math.pow(Theme.screenshot.zoomStep, steps)));
         const w = screen?.width ?? width, h = screen?.height ?? height;
         tx = Math.max(w - w * z, Math.min(0, px - (px - tx) * z / zoom));
         ty = Math.max(h - h * z, Math.min(0, py - (py - ty) * z / zoom));
@@ -67,12 +67,12 @@ OverlayWindow {
         running: win.visible
         from: 0
         to: 1
-        duration: 2600
+        duration: Theme.duration.sway
         loops: Animation.Infinite
     }
 
-    readonly property real rootWidth: Theme.spacing.medium + 2
-    readonly property real tipWidth: 4
+    readonly property real rootWidth: Theme.spacing.medium + Theme.spacing.hair
+    readonly property real tipWidth: Theme.screenshot.tendrilTip
 
     property real sprout: 0
 
@@ -97,11 +97,11 @@ OverlayWindow {
     }
 
     function tendril(ax: real, ay: real, cx: real, cy: real, t0: real, seed: real, grow: real): list<point> {
-        const x1 = ax + (cx - ax) * 0.7, y1 = ay;
-        const x2 = cx, y2 = ay + (cy - ay) * 0.4;
+        const x1 = ax + (cx - ax) * Theme.screenshot.bendX, y1 = ay;
+        const x2 = cx, y2 = ay + (cy - ay) * Theme.screenshot.bendY;
         const reach = Math.hypot(cx - ax, cy - ay);
-        const sway = Math.min(18, reach * 0.04);
-        const n = 40;
+        const sway = Math.min(Theme.screenshot.swayMax, reach * Theme.screenshot.sway);
+        const n = Theme.screenshot.tendrilSegments;
         const left = [], right = [];
         for (let i = 0; i <= n; i++) {
             // Only the grown part is drawn; its end tapers like a tip.
@@ -112,7 +112,7 @@ OverlayWindow {
             let dy = 3 * u * u * (y1 - ay) + 6 * u * t * (y2 - y1) + 3 * t * t * (cy - y2);
             const d = Math.hypot(dx, dy) || 1;
             const nx = -dy / d, ny = dx / d;
-            const wave = sway * Math.sin(Math.PI * t) * Math.sin(2 * Math.PI * (1.6 * t - t0) + seed);
+            const wave = sway * Math.sin(Math.PI * t) * Math.sin(2 * Math.PI * (Theme.screenshot.waves * t - t0) + seed);
             const half = (rootWidth * u + tipWidth * t) / 2;
             const px = bx + nx * wave, py = by + ny * wave;
             left.push(Qt.point(px + nx * half, py + ny * half));
@@ -242,7 +242,7 @@ OverlayWindow {
         // A window shot needs a window: nothing is taken before one is picked.
         if (mode === "window" && !picked)
             return;
-        if (selW < 4 || selH < 4) {
+        if (selW < Theme.screenshot.minSelection || selH < Theme.screenshot.minSelection) {
             wholeScreen();
             return;
         }
@@ -361,8 +361,8 @@ OverlayWindow {
             ]
             source: frozen
             blurEnabled: true
-            blurMax: 64
-            blur: win.haze * (1 - win.release) * (win.mode === "window" ? 0.25 : 0.45)
+            blurMax: Theme.screenshot.blurMax
+            blur: win.haze * (1 - win.release) * (win.mode === "window" ? Theme.screenshot.blurWindow : Theme.screenshot.blur)
         }
 
         // The selection itself stays sharp: what you frame is what you get.
@@ -390,26 +390,26 @@ OverlayWindow {
             Rectangle {
                 width: parent.width
                 height: tl.y
-                color: Theme.scrim(0.6)
+                color: Theme.scrim(Theme.shade.outside)
             }
             Rectangle {
                 y: bl.y
                 width: parent.width
                 height: parent.height - bl.y
-                color: Theme.scrim(0.6)
+                color: Theme.scrim(Theme.shade.outside)
             }
             Rectangle {
                 y: tl.y
                 width: tl.x
                 height: bl.y - tl.y
-                color: Theme.scrim(0.6)
+                color: Theme.scrim(Theme.shade.outside)
             }
             Rectangle {
                 x: tr.x
                 y: tr.y
                 width: parent.width - tr.x
                 height: br.y - tr.y
-                color: Theme.scrim(0.6)
+                color: Theme.scrim(Theme.shade.outside)
             }
         }
 
@@ -500,10 +500,10 @@ OverlayWindow {
                 x: modelData.x - width / 2
                 y: modelData.y - height / 2
                 readonly property real arrived: {
-                    const x = Math.max(0, Math.min(1, (win.sprout - 0.6) / 0.4));
+                    const x = Math.max(0, Math.min(1, (win.sprout - Theme.screenshot.cornersAt) / (1 - Theme.screenshot.cornersAt)));
                     return x * x * (3 - 2 * x);
                 }
-                scale: (1 + 0.2 * Math.sin(2 * Math.PI * (win.phase * 2) + index)) * arrived
+                scale: (1 + Theme.screenshot.cornerPulse * Math.sin(2 * Math.PI * (win.phase * 2) + index)) * arrived
                 width: Theme.spacing.medium
                 height: width
                 radius: width / 2
@@ -544,7 +544,7 @@ OverlayWindow {
             visible: !win.dragging && win.mode !== "screen"
             text: win.mode === "window" ? "Point at a window  ·  Click or Enter to take it  ·  Esc to cancel" : "Drag to select  ·  Click or Enter for the whole screen  ·  Esc to cancel"
             color: Theme.fg
-            opacity: 0.75
+            opacity: Theme.screenshot.hint
             font.family: Theme.font
             font.pixelSize: Theme.fontSize.normal
         }

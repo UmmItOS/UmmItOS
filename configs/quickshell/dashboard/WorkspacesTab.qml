@@ -8,8 +8,8 @@ import ".."
 GridView {
     id: grid
 
-    cellWidth: width / 4
-    cellHeight: 120
+    cellWidth: width / Theme.dashboard.workspaceColumns
+    cellHeight: Theme.dashboard.workspaceCell
     clip: true
     model: [...Hyprland.workspaces.values].filter(w => w && w.id > 0)
 
@@ -59,7 +59,7 @@ GridView {
                     font.pixelSize: Theme.fontSize.small
                     wrapMode: Text.Wrap
                     elide: Text.ElideRight
-                    maximumLineCount: 3
+                    maximumLineCount: Theme.dashboard.workspaceLines
                 }
             }
 

@@ -12,7 +12,7 @@ OverlayWindow {
 
     shown: Launcher.open && Launcher.mode === "apps"
     name: "launcher"
-    scrim: 0.78
+    scrim: Theme.shade.heavy
 
     property string filter: ""
 
@@ -140,8 +140,8 @@ OverlayWindow {
                 bottomMargin: Theme.padding.extraLarge
             }
             clip: true
-            cellWidth: Math.floor(width / Math.max(4, Math.floor(width / 190)))
-            cellHeight: 168
+            cellWidth: Math.floor(width / Math.max(Theme.launcher.minColumns, Math.floor(width / Theme.launcher.cellMin)))
+            cellHeight: Theme.launcher.cellHeight
             model: win.results
             currentIndex: 0
             // Keep the focused tile in view when arrowing past the fold.
@@ -180,7 +180,7 @@ OverlayWindow {
                         shadowEnabled: true
                         shadowColor: Theme.accent
                         shadowBlur: 1
-                        shadowOpacity: 0.5
+                        shadowOpacity: Theme.launcher.glow
                         shadowVerticalOffset: 0
                         shadowHorizontalOffset: 0
                     }
@@ -216,12 +216,12 @@ OverlayWindow {
                         font.pixelSize: Theme.fontSize.smaller
                         font.weight: cell.active ? Theme.weight.medium : Theme.weight.regular
                         elide: Text.ElideRight
-                        maximumLineCount: 2
+                        maximumLineCount: Theme.launcher.nameLines
                         wrapMode: Text.Wrap
                     }
                 }
 
-                scale: cell.active ? 1.04 : 1
+                scale: cell.active ? Theme.launcher.activeScale : 1
 
                 Behavior on scale {
                     NumberAnimation {

@@ -6,12 +6,12 @@ Item {
     property real value: 0
     property color fill: Theme.accentText
 
-    readonly property int thickness: 8
-    readonly property int knobSize: 16
+    readonly property int thickness: Theme.control.sliderTrack
+    readonly property int knobSize: Theme.control.sliderKnob
 
     signal moved(real value)
 
-    implicitHeight: 28
+    implicitHeight: Theme.control.slider
 
     Rectangle {
         id: track

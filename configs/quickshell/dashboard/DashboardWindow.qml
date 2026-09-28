@@ -42,8 +42,8 @@ OverlayWindow {
 
         anchors.top: parent.top
         anchors.topMargin: Theme.barHeight + Theme.spacing.small
-        width: Math.min(1100, parent.width - Theme.padding.extraLarge * 2)
-        height: Math.min(520, parent.height - anchors.topMargin - Theme.padding.extraLarge)
+        width: Math.min(Theme.dashboard.width, parent.width - Theme.padding.extraLarge * 2)
+        height: Math.min(Theme.dashboard.height, parent.height - anchors.topMargin - Theme.padding.extraLarge)
         radius: Theme.rounding.extraExtraLarge
         color: "transparent"
 
@@ -51,7 +51,7 @@ OverlayWindow {
             anchors.fill: parent
             radius: parent.radius
             tone: Theme.scrim(Theme.panelTint)
-            lift: 1.12
+            lift: Theme.lift.panel
         }
 
         // Swallow clicks so they do not reach the dismiss handler.

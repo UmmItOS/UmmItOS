@@ -31,8 +31,7 @@ Variants {
             anchors.fill: parent
 
             readonly property int duration: Theme.duration.expressiveSlowEffects
-            // awww's --transition-duration 2.5.
-            readonly property int revealDuration: 2500
+            readonly property int revealDuration: Theme.duration.wallpaperReveal
             property Item currentImage
 
             Component.onCompleted: swap(Wallpapers.current)
@@ -68,9 +67,8 @@ Variants {
                     asynchronous: true
                     cache: false
                     opacity: 0
-                    // A full-size 4K decode costs frames; 1.25x leaves room for the crop.
-                    sourceSize.width: fader.width * 1.25
-                    sourceSize.height: fader.height * 1.25
+                    sourceSize.width: fader.width * Theme.wallpaper.decodeScale
+                    sourceSize.height: fader.height * Theme.wallpaper.decodeScale
 
                     onStatusChanged: {
                         if (status === Image.Ready)
@@ -111,9 +109,8 @@ Variants {
                     property string mode: "grow"
 
                     readonly property bool round: mode === "grow" || mode === "center"
-                    // awww measures y from the bottom, so 0.969 is near the top.
-                    readonly property real originX: mode === "center" ? fader.width / 2 : fader.width * 0.977
-                    readonly property real originY: mode === "center" ? fader.height / 2 : fader.height * (1 - 0.969)
+                    readonly property real originX: mode === "center" ? fader.width / 2 : fader.width * Theme.wallpaper.originX
+                    readonly property real originY: mode === "center" ? fader.height / 2 : fader.height * (1 - Theme.wallpaper.originY)
                     // Far enough to reach the farthest corner.
                     readonly property real reach: Math.hypot(Math.max(originX, fader.width - originX), Math.max(originY, fader.height - originY))
 
@@ -135,8 +132,8 @@ Variants {
                         fillMode: Image.PreserveAspectCrop
                         asynchronous: true
                         cache: false
-                        sourceSize.width: fader.width * 1.25
-                        sourceSize.height: fader.height * 1.25
+                        sourceSize.width: fader.width * Theme.wallpaper.decodeScale
+                        sourceSize.height: fader.height * Theme.wallpaper.decodeScale
 
                         onStatusChanged: {
                             if (status === Image.Ready)

@@ -87,7 +87,7 @@ Scope {
     PanelWindow {
         id: toasts
 
-        readonly property int toastWidth: 420
+        readonly property int toastWidth: Theme.notification.width
         // The toast column's edges in screen x when not stepped aside.
         readonly property real columnRight: width - Theme.padding.medium
         readonly property real columnLeft: columnRight - toastWidth + Theme.padding.medium * 2
@@ -113,9 +113,9 @@ Scope {
         // Always mapped: an unmapped view skips its add transition.
         visible: true
         // Full width, so toasts step left without the surface moving.
-        implicitWidth: screen?.width ?? 1920
+        implicitWidth: screen?.width ?? Theme.fallbackScreen.width
         // Fixed height: shrinking it clipped a toast mid-slide.
-        implicitHeight: (screen?.height ?? 1080) - Theme.barHeight - Theme.spacing.small * 2
+        implicitHeight: (screen?.height ?? Theme.fallbackScreen.height) - Theme.barHeight - Theme.spacing.small * 2
         // On the list itself; a contentItem region missed it moving.
         mask: Region {
             x: list.x
@@ -161,7 +161,7 @@ Scope {
                 }
                 NumberAnimation {
                     property: "x"
-                    from: 60
+                    from: Theme.notification.slide
                     duration: Theme.duration.expressiveDefaultSpatial
                     easing.type: Easing.BezierSpline
                     easing.bezierCurve: Theme.curve.emphasizedDecel
@@ -176,7 +176,7 @@ Scope {
                 }
                 NumberAnimation {
                     property: "x"
-                    to: 60
+                    to: Theme.notification.slide
                     duration: Theme.duration.expressiveFastSpatial
                     easing.type: Easing.BezierSpline
                     easing.bezierCurve: Theme.curve.emphasizedAccel
@@ -275,7 +275,7 @@ Scope {
                 width: list.width
                 implicitHeight: body.implicitHeight + Theme.padding.large * 2
                 radius: Theme.rounding.extraLarge
-                color: Theme.scrim(0.45)
+                color: Theme.scrim(Theme.panelTint)
 
                 HoverHandler {
                     id: hover
@@ -296,7 +296,7 @@ Scope {
                 // Reading a notification should not race its own timer.
                 Timer {
                     running: !hover.hovered && (card.detached || card.live !== null && !card.critical && card.timeout !== 0)
-                    interval: card.timeout > 0 ? card.timeout : 6000
+                    interval: card.timeout > 0 ? card.timeout : Theme.duration.toast
                     onTriggered: card.detached ? root.drop(card.modelData) : card.live?.expire()
                 }
 
@@ -362,7 +362,7 @@ Scope {
 
                             MouseArea {
                                 anchors.fill: parent
-                                anchors.margins: -4
+                                anchors.margins: -Theme.hitSlop
                                 onClicked: card.detached ? root.drop(card.modelData) : card.live?.dismiss()
                             }
                         }
@@ -387,7 +387,7 @@ Scope {
                         font.pixelSize: Theme.fontSize.normal
                         textFormat: Text.StyledText
                         wrapMode: Text.Wrap
-                        maximumLineCount: 6
+                        maximumLineCount: Theme.notification.lines
                         elide: Text.ElideRight
                         visible: text !== ""
                         onLinkActivated: link => Notifs.openLink(link)
@@ -409,8 +409,8 @@ Scope {
                             source: card.kept.image ?? ""
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: true
-                            sourceSize.width: 240
-                            sourceSize.height: 136
+                            sourceSize.width: Theme.control.thumbWidth * 2
+                            sourceSize.height: Theme.control.thumbHeight * 2
                         }
                     }
 

@@ -9,7 +9,7 @@ import ".."
 PanelWindow {
     id: win
 
-    readonly property int segments: 16
+    readonly property int segments: Theme.osd.segments
     // Volume fills against its limit, so 300% of 400% is not a full bar.
     readonly property int filled: Math.round(Osd.value / (Osd.kind === "volume" ? Audio.limit : 1) * win.segments)
     readonly property bool app: Osd.kind === "app"
@@ -21,8 +21,8 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
     exclusionMode: ExclusionMode.Ignore
-    implicitWidth: 208
-    implicitHeight: 208
+    implicitWidth: Theme.osd.size
+    implicitHeight: Theme.osd.size
     color: "transparent"
     mask: Region {}
 
@@ -32,7 +32,7 @@ PanelWindow {
         anchors.fill: parent
         radius: Theme.rounding.extraExtraLarge
         tone: Theme.bgAlt
-        lift: 1.3
+        lift: Theme.lift.osd
 
         opacity: Osd.shown ? 1 : 0
         layer.enabled: opacity < 1
@@ -72,7 +72,7 @@ PanelWindow {
                     anchors.fill: parent
                     source: Osd.icon
                     visible: win.app && appIcon.status === Image.Ready
-                    opacity: Osd.muted ? 0.4 : 1
+                    opacity: Osd.muted ? Theme.osd.mutedIcon : 1
                 }
 
                 MaterialIcon {
@@ -80,10 +80,10 @@ PanelWindow {
                     visible: !win.app || appIcon.status !== Image.Ready
                     text: {
                         if (Osd.kind === "brightness")
-                            return Osd.value > 0.6 ? "brightness_high" : Osd.value > 0.25 ? "brightness_medium" : "brightness_low";
+                            return Osd.value > Theme.osd.brightnessHigh ? "brightness_high" : Osd.value > Theme.osd.brightnessMedium ? "brightness_medium" : "brightness_low";
                         if (Osd.muted)
                             return "volume_off";
-                        return Osd.value > 0.5 ? "volume_up" : Osd.value > 0 ? "volume_down" : "volume_mute";
+                        return Osd.value > Theme.volume.high ? "volume_up" : Osd.value > 0 ? "volume_down" : "volume_mute";
                     }
                     color: Osd.muted ? Theme.dim : Theme.fg
                     fill: 1
@@ -116,8 +116,8 @@ PanelWindow {
                     Rectangle {
                         required property int index
 
-                        implicitWidth: 6
-                        implicitHeight: 14
+                        implicitWidth: Theme.osd.segmentWidth
+                        implicitHeight: Theme.osd.segmentHeight
                         radius: Theme.rounding.extraSmall / 2
                         color: index < win.filled ? (Osd.muted ? Theme.dim : Theme.accentText) : Theme.bgTray
 

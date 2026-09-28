@@ -6,7 +6,7 @@ Text {
 
     // 0 = outline, 1 = filled. Animatable.
     property real fill: 0
-    property int grade: -25
+    property int grade: Theme.icon.grade
     // Not font.pixelSize: feeding it to variableAxes is a binding loop.
     property int size: Theme.icon.normal
 
@@ -16,7 +16,7 @@ Text {
             FILL: root.fill.toFixed(1),
             GRAD: root.grade,
             opsz: root.size,
-            wght: 400
+            wght: Theme.weight.regular
         })
 
     Behavior on fill {

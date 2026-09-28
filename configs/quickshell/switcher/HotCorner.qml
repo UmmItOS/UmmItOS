@@ -17,7 +17,7 @@ PanelWindow {
         top: true
         left: true
     }
-    implicitWidth: Theme.spacing.extraSmall - 1
+    implicitWidth: Theme.switcher.corner
     implicitHeight: implicitWidth
     color: "transparent"
 
@@ -25,10 +25,9 @@ PanelWindow {
         id: hover
     }
 
-    // Held briefly, so brushing past does not count.
     Timer {
         running: hover.hovered
-        interval: Theme.duration.expressiveFastEffects - 70
+        interval: Theme.duration.hotCorner
         onTriggered: Switcher.overview(true)
     }
 }

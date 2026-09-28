@@ -36,7 +36,7 @@ BarButton {
 
         GridLayout {
             Layout.fillWidth: true
-            columns: 4
+            columns: Theme.bar.accentColumns
             rowSpacing: Theme.spacing.medium
             columnSpacing: Theme.spacing.medium
 

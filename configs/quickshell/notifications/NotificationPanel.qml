@@ -18,13 +18,13 @@ OverlayWindow {
     anchors.bottom: false
     anchors.left: false
     margins.top: Theme.barHeight
-    implicitWidth: 440
+    implicitWidth: Theme.notification.width
     // Add back the margins, or the panel clips them.
     implicitHeight: Math.min(shell.implicitHeight + (Theme.padding.large + inset) * 2, maxHeight)
     color: "transparent"
 
     readonly property int inset: Theme.spacing.small
-    readonly property int maxHeight: (screen?.height ?? 1080) - Theme.barHeight - inset * 2
+    readonly property int maxHeight: (screen?.height ?? Theme.fallbackScreen.height) - Theme.barHeight - inset * 2
     // What the list may take once the header has had its share.
     readonly property int listRoom: maxHeight - inset * 2 - Theme.padding.large * 2 - header.implicitHeight - Theme.spacing.medium
 
@@ -43,8 +43,8 @@ OverlayWindow {
         }
         radius: Theme.rounding.extraExtraLarge
         // Glass, like the toasts: the blur behind should show.
-        tone: Theme.scrim(0.45)
-        lift: 1.1
+        tone: Theme.scrim(Theme.panelTint)
+        lift: Theme.lift.sheet
 
         // Translate, not `x`: the anchors own x.
         opacity: Math.min(1, win.reveal)
@@ -198,7 +198,7 @@ OverlayWindow {
 
                     Timer {
                         id: disarm
-                        interval: Notifs.confirmHold
+                        interval: Theme.duration.confirmHold
                         onTriggered: clear.armed = false
                     }
 
@@ -394,7 +394,7 @@ OverlayWindow {
                         width: parent.width
                         implicitHeight: body.implicitHeight + Theme.padding.large * 2
                         radius: Theme.rounding.extraLarge
-                        tone: Theme.scrim(0.35)
+                        tone: Theme.scrim(Theme.shade.card)
 
                         ColumnLayout {
                             id: body
@@ -462,7 +462,7 @@ OverlayWindow {
 
                                     MouseArea {
                                         anchors.fill: parent
-                                        anchors.margins: -4
+                                        anchors.margins: -Theme.hitSlop
                                         onClicked: Notifs.forget(card.model.key)
                                     }
                                 }
@@ -503,7 +503,7 @@ OverlayWindow {
 
                                 Binding on maximumLineCount {
                                     when: !bodyText.open
-                                    value: 4
+                                    value: Theme.notification.collapsedLines
                                 }
 
                                 HoverHandler {
@@ -534,8 +534,8 @@ OverlayWindow {
                                     source: card.model.image ? card.model.image : ""
                                     fillMode: Image.PreserveAspectCrop
                                     asynchronous: true
-                                    sourceSize.width: 240
-                                    sourceSize.height: 136
+                                    sourceSize.width: Theme.control.thumbWidth * 2
+                                    sourceSize.height: Theme.control.thumbHeight * 2
                                 }
                             }
                         }

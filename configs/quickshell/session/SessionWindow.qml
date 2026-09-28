@@ -10,7 +10,7 @@ OverlayWindow {
 
     shown: Session.open
     name: "session"
-    scrim: 0.5
+    scrim: Theme.shade.normal
 
     property int current: 0
 
@@ -59,8 +59,8 @@ OverlayWindow {
 
                     readonly property bool active: win.current === index
 
-                    implicitWidth: 156
-                    implicitHeight: 156
+                    implicitWidth: Theme.session.tile
+                    implicitHeight: Theme.session.tile
 
                     // Translate, not `y`: the RowLayout owns y.
                     opacity: 0
@@ -105,14 +105,14 @@ OverlayWindow {
                     }
                     radius: Theme.rounding.extraLargeIncreased
                     color: active ? Theme.accent : Theme.bgTray
-                    scale: active ? 1.06 : 1
+                    scale: active ? Theme.session.activeScale : 1
 
                     layer.enabled: tile.active
                     layer.effect: MultiEffect {
                         shadowEnabled: true
                         shadowColor: Theme.accent
                         shadowBlur: 1
-                        shadowOpacity: 0.6
+                        shadowOpacity: Theme.session.glow
                         shadowVerticalOffset: 0
                         shadowHorizontalOffset: 0
                     }

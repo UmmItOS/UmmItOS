@@ -23,13 +23,13 @@ ColumnLayout {
         // Clock
         Rectangle {
             Layout.fillHeight: true
-            implicitWidth: 210
+            implicitWidth: Theme.dashboard.clock
             radius: Theme.rounding.extraLarge
             color: Theme.glass
 
             Column {
                 anchors.centerIn: parent
-                spacing: -8
+                spacing: -Theme.spacing.small
 
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter

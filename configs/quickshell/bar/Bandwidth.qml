@@ -22,7 +22,7 @@ RowLayout {
     }
 
     // A threshold rather than zero, so the arrows do not flicker on idle chatter.
-    readonly property real busyAt: 2048
+    readonly property real busyAt: Theme.bar.busyAt
 
     spacing: 0
 

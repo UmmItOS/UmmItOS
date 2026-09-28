@@ -34,10 +34,10 @@ Item {
 
         property int tries: 0
 
-        interval: 16
+        interval: Theme.duration.frame
         onTriggered: {
             // Two frames once the wallpaper is ready; never more than ~300ms.
-            if ((wall.status !== Image.Ready && tries < 18) || tries < 2) {
+            if ((wall.status !== Image.Ready && tries < Theme.lock.maxFrames) || tries < Theme.lock.settleFrames) {
                 tries++;
                 restart();
                 return;
@@ -87,20 +87,19 @@ Item {
         visible: false
     }
 
-    // hyprlock's background: light blur, some contrast, brightness 0.8.
     MultiEffect {
         anchors.fill: parent
         source: wall
         blurEnabled: true
-        blurMax: 32
-        blur: 0.3
-        contrast: 0.08
+        blurMax: Theme.lock.blurMax
+        blur: Theme.lock.blur
+        contrast: Theme.lock.contrast
     }
 
     Rectangle {
         anchors.fill: parent
         color: "black"
-        opacity: 0.2
+        opacity: Theme.lock.veil
     }
 
     Image {
@@ -125,10 +124,10 @@ Item {
             shadowColor: "black"
             shadowHorizontalOffset: 0
             shadowVerticalOffset: 0
-            blurMax: 16
-            shadowBlur: Math.min(1, size * passes / 16)
-            shadowOpacity: passes > 1 ? 1 : 0.85
-            shadowScale: 1.02
+            blurMax: Theme.lock.shadowBlurMax
+            shadowBlur: Math.min(1, size * passes / Theme.lock.shadowBlurMax)
+            shadowOpacity: passes > 1 ? 1 : Theme.lock.shadowOpacity
+            shadowScale: Theme.lock.shadowScale
         }
 
         // Battery: the bar's own glyph and figure, plus the state in words.
@@ -136,13 +135,13 @@ Item {
             anchors {
                 top: parent.top
                 right: parent.right
-                margins: parent.width * 0.01
+                margins: parent.width * Theme.lock.margin
             }
             spacing: Theme.spacing.small
             layer.enabled: true
             layer.effect: Shade {
-                size: 3
-                passes: 2
+                size: Theme.lock.shadow
+                passes: Theme.lock.shadowPasses
             }
 
             Battery {
@@ -151,9 +150,9 @@ Item {
 
             Text {
                 anchors.verticalCenter: parent.verticalCenter
-                text: battery.full ? "full" : battery.charging ? "charging" : battery.pct < 0.15 ? "critical" : battery.low ? "low" : ""
+                text: battery.full ? "full" : battery.charging ? "charging" : battery.pct < Theme.battery.critical ? "critical" : battery.low ? "low" : ""
                 visible: text !== ""
-                color: Qt.rgba(1, 1, 1, 0.8)
+                color: Theme.lock.dateInk
                 font.family: Theme.fontDisplay
                 font.pixelSize: Theme.lock.battery
                 font.weight: Theme.weight.bold
@@ -167,22 +166,22 @@ Item {
 
         Text {
             anchors.centerIn: parent
-            anchors.verticalCenterOffset: root.at(0.15)
+            anchors.verticalCenterOffset: root.at(Theme.lock.dateAt)
             text: Qt.formatDateTime(clock.date, "dddd, MMMM d")
-            color: Qt.rgba(1, 1, 1, 0.8)
+            color: Theme.lock.dateInk
             font.family: Theme.fontDisplay
             font.pixelSize: Theme.lock.date
             font.weight: Theme.weight.medium
             layer.enabled: true
             layer.effect: Shade {
-                size: 3
-                passes: 2
+                size: Theme.lock.shadow
+                passes: Theme.lock.shadowPasses
             }
         }
 
         Text {
             anchors.centerIn: parent
-            anchors.verticalCenterOffset: root.at(0.05)
+            anchors.verticalCenterOffset: root.at(Theme.lock.clockAt)
             text: Qt.formatDateTime(clock.date, "HH:mm")
             color: "white"
             font.family: Theme.fontDisplay
@@ -190,25 +189,25 @@ Item {
             font.weight: Font.Light
             layer.enabled: true
             layer.effect: Shade {
-                size: 4
-                passes: 2
+                size: Theme.lock.shadowClock
+                passes: Theme.lock.shadowPasses
             }
         }
 
         // The ring is a deliberate border, by request.
         ClippingRectangle {
             anchors.centerIn: parent
-            anchors.verticalCenterOffset: root.at(-0.15)
+            anchors.verticalCenterOffset: root.at(Theme.lock.avatarAt)
             width: Theme.lock.avatar
             height: width
             radius: width / 2
             color: Theme.bgAlt
             border.width: Theme.lock.ring
-            border.color: Qt.rgba(1, 1, 1, 0.3)
+            border.color: Theme.lock.ringInk
             layer.enabled: true
             layer.effect: Shade {
-                size: 3
-                passes: 2
+                size: Theme.lock.shadow
+                passes: Theme.lock.shadowPasses
             }
 
             Image {
@@ -222,29 +221,29 @@ Item {
 
         Text {
             anchors.centerIn: parent
-            anchors.verticalCenterOffset: root.at(-0.21)
+            anchors.verticalCenterOffset: root.at(Theme.lock.userAt)
             text: Quickshell.env("USER")
-            color: Qt.rgba(1, 1, 1, 0.9)
+            color: Theme.lock.userInk
             font.family: Theme.fontDisplay
             font.pixelSize: Theme.lock.user
             font.weight: Theme.weight.medium
             layer.enabled: true
             layer.effect: Shade {
-                size: 2
-                passes: 2
+                size: Theme.lock.shadowText
+                passes: Theme.lock.shadowPasses
             }
         }
 
         Text {
             anchors.centerIn: parent
-            anchors.verticalCenterOffset: root.at(-0.24)
+            anchors.verticalCenterOffset: root.at(Theme.lock.hintAt)
             text: "Enter your password to unlock"
-            color: Qt.rgba(1, 1, 1, 0.6)
+            color: Theme.lock.hintInk
             font.family: Theme.fontDisplay
             font.pixelSize: Theme.lock.hint
             layer.enabled: true
             layer.effect: Shade {
-                size: 2
+                size: Theme.lock.shadowText
                 passes: 1
             }
         }
@@ -255,13 +254,13 @@ Item {
         id: field
 
         anchors.centerIn: parent
-        anchors.verticalCenterOffset: root.at(-0.29)
-        width: parent.width * 0.15
+        anchors.verticalCenterOffset: root.at(Theme.lock.fieldAt)
+        width: parent.width * Theme.lock.fieldWidth
         height: Theme.lock.field
         radius: height / 2
         opacity: root.haze * (input.text === "" && !Lock.failed && !Lock.checking ? 0 : 1)
         // Neutral while PAM works; red only after a miss.
-        color: Lock.checking ? Qt.rgba(1, 1, 1, 0.2) : Lock.failed ? Qt.rgba(Theme.urgent.r, Theme.urgent.g, Theme.urgent.b, 0.7) : Qt.rgba(1, 1, 1, 0.1)
+        color: Lock.checking ? Theme.lock.glassStrong : Lock.failed ? Theme.lock.failed : Theme.lock.glass
 
         transform: Translate {
             id: shake
@@ -287,7 +286,7 @@ Item {
                 target: shake
                 property: "x"
                 to: Theme.spacing.medium
-                duration: 50
+                duration: Theme.duration.shake[0]
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: Theme.curve.standard
             }
@@ -295,7 +294,7 @@ Item {
                 target: shake
                 property: "x"
                 to: -Theme.spacing.medium
-                duration: 90
+                duration: Theme.duration.shake[1]
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: Theme.curve.standard
             }
@@ -303,7 +302,7 @@ Item {
                 target: shake
                 property: "x"
                 to: Theme.spacing.small
-                duration: 80
+                duration: Theme.duration.shake[2]
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: Theme.curve.standard
             }
@@ -311,7 +310,7 @@ Item {
                 target: shake
                 property: "x"
                 to: 0
-                duration: 60
+                duration: Theme.duration.shake[3]
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: Theme.curve.standard
             }
@@ -376,7 +375,7 @@ Item {
                     Behavior on scale {
                         SpringAnimation {
                             spring: Theme.spring.stiffness
-                            damping: Theme.spring.damping * 0.6
+                            damping: Theme.spring.dotDamping
                         }
                     }
                 }

@@ -28,7 +28,7 @@ Scope {
 
     function seed(): void {
         const s = [];
-        for (let i = 0; i < 700; i++)
+        for (let i = 0; i < Theme.charge.sparks; i++)
             s.push({
                 a: Math.PI + Math.random() * Math.PI,
                 r: Math.sqrt(Math.random()),
@@ -103,31 +103,30 @@ Scope {
                     return;
                 const p = root.progress;
                 const ox = width / 2, oy = height + Theme.spacing.large;
-                const reach = Math.hypot(width / 2, height) * 1.05;
-                // Runs ahead so the ring leaves while the glitter settles.
-                const r = reach * Math.min(1, p * 1.25);
-                const band = reach * 0.2;
-                const fade = p < 0.6 ? 1 : 1 - (p - 0.6) / 0.4;
+                const reach = Math.hypot(width / 2, height) * Theme.charge.reach;
+                const r = reach * Math.min(1, p * Theme.charge.lead);
+                const band = reach * Theme.charge.band;
+                const fade = p < Theme.charge.fadeFrom ? 1 : 1 - (p - Theme.charge.fadeFrom) / (1 - Theme.charge.fadeFrom);
                 const c = Theme.accentText;
 
                 // The glow behind the edge, and a fainter echo trailing it.
-                const rings = [[r, 1], [r * 0.72, 0.35]];
+                const rings = [[r, 1], [r * Theme.charge.echo, Theme.charge.echoAlpha]];
                 for (const [rr, k] of rings) {
                     if (rr <= 1)
                         continue;
-                    const g = ctx.createRadialGradient(ox, oy, Math.max(0, rr - band), ox, oy, rr + 2);
+                    const g = ctx.createRadialGradient(ox, oy, Math.max(0, rr - band), ox, oy, rr + Theme.charge.line);
                     g.addColorStop(0, Qt.rgba(c.r, c.g, c.b, 0));
                     g.addColorStop(0.7, Qt.rgba(c.r, c.g, c.b, 0.14 * k * fade));
                     g.addColorStop(0.96, Qt.rgba(c.r, c.g, c.b, 0.3 * k * fade));
                     g.addColorStop(1, Qt.rgba(1, 1, 1, 0));
                     ctx.fillStyle = g;
                     ctx.beginPath();
-                    ctx.arc(ox, oy, rr + 2, 0, Math.PI * 2);
+                    ctx.arc(ox, oy, rr + Theme.charge.line, 0, Math.PI * 2);
                     ctx.fill();
                 }
 
-                const steps = 90;
-                ctx.lineWidth = 2;
+                const steps = Theme.charge.steps;
+                ctx.lineWidth = Theme.charge.line;
                 for (let i = 0; i < steps; i++) {
                     const a0 = Math.PI + Math.PI * i / steps;
                     const a1 = Math.PI + Math.PI * (i + 1) / steps;
@@ -161,7 +160,7 @@ Scope {
                 bottom: parent.bottom
                 bottomMargin: Theme.padding.extraLarge * 2
             }
-            opacity: root.progress < 0.15 ? root.progress / 0.15 : root.progress > 0.6 ? 1 - (root.progress - 0.6) / 0.4 : 1
+            opacity: root.progress < Theme.charge.labelIn ? root.progress / Theme.charge.labelIn : root.progress > Theme.charge.fadeFrom ? 1 - (root.progress - Theme.charge.fadeFrom) / (1 - Theme.charge.fadeFrom) : 1
             text: Math.round((UPower.displayDevice?.percentage ?? 0) * 100) + " %  ·  Charging"
             color: Theme.fg
             font.family: Theme.fontDisplay

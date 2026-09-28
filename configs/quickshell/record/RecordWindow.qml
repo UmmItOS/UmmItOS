@@ -9,7 +9,7 @@ OverlayWindow {
 
     shown: Recorder.open
     name: "record"
-    scrim: 0.5
+    scrim: Theme.shade.normal
 
     onOpened: scope.forceActiveFocus()
 
@@ -98,7 +98,7 @@ OverlayWindow {
             height: form.implicitHeight + Theme.padding.extraLarge * 2
             radius: Theme.rounding.extraLarge
             tone: Theme.bg
-            lift: 1.12
+            lift: Theme.lift.panel
 
             // Swallows clicks so they do not close the dialog.
             MouseArea {

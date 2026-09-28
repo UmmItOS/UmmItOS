@@ -137,7 +137,7 @@ Singleton {
     // Never keeps the lock waiting on a picture for long.
     Timer {
         id: waitLimit
-        interval: 300
+        interval: Theme.duration.lockWait
         onTriggered: root.release2()
     }
 

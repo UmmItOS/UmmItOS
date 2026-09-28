@@ -27,7 +27,7 @@ PanelWindow {
     function pointerMoved(item: Item, x: real, y: real): bool {
         const p = item.mapToItem(null, x, y);
         const first = root.lastPointer.x < 0;
-        const moved = Math.abs(p.x - root.lastPointer.x) > 2 || Math.abs(p.y - root.lastPointer.y) > 2;
+        const moved = Math.abs(p.x - root.lastPointer.x) > Theme.pointerSlop || Math.abs(p.y - root.lastPointer.y) > Theme.pointerSlop;
         root.lastPointer = p;
         return !first && moved;
     }

@@ -97,7 +97,7 @@ ColumnLayout {
                         target: halo
                         property: "scale"
                         from: 1
-                        to: 1.8
+                        to: Theme.pulse.haloScale
                         duration: Theme.duration.glow
                         easing.type: Easing.BezierSpline
                         easing.bezierCurve: Theme.curve.emphasizedDecel
@@ -105,7 +105,7 @@ ColumnLayout {
                     NumberAnimation {
                         target: halo
                         property: "opacity"
-                        from: 0.35
+                        from: Theme.pulse.haloOpacity
                         to: 0
                         duration: Theme.duration.glow
                     }

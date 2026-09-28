@@ -28,9 +28,8 @@ Scope {
             label: image ? "Image copied" : "Text copied",
             icon: image ? "image" : "content_copy"
         });
-        // A burst of copies should not climb up the whole screen.
-        if (pills.count > 5)
-            pills.remove(5, pills.count - 5);
+            if (pills.count > Theme.toast.max)
+            pills.remove(Theme.toast.max, pills.count - Theme.toast.max);
     }
 
     function drop(key: int): void {
@@ -57,8 +56,8 @@ Scope {
             bottom: true
             right: true
         }
-        implicitWidth: 620 + Theme.windowInset
-        implicitHeight: (Theme.control.row * 2 + Theme.spacing.medium) * 5 + Theme.windowInset + Theme.spacing.medium
+        implicitWidth: Theme.toast.width + Theme.windowInset
+        implicitHeight: (Theme.control.row * 2 + Theme.spacing.medium) * Theme.toast.max + Theme.windowInset + Theme.spacing.medium
         color: "transparent"
         mask: Region {}
 
@@ -120,7 +119,7 @@ Scope {
                 }
                 NumberAnimation {
                     property: "x"
-                    to: list.width / 3
+                    to: list.width * Theme.toast.exit
                     duration: Theme.duration.normal
                     easing.type: Easing.BezierSpline
                     easing.bezierCurve: Theme.curve.emphasizedAccel

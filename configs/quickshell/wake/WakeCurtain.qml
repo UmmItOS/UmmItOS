@@ -100,14 +100,14 @@ Item {
     Glow {
         blurMax: Theme.wakeGlow
         blur: 1
-        brightness: 0.2
+        brightness: Theme.wake.haloBrightness
         opacity: 1 - Wake.open * 2
     }
 
     // …and a tighter core, so it reads as light, not haze.
     Glow {
         blurMax: Theme.spacing.large
-        blur: 0.6
-        opacity: (1 - Wake.open * 2) * 0.8
+        blur: Theme.wake.coreBlur
+        opacity: (1 - Wake.open * 2) * Theme.wake.coreOpacity
     }
 }

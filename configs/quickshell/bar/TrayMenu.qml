@@ -95,7 +95,7 @@ Flyout {
                     Rectangle {
                         anchors.centerIn: parent
                         width: parent.width - Theme.padding.medium * 2
-                        height: 1
+                        height: Theme.hairline
                         color: Theme.bgTray
                         visible: item.modelData.isSeparator
                     }

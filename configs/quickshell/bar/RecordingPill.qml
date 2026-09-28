@@ -49,7 +49,7 @@ Rectangle {
                 alwaysRunToEnd: true
 
                 NumberAnimation {
-                    to: 0.3
+                    to: Theme.pulse.recording
                     duration: Theme.duration.extraLarge
                 }
                 NumberAnimation {

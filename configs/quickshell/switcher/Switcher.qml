@@ -111,7 +111,7 @@ Singleton {
 
     Timer {
         id: warmLimit
-        interval: 150
+        interval: Theme.duration.warmLimit
         onTriggered: root.reveal()
     }
 

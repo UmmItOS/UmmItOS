@@ -14,8 +14,8 @@ RowLayout {
     // Charging from the plug, not the battery's report; not at a charge limit.
     readonly property bool charging: !full && charge !== UPowerDeviceState.PendingCharge && (!UPower.onBattery || charge === UPowerDeviceState.Charging)
     // Drivers report "fully charged" briefly on plug-in; check the level.
-    readonly property bool full: charge === UPowerDeviceState.FullyCharged && Math.round(pct * 100) >= 99
-    readonly property bool low: pct < 0.2 && !charging && !full
+    readonly property bool full: charge === UPowerDeviceState.FullyCharged && Math.round(pct * 100) >= Theme.battery.full
+    readonly property bool low: pct < Theme.battery.low && !charging && !full
 
     readonly property color tone: {
         if (low)
@@ -84,7 +84,7 @@ RowLayout {
             alwaysRunToEnd: true
 
             NumberAnimation {
-                to: 0.35
+                to: Theme.pulse.charging
                 duration: Theme.duration.extraLarge
                 easing.type: Easing.InOutSine
             }

@@ -50,7 +50,7 @@ OverlayWindow {
     // About the pointer when it is on screen, else the middle.
     function zoomBy(steps: real): void {
         const inside = area.containsMouse;
-        zoomAt(inside ? area.mouseX : width / 2, inside ? area.mouseY : height / 2, steps * 3);
+        zoomAt(inside ? area.mouseX : width / 2, inside ? area.mouseY : height / 2, steps * Theme.draw.keySteps);
     }
 
     function resetZoom(): void {
@@ -301,8 +301,8 @@ OverlayWindow {
             height: tools.implicitHeight + Theme.padding.small * 2
             radius: Theme.rounding.full
             tone: Theme.bg
-            lift: 1.12
-            opacity: win.current ? 0.2 : 1
+            lift: Theme.lift.panel
+            opacity: win.current ? Theme.draw.toolbarDrawing : 1
 
             Behavior on opacity {
                 NumberAnimation {

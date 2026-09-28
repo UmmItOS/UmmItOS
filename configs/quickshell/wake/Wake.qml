@@ -12,9 +12,9 @@ Singleton {
     // 1 is black, 0 is nothing; everything runs linearly.
     property real dark: 0
     readonly property real progress: 1 - dark
-    readonly property real draw: beat(0, 0.3)
-    readonly property real open: beat(0.22, 1)
-    readonly property real haze: 1 - beat(0.3, 1)
+    readonly property real draw: beat(0, Theme.wake.drawEnd)
+    readonly property real open: beat(Theme.wake.openStart, 1)
+    readonly property real haze: 1 - beat(Theme.wake.hazeStart, 1)
 
     // Linear between two points of the progress, clamped to 0 … 1.
     function beat(from: real, to: real): real {

@@ -17,12 +17,12 @@ Item {
     property string primary: ""
     property string label: ""
 
-    readonly property real ring: 10
+    readonly property real ring: Theme.dashboard.gaugeRing
     // Clamped: a negative radius crashes the shell.
     readonly property real radius: Math.max(1, Math.min(width, height) / 2 - ring / 2)
 
-    implicitWidth: 170
-    implicitHeight: 170
+    implicitWidth: Theme.dashboard.gauge
+    implicitHeight: Theme.dashboard.gauge
 
     Shape {
         anchors.fill: parent
@@ -39,8 +39,8 @@ Item {
                 centerY: root.height / 2
                 radiusX: root.radius
                 radiusY: root.radius
-                startAngle: 130
-                sweepAngle: 280
+                startAngle: Theme.dashboard.gaugeStart
+                sweepAngle: Theme.dashboard.gaugeSweep
             }
         }
 
@@ -56,8 +56,8 @@ Item {
                 centerY: root.height / 2
                 radiusX: root.radius
                 radiusY: root.radius
-                startAngle: 130
-                sweepAngle: 280 * Math.max(0, Math.min(1, root.value))
+                startAngle: Theme.dashboard.gaugeStart
+                sweepAngle: Theme.dashboard.gaugeSweep * Math.max(0, Math.min(1, root.value))
 
                 Behavior on sweepAngle {
                     enabled: root.animated
@@ -73,7 +73,7 @@ Item {
 
     Column {
         anchors.centerIn: parent
-        spacing: 2
+        spacing: Theme.spacing.hair
 
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
