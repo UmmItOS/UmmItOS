@@ -193,9 +193,11 @@ Singleton {
                 code[key] = c[key];
             return code;
         });
-        if (codes.length > 0)
+        if (codes.length > 0) {
+            // A rising two-note bip, only when something was found.
+            Quickshell.execDetached(["pw-play", Quickshell.shellDir + "/scan/found.ogg"]);
             open = true;
-        else {
+        } else {
             forget();
             Quickshell.execDetached(["notify-send", "-a", "QR scanner", "No QR code on screen"]);
         }
