@@ -16,6 +16,7 @@ Slider 1.0 Slider.qml
 Segmented 1.0 Segmented.qml
 singleton Players 1.0 services/Players.qml
 Reveal 1.0 Reveal.qml
+Action 1.0 Action.qml
 MotionBlur 1.0 MotionBlur.qml
 OverlayWindow 1.0 OverlayWindow.qml
 singleton Net 1.0 services/Net.qml

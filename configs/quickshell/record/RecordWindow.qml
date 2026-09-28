@@ -1,6 +1,5 @@
 pragma ComponentBehavior: Bound
 
-import Quickshell
 import QtQuick
 import QtQuick.Layouts
 import ".."
@@ -69,48 +68,6 @@ OverlayWindow {
 
         TapHandler {
             onTapped: choice.toggled()
-        }
-    }
-
-    component Button: Rectangle {
-        id: button
-
-        property string label
-        property bool primary
-        signal clicked
-
-        implicitWidth: buttonLabel.implicitWidth + Theme.padding.large * 2
-        implicitHeight: Theme.control.field
-        radius: Theme.rounding.full
-        color: button.primary ? Theme.accent : buttonHover.hovered ? Theme.bgTray : Theme.bgAlt
-        scale: buttonTap.pressed ? Theme.popScale : 1
-
-        Behavior on scale {
-            NumberAnimation {
-                duration: Theme.duration.expressiveFastEffects
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curve.standard
-            }
-        }
-
-        Text {
-            id: buttonLabel
-            anchors.centerIn: parent
-            text: button.label
-            color: Theme.fg
-            font.family: Theme.font
-            font.pixelSize: Theme.fontSize.smaller
-            font.weight: button.primary ? Theme.weight.medium : Theme.weight.regular
-        }
-
-        HoverHandler {
-            id: buttonHover
-            cursorShape: Qt.PointingHandCursor
-        }
-
-        TapHandler {
-            id: buttonTap
-            onTapped: button.clicked()
         }
     }
 
@@ -211,12 +168,13 @@ OverlayWindow {
                         font.pixelSize: Theme.fontSize.small
                     }
 
-                    Button {
+                    Action {
                         label: "Cancel"
+                        rest: Theme.bgAlt
                         onClicked: Recorder.cancel()
                     }
 
-                    Button {
+                    Action {
                         label: "Start"
                         primary: true
                         onClicked: Recorder.start()

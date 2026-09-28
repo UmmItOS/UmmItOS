@@ -9,6 +9,9 @@ import ".."
 ColumnLayout {
     id: page
 
+    // The typed folder was not a full path; the hint says so until the next edit.
+    property bool folderRejected: false
+
     spacing: Theme.spacing.large
 
     // A title and a hint on the left, its control on the right.
@@ -17,6 +20,7 @@ ColumnLayout {
 
         property string title
         property string hint
+        property bool warn: false
         default property alias control: slot.data
 
         Layout.fillWidth: true
@@ -38,10 +42,16 @@ ColumnLayout {
                 Layout.fillWidth: true
                 visible: text !== ""
                 text: setting.hint
-                color: Theme.dim
-                elide: Text.ElideRight
+                color: setting.warn ? Theme.urgent : Theme.dim
+                wrapMode: Text.Wrap
                 font.family: Theme.font
                 font.pixelSize: Theme.fontSize.small
+
+                Behavior on color {
+                    ColorAnimation {
+                        duration: Theme.duration.expressiveFastEffects
+                    }
+                }
             }
         }
 
@@ -80,7 +90,7 @@ ColumnLayout {
                 color: dot.color
 
                 ParallelAnimation {
-                    running: Settings.open
+                    running: Settings.open && page.visible
                     loops: Animation.Infinite
 
                     NumberAnimation {
@@ -119,6 +129,7 @@ ColumnLayout {
             primary: true
             icon: Recorder.recording ? "stop" : "radio_button_checked"
             label: Recorder.recording ? "Stop and save" : "Start recording"
+            enabled: Recorder.recording || !Recorder.busy
             onClicked: {
                 if (Recorder.recording) {
                     Recorder.stop();
@@ -138,7 +149,8 @@ ColumnLayout {
 
     Setting {
         title: "Save to"
-        hint: "Type a folder, then Enter"
+        hint: page.folderRejected ? "Use a full path, like ~/Videos" : "Type a folder, then Enter"
+        warn: page.folderRejected
 
         Rectangle {
             anchors.fill: parent
@@ -154,17 +166,20 @@ ColumnLayout {
                     rightMargin: Theme.padding.large
                 }
                 verticalAlignment: TextInput.AlignVCenter
-                text: Settings.folder.replace(Settings.home, "~")
+                text: Settings.tilde(Settings.folder)
                 color: Theme.fg
                 selectByMouse: true
                 clip: true
                 font.family: Theme.font
                 font.pixelSize: Theme.fontSize.smaller
-                Keys.onReturnPressed: Settings.setFolder(text)
-                Keys.onEnterPressed: Settings.setFolder(text)
+                Keys.onReturnPressed: page.folderRejected = !Settings.setFolder(text)
+                Keys.onEnterPressed: page.folderRejected = !Settings.setFolder(text)
+                onTextEdited: page.folderRejected = false
                 // Leaving the field unsaved puts the saved folder back.
-                onActiveFocusChanged: if (!activeFocus)
-                    text = Qt.binding(() => Settings.folder.replace(Settings.home, "~"))
+                onActiveFocusChanged: if (!activeFocus) {
+                    page.folderRejected = false;
+                    text = Qt.binding(() => Settings.tilde(Settings.folder));
+                }
             }
         }
     }
@@ -279,31 +294,31 @@ ColumnLayout {
                 }
                 spacing: Theme.spacing.medium
 
-                MaterialIcon {
-                    text: "movie"
-                    color: Theme.dim
-                    size: Theme.icon.small
-                }
-
                 ColumnLayout {
                     Layout.fillWidth: true
                     spacing: 0
 
                     Text {
                         Layout.fillWidth: true
-                        text: file.modelData.name
+                        text: Qt.formatDateTime(new Date(file.modelData?.time ?? 0), "d MMM, HH:mm")
                         color: Theme.fg
-                        elide: Text.ElideMiddle
+                        elide: Text.ElideRight
                         font.family: Theme.font
                         font.pixelSize: Theme.fontSize.smaller
                         font.weight: Theme.weight.medium
+                        font.features: ({
+                                tnum: 1
+                            })
                     }
 
                     Text {
-                        text: Settings.size(file.modelData.size) + " · " + Qt.formatDateTime(new Date(file.modelData.time), "d MMM, HH:mm")
+                        text: Settings.size(file.modelData?.size ?? 0)
                         color: Theme.dim
                         font.family: Theme.font
                         font.pixelSize: Theme.fontSize.small
+                        font.features: ({
+                                tnum: 1
+                            })
                     }
                 }
 
@@ -320,7 +335,6 @@ ColumnLayout {
                     text: "delete"
                     color: file.confirming || binHover.hovered ? Theme.urgent : Theme.dim
                     size: Theme.icon.small
-                    opacity: file.hovered ? 1 : 0
 
                     HoverHandler {
                         id: binHover

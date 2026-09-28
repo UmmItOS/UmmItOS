@@ -15,7 +15,7 @@ OverlayWindow {
     shown: Screenshot.open
     blurIn: false
     name: "screenshot"
-    screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
+    screen: Screenshot.screen ?? Quickshell.screens[0]
 
     property point from: Qt.point(width / 2, height / 2)
     property point to: from
@@ -94,11 +94,6 @@ OverlayWindow {
             easing.type: Easing.BezierSpline
             easing.bezierCurve: Theme.curve.standard
         }
-    }
-
-    // All four grow together; a stagger rushed the first ones.
-    function grownOf(order: int): real {
-        return sprout;
     }
 
     function tendril(ax: real, ay: real, cx: real, cy: real, t0: real, seed: real, grow: real): list<point> {
@@ -190,6 +185,8 @@ OverlayWindow {
     onShownChanged: {
         if (!shown) {
             finishing.stop();
+            settleThenCommit.stop();
+            cutFallback.stop();
             cutting = null;
         }
     }
@@ -207,6 +204,7 @@ OverlayWindow {
         zoom = 1;
         tx = ty = 0;
         finishing.stop();
+        settleThenCommit.stop();
         release = 0;
         dragging = false;
         picked = null;
@@ -270,13 +268,14 @@ OverlayWindow {
             script: {
                 // A window is cut from its own surface; anything else is grim.
                 const top = win.mode === "window" && win.picked ? Hyprland.toplevels.values.find(t => t && (t.address === win.picked.address || "0x" + t.address === win.picked.address)) : null;
-                if (top?.wayland)
+                if (top?.wayland) {
                     win.cutting = {
                         toplevel: top.wayland,
                         w: win.picked.w,
                         h: win.picked.h
                     };
-                else
+                    cutFallback.restart();
+                } else
                     Screenshot.region(win.pendingGeometry);
             }
         }
@@ -424,8 +423,8 @@ OverlayWindow {
                 required property real sy
                 required property QtObject corner
                 // Offsets the wave so the four do not move in step.
+                id: thread
                 property real seed: 0
-                property int order: 0
 
                 readonly property real ax: win.anchorOf(sx, corner.x)
                 readonly property real ay: win.anchorOf(sy, corner.y)
@@ -435,7 +434,7 @@ OverlayWindow {
                 fillColor: Theme.accentText
 
                 PathPolyline {
-                    path: win.tendril(ax, ay, corner.x, corner.y, win.phase, seed, win.grownOf(order))
+                    path: win.tendril(thread.ax, thread.ay, thread.corner.x, thread.corner.y, win.phase, thread.seed, win.sprout)
                 }
             }
 
@@ -450,21 +449,18 @@ OverlayWindow {
                 sy: 0
                 corner: tr
                 seed: 1.7
-                order: 1
             }
             Thread {
                 sx: 0
                 sy: win.height
                 corner: bl
                 seed: 3.1
-                order: 2
             }
             Thread {
                 sx: win.width
                 sy: win.height
                 corner: br
                 seed: 4.6
-                order: 3
             }
 
             ShapePath {
@@ -504,7 +500,7 @@ OverlayWindow {
                 x: modelData.x - width / 2
                 y: modelData.y - height / 2
                 readonly property real arrived: {
-                    const x = Math.max(0, Math.min(1, (win.grownOf(index) - 0.6) / 0.4));
+                    const x = Math.max(0, Math.min(1, (win.sprout - 0.6) / 0.4));
                     return x * x * (3 - 2 * x);
                 }
                 scale: (1 + 0.2 * Math.sin(2 * Math.PI * (win.phase * 2) + index)) * arrived
@@ -600,6 +596,21 @@ OverlayWindow {
         }
     }
 
+    // A window that closed or never sent a frame is taken as a region instead.
+    function cutFailed(): void {
+        cutFallback.stop();
+        if (!cutting)
+            return;
+        cutting = null;
+        Screenshot.region(pendingGeometry);
+    }
+
+    Timer {
+        id: cutFallback
+        interval: Theme.duration.extraLarge * 2
+        onTriggered: win.cutFailed()
+    }
+
     // Off screen, clipped to Hyprland's rounding; keeps transparency.
     ClippingRectangle {
         id: cutter
@@ -617,16 +628,23 @@ OverlayWindow {
             captureSource: win.cutting?.toplevel ?? null
             live: false
 
+            onStopped: win.cutFailed()
             onHasContentChanged: {
                 if (!hasContent || !win.cutting)
                     return;
                 const file = Screenshot.newFile();
-                cutter.grabToImage(result => {
+                const ok = cutter.grabToImage(result => {
+                    // The fallback already took it, or the overlay was closed.
+                    if (!win.cutting)
+                        return;
+                    cutFallback.stop();
                     result.saveToFile(file);
                     win.cutting = null;
                     Screenshot.open = false;
                     Screenshot.saved(file);
                 });
+                if (!ok)
+                    win.cutFailed();
             }
         }
     }

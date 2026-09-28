@@ -16,8 +16,9 @@ ColumnLayout {
 
     spacing: Theme.spacing.large
 
+    // Once, the first time Settings opens, not at every shell load.
     Process {
-        running: true
+        running: Settings.open && page.facts.length === 0
         command: ["sh", "-c", ". /etc/os-release; echo \"$PRETTY_NAME\"; uname -r; hyprctl version | head -n 1 | cut -d ' ' -f 2; qs --version | cut -d ' ' -f 2; cat /etc/hostname"]
         stdout: StdioCollector {
             onStreamFinished: {

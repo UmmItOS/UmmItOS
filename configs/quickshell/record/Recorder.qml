@@ -64,7 +64,7 @@ Singleton {
                 root.count--;
                 return;
             }
-            stop();
+            tick.stop();
             root.count = 0;
             root.open = false;
             begin.restart();
@@ -92,7 +92,7 @@ Singleton {
     // A recording already running when the shell (re)starts, dated by its state file.
     Process {
         running: true
-        command: ["sh", "-c", 'pgrep -x wl-screenrec > /dev/null && stat -c %Y "$XDG_RUNTIME_DIR/screen-record/path"']
+        command: ["sh", "-c", 'pgrep -u "$USER" -x wl-screenrec > /dev/null && stat -c %Y "$XDG_RUNTIME_DIR/screen-record/path"']
         stdout: StdioCollector {
             onStreamFinished: {
                 const seconds = Number(text.trim());
@@ -130,6 +130,11 @@ Singleton {
             root.since = Date.now();
             root.starting = false;
             root.recording = true;
+        }
+
+        // The script found no recorder; a lost stopped() must not leave the pill up.
+        function idle(): void {
+            root.recording = false;
         }
 
         function stopped(): void {

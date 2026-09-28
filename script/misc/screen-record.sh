@@ -28,10 +28,10 @@ unmix() {
     fi
 }
 
-if pid=$(pgrep -x wl-screenrec); then
-    kill -INT "$pid"
+if pgrep -u "$USER" -x wl-screenrec > /dev/null; then
+    pkill -INT -u "$USER" -x wl-screenrec
     # The file is only complete once the recorder has exited.
-    while kill -0 "$pid" 2>/dev/null; do sleep 0.1; done
+    while pgrep -u "$USER" -x wl-screenrec > /dev/null; do sleep 0.1; done
     file=$(cat "$state/path" 2>/dev/null)
     note=$(cat "$state/note" 2>/dev/null)
     rm -f "$state/path" "$state/note"
@@ -44,6 +44,7 @@ $note}"
 fi
 
 if [[ "$1" != start ]]; then
+    qs -c ummitos ipc call record idle
     exec qs -c ummitos ipc call record open
 fi
 

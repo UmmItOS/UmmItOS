@@ -1,6 +1,7 @@
 pragma Singleton
 
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Io
 import QtQuick
 import ".."
@@ -11,6 +12,8 @@ Singleton {
 
     property bool open: false
     property string mode: "region"
+    // Picked once on open, so moving the pointer to another monitor does not move it.
+    property var screen: null
     // Global coordinates, most recently focused first.
     property var windows: []
 
@@ -34,6 +37,7 @@ Singleton {
         if (leaving)
             return;
         mode = newMode;
+        screen = Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0];
         // Cleared first, or a stale window gets framed.
         if (newMode === "window") {
             windows = [];

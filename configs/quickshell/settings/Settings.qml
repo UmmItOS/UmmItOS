@@ -11,6 +11,16 @@ Singleton {
 
     property bool open: false
     property int page: 0
+    readonly property var pages: [
+        {
+            name: "Record",
+            icon: "videocam"
+        },
+        {
+            name: "About",
+            icon: "info"
+        }
+    ]
 
     readonly property string home: Quickshell.env("HOME")
     // Plain key=value lines, so the script can read them without the shell.
@@ -38,10 +48,20 @@ Singleton {
             refresh();
     }
 
-    function setFolder(path: string): void {
+    // False when it is not a full path, so the field can say so.
+    function setFolder(path: string): bool {
         const p = path.trim().replace(/^~(?=\/|$)/, home).replace(/\/+$/, "");
-        if (p.startsWith("/"))
-            set("folder", p);
+        if (!p.startsWith("/"))
+            return false;
+        set("folder", p);
+        return true;
+    }
+
+    // Home as ~, only as a whole path segment.
+    function tilde(path: string): string {
+        if (path === home)
+            return "~";
+        return path.startsWith(home + "/") ? "~" + path.slice(home.length) : path;
     }
 
     function size(bytes: real): string {
@@ -67,9 +87,20 @@ Singleton {
         Quickshell.execDetached(["sh", "-c", "mkdir -p \"$1\" && xdg-open \"$1\"", "sh", folder]);
     }
 
+    // Waiting for the running gio; sent together once it exits.
+    property var trashQueue: []
+
     // To the Trash, not deleted, so a wrong click can be undone.
     function trash(path: string): void {
-        trasher.command = ["gio", "trash", "--", path];
+        trashQueue = trashQueue.concat([path]);
+        runTrash();
+    }
+
+    function runTrash(): void {
+        if (trasher.running || trashQueue.length === 0)
+            return;
+        trasher.command = ["gio", "trash", "--"].concat(trashQueue);
+        trashQueue = [];
         trasher.running = true;
     }
 
@@ -104,10 +135,11 @@ Singleton {
 
     Process {
         id: list
-        command: ["find", root.folder, "-maxdepth", "1", "-type", "f", "(", "-name", "*.mp4", "-o", "-name", "*.mkv", "-o", "-name", "*.webm", ")", "-printf", "%T@\\t%s\\t%f\\n"]
+        command: ["find", root.folder, "-maxdepth", "1", "-type", "f", "(", "-name", "*.mp4", "-o", "-name", "*.mkv", "-o", "-name", "*.webm", ")", "-printf", "%T@\\t%s\\t%f\\0"]
         stdout: StdioCollector {
-            onStreamFinished: root.files = text.split("\n").filter(l => l !== "").map(l => {
-                    const [time, size, name] = l.split("\t");
+            onStreamFinished: root.files = text.split("\0").filter(l => l !== "").map(l => {
+                    const [time, size] = l.split("\t");
+                    const name = l.split("\t").slice(2).join("\t");
                     return {
                         name: name,
                         path: root.folder + "/" + name,
@@ -120,7 +152,12 @@ Singleton {
 
     Process {
         id: trasher
-        onExited: root.refresh()
+        onExited: code => {
+            if (code !== 0)
+                Quickshell.execDetached(["notify-send", "-a", "Settings", "Could not move to Trash", "gio trash failed; the recording is still in its folder."]);
+            root.refresh();
+            Qt.callLater(root.runTrash);
+        }
     }
 
     // A recording that just finished belongs in the list.
@@ -141,7 +178,7 @@ Singleton {
 
         // 0 Record, 1 About.
         function page(index: int): void {
-            root.page = index;
+            root.page = Math.max(0, Math.min(index, root.pages.length - 1));
             root.open = true;
         }
 

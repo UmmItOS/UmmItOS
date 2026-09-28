@@ -1,6 +1,5 @@
 pragma ComponentBehavior: Bound
 
-import Quickshell
 import Quickshell.Wayland
 import QtQuick
 import QtQuick.Layouts
@@ -13,17 +12,6 @@ OverlayWindow {
     shown: Settings.open
     name: "settings"
     focusMode: WlrKeyboardFocus.OnDemand
-
-    readonly property var pages: [
-        {
-            name: "Record",
-            icon: "videocam"
-        },
-        {
-            name: "About",
-            icon: "info"
-        }
-    ]
 
     onOpened: {
         Settings.refresh();
@@ -84,7 +72,7 @@ OverlayWindow {
                 }
 
                 Repeater {
-                    model: win.pages
+                    model: Settings.pages
 
                     FlyoutRow {
                         id: entry

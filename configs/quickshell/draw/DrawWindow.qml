@@ -67,7 +67,8 @@ OverlayWindow {
         const file = Quickshell.env("XDG_RUNTIME_DIR") + "/ummitos-draw.png";
         view.grabToImage(result => {
             result.saveToFile(file);
-            Quickshell.execDetached(["sh", "-c", 'wl-copy --type image/png < "$1" && notify-send -a Draw -h string:image-path:"$1" "Copied" "The drawing is on the clipboard."', "sh", file]);
+            // wl-copy alone: the clipboard watcher shows the copied pill.
+            Quickshell.execDetached(["sh", "-c", 'wl-copy --type image/png < "$1"', "sh", file]);
         });
     }
 
