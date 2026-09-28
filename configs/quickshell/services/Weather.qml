@@ -104,6 +104,11 @@ Singleton {
         property string place
 
         command: ["curl", "-sf", "--max-time", "15", "https://wttr.in/" + encodeURIComponent(place) + "?format=j1"]
+        // curl failing (no network yet) is not a bad place name; try again shortly.
+        onExited: code => {
+            if (code !== 0)
+                retry.restart();
+        }
         stdout: StdioCollector {
             // A failed fetch keeps the last forecast rather than blanking the widget.
             onStreamFinished: {
@@ -111,6 +116,8 @@ Singleton {
                     Qt.callLater(root.refresh);
                     return;
                 }
+                if (text.trim() === "")
+                    return;
                 try {
                     root.data = JSON.parse(text);
                     root.failed = false;
@@ -138,6 +145,12 @@ Singleton {
         function onWoke(): void {
             root.refresh();
         }
+    }
+
+    Timer {
+        id: retry
+        interval: Theme.duration.weatherRetry
+        onTriggered: root.refresh()
     }
 
     Timer {

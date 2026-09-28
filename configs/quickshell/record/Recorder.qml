@@ -20,7 +20,9 @@ Singleton {
     // When it started, in ms since the epoch, for the bar's elapsed time.
     property real since: 0
     // Between the countdown and the recorder starting, the keys must not reopen the dialog.
-    readonly property bool busy: counting || begin.running || recording
+    readonly property bool busy: counting || begin.running || starting || recording
+    // From launching the script until it reports in; it checks the mic and screen first.
+    property bool starting: false
 
     function start(): void {
         if (!open || busy)
@@ -60,7 +62,18 @@ Singleton {
     Timer {
         id: begin
         interval: Theme.duration.expressiveDefaultSpatial + Theme.duration.small
-        onTriggered: Quickshell.execDetached(["bash", Quickshell.env("HOME") + "/script/misc/screen-record.sh", "start", root.system ? "1" : "0", root.mic ? "1" : "0"])
+        onTriggered: {
+            root.starting = true;
+            startLimit.restart();
+            Quickshell.execDetached(["bash", Quickshell.env("HOME") + "/script/misc/screen-record.sh", "start", root.system ? "1" : "0", root.mic ? "1" : "0"]);
+        }
+    }
+
+    // A script that never reports in must not leave the dialog locked out.
+    Timer {
+        id: startLimit
+        interval: Theme.duration.recordStart
+        onTriggered: root.starting = false
     }
 
     // A recording already running when the shell (re)starts, dated by its state file.
@@ -102,10 +115,12 @@ Singleton {
 
         function started(): void {
             root.since = Date.now();
+            root.starting = false;
             root.recording = true;
         }
 
         function stopped(): void {
+            root.starting = false;
             root.recording = false;
         }
 

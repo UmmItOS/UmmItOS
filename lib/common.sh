@@ -228,7 +228,8 @@ ensure_multilib() {
         printf '\n[multilib]\nInclude = /etc/pacman.d/mirrorlist\n' | sudo tee -a /etc/pacman.conf > /dev/null
     fi
 
-    if grep -q '^\[multilib\]$' /etc/pacman.conf && sudo pacman -Sy; then
+    # A full upgrade, not -Sy alone: installing only the GPU packages against a fresh database is a partial upgrade.
+    if grep -q '^\[multilib\]$' /etc/pacman.conf && paru -Syu; then
         echo "${COLOR_GREEN}:: multilib enabled.${COLOR_RESET}"
         return 0
     fi

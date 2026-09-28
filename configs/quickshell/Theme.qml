@@ -195,6 +195,10 @@ Singleton {
         readonly property int stagger: 40
         // How often the desktop weather is fetched again.
         readonly property int weatherRefresh: 1800000
+        // How soon a fetch that failed for want of network is tried again.
+        readonly property int weatherRetry: 60000
+        // How long the recorder may take to report in before its dialog opens again.
+        readonly property int recordStart: 8000
     }
 
     // The lock screen's sizes, kept from hyprlock so the switch looks the same.
