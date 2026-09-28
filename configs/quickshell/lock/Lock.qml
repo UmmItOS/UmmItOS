@@ -1,4 +1,5 @@
 pragma Singleton
+pragma ComponentBehavior: Bound
 
 import Quickshell
 import Quickshell.Io
@@ -25,6 +26,17 @@ Singleton {
 
     signal wrong
 
+    // ~/.face when there is one, the bundled picture otherwise.
+    property bool hasFace: false
+    readonly property url face: hasFace ? "file://" + Quickshell.env("HOME") + "/.face" : Qt.resolvedUrl("avatar.webp")
+
+    FileView {
+        path: Quickshell.env("HOME") + "/.face"
+        printErrors: false
+        onLoaded: root.hasFace = true
+        onLoadFailed: root.hasFace = false
+    }
+
     // PPM, not PNG: PNG took ~0.6s a screen and read as lag.
     readonly property string shotDir: Quickshell.env("XDG_RUNTIME_DIR") + "/ummitos-lock"
     property int shot: 0
@@ -41,11 +53,19 @@ Singleton {
         preparing = true;
         captured = false;
         grab.then = then;
-        grab.command = ["sh", "-c", 'mkdir -p -m 700 "$1" && d="$1" && shift && for o; do grim -t ppm -o "$o" "$d/$o.ppm"; done', "sh", shotDir, ...Quickshell.screens.map(s => s.name)];
+        // The wake's black curtain is already up: reuse the picture it took before it.
+        const pic = Wake.dark > 0 && Wake.shot > 0 ? 'cp "' + Wake.shotDir + '/$o.ppm"' : 'timeout 2 grim -t ppm -o "$o"';
+        grab.command = ["sh", "-c", 'mkdir -p -m 700 "$1" && d="$1" && shift && ok=0 && for o; do ' + pic + ' "$d/$o.ppm" || ok=1; done; exit $ok', "sh", shotDir, ...Quickshell.screens.map(s => s.name)];
         grab.running = true;
     }
 
     function lock(): void {
+        // Mid-unlock (the lid closing right after the password): stay locked.
+        if (locked && unlocking) {
+            release.stop();
+            unlocking = false;
+            return;
+        }
         if (locked || preparing)
             return;
         failed = false;
@@ -65,8 +85,13 @@ Singleton {
 
         property var then: null
 
-        // Lock even if the picture failed.
-        onExited: {
+        // Lock even if the picture failed, over the plain wallpaper.
+        onExited: code => {
+            if (code !== 0) {
+                root.shot = 0;
+                root.release2();
+                return;
+            }
             root.shot++;
             root.captured = true;
             waitLimit.restart();
@@ -83,9 +108,9 @@ Singleton {
             required property var modelData
 
             asynchronous: true
-            cache: false
-            // Released after unlocking, not kept decoded all session.
-            source: root.captured && (root.locked || root.preparing) ? root.shotOf(modelData.name) : ""
+            // Fills the cache LockContent reads; released after unlocking.
+            cache: true
+            source: root.captured && root.shot > 0 && (root.locked || root.preparing) ? root.shotOf(modelData.name) : ""
             onStatusChanged: root.readyCheck()
         }
     }
@@ -132,6 +157,8 @@ Singleton {
     }
 
     function fail(): void {
+        if (!checking)
+            return;
         checking = false;
         pending = "";
         failed = true;
@@ -172,6 +199,7 @@ Singleton {
             root.unlocking = true;
             release.restart();
         }
+        // A no-op after completed(); kept so an error with no completed() cannot leave it checking.
         onError: root.fail()
     }
 

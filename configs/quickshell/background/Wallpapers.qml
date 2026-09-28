@@ -71,7 +71,6 @@ Singleton {
     // Recursive, so the Anime/ and Landscape/ subfolders are included.
     Process {
         id: scan
-        running: true
         command: ["find", root.dir, "-type", "f", "-regex", ".*\\.\\(jpg\\|png\\|jpeg\\)"]
         stdout: StdioCollector {
             onStreamFinished: {
@@ -94,11 +93,14 @@ Singleton {
         printErrors: false
         // Never stall the UI thread on Enter to save one line of text.
         blockWrites: false
+        // The first scan waits for this, or it picks a random one over the saved one.
         onLoaded: {
             const saved = text().trim();
             if (saved)
                 root.actual = saved;
+            scan.running = true;
         }
+        onLoadFailed: scan.running = true
     }
 
     // qs -c ummitos ipc call wallpaper next

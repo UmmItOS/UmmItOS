@@ -55,6 +55,9 @@ Item {
         function onUnlockingChanged(): void {
             if (Lock.unlocking)
                 root.haze = 0;
+            // A lock during the unlock fade cancels it: back in.
+            else if (Lock.shown)
+                root.haze = 1;
         }
 
         function onShownChanged(): void {
@@ -210,15 +213,10 @@ Item {
 
             Image {
                 anchors.fill: parent
-                // ~/.face when there is one, the bundled picture otherwise.
-                source: "file://" + Quickshell.env("HOME") + "/.face"
+                source: Lock.face
                 fillMode: Image.PreserveAspectCrop
                 sourceSize.width: width * 2
                 sourceSize.height: height * 2
-                onStatusChanged: {
-                    if (status === Image.Error)
-                        source = Qt.resolvedUrl("avatar.webp");
-                }
             }
         }
 
@@ -240,7 +238,7 @@ Item {
         Text {
             anchors.centerIn: parent
             anchors.verticalCenterOffset: root.at(-0.24)
-            text: "Enter your Password to unlock"
+            text: "Enter your password to unlock"
             color: Qt.rgba(1, 1, 1, 0.6)
             font.family: Theme.fontDisplay
             font.pixelSize: Theme.lock.hint
@@ -262,8 +260,8 @@ Item {
         height: Theme.lock.field
         radius: height / 2
         opacity: root.haze * (input.text === "" && !Lock.failed && !Lock.checking ? 0 : 1)
-        // hyprlock's check_color while PAM works, fail_color after a miss.
-        color: Lock.checking ? Qt.rgba(212 / 255, 30 / 255, 30 / 255, 0.6) : Lock.failed ? Qt.rgba(1, 69 / 255, 69 / 255, 0.7) : Qt.rgba(1, 1, 1, 0.1)
+        // Neutral while PAM works; red only after a miss.
+        color: Lock.checking ? Qt.rgba(1, 1, 1, 0.2) : Lock.failed ? Qt.rgba(Theme.urgent.r, Theme.urgent.g, Theme.urgent.b, 0.7) : Qt.rgba(1, 1, 1, 0.1)
 
         transform: Translate {
             id: shake
@@ -290,24 +288,32 @@ Item {
                 property: "x"
                 to: Theme.spacing.medium
                 duration: 50
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Theme.curve.standard
             }
             NumberAnimation {
                 target: shake
                 property: "x"
                 to: -Theme.spacing.medium
                 duration: 90
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Theme.curve.standard
             }
             NumberAnimation {
                 target: shake
                 property: "x"
                 to: Theme.spacing.small
                 duration: 80
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Theme.curve.standard
             }
             NumberAnimation {
                 target: shake
                 property: "x"
                 to: 0
                 duration: 60
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Theme.curve.standard
             }
         }
 
@@ -380,9 +386,7 @@ Item {
         Text {
             anchors.centerIn: parent
             visible: input.text === "" && Lock.failed
-            // hyprlock's fail_text: italic, the count in bold.
-            textFormat: Text.StyledText
-            text: "<i>Password is incorrect <b>(" + Lock.attempts + ")</b></i>"
+            text: "Wrong password · attempt " + Lock.attempts
             color: "white"
             font.family: Theme.font
             font.pixelSize: Theme.fontSize.normal

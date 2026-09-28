@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Effects
 import ".."
@@ -66,7 +68,7 @@ Item {
         property real dim: Theme.wakeDim
         property real hasPicture: before.status === Image.Ready ? 1 : 0
 
-        fragmentShader: "curtain.frag.qsb"
+        fragmentShader: Qt.resolvedUrl("curtain.frag.qsb")
     }
 
     // Blurred once at full width, then only scaled.

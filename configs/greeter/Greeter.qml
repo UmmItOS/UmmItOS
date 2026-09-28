@@ -17,6 +17,7 @@ Item {
     property bool busy: false
     property string message: ""
     property string pending: ""
+    property bool hasWall: false
 
     function submit(password: string): void {
         if (busy || password === "" || user === "")
@@ -56,6 +57,13 @@ Item {
         onLoaded: Theme.savedAccent = text().trim()
     }
 
+    // Checked first, so a fresh install without one logs no error.
+    Process {
+        running: true
+        command: ["test", "-r", root.shared + "/wallpaper"]
+        onExited: code => root.hasWall = code === 0
+    }
+
     Connections {
         target: Greetd
 
@@ -92,7 +100,7 @@ Item {
     Image {
         id: wall
         anchors.fill: parent
-        source: "file://" + root.shared + "/wallpaper"
+        source: root.hasWall ? "file://" + root.shared + "/wallpaper" : ""
         fillMode: Image.PreserveAspectCrop
         asynchronous: true
         cache: false
@@ -261,7 +269,7 @@ Item {
             width: root.width * 0.15
             height: Theme.lock.field
             radius: height / 2
-            color: root.busy ? Qt.rgba(1, 1, 1, 0.2) : root.message !== "" ? Qt.rgba(1, 69 / 255, 69 / 255, 0.7) : Qt.rgba(1, 1, 1, 0.1)
+            color: root.busy ? Qt.rgba(1, 1, 1, 0.2) : root.message !== "" ? Qt.rgba(Theme.urgent.r, Theme.urgent.g, Theme.urgent.b, 0.7) : Qt.rgba(1, 1, 1, 0.1)
             transform: Translate {
                 id: shake
             }
@@ -281,24 +289,32 @@ Item {
                     property: "x"
                     to: Theme.spacing.medium
                     duration: 50
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curve.standard
                 }
                 NumberAnimation {
                     target: shake
                     property: "x"
                     to: -Theme.spacing.medium
                     duration: 90
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curve.standard
                 }
                 NumberAnimation {
                     target: shake
                     property: "x"
                     to: Theme.spacing.small
                     duration: 80
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curve.standard
                 }
                 NumberAnimation {
                     target: shake
                     property: "x"
                     to: 0
                     duration: 60
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curve.standard
                 }
             }
 
