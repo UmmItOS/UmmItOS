@@ -89,48 +89,124 @@ OverlayWindow {
                     }
                 }
 
+                // Left of both buttons, so they stay side by side.
+                Text {
+                    id: clearLabel
+                    text: "Clear all?"
+                    color: Theme.urgent
+                    font {
+                        family: Theme.font
+                        pixelSize: Theme.fontSize.smaller
+                        weight: Theme.weight.medium
+                    }
+                    opacity: clear.armed ? 1 : 0
+                    layer.enabled: opacity < 1
+                    layer.effect: MotionBlur {
+                        settled: clearLabel.opacity
+                    }
+                    transform: Translate {
+                        x: clear.armed ? 0 : Theme.spacing.large
+                        Behavior on x {
+                            NumberAnimation {
+                                duration: Theme.duration.expressiveFastSpatial
+                                easing.type: Easing.BezierSpline
+                                easing.bezierCurve: clear.armed ? Theme.curve.emphasizedDecel : Theme.curve.emphasizedAccel
+                            }
+                        }
+                    }
+
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: Theme.duration.expressiveFastEffects
+                        }
+                    }
+                }
+
                 // Do not disturb still records; it only stops the toast.
                 Rectangle {
                     implicitWidth: Theme.control.button
                     implicitHeight: Theme.control.button
                     radius: width / 2
-                    color: Notifs.dnd ? Theme.accent : Theme.bgTray
+                    color: Notifs.dnd ? (dndHover.hovered ? Theme.accentText : Theme.accent) : Theme.bgTray
+                    scale: dndTap.pressed ? Theme.pressScale : 1
 
                     Behavior on color {
                         ColorAnimation {
                             duration: Theme.duration.expressiveFastEffects
+                        }
+                    }
+                    Behavior on scale {
+                        NumberAnimation {
+                            duration: Theme.duration.expressiveFastEffects
+                            easing.type: Easing.BezierSpline
+                            easing.bezierCurve: Theme.curve.standard
                         }
                     }
 
                     MaterialIcon {
                         anchors.centerIn: parent
                         text: Notifs.dnd ? "notifications_off" : "notifications_active"
-                        color: Theme.fg
+                        color: Notifs.dnd ? (dndHover.hovered ? Theme.scrim(1) : Theme.accentOn) : dndHover.hovered ? Theme.accent2 : Theme.fg
                         fill: Notifs.dnd ? 1 : 0
                         size: Theme.icon.small
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: Theme.duration.expressiveFastEffects
+                            }
+                        }
                     }
 
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: Notifs.dnd = !Notifs.dnd
+                    HoverHandler {
+                        id: dndHover
+                        cursorShape: Qt.PointingHandCursor
+                    }
+
+                    TapHandler {
+                        id: dndTap
+                        onTapped: Notifs.dnd = !Notifs.dnd
                     }
                 }
 
+                // Two steps: the first click arms it, the second clears.
                 Rectangle {
+                    id: clear
+
+                    property bool armed: false
+
                     implicitWidth: Theme.control.button
                     implicitHeight: Theme.control.button
                     radius: width / 2
-                    color: clearHover.hovered ? Theme.urgent : Theme.bgTray
+                    color: clear.armed || clearHover.hovered ? Theme.urgent : Theme.bgTray
+                    scale: clearTap.pressed ? Theme.pressScale : 1
                     visible: Notifs.history.count > 0
+                    onArmedChanged: if (armed)
+                        disarm.restart()
 
                     Behavior on color {
                         ColorAnimation {
                             duration: Theme.duration.expressiveFastEffects
                         }
                     }
+                    Behavior on scale {
+                        NumberAnimation {
+                            duration: Theme.duration.expressiveFastEffects
+                            easing.type: Easing.BezierSpline
+                            easing.bezierCurve: Theme.curve.standard
+                        }
+                    }
 
-                    HoverHandler {
-                        id: clearHover
+                    Timer {
+                        id: disarm
+                        interval: Notifs.confirmHold
+                        onTriggered: clear.armed = false
+                    }
+
+                    Connections {
+                        target: win
+                        function onOpened(): void {
+                            clear.armed = false;
+                        }
                     }
 
                     MaterialIcon {
@@ -140,9 +216,20 @@ OverlayWindow {
                         size: Theme.icon.small
                     }
 
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: Notifs.clear()
+                    HoverHandler {
+                        id: clearHover
+                        cursorShape: Qt.PointingHandCursor
+                        onHoveredChanged: if (!hovered)
+                            clear.armed = false
+                    }
+
+                    TapHandler {
+                        id: clearTap
+                        onTapped: {
+                            if (clear.armed)
+                                Notifs.clear();
+                            clear.armed = !clear.armed;
+                        }
                     }
                 }
             }
@@ -391,10 +478,16 @@ OverlayWindow {
                                     pixelSize: Theme.fontSize.larger
                                     weight: Theme.weight.bold
                                 }
-                                elide: Text.ElideRight
+                                wrapMode: Text.Wrap
                             }
 
                             Text {
+                                id: bodyText
+
+                                // Collapsed until the body is clicked; the Binding restores "no cap".
+                                property bool open: false
+                                readonly property bool togglable: truncated || open
+
                                 Layout.fillWidth: true
                                 text: card.model.body ?? ""
                                 color: Theme.fg
@@ -404,10 +497,26 @@ OverlayWindow {
                                 }
                                 textFormat: Text.StyledText
                                 wrapMode: Text.Wrap
-                                maximumLineCount: 4
                                 elide: Text.ElideRight
                                 visible: text !== ""
                                 onLinkActivated: link => Notifs.openLink(link)
+
+                                Binding on maximumLineCount {
+                                    when: !bodyText.open
+                                    value: 4
+                                }
+
+                                HoverHandler {
+                                    cursorShape: bodyText.hoveredLink !== "" || bodyText.togglable ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                }
+
+                                TapHandler {
+                                    enabled: bodyText.togglable
+                                    onTapped: (point, button) => {
+                                        if (bodyText.linkAt(point.position.x, point.position.y) === "")
+                                            bodyText.open = !bodyText.open;
+                                    }
+                                }
                             }
 
                             // Only once loaded: the server's temporary path can be gone.
