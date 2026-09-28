@@ -56,6 +56,8 @@ Singleton {
 
     readonly property string font: "SF Pro Text"
     readonly property string fontDisplay: "SF Pro Display"
+    // Raw content and hex dumps, where columns must line up.
+    readonly property string fontMono: "JetBrains Mono"
 
     // Material 3 scales, from caelestia-dots/shell tokens.hpp.
     readonly property QtObject rounding: QtObject {
@@ -213,8 +215,16 @@ Singleton {
     readonly property QtObject scan: QtObject {
         // How far the highlight reaches past a code's edge.
         readonly property int reach: 12
+        // A code's label, at most.
         readonly property int card: 340
-        // The accent wash over a code, breathing between the two.
+        // The detail panel beside the codes.
+        readonly property int panel: 440
+        // The code's own picture in the panel.
+        readonly property int picture: 168
+        // Past this many bytes the hex dump stops and says how many are left.
+        readonly property int hexBytes: 512
+        readonly property int hexColumns: 8
+        // The accent wash over a code, at rest and when picked.
         readonly property real tint: 0.14
         readonly property real tintPeak: 0.3
     }
