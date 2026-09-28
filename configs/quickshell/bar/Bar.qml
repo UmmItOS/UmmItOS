@@ -98,10 +98,6 @@ PanelWindow {
             Layout.fillWidth: true
         }
 
-        RecordingPill {
-            Layout.alignment: Qt.AlignVCenter
-        }
-
         Cluster {
             Layout.alignment: Qt.AlignVCenter
 
@@ -130,8 +126,17 @@ PanelWindow {
         }
     }
 
+    // Beside the clock, so it never moves the centre or the clusters.
+    RecordingPill {
+        anchors.left: clockColumn.right
+        anchors.leftMargin: Theme.spacing.large
+        anchors.verticalCenter: parent.verticalCenter
+    }
+
     // On the screen's centre line, not between spacers, so it never drifts.
     ColumnLayout {
+        id: clockColumn
+
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.verticalCenter: parent.verticalCenter
         spacing: -2
