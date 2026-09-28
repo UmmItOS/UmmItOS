@@ -185,8 +185,8 @@ For things that need input you cannot give from a terminal, mark every temporary
 
 ## Hard rules
 
-- Arch Linux only. Scripts gate on `/etc/arch-release`.
-- Use `paru` in new install code, never `pacman` directly. NVIDIA is unsupported, and GPU packages are AMD-only.
+- Arch Linux only. `install.sh` and `install-menu.sh` gate on `/etc/arch-release`.
+- Use `paru` in new install code, never `pacman` directly; the one exception is installing `git` and `base-devel` before paru exists (`check_paru` in `lib/common.sh` and `setup.sh`). NVIDIA is unsupported, and GPU packages are AMD-only.
 - Never run or assume root. `install-menu.sh` rejects EUID 0; `install.sh` does not check, but it isn't meant to run as root either.
 - Wallpapers are a git submodule (`.wallpaper`). Clone with `--recursive`, or run `git submodule update --init`.
 - Installer scripts run from the repo root and use relative paths (`./install/...`).
