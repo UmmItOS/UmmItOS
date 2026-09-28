@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import Quickshell
 import QtQuick
 import QtQuick.Layouts
@@ -27,7 +29,7 @@ PopupWindow {
     }
 
     implicitWidth: 380
-    implicitHeight: root.hug ? Math.min(head.implicitHeight + body.implicitHeight + Theme.spacing.medium + Theme.padding.large * 2, root.maxHeight) : 420
+    implicitHeight: root.hug ? Math.min(column.implicitHeight + Theme.padding.large * 2, root.maxHeight) : 420
     // Never taller than the screen; long content scrolls inside.
     readonly property real maxHeight: (root.screen?.height ?? 1080) - Theme.barHeight - Theme.spacing.small * 2
     color: "transparent"
@@ -96,6 +98,8 @@ PopupWindow {
         lift: 1.12
 
         ColumnLayout {
+            id: column
+
             anchors {
                 fill: parent
                 margins: Theme.padding.large
@@ -109,8 +113,7 @@ PopupWindow {
                 spacing: Theme.spacing.medium
 
                 Text {
-                    // A tray menu's title is the app's tooltip, any length.
-                    // Not fillWidth: sharing with the spinner cut short titles.
+                    // Not fillWidth: sharing with the spinner cut short long tray titles.
                     Layout.minimumWidth: 0
                     elide: Text.ElideRight
                     text: root.title
