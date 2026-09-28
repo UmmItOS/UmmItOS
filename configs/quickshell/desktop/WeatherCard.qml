@@ -11,6 +11,18 @@ Rectangle {
     radius: Theme.rounding.extraLarge
     color: Theme.scrim(Theme.panelTint)
 
+    // Its window maps when the forecast arrives, so this runs on each appearance.
+    opacity: Weather.ready ? 1 : 0
+    Behavior on opacity {
+        NumberAnimation {
+            duration: Theme.duration.expressiveDefaultEffects
+        }
+    }
+    layer.enabled: opacity < 1
+    layer.effect: MotionBlur {
+        settled: card.opacity
+    }
+
     ColumnLayout {
         id: body
 

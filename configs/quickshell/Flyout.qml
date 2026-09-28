@@ -63,6 +63,10 @@ PopupWindow {
     Surface {
         id: sheet
 
+        layer.enabled: opacity < 1
+        layer.effect: MotionBlur {
+            settled: sheet.opacity
+        }
         anchors.fill: parent
         radius: Theme.rounding.extraLarge
 

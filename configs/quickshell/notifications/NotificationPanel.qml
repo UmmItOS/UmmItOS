@@ -218,6 +218,8 @@ OverlayWindow {
                             Behavior on rotation {
                                 NumberAnimation {
                                     duration: Theme.duration.expressiveFastSpatial
+                                    easing.type: Easing.BezierSpline
+                                    easing.bezierCurve: Theme.curve.standard
                                 }
                             }
                         }
@@ -236,6 +238,13 @@ OverlayWindow {
                         from: 0
                         to: 1
                         duration: Theme.duration.expressiveDefaultEffects
+                    }
+                    NumberAnimation {
+                        property: "x"
+                        from: Theme.spacing.extraLarge * 2
+                        duration: Theme.duration.expressiveDefaultSpatial
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curve.emphasizedDecel
                     }
                 }
                 remove: Transition {
@@ -270,6 +279,10 @@ OverlayWindow {
                 delegate: Item {
                     id: card
 
+                    layer.enabled: opacity < 1
+                    layer.effect: MotionBlur {
+                        settled: card.opacity
+                    }
                     // Read with fallbacks: a delegate outlives its row while removed.
                     required property var model
 

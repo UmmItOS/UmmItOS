@@ -102,6 +102,8 @@ Scope {
                     property: "x"
                     to: 0
                     duration: Theme.duration.expressiveFastSpatial
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curve.emphasizedDecel
                 }
                 NumberAnimation {
                     property: "opacity"
@@ -127,6 +129,10 @@ Scope {
             delegate: Item {
                 id: slot
 
+                layer.enabled: opacity < 1
+                layer.effect: MotionBlur {
+                    settled: slot.opacity
+                }
                 required property int key
                 required property string label
                 required property string icon

@@ -13,6 +13,7 @@ OverlayWindow {
     id: win
 
     shown: Screenshot.open
+    blurIn: false
     name: "screenshot"
     screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
 

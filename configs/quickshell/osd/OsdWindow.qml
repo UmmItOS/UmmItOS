@@ -35,6 +35,10 @@ PanelWindow {
         lift: 1.3
 
         opacity: Osd.shown ? 1 : 0
+        layer.enabled: opacity < 1
+        layer.effect: MotionBlur {
+            settled: card.opacity
+        }
         scale: Osd.shown ? 1 : Theme.popScale
 
         // Same length as the scale, or the unmap cut it mid-animation.

@@ -11,6 +11,8 @@ PanelWindow {
     // Scrim strength at full reveal. 0 for surfaces that draw their own ground.
     property real scrim: 0
     property int focusMode: WlrKeyboardFocus.Exclusive
+    // False for surfaces that show the frozen screen, which must not blur on open.
+    property bool blurIn: true
 
     // 0 closed, 1 open. Drive content opacity and scale from this.
     property real reveal: root.shown ? 1 : 0
@@ -45,6 +47,10 @@ PanelWindow {
     }
 
     visible: root.reveal > 0
+    contentItem.layer.enabled: root.blurIn && root.reveal < 1
+    contentItem.layer.effect: MotionBlur {
+        settled: root.reveal
+    }
     // Closing drops input, so a fading tile cannot fire twice.
     mask: root.shown ? null : passThrough
 

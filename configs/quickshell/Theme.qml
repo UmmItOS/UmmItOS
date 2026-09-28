@@ -126,6 +126,8 @@ Singleton {
     readonly property real popScale: 0.94
     // A countdown number lands from this size.
     readonly property real landScale: 1.6
+    // How out of focus a surface is when it starts to arrive (MotionBlur).
+    readonly property int motionBlur: 40
 
     readonly property QtObject icon: QtObject {
         // An app's own icon beside its notification, at caption size.

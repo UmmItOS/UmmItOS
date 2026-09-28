@@ -88,6 +88,8 @@ OverlayWindow {
         Behavior on scale {
             NumberAnimation {
                 duration: Theme.duration.expressiveFastEffects
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Theme.curve.standard
             }
         }
 

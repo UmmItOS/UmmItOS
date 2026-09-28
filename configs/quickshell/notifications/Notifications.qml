@@ -164,6 +164,10 @@ Scope {
             delegate: Rectangle {
                 id: card
 
+                layer.enabled: opacity < 1
+                layer.effect: MotionBlur {
+                    settled: card.opacity
+                }
                 required property Notification modelData
 
                 // Copied while alive: the object dies before the exit ends.

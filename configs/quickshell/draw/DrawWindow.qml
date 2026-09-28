@@ -11,6 +11,7 @@ OverlayWindow {
     id: win
 
     shown: Draw.open
+    blurIn: false
     name: "draw"
     screen: Draw.screen
 

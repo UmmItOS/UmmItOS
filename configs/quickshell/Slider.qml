@@ -44,6 +44,8 @@ Item {
         Behavior on implicitWidth {
             NumberAnimation {
                 duration: Theme.duration.expressiveFastEffects
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Theme.curve.standard
             }
         }
     }

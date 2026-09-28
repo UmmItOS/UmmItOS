@@ -7,6 +7,16 @@ Rectangle {
     id: root
 
     visible: Recorder.recording
+    opacity: Recorder.recording ? 1 : 0
+    Behavior on opacity {
+        NumberAnimation {
+            duration: Theme.duration.expressiveDefaultEffects
+        }
+    }
+    layer.enabled: opacity < 1
+    layer.effect: MotionBlur {
+        settled: root.opacity
+    }
     implicitWidth: row.implicitWidth + Theme.padding.medium * 2
     implicitHeight: Theme.control.field
     radius: Theme.rounding.full
