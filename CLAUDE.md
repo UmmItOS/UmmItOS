@@ -52,7 +52,7 @@ Each list is plain text, one `repo/pkgname` per line, and the installer reads it
 
 - `install/packages_main`: core desktop packages (Arch repos and AUR).
 - `install/packages_gpu`: AMD only. NVIDIA is unsupported, and GPU packages are skipped when NVIDIA is detected.
-- `install/packages_laptop`: `brightnessctl` and `playerctl`, installed only when a battery is detected.
+- `install/packages_laptop`: `brightnessctl`, installed only when a battery is detected.
 
 ### Config copy
 
