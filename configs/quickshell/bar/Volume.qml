@@ -128,15 +128,34 @@ RowLayout {
                     }
                 }
 
+                scale: muteMouse.pressed ? Theme.pressScale : 1
+
+                Behavior on scale {
+                    NumberAnimation {
+                        duration: Theme.duration.expressiveFastEffects
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curve.standard
+                    }
+                }
+
                 MaterialIcon {
                     anchors.centerIn: parent
                     text: root.glyphFor(root.level, root.muted)
-                    color: Theme.fg
-                    fill: root.muted ? 1 : 0
+                    color: root.muted ? Theme.accentOn : muteMouse.containsMouse ? Theme.accent2 : Theme.fg
+                    fill: root.muted || muteMouse.containsMouse ? 1 : 0
+
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: Theme.duration.expressiveFastEffects
+                        }
+                    }
                 }
 
                 MouseArea {
+                    id: muteMouse
                     anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
                     onClicked: {
                         if (root.audio)
                             root.audio.muted = !root.audio.muted;
@@ -262,6 +281,7 @@ RowLayout {
 
                 MouseArea {
                     anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
                     onClicked: Pipewire.preferredDefaultAudioSink = device.modelData
                 }
             }
@@ -302,9 +322,22 @@ RowLayout {
 
                 // Recoloured to the shell; only the silhouette identifies it.
                 Item {
+                    id: streamIcon
+
+                    readonly property color ink: streamMouse.containsMouse ? (stream.muted ? Theme.fg : Theme.accent2) : (stream.muted ? Theme.dim : Theme.accentText)
+
                     Layout.alignment: Qt.AlignVCenter
                     implicitWidth: Theme.icon.small
                     implicitHeight: Theme.icon.small
+                    scale: streamMouse.pressed ? Theme.pressScale : 1
+
+                    Behavior on scale {
+                        NumberAnimation {
+                            duration: Theme.duration.expressiveFastEffects
+                            easing.type: Easing.BezierSpline
+                            easing.bezierCurve: Theme.curve.standard
+                        }
+                    }
 
                     IconImage {
                         id: appIcon
@@ -319,20 +352,23 @@ RowLayout {
                         source: appIcon
                         visible: appIcon.status === Image.Ready
                         colorization: 1
-                        colorizationColor: stream.muted ? Theme.dim : Theme.accentText
+                        colorizationColor: streamIcon.ink
                     }
 
                     MaterialIcon {
                         anchors.centerIn: parent
                         visible: appIcon.status !== Image.Ready
                         text: stream.muted ? "volume_off" : "graphic_eq"
-                        color: stream.muted ? Theme.dim : Theme.accentText
+                        color: streamIcon.ink
                         size: Theme.icon.small
                     }
 
                     MouseArea {
+                        id: streamMouse
                         anchors.fill: parent
                         anchors.margins: -Theme.spacing.extraSmall
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
                         onClicked: stream.modelData.audio.muted = !stream.modelData.audio.muted
                     }
                 }

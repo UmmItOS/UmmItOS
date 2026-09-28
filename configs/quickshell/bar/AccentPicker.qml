@@ -67,8 +67,12 @@ BarButton {
                         anchors.centerIn: parent
                         visible: swatch.chosen
                         text: "check"
-                        color: Theme.fg
+                        color: Theme.accentOn
                         size: Theme.icon.small
+                    }
+
+                    HoverHandler {
+                        cursorShape: Qt.PointingHandCursor
                     }
 
                     TapHandler {

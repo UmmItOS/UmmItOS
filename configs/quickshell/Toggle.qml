@@ -27,7 +27,13 @@ Rectangle {
         implicitWidth: root.knob
         implicitHeight: root.knob
         radius: width / 2
-        color: Theme.fg
+        color: root.checked ? Theme.accentOn : Theme.fg
+
+        Behavior on color {
+            ColorAnimation {
+                duration: Theme.duration.expressiveFastEffects
+            }
+        }
 
         Behavior on x {
             NumberAnimation {

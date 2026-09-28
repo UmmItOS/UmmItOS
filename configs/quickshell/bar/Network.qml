@@ -20,6 +20,9 @@ RowLayout {
     // Here, not in the row, so a rebuilt row keeps the typed password.
     property string askingFor: ""
     property string pskDraft: ""
+    // The last failed network and why; cleared by the next attempt.
+    property string failedFor: ""
+    property string failReason: ""
 
     property bool popupOpen: false
     property bool scanning: false
@@ -36,6 +39,20 @@ RowLayout {
         if (pct > 0.15)
             return "wifi_1_bar";
         return "signal_wifi_0_bar";
+    }
+
+    function failText(reason: int): string {
+        switch (reason) {
+        case ConnectionFailReason.NoSecrets:
+        case ConnectionFailReason.WifiClientDisconnected:
+            return "Wrong password";
+        case ConnectionFailReason.WifiAuthTimeout:
+            return "Timed out";
+        case ConnectionFailReason.WifiNetworkLost:
+            return "Out of range";
+        default:
+            return "Couldn't connect";
+        }
     }
 
     function secured(network: var): bool {
@@ -149,6 +166,27 @@ RowLayout {
                 readonly property int lineHeight: Theme.control.row
 
                 readonly property bool askingPsk: root.askingFor !== "" && root.askingFor === row.modelData.name
+                readonly property bool failed: root.failedFor !== "" && root.failedFor === row.modelData.name
+
+                function attempt(): void {
+                    root.failedFor = "";
+                    root.failReason = "";
+                }
+
+                Connections {
+                    target: row.modelData
+                    function onConnectionFailed(reason: int): void {
+                        root.failedFor = row.modelData.name;
+                        root.failReason = root.failText(reason);
+                        // A rejected password asks again; the other failures are not the password.
+                        const secrets = reason === ConnectionFailReason.NoSecrets || reason === ConnectionFailReason.WifiClientDisconnected || reason === ConnectionFailReason.WifiAuthTimeout;
+                        if (secrets && root.secured(row.modelData)) {
+                            root.pskDraft = "";
+                            root.askingFor = row.modelData.name;
+                            psk.forceActiveFocus();
+                        }
+                    }
+                }
 
                 width: list.width
                 active: row.modelData.connected
@@ -182,14 +220,14 @@ RowLayout {
 
                         MaterialIcon {
                             text: root.bars(row.modelData.signalStrength)
-                            color: Theme.fg
+                            color: row.ink
                             size: Theme.icon.small
                         }
 
                         Text {
                             Layout.fillWidth: true
                             text: row.modelData.name
-                            color: Theme.fg
+                            color: row.ink
                             elide: Text.ElideRight
                             font {
                                 family: Theme.font
@@ -202,7 +240,7 @@ RowLayout {
                             visible: row.modelData.connected && !row.busy
                             // Says what a click does.
                             text: row.hovered ? "Disconnect" : "Connected"
-                            color: Theme.fg
+                            color: row.ink
                             font {
                                 family: Theme.font
                                 pixelSize: Theme.fontSize.small
@@ -210,28 +248,43 @@ RowLayout {
                             }
                         }
 
+                        Text {
+                            visible: opacity > 0
+                            opacity: row.failed && !row.busy ? 1 : 0
+                            text: root.failReason
+                            color: Theme.urgent
+                            font {
+                                family: Theme.font
+                                pixelSize: Theme.fontSize.small
+                                weight: Theme.weight.medium
+                            }
+
+                            Behavior on opacity {
+                                NumberAnimation {
+                                    duration: Theme.duration.expressiveFastEffects
+                                }
+                            }
+                        }
+
                         Spinner {
                             visible: row.busy
+                            color: row.inkDim
                         }
 
                         MaterialIcon {
                             visible: !row.busy && root.secured(row.modelData)
                             text: "lock"
-                            color: Theme.dim
+                            color: row.inkDim
                             size: Theme.icon.small
                         }
 
-                        MaterialIcon {
+                        BarButton {
                             visible: !row.busy && row.modelData.known && row.hovered
-                            text: "link_off"
-                            color: Theme.dim
+                            icon: "delete"
+                            baseColor: row.inkDim
+                            hoverColor: row.ink
                             size: Theme.icon.small
-
-                            MouseArea {
-                                anchors.fill: parent
-                                anchors.margins: -Theme.spacing.extraSmall
-                                onClicked: row.modelData.forget()
-                            }
+                            onClicked: row.modelData.forget()
                         }
                     }
 
@@ -273,6 +326,7 @@ RowLayout {
                             }
 
                             Keys.onReturnPressed: {
+                                row.attempt();
                                 row.modelData.connectWithPsk(text);
                                 root.askingFor = "";
                                 root.pskDraft = "";
@@ -308,6 +362,7 @@ RowLayout {
                         if (row.modelData.connected) {
                             row.modelData.disconnect();
                         } else if (row.modelData.known || !root.secured(row.modelData)) {
+                            row.attempt();
                             row.modelData.connect();
                         } else {
                             root.pskDraft = "";

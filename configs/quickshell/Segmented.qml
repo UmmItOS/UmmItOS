@@ -74,7 +74,7 @@ Item {
                     anchors.centerIn: parent
                     scale: choiceTap.pressed ? Theme.popScale : 1
                     text: root.labels[choice.index]
-                    color: choice.picked || choiceHover.hovered ? Theme.fg : Theme.dim
+                    color: choice.picked ? Theme.accentOn : choiceHover.hovered ? Theme.fg : Theme.dim
                     font {
                         family: Theme.font
                         pixelSize: Theme.fontSize.smaller
@@ -89,6 +89,11 @@ Item {
                             duration: Theme.duration.expressiveFastEffects
                             easing.type: Easing.BezierSpline
                             easing.bezierCurve: Theme.curve.standard
+                        }
+                    }
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: Theme.duration.expressiveFastEffects
                         }
                     }
                 }

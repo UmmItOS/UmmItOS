@@ -10,7 +10,7 @@ Rectangle {
     // The resting fill of a plain one: glass on a blurred panel, a tone on an opaque card.
     property color rest: Theme.glass
 
-    readonly property color ink: !action.enabled ? Theme.dim : action.primary && hover.hovered ? Theme.bg : Theme.fg
+    readonly property color ink: !action.enabled ? Theme.dim : action.primary ? (hover.hovered ? Theme.scrim(1) : Theme.accentOn) : Theme.fg
 
     signal clicked
 

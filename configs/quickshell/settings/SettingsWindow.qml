@@ -93,7 +93,7 @@ OverlayWindow {
 
                             MaterialIcon {
                                 text: entry.modelData.icon
-                                color: entry.active ? Theme.fg : Theme.dim
+                                color: entry.active ? entry.ink : entry.inkDim
                                 size: Theme.icon.small
                                 fill: entry.active ? 1 : 0
                             }
@@ -101,7 +101,7 @@ OverlayWindow {
                             Text {
                                 Layout.fillWidth: true
                                 text: entry.modelData.name
-                                color: Theme.fg
+                                color: entry.ink
                                 font.family: Theme.font
                                 font.pixelSize: Theme.fontSize.normal
                                 font.weight: entry.active ? Theme.weight.medium : Theme.weight.regular

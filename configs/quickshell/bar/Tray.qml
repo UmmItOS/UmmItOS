@@ -46,6 +46,16 @@ RowLayout {
             implicitHeight: Theme.icon.tray
             Layout.alignment: Qt.AlignVCenter
             acceptedButtons: Qt.LeftButton | Qt.RightButton
+            cursorShape: Qt.PointingHandCursor
+            scale: pressed ? Theme.pressScale : 1
+
+            Behavior on scale {
+                NumberAnimation {
+                    duration: Theme.duration.expressiveFastEffects
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curve.standard
+                }
+            }
 
             IconImage {
                 id: icon

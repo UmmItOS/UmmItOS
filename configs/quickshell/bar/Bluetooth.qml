@@ -143,14 +143,14 @@ RowLayout {
 
                     MaterialIcon {
                         text: root.glyph(row.modelData)
-                        color: Theme.fg
+                        color: row.ink
                         size: Theme.icon.small
                     }
 
                     Text {
                         Layout.fillWidth: true
                         text: row.modelData.name || row.modelData.deviceName || "Unnamed device"
-                        color: Theme.fg
+                        color: row.ink
                         elide: Text.ElideRight
                         font {
                             family: Theme.font
@@ -163,7 +163,7 @@ RowLayout {
                     Text {
                         visible: row.modelData.connected && row.modelData.batteryAvailable
                         text: Math.round(row.modelData.battery * 100) + " %"
-                        color: Theme.dim
+                        color: row.inkDim
                         font {
                             family: Theme.font
                             pixelSize: Theme.fontSize.small
@@ -177,7 +177,7 @@ RowLayout {
                         visible: row.modelData.connected && !row.busy
                         // Says what a click does.
                         text: row.hovered ? "Disconnect" : "Connected"
-                        color: Theme.fg
+                        color: row.ink
                         font {
                             family: Theme.font
                             pixelSize: Theme.fontSize.small
@@ -187,19 +187,16 @@ RowLayout {
 
                     Spinner {
                         visible: row.busy
+                        color: row.inkDim
                     }
 
-                    MaterialIcon {
+                    BarButton {
                         visible: !row.busy && row.modelData.paired && row.hovered
-                        text: "link_off"
-                        color: Theme.dim
+                        icon: "delete"
+                        baseColor: row.inkDim
+                        hoverColor: row.ink
                         size: Theme.icon.small
-
-                        MouseArea {
-                            anchors.fill: parent
-                            anchors.margins: -Theme.spacing.extraSmall
-                            onClicked: row.modelData.forget()
-                        }
+                        onClicked: row.modelData.forget()
                     }
                 }
 

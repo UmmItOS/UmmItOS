@@ -57,7 +57,7 @@ RowLayout {
                 anchors.centerIn: parent
                 opacity: pill.focused ? 1 : 0
                 text: pill.modelData?.name ?? ""
-                color: Theme.fg
+                color: Theme.accentOn
                 font.family: Theme.font
                 font.pixelSize: Theme.fontSize.smaller
                 font.bold: true
@@ -83,6 +83,7 @@ RowLayout {
             MouseArea {
                 anchors.fill: parent
                 anchors.margins: -4
+                cursorShape: Qt.PointingHandCursor
                 onClicked: pill.modelData?.activate()
             }
         }
