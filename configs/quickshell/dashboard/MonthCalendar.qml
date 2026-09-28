@@ -90,6 +90,8 @@ ColumnLayout {
             id: cell
 
             required property var model
+            // model.today only refreshes when the month changes, so it sticks to the day the shell started.
+            readonly property bool isToday: model.day === root.now.getDate() && model.month === root.now.getMonth() && model.year === root.now.getFullYear()
 
             implicitWidth: Theme.control.field
             implicitHeight: Theme.control.field
@@ -101,7 +103,7 @@ ColumnLayout {
                 height: width
                 radius: width / 2
                 color: Theme.accent
-                visible: cell.model.today
+                visible: cell.isToday
             }
 
             Text {
@@ -112,7 +114,7 @@ ColumnLayout {
                 font {
                     family: Theme.font
                     pixelSize: Theme.fontSize.normal
-                    weight: cell.model.today ? Theme.weight.bold : Theme.weight.regular
+                    weight: cell.isToday ? Theme.weight.bold : Theme.weight.regular
                     features: ({
                             tnum: 1
                         })

@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Layouts
 import ".."
@@ -36,7 +38,7 @@ Rectangle {
 
         Text {
             Layout.fillWidth: true
-            text: Weather.area
+            text: Weather.location
             elide: Text.ElideRight
             color: Theme.fg
             font.family: Theme.font

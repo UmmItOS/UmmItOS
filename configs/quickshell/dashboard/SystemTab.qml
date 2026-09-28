@@ -73,21 +73,19 @@ ColumnLayout {
             }
 
             Repeater {
+                // Static, so a new uptime updates one Text instead of rebuilding every row.
                 model: [
                     {
                         icon: "rocket_launch",
-                        label: "Distro",
-                        value: SysInfo.distro
+                        label: "Distro"
                     },
                     {
                         icon: "desktop_windows",
-                        label: "Compositor",
-                        value: "Hyprland"
+                        label: "Compositor"
                     },
                     {
                         icon: "schedule",
-                        label: "Uptime",
-                        value: SysInfo.uptimeText.replace("up ", "")
+                        label: "Uptime"
                     }
                 ]
 
@@ -95,6 +93,7 @@ ColumnLayout {
                     id: fact
 
                     required property var modelData
+                    readonly property string value: modelData.label === "Distro" ? SysInfo.distro : modelData.label === "Uptime" ? SysInfo.uptimeText : "Hyprland"
 
                     spacing: Theme.spacing.medium
 
@@ -122,7 +121,7 @@ ColumnLayout {
                         Text {
                             // A Layout never elides without a width cap.
                             Layout.maximumWidth: root.width / 4
-                            text: fact.modelData.value
+                            text: fact.value
                             color: Theme.fg
                             elide: Text.ElideRight
                             font {

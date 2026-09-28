@@ -25,10 +25,10 @@ Singleton {
         const m = Math.floor((uptimeSeconds % 3600) / 60);
         const d = Math.floor(h / 24);
         if (d > 0)
-            return `up ${d} day${d === 1 ? "" : "s"}, ${h % 24} hour${h % 24 === 1 ? "" : "s"}`;
+            return `${d} day${d === 1 ? "" : "s"}, ${h % 24} hour${h % 24 === 1 ? "" : "s"}`;
         if (h > 0)
-            return `up ${h} hour${h === 1 ? "" : "s"}, ${m} minute${m === 1 ? "" : "s"}`;
-        return `up ${m} minute${m === 1 ? "" : "s"}`;
+            return `${h} hour${h === 1 ? "" : "s"}, ${m} minute${m === 1 ? "" : "s"}`;
+        return `${m} minute${m === 1 ? "" : "s"}`;
     }
 
     function formatBytes(bytes: real): string {
@@ -53,6 +53,9 @@ Singleton {
     }
 
     onActiveChanged: {
+        // A baseline kept while hidden would average the whole hidden period into the first sample.
+        lastIdle = 0;
+        lastTotal = 0;
         if (active)
             refresh();
     }

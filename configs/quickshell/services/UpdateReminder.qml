@@ -2,7 +2,7 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 
-// Weekly nag from pacman.log's last full upgrade; transient (-e).
+// Once the last full upgrade (from pacman.log) is a week old, nags every half hour; transient (-e).
 Scope {
     id: root
 
@@ -18,7 +18,7 @@ Scope {
 
     Process {
         id: last
-        command: ["sh", "-c", "grep -a 'starting full system upgrade' /var/log/pacman.log | tail -n 1"]
+        command: ["sh", "-c", "tac /var/log/pacman.log | grep -a -m1 'starting full system upgrade'"]
         stdout: StdioCollector {
             onStreamFinished: {
                 // [2026-09-07T23:52:40+0800] → 2026-09-07T23:52:40+08:00

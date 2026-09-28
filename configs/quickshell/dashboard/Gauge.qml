@@ -16,7 +16,6 @@ Item {
     }
     property string primary: ""
     property string label: ""
-    property color fill: Theme.accentText
 
     readonly property real ring: 10
     // Clamped: a negative radius crashes the shell.
@@ -46,7 +45,7 @@ Item {
         }
 
         ShapePath {
-            strokeColor: root.fill
+            strokeColor: Theme.accentText
             strokeWidth: root.ring
             fillColor: "transparent"
             capStyle: ShapePath.RoundCap

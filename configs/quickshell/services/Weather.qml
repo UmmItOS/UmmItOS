@@ -19,7 +19,6 @@ Singleton {
     readonly property int hour: clock.date.getHours()
     readonly property var now: data?.current_condition?.[0] ?? null
     readonly property var today: data?.weather?.[0] ?? null
-    readonly property string area: location
     // Where wttr.in matched the name, which may not be the place meant.
     readonly property string matched: [data?.nearest_area?.[0]?.areaName?.[0]?.value, data?.nearest_area?.[0]?.country?.[0]?.value].filter(v => v).join(", ")
     readonly property string temp: now?.temp_C ?? ""
@@ -86,7 +85,6 @@ Singleton {
     function setLocation(place: string): void {
         location = place.trim();
         locationFile.setText(location);
-        fetch.running = false;
         data = null;
         failed = false;
         refresh();
@@ -104,19 +102,19 @@ Singleton {
         property string place
 
         command: ["curl", "-sf", "--max-time", "15", "https://wttr.in/" + encodeURIComponent(place) + "?format=j1"]
-        // curl failing (no network yet) is not a bad place name; try again shortly.
+        // 22 is wttr.in's HTTP error for an unknown place; any other failure (no network yet) is retried.
         onExited: code => {
-            if (code !== 0)
+            if (fetch.place !== root.location)
+                Qt.callLater(root.refresh);
+            else if (code === 22)
+                root.failed = true;
+            else if (code !== 0)
                 retry.restart();
         }
         stdout: StdioCollector {
             // A failed fetch keeps the last forecast rather than blanking the widget.
             onStreamFinished: {
-                if (fetch.place !== root.location) {
-                    Qt.callLater(root.refresh);
-                    return;
-                }
-                if (text.trim() === "")
+                if (fetch.place !== root.location || text.trim() === "")
                     return;
                 try {
                     root.data = JSON.parse(text);
