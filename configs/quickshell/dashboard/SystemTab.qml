@@ -27,16 +27,16 @@ ColumnLayout {
 
             Gauge {
                 Layout.alignment: Qt.AlignCenter
-                value: SysInfo.gpuTemp / 100
-                primary: Math.round(SysInfo.gpuTemp) + "°C"
-                label: "GPU temp"
+                value: isNaN(SysInfo.gpuTemp) ? 0 : SysInfo.gpuTemp / 100
+                primary: isNaN(SysInfo.gpuTemp) ? "n/a" : Math.round(SysInfo.gpuTemp) + "°C"
+                label: isNaN(SysInfo.gpuTemp) ? "No GPU sensor" : "GPU temp"
             }
 
             Gauge {
                 Layout.alignment: Qt.AlignCenter
                 value: SysInfo.cpuUsage
-                primary: Math.round(SysInfo.cpuTemp) + "°C"
-                label: Math.round(SysInfo.cpuUsage * 100) + "% CPU"
+                primary: Math.round(SysInfo.cpuUsage * 100) + "%"
+                label: isNaN(SysInfo.cpuTemp) ? "CPU" : "CPU · " + Math.round(SysInfo.cpuTemp) + "°C"
             }
 
             Gauge {

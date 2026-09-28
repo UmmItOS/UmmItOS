@@ -14,6 +14,37 @@ Item {
     // No real length (browser tabs): show elapsed time only.
     readonly property bool timed: (root.player?.lengthSupported ?? false) && (root.player?.length ?? 0) > 0
 
+    component SkipButton: MaterialIcon {
+        id: skip
+
+        signal clicked
+
+        color: !enabled ? Theme.dim : skipArea.containsMouse ? Theme.accentText : Theme.fg
+        size: Theme.icon.large
+        scale: skipArea.pressed ? Theme.pressScale : 1
+
+        Behavior on color {
+            ColorAnimation {
+                duration: Theme.duration.expressiveFastEffects
+            }
+        }
+        Behavior on scale {
+            NumberAnimation {
+                duration: Theme.duration.expressiveFastEffects
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Theme.curve.standard
+            }
+        }
+
+        MouseArea {
+            id: skipArea
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: skip.clicked()
+        }
+    }
+
     Text {
         anchors.centerIn: parent
         visible: !root.player
@@ -146,46 +177,67 @@ Item {
                 Layout.topMargin: Theme.spacing.medium
                 spacing: Theme.spacing.largeIncreased
 
-                MaterialIcon {
+                SkipButton {
                     text: "skip_previous"
-                    color: (root.player?.canGoPrevious ?? false) ? Theme.fg : Theme.dim
-                    size: Theme.icon.large
-
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: root.player.previous()
-                    }
+                    enabled: root.player?.canGoPrevious ?? false
+                    onClicked: root.player.previous()
                 }
 
                 Rectangle {
                     implicitWidth: 52
                     implicitHeight: 52
                     radius: width / 2
-                    color: Theme.accent
+                    enabled: root.player?.canTogglePlaying ?? false
+                    color: enabled ? Theme.accent : Theme.bgAlt
+                    scale: playArea.pressed ? Theme.pressScale : 1
+
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: Theme.duration.expressiveFastEffects
+                        }
+                    }
+                    Behavior on scale {
+                        NumberAnimation {
+                            duration: Theme.duration.expressiveFastEffects
+                            easing.type: Easing.BezierSpline
+                            easing.bezierCurve: Theme.curve.standard
+                        }
+                    }
+
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: parent.radius
+                        color: Theme.glass
+                        opacity: playArea.containsMouse ? 1 : 0
+
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: Theme.duration.expressiveFastEffects
+                            }
+                        }
+                    }
 
                     MaterialIcon {
                         anchors.centerIn: parent
                         text: (root.player?.isPlaying ?? false) ? "pause" : "play_arrow"
-                        color: Theme.fg
+                        color: parent.enabled ? Theme.accentOn : Theme.dim
                         fill: 1
                         size: Theme.icon.large
                     }
 
                     MouseArea {
+                        id: playArea
                         anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
                         onClicked: root.player.togglePlaying()
                     }
                 }
 
-                MaterialIcon {
+                SkipButton {
                     text: "skip_next"
-                    color: (root.player?.canGoNext ?? false) ? Theme.fg : Theme.dim
-                    size: Theme.icon.large
-
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: root.player.next()
-                    }
+                    enabled: root.player?.canGoNext ?? false
+                    onClicked: root.player.next()
                 }
             }
 
@@ -276,7 +328,7 @@ Item {
                             width: Math.min(implicitWidth, chip.width - Theme.padding.large * 2)
                             elide: Text.ElideRight
                             text: chip.modelData.identity
-                            color: Theme.fg
+                            color: chip.current ? Theme.accentOn : Theme.fg
                             font.family: Theme.font
                             font.pixelSize: Theme.fontSize.small
                         }

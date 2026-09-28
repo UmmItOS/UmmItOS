@@ -41,7 +41,7 @@ GridView {
 
                 Text {
                     text: cell.modelData?.name ?? ""
-                    color: Theme.fg
+                    color: cell.modelData?.urgent ? Theme.fg : cell.modelData?.focused ? Theme.accentOn : Theme.fg
                     font.family: Theme.fontDisplay
                     font.pixelSize: Theme.fontSize.large
                     font.bold: true
@@ -54,7 +54,7 @@ GridView {
                         const names = cell.modelData?.toplevels.values.map(t => t.title) ?? [];
                         return names.length === 0 ? "empty" : names.join("\n");
                     }
-                    color: cell.modelData?.focused ? Theme.fg : Theme.dim
+                    color: cell.modelData?.urgent ? Theme.fg : cell.modelData?.focused ? Theme.accentOn : Theme.dim
                     font.family: Theme.font
                     font.pixelSize: Theme.fontSize.small
                     wrapMode: Text.Wrap

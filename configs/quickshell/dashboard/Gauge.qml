@@ -64,7 +64,7 @@ Item {
                     NumberAnimation {
                         duration: Theme.duration.expressiveDefaultSpatial
                         easing.type: Easing.BezierSpline
-                        easing.bezierCurve: Theme.curve.expressiveDefaultSpatial
+                        easing.bezierCurve: Theme.curve.emphasizedDecel
                     }
                 }
             }

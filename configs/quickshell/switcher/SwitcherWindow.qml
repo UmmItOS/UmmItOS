@@ -141,7 +141,7 @@ OverlayWindow {
                 MaterialIcon {
                     anchors.verticalCenter: parent.verticalCenter
                     text: "push_pin"
-                    color: Theme.fg
+                    color: Switcher.pinned ? Theme.accentOn : Theme.fg
                     fill: Switcher.pinned ? 1 : 0
                     size: Theme.icon.small
                 }
@@ -149,7 +149,7 @@ OverlayWindow {
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     text: Switcher.pinned ? "Pinned" : "Keep open"
-                    color: Theme.fg
+                    color: Switcher.pinned ? Theme.accentOn : Theme.fg
                     font {
                         family: Theme.font
                         pixelSize: Theme.fontSize.normal

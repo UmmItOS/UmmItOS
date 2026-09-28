@@ -109,7 +109,7 @@ ColumnLayout {
             Text {
                 anchors.centerIn: parent
                 text: cell.model.day
-                color: cell.model.month === grid.month ? Theme.fg : Theme.dim
+                color: cell.isToday ? Theme.accentOn : cell.model.month === grid.month ? Theme.fg : Theme.dim
                 opacity: cell.model.month === grid.month ? 1 : 0.5
                 font {
                     family: Theme.font

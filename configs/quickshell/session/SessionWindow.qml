@@ -137,7 +137,7 @@ OverlayWindow {
                         MaterialIcon {
                             Layout.alignment: Qt.AlignHCenter
                             text: tile.modelData.icon
-                            color: Theme.fg
+                            color: tile.active ? Theme.accentOn : Theme.fg
                             fill: tile.active ? 1 : 0
                             size: Theme.icon.extraLarge
                         }
@@ -145,7 +145,7 @@ OverlayWindow {
                         Text {
                             Layout.alignment: Qt.AlignHCenter
                             text: tile.modelData.label
-                            color: Theme.fg
+                            color: tile.active ? Theme.accentOn : Theme.fg
                             font.family: Theme.font
                             font.pixelSize: Theme.fontSize.normal
                             font.bold: tile.active
@@ -160,7 +160,7 @@ OverlayWindow {
                             margins: Theme.padding.medium
                         }
                         text: tile.modelData.key.toUpperCase()
-                        color: tile.active ? Theme.fg : Theme.dim
+                        color: tile.active ? Theme.accentOn : Theme.dim
                         font.family: Theme.font
                         font.pixelSize: Theme.fontSize.small
                         font.bold: true

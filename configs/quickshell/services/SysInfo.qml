@@ -8,8 +8,9 @@ Singleton {
     id: root
 
     property real cpuUsage: 0      // 0-1
-    property real cpuTemp: 0       // degrees C
-    property real gpuTemp: 0
+    // Degrees C; NaN when no sensor reported one.
+    property real cpuTemp: NaN
+    property real gpuTemp: NaN
     property real memUsed: 0       // bytes
     property real memTotal: 1
     property real storageUsed: 0
@@ -124,15 +125,19 @@ Singleton {
         command: ["sh", "-c", `for h in /sys/class/hwmon/hwmon*; do n=$(cat "$h/name" 2>/dev/null); case "$n" in k10temp|coretemp) printf 'cpu %s\\n' "$(cat "$h/temp1_input" 2>/dev/null)";; amdgpu|nouveau) printf 'gpu %s\\n' "$(cat "$h/temp1_input" 2>/dev/null)";; esac; done`]
         stdout: StdioCollector {
             onStreamFinished: {
+                let cpu = NaN;
+                let gpu = NaN;
                 for (const line of text.trim().split("\n")) {
                     const [which, milli] = line.split(" ");
                     if (!milli)
                         continue;
                     if (which === "cpu")
-                        root.cpuTemp = Number(milli) / 1000;
+                        cpu = Number(milli) / 1000;
                     else if (which === "gpu")
-                        root.gpuTemp = Number(milli) / 1000;
+                        gpu = Number(milli) / 1000;
                 }
+                root.cpuTemp = cpu;
+                root.gpuTemp = gpu;
             }
         }
     }

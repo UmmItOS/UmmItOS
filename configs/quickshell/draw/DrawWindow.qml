@@ -274,7 +274,7 @@ OverlayWindow {
             MaterialIcon {
                 anchors.centerIn: parent
                 text: tool.icon
-                color: Theme.fg
+                color: tool.picked ? Theme.accentOn : Theme.fg
                 size: Theme.icon.small
             }
 
