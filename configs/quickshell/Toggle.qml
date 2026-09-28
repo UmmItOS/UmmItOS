@@ -38,8 +38,20 @@ Rectangle {
         }
     }
 
+    scale: press.pressed ? Theme.pressScale : 1
+
+    Behavior on scale {
+        NumberAnimation {
+            duration: Theme.duration.expressiveFastEffects
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Theme.curve.standard
+        }
+    }
+
     MouseArea {
+        id: press
         anchors.fill: parent
+        cursorShape: Qt.PointingHandCursor
         onClicked: root.toggled()
     }
 }
