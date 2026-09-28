@@ -33,6 +33,7 @@ extra/mpv
 extra/imagemagick
 extra/grim
 extra/jq
+extra/zbar
 extra/zoxide
 extra/bluez
 extra/bluez-utils

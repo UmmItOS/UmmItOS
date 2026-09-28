@@ -38,6 +38,7 @@ bind("Utilities", "Print", shell("screenshot", "screen"), "Screenshot full scree
 bind("Utilities", "SHIFT + Print", shell("screenshot", "toggle"), "Screenshot region")
 -- The same shot without Print, which laptops often put behind Fn.
 bind("Utilities", mainMod .. " + SHIFT + W", shell("screenshot", "window"), "Screenshot a window")
+bind("Utilities", mainMod .. " + SHIFT + Q", shell("scan", "toggle"), "Scan a QR code on screen")
 
 -- Alt+Tab reaches the shell through the global-shortcuts protocol rather than
 -- a keybind, so the switcher can see Alt released and commit on its own.

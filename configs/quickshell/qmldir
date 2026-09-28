@@ -33,3 +33,4 @@ singleton Recorder 1.0 record/Recorder.qml
 singleton Draw 1.0 draw/Draw.qml
 singleton Weather 1.0 services/Weather.qml
 singleton Settings 1.0 settings/Settings.qml
+singleton Scan 1.0 scan/Scan.qml

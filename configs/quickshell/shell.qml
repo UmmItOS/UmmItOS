@@ -16,6 +16,7 @@ import "notifications"
 import "osd"
 import "services"
 import "screenshot"
+import "scan"
 import "session"
 import "settings"
 import "switcher"
@@ -57,6 +58,8 @@ ShellRoot {
     RecordWindow {}
 
     SettingsWindow {}
+
+    ScanWindow {}
 
     DrawWindow {}
 

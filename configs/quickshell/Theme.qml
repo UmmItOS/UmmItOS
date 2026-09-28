@@ -209,6 +209,15 @@ Singleton {
         // The toolbar steps back while a stroke is drawn.
         readonly property real toolbarDrawing: 0.2
     }
+    // The QR scanner (scan/).
+    readonly property QtObject scan: QtObject {
+        // How far the highlight reaches past a code's edge.
+        readonly property int reach: 12
+        readonly property int card: 340
+        // The accent wash over a code, breathing between the two.
+        readonly property real tint: 0.14
+        readonly property real tintPeak: 0.3
+    }
     // The settings panel (settings/).
     readonly property QtObject settings: QtObject {
         readonly property int width: 880

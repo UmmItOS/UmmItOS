@@ -89,6 +89,17 @@ PanelWindow {
                 onClicked: Cheatsheet.open = !Cheatsheet.open
             }
 
+            BarButton {
+                // A second of grim and zbar: the spinner says it heard the click.
+                icon: Scan.scanning ? "" : "qr_code_scanner"
+                onClicked: Scan.start(bar.screen)
+
+                Spinner {
+                    anchors.centerIn: parent
+                    visible: Scan.scanning
+                }
+            }
+
             AccentPicker {}
 
             WeatherPicker {}
