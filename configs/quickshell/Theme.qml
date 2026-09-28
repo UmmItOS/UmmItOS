@@ -17,6 +17,13 @@ Singleton {
     readonly property color accent: /^#[0-9a-f]{6}([0-9a-f]{2})?$/i.test(savedAccent) ? savedAccent : defaultAccent
     readonly property color accentText: Qt.hsla(Math.max(0, accent.hslHue), Math.min(accent.hslSaturation, 0.86), 0.72, 1)
     readonly property color accent2: Qt.hsla(Math.max(0, accent.hslHue), accent.hslSaturation, 0.82, 1)
+    // Text and icons drawn on an accent fill: ink on a light accent, fg on a dark one (WCAG luminance, 0.17 is where both contrast equally).
+    readonly property color accentOn: luminance(accent) > 0.17 ? Qt.rgba(bg.r, bg.g, bg.b, 1) : fg
+
+    function luminance(c: color): real {
+        const lin = v => v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+        return 0.2126 * lin(c.r) + 0.7152 * lin(c.g) + 0.0722 * lin(c.b);
+    }
 
     function setAccent(c: color): void {
         savedAccent = c.toString();
