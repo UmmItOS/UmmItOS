@@ -117,7 +117,7 @@ OverlayWindow {
             Text {
                 Layout.topMargin: Theme.spacing.extraSmall
                 opacity: search.text === "" ? 0 : 1
-                text: win.results.length === 0 ? "Nothing matches" : win.results.length === 1 ? "1 match, Enter to open" : win.results.length + " matches, Enter opens the first"
+                text: win.results.length === 0 ? "No match" : win.results.length === 1 ? "1 match, Enter to open" : win.results.length + " matches, Enter opens the first"
                 color: Theme.dim
                 font.family: Theme.font
                 font.pixelSize: Theme.fontSize.smaller
@@ -238,7 +238,10 @@ OverlayWindow {
                         if (win.pointerMoved(this, mouse.x, mouse.y))
                             grid.currentIndex = cell.index;
                     }
-                    onClicked: win.accept()
+                    onClicked: {
+                        grid.currentIndex = cell.index;
+                        win.accept();
+                    }
                 }
             }
         }

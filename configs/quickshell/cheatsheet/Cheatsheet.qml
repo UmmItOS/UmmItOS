@@ -22,26 +22,9 @@ Singleton {
                 text: m[2]
             };
         return {
-            group: groupOf(bind),
+            group: "Window",
             text: bind.description
         };
-    }
-
-    function groupOf(bind: var): string {
-        const d = bind.dispatcher;
-        const a = bind.arg ?? "";
-        // Media first: the brightness keys also call the shell's IPC.
-        if (/^(brightnessctl|wpctl|playerctl)/.test(a))
-            return "Media";
-        if (/screen-record|hyprpicker|woomer|smile|ipc call screenshot/.test(a))
-            return "Utilities";
-        if (d === "global" || a.includes("qs -c ummitos ipc"))
-            return "Shell";
-        if (d === "workspace" || d === "movetoworkspace" || d === "togglespecialworkspace")
-            return "Workspace";
-        if (d === "exec")
-            return "Apps";
-        return "Window";
     }
 
     function keysOf(bind: var): list<string> {
@@ -57,12 +40,9 @@ Singleton {
             "down": "↓",
             "Alt_L": "Alt",
             "Return": "Enter",
-            "PRINT": "Print",
-            "Print": "Print",
-            "TAB": "Tab",
             "slash": "/"
         };
-        let key = bind.keycode === 36 ? "Enter" : bind.keycode === 61 ? "/" : (named[bind.key] ?? bind.key);
+        let key = named[bind.key] ?? bind.key;
         const media = {
             "XF86MonBrightnessUp": "Bright +",
             "XF86MonBrightnessDown": "Bright −",

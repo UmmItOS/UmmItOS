@@ -15,6 +15,8 @@ Singleton {
     // Set only once decoded, so the Image never reads a half-written file.
     property string decodedPath
     property string decodingId
+    property string decodedText
+    property string decodedTextId
     readonly property string cacheDir: Quickshell.cachePath("clipboard")
 
     function show(newMode: string): void {
@@ -76,6 +78,14 @@ Singleton {
         decodeProc.running = true;
     }
 
+    function decodeText(id: string): void {
+        clearDecode();
+        textProc.running = false;
+        // The id rides in the output, so a killed run's late text cannot land on the wrong entry.
+        textProc.command = ["sh", "-c", 'printf "%s\\n" "$1"; cliphist decode "$1"', "sh", id];
+        textProc.running = true;
+    }
+
     function clearDecode(): void {
         decodeProc.running = false;
         decodingId = "";
@@ -133,6 +143,18 @@ Singleton {
         onExited: code => {
             if (code === 0 && forId === root.decodingId)
                 root.decodedPath = root.cacheDir + "/" + forId + ".png";
+        }
+    }
+
+    Process {
+        id: textProc
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const nl = text.indexOf("\n");
+                root.decodedText = text.slice(nl + 1);
+                root.decodedTextId = text.slice(0, nl);
+            }
         }
     }
 

@@ -352,8 +352,7 @@ OverlayWindow {
                                             Layout.fillWidth: true
                                             text: row.modelData.description
                                             color: Theme.fg
-                                            opacity: 0.75
-                                            elide: Text.ElideRight
+                                            wrapMode: Text.Wrap
                                             font.family: Theme.font
                                             font.pixelSize: Theme.fontSize.normal
                                         }

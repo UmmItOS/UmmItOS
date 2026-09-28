@@ -1,6 +1,5 @@
 pragma ComponentBehavior: Bound
 
-import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Wayland
 import Quickshell.Widgets
@@ -35,7 +34,7 @@ OverlayWindow {
         } else {
             zoom = 0;
             // A stale overview picture must not cover Alt+Tab's zoom.
-            Switcher.startIndex = -1;
+            Switcher.startId = -1;
         }
     }
 
@@ -390,7 +389,10 @@ OverlayWindow {
                                         if (win.pointerMoved(this, mouse.x, mouse.y))
                                             Switcher.index = cell.slot;
                                     }
-                                    onClicked: Switcher.commit()
+                                    onClicked: {
+                                        Switcher.index = cell.slot;
+                                        Switcher.commit();
+                                    }
                                 }
                             }
                         }

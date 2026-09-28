@@ -20,6 +20,15 @@ Singleton {
     // Entries go null while workspaces are created and destroyed.
     readonly property var workspaces: [...Hyprland.workspaces.values].filter(w => w && w.id > 0).sort((a, b) => a.id - b.id)
 
+    // The selection follows its workspace when others come and go.
+    property int selectedId: -1
+    onIndexChanged: selectedId = workspaces[index]?.id ?? -1
+    onWorkspacesChanged: {
+        const i = workspaces.findIndex(w => w.id === selectedId);
+        index = i >= 0 ? i : Math.max(0, Math.min(index, workspaces.length - 1));
+        selectedId = workspaces[index]?.id ?? -1;
+    }
+
     function step(delta: int): void {
         const count = workspaces.length;
         if (count === 0)
@@ -43,6 +52,9 @@ Singleton {
 
     // The overview flag outlives its close by the exit.
     function cycle(delta: int): void {
+        // Alt+Tab right after the hot corner is Alt+Tab, not a pinned overview.
+        warming = false;
+        warmLimit.stop();
         if (!open)
             overviewing = false;
         step(delta);
@@ -82,7 +94,8 @@ Singleton {
     property int shotCount: 0
     readonly property string shotUrl: "file://" + shotPath + "?" + shotCount
     // The workspace the overview opened on: the picture only matches it.
-    property int startIndex: -1
+    property int startId: -1
+    readonly property int startIndex: workspaces.findIndex(w => w.id === startId)
     // Captures and decode happen here, off the zoom's first frames.
     property bool warming: false
 
@@ -92,7 +105,7 @@ Singleton {
         warming = false;
         overviewing = true;
         step(0);
-        startIndex = index;
+        startId = selectedId;
         pinned = true;
     }
 

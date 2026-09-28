@@ -71,7 +71,7 @@ Singleton {
     // After the fade, so the menu is not in the lock's picture.
     Timer {
         id: lockLater
-        interval: 400
+        interval: Theme.duration.expressiveFastSpatial
         onTriggered: Lock.lock()
     }
 

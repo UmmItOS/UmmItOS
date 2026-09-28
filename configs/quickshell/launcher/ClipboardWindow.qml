@@ -1,6 +1,5 @@
 pragma ComponentBehavior: Bound
 
-import Quickshell
 import Quickshell.Widgets
 import QtQuick
 import QtQuick.Layouts
@@ -38,6 +37,8 @@ OverlayWindow {
             const entry = win.focusedEntry;
             if (entry && entry.image)
                 Launcher.decode(entry.id);
+            else if (entry)
+                Launcher.decodeText(entry.id);
             else
                 Launcher.clearDecode();
         }
@@ -202,7 +203,10 @@ OverlayWindow {
                                     if (win.pointerMoved(this, mouse.x, mouse.y))
                                         list.currentIndex = row.index;
                                 }
-                                onClicked: win.accept()
+                                onClicked: {
+                                    list.currentIndex = row.index;
+                                    win.accept();
+                                }
                             }
                         }
                     }
@@ -260,7 +264,8 @@ OverlayWindow {
                     Text {
                         id: fullText
                         width: parent.width
-                        text: win.focusedEntry?.preview ?? ""
+                        // The list's preview is cut and collapsed; it stands in until the full text lands.
+                        text: Launcher.decodedTextId !== "" && Launcher.decodedTextId === win.focusedEntry?.id ? Launcher.decodedText : win.focusedEntry?.preview ?? ""
                         color: Theme.fg
                         font.family: Theme.font
                         font.pixelSize: Theme.fontSize.normal
