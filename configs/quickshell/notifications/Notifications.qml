@@ -9,6 +9,23 @@ import QtQuick.Layouts
 import ".."
 
 Scope {
+    id: root
+
+    // One entry per toast, so a replaced notification can leave its old toast up.
+    property var cards: []
+    property int serial: 0
+
+    function show(n: Notification): void {
+        cards = cards.concat([{
+                key: serial++,
+                n: n
+            }]);
+    }
+
+    function drop(entry: var): void {
+        cards = cards.filter(e => e !== entry);
+    }
+
     NotificationServer {
         id: server
 
@@ -40,6 +57,8 @@ Scope {
             if (!notification.transient)
                 Notifs.record(notification);
             notification.tracked = !Notifs.dnd;
+            if (notification.tracked)
+                root.show(notification);
         }
     }
 
@@ -105,7 +124,9 @@ Scope {
                     easing.bezierCurve: Theme.curve.expressiveDefaultSpatial
                 }
             }
-            model: server.trackedNotifications
+            model: ScriptModel {
+                values: root.cards
+            }
 
             add: Transition {
                 id: entrance
@@ -168,13 +189,16 @@ Scope {
                 layer.effect: MotionBlur {
                     settled: card.opacity
                 }
-                required property Notification modelData
+                required property var modelData
+                // Set once a replacement moved the notification to a new toast below this one.
+                property bool detached: false
+                readonly property Notification live: detached ? null : modelData?.n ?? null
 
                 // Copied while alive: the object dies before the exit ends.
                 property var kept: ({})
 
                 function keep(): void {
-                    const n = card.modelData;
+                    const n = card.live;
                     // A destroyed notification reads empty, not null.
                     if (n && n.appName !== undefined)
                         kept = {
@@ -188,21 +212,37 @@ Scope {
                 }
 
                 Component.onCompleted: keep()
-                onModelDataChanged: keep()
 
-                // Replaced notifications update the same object in place.
+                // A new message, not a progress update, gets its own toast; this one keeps the old text.
+                function changed(): void {
+                    const n = card.live;
+                    if (!n || n.appName === undefined)
+                        return;
+                    const progress = n.hints?.value !== undefined;
+                    if (!progress && (n.summary !== card.kept.summary || Notifs.safeBody(n.body) !== card.kept.body)) {
+                        card.detached = true;
+                        root.show(n);
+                    } else {
+                        card.keep();
+                    }
+                }
+
+                // Replaced notifications update the same object in place, one field signal at a time.
                 Connections {
-                    target: card.modelData
+                    target: card.live
                     ignoreUnknownSignals: true
 
                     function onSummaryChanged(): void {
-                        card.keep();
+                        Qt.callLater(card.changed);
                     }
                     function onBodyChanged(): void {
-                        card.keep();
+                        Qt.callLater(card.changed);
                     }
                     function onImageChanged(): void {
-                        card.keep();
+                        Qt.callLater(card.changed);
+                    }
+                    function onClosed(): void {
+                        root.drop(card.modelData);
                     }
                 }
 
@@ -210,7 +250,7 @@ Scope {
                 readonly property string appIcon: card.kept.appIcon ? Quickshell.iconPath(card.kept.appIcon, true) : ""
                 // Delegates are created on arrival, so this is the arrival time.
                 readonly property string time: Qt.formatDateTime(new Date(), "HH:mm")
-                readonly property var defaultAction: card.modelData?.actions?.find(a => a.identifier === "default") ?? null
+                readonly property var defaultAction: card.live?.actions?.find(a => a.identifier === "default") ?? null
 
                 width: list.width
                 implicitHeight: body.implicitHeight + Theme.padding.large * 2
@@ -225,18 +265,18 @@ Scope {
                     onTapped: {
                         if (card.defaultAction)
                         card.defaultAction.invoke();
-                        card.modelData?.dismiss();
+                        card.detached ? root.drop(card.modelData) : card.live?.dismiss();
                     }
                 }
 
                 // In ms: -1 is ours to choose, 0 never expires.
-                readonly property real timeout: card.modelData?.expireTimeout ?? -1
+                readonly property real timeout: card.live?.expireTimeout ?? -1
 
                 // Reading a notification should not race its own timer.
                 Timer {
-                    running: !hover.hovered && card.modelData !== null && !card.critical && card.timeout !== 0
+                    running: !hover.hovered && (card.live !== null || card.detached) && !card.critical && card.timeout !== 0
                     interval: card.timeout > 0 ? card.timeout : 6000
-                    onTriggered: card.modelData?.expire()
+                    onTriggered: card.detached ? root.drop(card.modelData) : card.live?.expire()
                 }
 
                 ColumnLayout {
@@ -303,7 +343,7 @@ Scope {
                             MouseArea {
                                 anchors.fill: parent
                                 anchors.margins: -4
-                                onClicked: card.modelData?.dismiss()
+                                onClicked: card.detached ? root.drop(card.modelData) : card.live?.dismiss()
                             }
                         }
                     }
@@ -358,10 +398,10 @@ Scope {
                         Layout.fillWidth: true
                         Layout.topMargin: Theme.spacing.small
                         spacing: Theme.spacing.small
-                        visible: card.modelData?.actions?.some(a => a.identifier !== "default") ?? false
+                        visible: card.live?.actions?.some(a => a.identifier !== "default") ?? false
 
                         Repeater {
-                            model: card.modelData?.actions?.filter(a => a.identifier !== "default") ?? []
+                            model: card.live?.actions?.filter(a => a.identifier !== "default") ?? []
 
                             Rectangle {
                                 id: action
