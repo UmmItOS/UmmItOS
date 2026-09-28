@@ -147,6 +147,22 @@ Motion is part of every surface by default, not an extra: anything new that appe
 
 `Lock` (singleton) and `lock/LockScreen.qml`: a `WlSessionLock` with one `WlSessionLockSurface` per screen, drawing `LockContent`. `ipc call lock preview` shows the same content in an ordinary window, which is how the look is worked on; never save a lock file while really locked, since a reload recreates the lock. The password goes through a `PamContext` whose stack lives in the shell (`lock/pam/password`, `pam_unix`), so no `/etc/pam.d` file is needed. Before locking, each screen is captured with `grim -t ppm` into `$XDG_RUNTIME_DIR/ummitos-lock` (PNG encoding was ~0.6s and read as lag); the lock fades in from that picture and fades back to it before releasing, because a lock surface is opaque and the desktop cannot show through. `misc:allow_session_lock_restore` is on, so if `qs` dies while locked: switch to a TTY, start `qs -c ummitos -d` in the session's environment, run `qs -c ummitos ipc call lock lock`, go back and unlock.
 
+### Review every change
+
+Every function, feature or fix is reviewed before it is committed, through four lenses at once:
+
+1. **Programmer (lazy, `/ponytail:ponytail`).** The simplest version that works. Reuse a shared component or an existing helper before writing a new one; no speculative options; delete what nothing uses.
+2. **Bug review.** Trace every path the change touches: null and empty states, races between processes and timers, reloads (IPC lost, singletons reset), sleep and wake, multi-monitor, and anything that could leave the screen blocked or a state stuck. Every rule in "Traps found the hard way" is a checklist item.
+3. **QML review (`qt-development-skills:qt-qml-review`).** Bindings, layouts, loaders, delegates, states and performance; qmllint on every touched file with no unqualified access and no unused imports (the Theme member-not-found warnings are the known false ones).
+4. **UI review (`/hallmark`, audit).** The house design system first: Theme tokens only, no borders, readable text (`accentOn` on accent fills, no cut-off meaning), every state designed (empty, loading, error, disabled), every control answering the pointer, and the Motion rules above.
+
+For anything larger than a small fix, run the lenses as parallel subagents, then verify each finding in the code before acting on it. The same fan-out does the fixing:
+
+- **Split by files.** Each fix agent owns a disjoint set of files, so no two agents write the same file. Exactly one agent at a time writes `Theme.qml`, and token passes run after the fix waves.
+- **Agents don't commit, and never run `qs -c ummitos` or `qs ipc`.** They read `qs log -c ummitos` and qmllint. The coordinator reviews each diff, checks the surface on screen, and commits per area.
+- **Nothing half-done stays in the tree.** If an agent is stopped mid-edit, revert its uncommitted files (`git checkout -- <paths>`) and relaunch it, above all anything under `lock/`.
+- **Done means checked.** The log shows a fresh `Configuration Loaded` with no new warning, qmllint is clean on the touched files, shellcheck is clean on touched scripts, and the changed surface has been seen in a screenshot or recording. Say plainly what could not be clicked from a terminal.
+
 ### Debugging state
 
 Before theorising about why a surface misbehaves, read its actual state. Add a temporary `function probe(): string` to the singleton's `IpcHandler` that returns `JSON.stringify({…})` of the internal values, call it between steps, and delete it afterwards.
