@@ -62,7 +62,7 @@ RowLayout {
     Flyout {
         anchorItem: root
         visible: root.popupOpen
-        title: "Bluetooth"
+        title: I18n.t("Bluetooth")
         busy: root.searching && root.devices.length > 0
         checked: root.on
         toggleVisible: root.adapter !== null
@@ -84,10 +84,10 @@ RowLayout {
             icon: root.on ? "bluetooth_searching" : "bluetooth_disabled"
             text: {
                 if (!root.adapter)
-                    return "No Bluetooth adapter";
+                    return I18n.t("No Bluetooth adapter");
                 if (!root.on)
-                    return "Bluetooth is off";
-                return root.searching ? "Looking for devices" : "No devices found";
+                    return I18n.t("Bluetooth is off");
+                return root.searching ? I18n.t("Looking for devices") : I18n.t("No devices found");
             }
         }
 
@@ -120,7 +120,7 @@ RowLayout {
             footer: FlyoutSearching {
                 width: list.width
                 searching: root.searching
-                text: "Looking for devices"
+                text: I18n.t("Looking for devices")
             }
 
             delegate: FlyoutRow {
@@ -149,7 +149,7 @@ RowLayout {
 
                     Text {
                         Layout.fillWidth: true
-                        text: row.modelData.name || row.modelData.deviceName || "Unnamed device"
+                        text: row.modelData.name || row.modelData.deviceName || I18n.t("Unnamed device")
                         color: row.ink
                         elide: Text.ElideRight
                         font {
@@ -176,7 +176,7 @@ RowLayout {
                     Text {
                         visible: row.modelData.connected && !row.busy
                         // Says what a click does.
-                        text: row.hovered ? "Disconnect" : "Connected"
+                        text: row.hovered ? I18n.t("Disconnect") : I18n.t("Connected")
                         color: row.ink
                         font {
                             family: Theme.font

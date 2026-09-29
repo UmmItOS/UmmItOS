@@ -68,7 +68,7 @@ Flyout {
 
                     Text {
                         Layout.fillWidth: true
-                        text: "Back"
+                        text: I18n.t("Back")
                         color: Theme.dim
                         font.family: Theme.font
                         font.pixelSize: Theme.fontSize.normal

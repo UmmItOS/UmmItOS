@@ -24,10 +24,10 @@ Singleton {
     function spoken(s: real): string {
         const minutes = Math.floor(s / 60), hours = Math.floor(minutes / 60), days = Math.floor(hours / 24);
         if (days > 0)
-            return days + "d" + (hours % 24 > 0 ? " " + hours % 24 + "h" : "");
+            return hours % 24 > 0 ? I18n.t("%1d %2h").arg(days).arg(hours % 24) : I18n.t("%1d").arg(days);
         if (hours > 0)
-            return hours + "h" + (minutes % 60 > 0 ? " " + minutes % 60 + "m" : "");
-        return Math.max(1, minutes) + "m";
+            return minutes % 60 > 0 ? I18n.t("%1h %2m").arg(hours).arg(minutes % 60) : I18n.t("%1h").arg(hours);
+        return I18n.t("%1m").arg(Math.max(1, minutes));
     }
 
     function credit(): void {

@@ -14,7 +14,7 @@ BarButton {
     Flyout {
         anchorItem: root
         visible: root.popupOpen
-        title: "Weather"
+        title: I18n.t("Weather")
         busy: Weather.location !== "" && !Weather.ready && !Weather.failed
         toggleVisible: false
         hug: true
@@ -72,7 +72,7 @@ BarButton {
                         anchors.fill: parent
                         verticalAlignment: Text.AlignVCenter
                         visible: field.text === ""
-                        text: "City or district"
+                        text: I18n.t("City or district")
                         color: Theme.dim
                         font: field.font
                     }
@@ -85,12 +85,12 @@ BarButton {
             wrapMode: Text.WordWrap
             text: {
                 if (Weather.location === "")
-                    return "Type a place, then Enter. The weather shows once it is set.";
+                    return I18n.t("Type a place, then Enter. The weather shows once it is set.");
                 if (Weather.failed)
-                    return "wttr.in does not know \"" + Weather.location + "\". Try another name.";
+                    return I18n.t("wttr.in does not know \"%1\". Try another name.").arg(Weather.location);
                 if (!Weather.ready)
-                    return "Looking up " + Weather.location + "…";
-                return "Matched " + Weather.matched + ": " + Weather.temp + "°, " + Weather.condition.toLowerCase() + ". Empty and Enter turns it off.";
+                    return I18n.t("Looking up %1…").arg(Weather.location);
+                return I18n.t("Matched %1: %2°, %3. Empty and Enter turns it off.").arg(Weather.matched).arg(Weather.temp).arg(Weather.condition.toLowerCase());
             }
             color: Weather.failed ? Theme.urgent : Theme.dim
             font {

@@ -45,13 +45,13 @@ RowLayout {
         switch (reason) {
         case ConnectionFailReason.NoSecrets:
         case ConnectionFailReason.WifiClientDisconnected:
-            return "Wrong password";
+            return I18n.t("Wrong password");
         case ConnectionFailReason.WifiAuthTimeout:
-            return "Timed out";
+            return I18n.t("Timed out");
         case ConnectionFailReason.WifiNetworkLost:
-            return "Out of range";
+            return I18n.t("Out of range");
         default:
-            return "Couldn't connect";
+            return I18n.t("Couldn't connect");
         }
     }
 
@@ -118,10 +118,10 @@ RowLayout {
             icon: root.wifi && Networking.wifiEnabled ? "wifi_find" : "wifi_off"
             text: {
                 if (!root.wifi)
-                    return "No Wi-Fi adapter";
+                    return I18n.t("No Wi-Fi adapter");
                 if (!Networking.wifiEnabled)
-                    return "Wi-Fi is off";
-                return root.scanning ? "Searching for networks" : "No networks found";
+                    return I18n.t("Wi-Fi is off");
+                return root.scanning ? I18n.t("Searching for networks") : I18n.t("No networks found");
             }
         }
 
@@ -154,7 +154,7 @@ RowLayout {
             footer: FlyoutSearching {
                 width: list.width
                 searching: root.searching
-                text: "Searching for networks"
+                text: I18n.t("Searching for networks")
             }
 
             delegate: FlyoutRow {
@@ -239,7 +239,7 @@ RowLayout {
                         Text {
                             visible: row.modelData.connected && !row.busy
                             // Says what a click does.
-                            text: row.hovered ? "Disconnect" : "Connected"
+                            text: row.hovered ? I18n.t("Disconnect") : I18n.t("Connected")
                             color: row.ink
                             font {
                                 family: Theme.font
@@ -340,7 +340,7 @@ RowLayout {
                                 anchors.fill: parent
                                 verticalAlignment: Text.AlignVCenter
                                 visible: psk.text === ""
-                                text: "Password, then Enter"
+                                text: I18n.t("Password, then Enter")
                                 color: Theme.dim
                                 font: psk.font
                             }

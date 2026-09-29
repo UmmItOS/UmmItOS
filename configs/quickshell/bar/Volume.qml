@@ -77,7 +77,7 @@ RowLayout {
     Text {
         Layout.alignment: Qt.AlignVCenter
         visible: root.audio
-        text: !root.audio ? "" : root.muted ? "muted" : Math.round(root.level * 100) + " %"
+        text: !root.audio ? "" : root.muted ? I18n.t("muted") : Math.round(root.level * 100) + " %"
         color: Theme.fg
         font {
             family: Theme.font
@@ -103,7 +103,7 @@ RowLayout {
     Flyout {
         anchorItem: root
         visible: root.popupOpen
-        title: "Audio"
+        title: I18n.t("Audio")
         hug: true
         toggleVisible: false
         onCloseRequested: root.popupOpen = false
@@ -188,7 +188,7 @@ RowLayout {
         Text {
             Layout.fillWidth: true
             Layout.topMargin: Theme.spacing.small
-            text: "Volume limit"
+            text: I18n.t("Volume limit")
             color: Theme.dim
             font {
                 family: Theme.font
@@ -211,7 +211,7 @@ RowLayout {
             Layout.fillWidth: true
             Layout.topMargin: Theme.spacing.small
             visible: root.devices.length > 1
-            text: "Output"
+            text: I18n.t("Output")
             color: Theme.dim
             font {
                 family: Theme.font
@@ -288,7 +288,7 @@ RowLayout {
             Layout.fillWidth: true
             Layout.topMargin: Theme.spacing.small
             visible: root.streams.length > 0
-            text: "Playing"
+            text: I18n.t("Playing")
             color: Theme.dim
             font {
                 family: Theme.font

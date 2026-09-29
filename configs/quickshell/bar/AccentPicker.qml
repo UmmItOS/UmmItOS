@@ -88,14 +88,14 @@ BarButton {
     Flyout {
         anchorItem: root
         visible: root.popupOpen
-        title: "Accent"
+        title: I18n.t("Accent")
         toggleVisible: false
         hug: true
         onCloseRequested: root.popupOpen = false
 
         Heading {
             visible: root.used.length > 0
-            text: "Most used"
+            text: I18n.t("Most used")
         }
 
         // Longest first; a colour moving up slides into place instead of the row being rebuilt each minute.
@@ -170,7 +170,7 @@ BarButton {
 
         Heading {
             visible: root.used.length > 0
-            text: "Presets"
+            text: I18n.t("Presets")
         }
 
         // Always shown, so it measures the cells for both rows.
@@ -252,7 +252,7 @@ BarButton {
 
         Text {
             Layout.fillWidth: true
-            text: "#hex or rgba(r, g, b, a), then Enter"
+            text: I18n.t("#hex or rgba(r, g, b, a), then Enter")
             color: Theme.dim
             font {
                 family: Theme.font
