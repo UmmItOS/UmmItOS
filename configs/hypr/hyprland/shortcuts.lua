@@ -9,8 +9,10 @@ local function bind(group, keys, action, description, opts)
     hl.bind(keys, action, opts)
 end
 
+-- Through launch.sh, which pops up a notice when a program is not installed; plain sh if ~/script predates it.
 local function run(cmd)
-    return hl.dsp.exec_cmd(cmd)
+    local quoted = "'" .. cmd:gsub("'", "'\\''") .. "'"
+    return hl.dsp.exec_cmd('f="$HOME/script/misc/launch.sh"; [ -x "$f" ] || f=eval; "$f" ' .. quoted)
 end
 
 local function shell(target, fn)
