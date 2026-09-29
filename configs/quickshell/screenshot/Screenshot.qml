@@ -89,7 +89,7 @@ Singleton {
     function take(target: var): void {
         const file = newFile();
         // Detached, so a second quick shot is not dropped.
-        Quickshell.execDetached(["sh", "-c", 'mkdir -p "$1" && f="$2" && shift 2 && grim "$@" "$f" && wl-copy --type image/png < "$f" && notify-send -a Screenshot -h string:image-path:"$f" "Screenshot saved" "$(basename "$f")"', "sh", root.dir, file, ...target]);
+        Quickshell.execDetached(["sh", "-c", 'mkdir -p "$1" && f="$2" && shift 2 && grim "$@" "$f" && wl-copy --type image/png < "$f" && notify-send -a Screenshot -h string:image-path:"$f" "Screenshot saved" "$(basename "$f")" || notify-send -a Screenshot -u critical "Screenshot failed" "Could not save to $1"', "sh", root.dir, file, ...target]);
     }
 
     // grabToImage cannot create the folder, so it is made up front.
