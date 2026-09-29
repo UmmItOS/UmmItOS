@@ -133,7 +133,7 @@ OverlayWindow {
 
                 Text {
                     Layout.bottomMargin: Theme.spacing.large
-                    text: "Settings"
+                    text: I18n.t("Settings")
                     color: Theme.fg
                     font.family: Theme.fontDisplay
                     font.pixelSize: Theme.fontSize.large
@@ -214,7 +214,7 @@ OverlayWindow {
 
                                     Text {
                                         Layout.fillWidth: true
-                                        text: entry.modelData.name
+                                        text: I18n.t(entry.modelData.name)
                                         color: entry.ink
                                         font.family: Theme.font
                                         font.pixelSize: Theme.fontSize.normal
@@ -254,6 +254,8 @@ OverlayWindow {
                 PackagesPage {}
 
                 UpdatePage {}
+
+                LanguagePage {}
 
                 AboutPage {}
             }

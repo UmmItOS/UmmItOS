@@ -42,7 +42,7 @@ ColumnLayout {
     }
 
     function ago(days: int): string {
-        return days === 0 ? "today" : days === 1 ? "yesterday" : days + " days ago";
+        return days === 0 ? I18n.t("today") : days === 1 ? I18n.t("yesterday") : I18n.t("%1 days ago").arg(days);
     }
 
     // Opening the page reads only local state: the pacman log and the clone, without fetching.
@@ -130,9 +130,9 @@ ColumnLayout {
         onExited: code => {
             page.pulling = false;
             if (code !== 0)
-                Quickshell.execDetached(["notify-send", "-a", "Settings", "Could not update UmmItOS", pullError.text.trim() || "git pull stopped; see the UmmItOS folder."]);
+                Quickshell.execDetached(["notify-send", "-a", "Settings", I18n.t("Could not update UmmItOS"), pullError.text.trim() || I18n.t("git pull stopped; see the UmmItOS folder.")]);
             else
-                Quickshell.execDetached(["notify-send", "-a", "Settings", "UmmItOS updated", "The shell reloads by itself. Hyprland config and ~/script are copies: copy their changes by hand."]);
+                Quickshell.execDetached(["notify-send", "-a", "Settings", I18n.t("UmmItOS updated"), I18n.t("The shell reloads by itself. Hyprland config and ~/script are copies: copy their changes by hand.")]);
             page.look(false);
         }
     }
@@ -164,36 +164,36 @@ ColumnLayout {
         title: {
             switch (page.result) {
             case "idle":
-                return "Updates not checked yet";
+                return I18n.t("Updates not checked yet");
             case "checking":
-                return "Checking for updates";
+                return I18n.t("Checking for updates");
             case "ok":
-                return "Up to date";
+                return I18n.t("Up to date");
             case "pending":
-                return page.pending.length === 1 ? "1 update available" : page.pending.length + " updates available";
+                return page.pending.length === 1 ? I18n.t("1 update available") : I18n.t("%1 updates available").arg(page.pending.length);
             case "offline":
-                return "Could not reach the mirrors";
+                return I18n.t("Could not reach the mirrors");
             default:
-                return "Cannot check for updates";
+                return I18n.t("Cannot check for updates");
             }
         }
         hint: {
             if (page.result === "noTool")
-                return "checkupdates comes with pacman-contrib; the Packages page can install it.";
+                return I18n.t("checkupdates comes with pacman-contrib; the Packages page can install it.");
             if (page.result === "offline")
-                return "Check the network, then try again. Updating still works once it is back.";
+                return I18n.t("Check the network, then try again. Updating still works once it is back.");
             const parts = [];
             if (page.daysSince >= 0)
-                parts.push("Last full upgrade " + page.ago(page.daysSince));
+                parts.push(I18n.t("Last full upgrade %1").arg(page.ago(page.daysSince)));
             if (page.result === "pending" && page.aurCount > 0)
-                parts.push(page.aurCount + " from the AUR");
+                parts.push(I18n.t("%1 from the AUR").arg(page.aurCount));
             return parts.join(" · ");
         }
 
         Action {
             primary: page.result === "idle"
             icon: "refresh"
-            label: "Check"
+            label: I18n.t("Check")
             enabled: page.result !== "checking" && !upgrade.running
             onClicked: page.check()
         }
@@ -201,7 +201,7 @@ ColumnLayout {
         Action {
             primary: page.result === "pending" || (page.stale && page.result !== "idle")
             icon: upgrade.running ? "hourglass_top" : "system_update_alt"
-            label: upgrade.running ? "Updating" : "Update now"
+            label: upgrade.running ? I18n.t("Updating") : I18n.t("Update now")
             enabled: !upgrade.running
             onClicked: page.runUpdate()
         }
@@ -250,7 +250,7 @@ ColumnLayout {
 
                 Text {
                     Layout.fillWidth: true
-                    text: card.linked ? "UmmItOS · " + Settings.tilde(page.source?.root ?? "") : "This shell is a copy"
+                    text: card.linked ? "UmmItOS · " + Settings.tilde(page.source?.root ?? "") : I18n.t("This shell is a copy")
                     textFormat: Text.PlainText
                     elide: Text.ElideMiddle
                     color: Theme.fg
@@ -271,12 +271,12 @@ ColumnLayout {
                         if (!s)
                             return "";
                         if (!s.linked)
-                            return Settings.tilde(s.dir ?? "") + " is not linked to a UmmItOS clone, so git pull will not update it. Link it with ln -sfn, and pulling keeps it current.";
-                        const head = "Linked, branch " + (s.branch || "detached");
+                            return I18n.t("%1 is not linked to a UmmItOS clone, so git pull will not update it. Link it with ln -sfn, and pulling keeps it current.").arg(Settings.tilde(s.dir ?? ""));
+                        const head = I18n.t("Linked, branch %1").arg(s.branch || I18n.t("detached"));
                         if (!s.upstream)
-                            return head + " · no upstream, so pull it by hand";
-                        const tail = s.behind > 0 ? (s.behind === 1 ? "1 commit behind " : s.behind + " commits behind ") + s.upstream : "up to date with " + s.upstream;
-                        return head + " · " + tail + (s.dirty > 0 ? " · " + s.dirty + " changed file(s)" : "");
+                            return head + " · " + I18n.t("no upstream, so pull it by hand");
+                        const tail = s.behind > 0 ? (s.behind === 1 ? I18n.t("1 commit behind %1").arg(s.upstream) : I18n.t("%1 commits behind %2").arg(s.behind).arg(s.upstream)) : I18n.t("up to date with %1").arg(s.upstream);
+                        return head + " · " + tail + (s.dirty > 0 ? " · " + I18n.t("%1 changed file(s)").arg(s.dirty) : "");
                     }
                 }
             }
@@ -285,7 +285,7 @@ ColumnLayout {
                 visible: card.linked && card.behind && (page.source?.upstream ?? "") !== ""
                 primary: true
                 icon: page.pulling ? "hourglass_top" : "download"
-                label: page.pulling ? "Pulling" : "Pull"
+                label: page.pulling ? I18n.t("Pulling") : I18n.t("Pull")
                 enabled: !page.pulling
                 onClicked: {
                     page.pulling = true;
@@ -296,14 +296,14 @@ ColumnLayout {
             Action {
                 visible: card.linked
                 icon: "folder_open"
-                label: "Open"
+                label: I18n.t("Open")
                 onClicked: Quickshell.execDetached(["xdg-open", page.source.root])
             }
 
             Action {
                 visible: !card.linked
                 icon: "content_copy"
-                label: "Copy command"
+                label: I18n.t("Copy command")
                 onClicked: Quickshell.execDetached(["wl-copy", "--", card.linkCommand])
             }
         }
@@ -331,7 +331,7 @@ ColumnLayout {
 
             Text {
                 Layout.alignment: Qt.AlignHCenter
-                text: "Press Check to see what an update would bring"
+                text: I18n.t("Press Check to see what an update would bring")
                 color: Theme.dim
                 font.family: Theme.font
                 font.pixelSize: Theme.fontSize.smaller
@@ -352,7 +352,7 @@ ColumnLayout {
 
             Text {
                 Layout.alignment: Qt.AlignHCenter
-                text: page.stale ? "Nothing new, but a full upgrade is still worth running" : "Nothing to update"
+                text: page.stale ? I18n.t("Nothing new, but a full upgrade is still worth running") : I18n.t("Nothing to update")
                 color: Theme.dim
                 font.family: Theme.font
                 font.pixelSize: Theme.fontSize.smaller

@@ -115,7 +115,7 @@ ColumnLayout {
 
         Text {
             Layout.fillWidth: true
-            text: Recorder.recording ? "Recording · " + Recorder.elapsed(clock.date) : "Ready to record"
+            text: Recorder.recording ? I18n.t("Recording · %1").arg(Recorder.elapsed(clock.date)) : I18n.t("Ready to record")
             color: Theme.fg
             font.family: Theme.fontDisplay
             font.pixelSize: Theme.fontSize.larger
@@ -128,7 +128,7 @@ ColumnLayout {
         Action {
             primary: true
             icon: Recorder.recording ? "stop" : "radio_button_checked"
-            label: Recorder.recording ? "Stop and save" : "Start recording"
+            label: Recorder.recording ? I18n.t("Stop and save") : I18n.t("Start recording")
             enabled: Recorder.recording || !Recorder.busy
             onClicked: {
                 if (Recorder.recording) {
@@ -142,14 +142,14 @@ ColumnLayout {
 
         Action {
             icon: "folder_open"
-            label: "Open folder"
+            label: I18n.t("Open folder")
             onClicked: Settings.openFolder()
         }
     }
 
     Setting {
-        title: "Save to"
-        hint: page.folderRejected ? "Use a full path, like ~/Videos" : "Type a folder, then Enter"
+        title: I18n.t("Save to")
+        hint: page.folderRejected ? I18n.t("Use a full path, like ~/Videos") : I18n.t("Type a folder, then Enter")
         warn: page.folderRejected
 
         Rectangle {
@@ -185,46 +185,46 @@ ColumnLayout {
     }
 
     Setting {
-        title: "Quality"
-        hint: "Higher looks sharper and makes bigger files"
+        title: I18n.t("Quality")
+        hint: I18n.t("Higher looks sharper and makes bigger files")
 
         Segmented {
             anchors.fill: parent
             values: ["2 MB", "5 MB", "10 MB"]
-            labels: ["Small", "Balanced", "Sharp"]
+            labels: [I18n.t("Small"), I18n.t("Balanced"), I18n.t("Sharp")]
             current: Settings.bitrate
             onPicked: value => Settings.set("bitrate", value)
         }
     }
 
     Setting {
-        title: "Frame rate"
-        hint: "The most frames per second it records"
+        title: I18n.t("Frame rate")
+        hint: I18n.t("The most frames per second it records")
 
         Segmented {
             anchors.fill: parent
             values: [30, 60, 120, 0]
-            labels: ["30", "60", "120", "No cap"]
+            labels: ["30", "60", "120", I18n.t("No cap")]
             current: Settings.fps
             onPicked: value => Settings.set("fps", value)
         }
     }
 
     Setting {
-        title: "Codec"
-        hint: "H.264 plays everywhere; HEVC and AV1 are smaller"
+        title: I18n.t("Codec")
+        hint: I18n.t("H.264 plays everywhere; HEVC and AV1 are smaller")
 
         Segmented {
             anchors.fill: parent
             values: ["auto", "avc", "hevc", "av1"]
-            labels: ["Auto", "H.264", "HEVC", "AV1"]
+            labels: [I18n.t("Auto"), "H.264", "HEVC", "AV1"]
             current: Settings.codec
             onPicked: value => Settings.set("codec", value)
         }
     }
 
     Setting {
-        title: "Show the cursor"
+        title: I18n.t("Show the cursor")
 
         Toggle {
             anchors.right: parent.right
@@ -240,7 +240,7 @@ ColumnLayout {
 
         Text {
             Layout.fillWidth: true
-            text: "Recordings"
+            text: I18n.t("Recordings")
             color: Theme.dim
             font.family: Theme.font
             font.pixelSize: Theme.fontSize.small
@@ -269,7 +269,7 @@ ColumnLayout {
         Text {
             anchors.centerIn: parent
             visible: files.count === 0
-            text: "No recordings yet"
+            text: I18n.t("No recordings yet")
             color: Theme.dim
             font.family: Theme.font
             font.pixelSize: Theme.fontSize.smaller
@@ -300,7 +300,7 @@ ColumnLayout {
 
                     Text {
                         Layout.fillWidth: true
-                        text: Qt.formatDateTime(new Date(file.modelData?.time ?? 0), "d MMM, HH:mm")
+                        text: Qt.formatDateTime(new Date(file.modelData?.time ?? 0), I18n.t("d MMM, HH:mm"))
                         color: Theme.fg
                         elide: Text.ElideRight
                         font.family: Theme.font
@@ -324,7 +324,7 @@ ColumnLayout {
 
                 Text {
                     visible: file.confirming
-                    text: "Move to Trash?"
+                    text: I18n.t("Move to Trash?")
                     color: Theme.urgent
                     font.family: Theme.font
                     font.pixelSize: Theme.fontSize.small

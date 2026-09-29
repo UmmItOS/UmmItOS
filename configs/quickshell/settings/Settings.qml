@@ -25,6 +25,10 @@ Singleton {
             icon: "system_update_alt"
         },
         {
+            name: "Language",
+            icon: "translate"
+        },
+        {
             name: "About",
             icon: "info"
         }
@@ -162,7 +166,7 @@ Singleton {
         id: trasher
         onExited: code => {
             if (code !== 0)
-                Quickshell.execDetached(["notify-send", "-a", "Settings", "Could not move to Trash", "gio trash failed; the recording is still in its folder."]);
+                Quickshell.execDetached(["notify-send", "-a", "Settings", I18n.t("Could not move to Trash"), I18n.t("gio trash failed; the recording is still in its folder.")]);
             root.refresh();
             Qt.callLater(root.runTrash);
         }
@@ -184,7 +188,7 @@ Singleton {
             root.toggle();
         }
 
-        // 0 Record, 1 Packages, 2 Update, 3 About.
+        // 0 Record, 1 Packages, 2 Update, 3 Language, 4 About.
         function page(index: int): void {
             root.page = Math.max(0, Math.min(index, root.pages.length - 1));
             root.open = true;

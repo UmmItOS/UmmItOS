@@ -61,7 +61,7 @@ ColumnLayout {
 
             Text {
                 Layout.fillWidth: true
-                text: "The first Hong Kong Linux distribution: Arch Linux and Hyprland, with a shell of its own."
+                text: I18n.t("The first Hong Kong Linux distribution: Arch Linux and Hyprland, with a shell of its own.")
                 wrapMode: Text.WordWrap
                 color: Theme.dim
                 font.family: Theme.font
@@ -95,7 +95,7 @@ ColumnLayout {
                     required property int index
 
                     Layout.fillWidth: index % 2 === 1
-                    text: modelData
+                    text: index % 2 === 0 ? I18n.t(modelData) : modelData
                     elide: Text.ElideRight
                     color: index % 2 === 0 ? Theme.dim : Theme.fg
                     font.family: Theme.font
@@ -112,13 +112,13 @@ ColumnLayout {
         Action {
             primary: true
             icon: "code"
-            label: "UmmItOS on GitHub"
+            label: I18n.t("UmmItOS on GitHub")
             onClicked: Quickshell.execDetached(["xdg-open", "https://github.com/UmmItOS/UmmItOS"])
         }
 
         Action {
             icon: "bug_report"
-            label: "Report a problem"
+            label: I18n.t("Report a problem")
             onClicked: Quickshell.execDetached(["xdg-open", "https://github.com/UmmItOS/UmmItOS/issues"])
         }
     }

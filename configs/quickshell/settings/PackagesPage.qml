@@ -13,7 +13,12 @@ ColumnLayout {
     // "checking", "ok", "missing" or "lost" (the package lists were not found).
     property string result: "checking"
     property int checked: 0
-    property string lists: ""
+    // The lists checked, as keys of listNames.
+    property var groups: []
+    readonly property string listText: {
+        const names = groups.map(g => I18n.t(listNames[g] ?? g));
+        return names.length > 1 ? I18n.t("%1 and %2").arg(names.slice(0, -1).join(I18n.t(", "))).arg(names[names.length - 1]) : names[0] ?? "";
+    }
     // "repo/name", in the lists' order.
     property var missing: []
     // name → the list it came from.
@@ -72,8 +77,7 @@ ColumnLayout {
                 page.source = from;
                 page.missing = all.map(p => p[1]).filter(p => lacking.includes(p.split("/").pop()));
                 page.checked = all.length;
-                const names = [...new Set(all.map(p => page.listNames[p[0]] ?? p[0]))];
-                page.lists = names.length > 1 ? names.slice(0, -1).join(", ") + " and " + names[names.length - 1] : names[0] ?? "";
+                page.groups = [...new Set(all.map(p => p[0]))];
                 page.result = page.missing.length > 0 ? "missing" : "ok";
             }
         }
@@ -107,20 +111,20 @@ ColumnLayout {
         title: {
             switch (page.result) {
             case "checking":
-                return "Checking packages";
+                return I18n.t("Checking packages");
             case "ok":
-                return "Everything is installed";
+                return I18n.t("Everything is installed");
             case "missing":
-                return page.missing.length === 1 ? "1 package missing" : page.missing.length + " packages missing";
+                return page.missing.length === 1 ? I18n.t("1 package missing") : I18n.t("%1 packages missing").arg(page.missing.length);
             default:
-                return "Package lists not found";
+                return I18n.t("Package lists not found");
             }
         }
-        hint: page.result === "lost" ? "Run the installer once from the UmmItOS folder, so the shell knows where it is." : page.result === "checking" ? "Reading the installer's lists" : page.checked + " checked · " + page.lists
+        hint: page.result === "lost" ? I18n.t("Run the installer once from the UmmItOS folder, so the shell knows where it is.") : page.result === "checking" ? I18n.t("Reading the installer's lists") : I18n.t("%1 checked · %2").arg(page.checked).arg(page.listText)
 
         Action {
             icon: "refresh"
-            label: "Check again"
+            label: I18n.t("Check again")
             enabled: page.result !== "checking" && !install.running
             onClicked: page.check()
         }
@@ -129,7 +133,7 @@ ColumnLayout {
             visible: page.result === "missing"
             primary: true
             icon: install.running ? "hourglass_top" : "download"
-            label: install.running ? "Installing" : "Install missing"
+            label: install.running ? I18n.t("Installing") : I18n.t("Install missing")
             enabled: !install.running
             onClicked: page.installAll(page.missing)
         }
@@ -157,7 +161,7 @@ ColumnLayout {
 
             Text {
                 Layout.alignment: Qt.AlignHCenter
-                text: "Nothing to install"
+                text: I18n.t("Nothing to install")
                 color: Theme.dim
                 font.family: Theme.font
                 font.pixelSize: Theme.fontSize.smaller
@@ -198,7 +202,7 @@ ColumnLayout {
                 }
 
                 Text {
-                    text: (page.listNames[page.source[row.modelData]] ?? "") + " · " + (row.repo === "aur" ? "AUR" : row.repo)
+                    text: I18n.t(page.listNames[page.source[row.modelData]] ?? "") + " · " + (row.repo === "aur" ? "AUR" : row.repo)
                     textFormat: Text.PlainText
                     color: row.repo === "aur" ? Theme.accentText : Theme.dim
                     font.family: Theme.font
