@@ -210,7 +210,7 @@ For things that need input you cannot give from a terminal, mark every temporary
 - **Shader colour uniforms arrive premultiplied.** Multiplying a `color` uniform by its alpha again makes a translucent fill almost vanish.
 - **A shader path resolves against the file that uses the component.** In a shared component, set `fragmentShader: Qt.resolvedUrl("x.frag.qsb")`.
 - **zbar's `--xml` output mangles non-ASCII.** Chinese text or an IDN link arrives as broken base64 with a wrong `length`, whatever the locale. `--raw -Sbinary` reads it correctly but gives no positions, so `Scan` reads such codes again, one region at a time (`grim -g`).
-- **Qt's default text rendering is soft.** At 12–17px over a translucent panel it reads blurry, like a low-resolution picture. Set `renderType: Text.NativeRendering` (`TextEdit.NativeRendering`) on text where reading matters; the QR scanner's panel does.
+- **Qt's default text rendering is soft.** Its distance-field text reads blurry at 12–17px over a translucent panel, with colour fringes. `shell.qml` turns it off for the whole shell with `//@ pragma Env QML_DISABLE_DISTANCEFIELD=1`; Qt has no other global switch (`QQuickWindow::setTextRenderType` is C++ only), and the pragma needs a `qs` restart, not a reload.
 - **Notifications are replaced in place.** `notify-send -r`, players and progress notices update the same `Notification` object, so anything copied from it must be refreshed on `summaryChanged`/`bodyChanged`/`imageChanged`.
 
 ## Hard rules

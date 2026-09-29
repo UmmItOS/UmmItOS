@@ -1,4 +1,5 @@
 //@ pragma UseQApplication
+//@ pragma Env QML_DISABLE_DISTANCEFIELD=1
 
 import Quickshell
 import QtQuick
