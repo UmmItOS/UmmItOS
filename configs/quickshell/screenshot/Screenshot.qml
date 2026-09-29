@@ -68,6 +68,13 @@ Singleton {
         finish();
     }
 
+    // Print: the focused screen at once; nothing on it needs picking, so no overlay to wait through.
+    function screenNow(): void {
+        if (open || leaving)
+            return;
+        take(["-o", Hyprland.focusedMonitor?.name ?? Quickshell.screens[0]?.name ?? ""]);
+    }
+
     function output(name: string): void {
         pendingGeometry = "";
         pendingOutput = name;
@@ -141,7 +148,7 @@ Singleton {
         }
 
         function screen(): void {
-            root.start("screen");
+            root.screenNow();
         }
 
         function window(): void {

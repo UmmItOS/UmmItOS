@@ -212,9 +212,7 @@ OverlayWindow {
         // The screen's size: the window may be unsized yet.
         from = to = Qt.point((screen?.width ?? width) / 2, (screen?.height ?? height) / 2);
         scope.forceActiveFocus();
-        if (mode === "screen")
-            Qt.callLater(wholeScreen);
-        else if (mode === "window")
+        if (mode === "window")
             Qt.callLater(() => focusFirst(boxes[0] ?? null));
     }
 
@@ -541,7 +539,7 @@ OverlayWindow {
                 horizontalCenter: parent.horizontalCenter
                 bottomMargin: Theme.padding.extraLarge
             }
-            visible: !win.dragging && win.mode !== "screen"
+            visible: !win.dragging
             text: win.mode === "window" ? I18n.t("Point at a window  ·  Click or Enter to take it  ·  Esc to cancel") : I18n.t("Drag to select  ·  Click or Enter for the whole screen  ·  Esc to cancel")
             color: Theme.fg
             opacity: Theme.screenshot.hint
