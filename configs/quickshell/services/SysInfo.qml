@@ -26,9 +26,9 @@ Singleton {
         const h = Math.floor(uptimeSeconds / 3600);
         const m = Math.floor((uptimeSeconds % 3600) / 60);
         const d = Math.floor(h / 24);
-        const days = n => I18n.t(n === 1 ? "1 day" : "%1 days").arg(n);
-        const hours = n => I18n.t(n === 1 ? "1 hour" : "%1 hours").arg(n);
-        const minutes = n => I18n.t(n === 1 ? "1 minute" : "%1 minutes").arg(n);
+        const days = n => n === 1 ? I18n.t("1 day") : I18n.t("%1 days").arg(n);
+        const hours = n => n === 1 ? I18n.t("1 hour") : I18n.t("%1 hours").arg(n);
+        const minutes = n => n === 1 ? I18n.t("1 minute") : I18n.t("%1 minutes").arg(n);
         if (d > 0)
             return I18n.t("%1, %2").arg(days(d)).arg(hours(h % 24));
         if (h > 0)
