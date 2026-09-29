@@ -158,10 +158,20 @@ while true; do
                 esac
             done
 
-            # Prompt user to press Enter to exit
-            echo -e "Press any key to exit..."
-            read -r
-            break;;
+            # Stay in this terminal as a shell, or close it
+            while true; do
+                echo -e "${COLOR_GREEN}"
+                read -rp "Do you want to return to the shell? (y/n): " shell_choice
+                echo -e "${COLOR_RESET}"
+                case $shell_choice in
+                    [Yy]* )
+                        exec "${SHELL:-/bin/bash}";;
+                    [Nn]* )
+                        exit 0;;
+                    * )
+                        echo -e "${COLOR_DARK_RED}Please answer yes or no.${COLOR_RESET}";;
+                esac
+            done;;
         [Nn]* )
             echo -e "${COLOR_GREEN}System upgrade aborted. Press any key to exit...${COLOR_RESET}"
             read -r
