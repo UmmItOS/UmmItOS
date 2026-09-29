@@ -17,6 +17,10 @@ Singleton {
             icon: "videocam"
         },
         {
+            name: "Packages",
+            icon: "deployed_code"
+        },
+        {
             name: "About",
             icon: "info"
         }
@@ -176,7 +180,7 @@ Singleton {
             root.toggle();
         }
 
-        // 0 Record, 1 About.
+        // 0 Record, 1 Packages, 2 About.
         function page(index: int): void {
             root.page = Math.max(0, Math.min(index, root.pages.length - 1));
             root.open = true;

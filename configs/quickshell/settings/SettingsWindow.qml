@@ -126,6 +126,8 @@ OverlayWindow {
 
                 RecordPage {}
 
+                PackagesPage {}
+
                 AboutPage {}
             }
         }
