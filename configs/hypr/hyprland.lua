@@ -2,7 +2,7 @@
 -- every module in its own scope, so an error in one does not stop the rest.
 -- post-install.sh rewrites the first hl.monitor line below; keep it one line.
 
-hl.monitor({ output = "", mode = "preferred", position = "auto", scale = 1 })
+hl.monitor({ output = "", mode = "highrr", position = "auto", scale = 1 })
 
 require("hyprland.env")
 require("hyprland.autostart")

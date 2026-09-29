@@ -235,6 +235,8 @@ Singleton {
         readonly property int sidebar: 200
         // A setting's control column, so every chooser lines up.
         readonly property int choice: 320
+        // How far a page travels as it leaves and the next one arrives.
+        readonly property int pageShift: 24
     }
     readonly property QtObject control: QtObject {
         // A list row in a flyout or the clipboard.

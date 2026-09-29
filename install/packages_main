@@ -54,4 +54,5 @@ extra/xdg-desktop-portal-gtk
 extra/ffmpeg
 extra/libpulse
 extra/playerctl
+extra/pacman-contrib
 extra/fzf
