@@ -533,8 +533,10 @@ Singleton {
         readonly property int confirmHold: 3000
         // A toast that set no timeout of its own.
         readonly property int toast: 6000
-        // How long a window that keeps asking for attention waits before a second notice.
-        readonly property int urgentRepeat: 30000
+        // Merges the burst of urgent events Hyprland sends for one request (a link opened twice is two notices).
+        readonly property int urgentRepeat: 3000
+        // An app that sent its own notification this recently gets no attention notice on top.
+        readonly property int urgentQuiet: 5000
         readonly property int osdHide: 1400
         // Settle before arming the OSD, or a new sink flashes a volume nobody touched.
         readonly property int osdArm: 1200
