@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
 import QtQuick
+import ".."
 
 // QR codes on the screen: photograph it, find every code, let the user read and act on each.
 Singleton {
@@ -111,9 +112,9 @@ Singleton {
                 if (colon > 0)
                     values[part.slice(0, colon).toUpperCase()] = part.slice(colon + 1).replace(/\\(.)/g, "$1");
             }
-            const fields = [["Network", values.S ?? ""], ["Security", values.T || "Open"]];
+            const fields = [["Network", values.S ?? ""], ["Security", values.T || I18n.t("No password")]];
             if ((values.H ?? "").toLowerCase() === "true")
-                fields.push(["Hidden", "Yes"]);
+                fields.push(["Hidden", I18n.t("Yes")]);
             return {
                 kind: "wifi",
                 type: "Wi-Fi network",
@@ -152,7 +153,7 @@ Singleton {
         if (!text.includes("<barcodes")) {
             scanning = false;
             forget();
-            Quickshell.execDetached(["notify-send", "-a", "QR scanner", "Scan failed", "Could not photograph or read the screen."]);
+            Quickshell.execDetached(["notify-send", "-a", "QR scanner", I18n.t("Scan failed"), I18n.t("Could not photograph or read the screen.")]);
             return;
         }
         const width = Number(text.split("\n")[0].split(" ")[0]);
@@ -199,7 +200,7 @@ Singleton {
             open = true;
         } else {
             forget();
-            Quickshell.execDetached(["notify-send", "-a", "QR scanner", "No QR code on screen"]);
+            Quickshell.execDetached(["notify-send", "-a", "QR scanner", I18n.t("No QR code on screen")]);
         }
     }
 

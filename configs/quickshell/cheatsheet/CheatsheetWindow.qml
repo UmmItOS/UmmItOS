@@ -9,6 +9,12 @@ import ".."
 OverlayWindow {
     id: win
 
+    // A bind's description in the chosen language; numbered ones share one template.
+    function said(text: string): string {
+        const n = text.match(/^(.*workspace) (\d+)$/);
+        return n ? I18n.t(n[1] + " %1").arg(n[2]) : I18n.t(text);
+    }
+
     shown: Cheatsheet.open
     name: "cheatsheet"
     scrim: Theme.shade.normal
@@ -279,7 +285,7 @@ OverlayWindow {
 
                         Text {
                             Layout.fillWidth: true
-                            text: "Cheat sheet"
+                            text: I18n.t("Cheat sheet")
                             color: Theme.fg
                             font.family: Theme.fontDisplay
                             font.pixelSize: Theme.fontSize.extraLarge
@@ -316,7 +322,7 @@ OverlayWindow {
                                 spacing: Theme.spacing.small
 
                                 Text {
-                                    text: group.modelData.title
+                                    text: I18n.t(group.modelData.title)
                                     color: Theme.accentText
                                     font.family: Theme.fontDisplay
                                     font.pixelSize: Theme.fontSize.large
@@ -350,7 +356,7 @@ OverlayWindow {
 
                                         Text {
                                             Layout.fillWidth: true
-                                            text: row.modelData.description
+                                            text: win.said(row.modelData.description)
                                             color: Theme.fg
                                             wrapMode: Text.Wrap
                                             font.family: Theme.font

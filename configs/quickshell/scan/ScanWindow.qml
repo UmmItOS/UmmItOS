@@ -350,7 +350,7 @@ OverlayWindow {
                         spacing: 0
 
                         Text {
-                            text: win.code?.type ?? ""
+                            text: I18n.t(win.code?.type ?? "")
                             color: Theme.fg
                             renderType: Text.NativeRendering
                             font.family: Theme.fontDisplay
@@ -360,7 +360,7 @@ OverlayWindow {
 
                         Text {
                             visible: win.count > 1
-                            text: "Code " + (win.current + 1) + " of " + win.count
+                            text: I18n.t("Code %1 of %2").arg(win.current + 1).arg(win.count)
                             color: Theme.dim
                             renderType: Text.NativeRendering
                             font.family: Theme.font
@@ -426,7 +426,7 @@ OverlayWindow {
                         Heading {
                             Layout.topMargin: 0
                             visible: (win.code?.fields.length ?? 0) > 0
-                            text: "Encoded data"
+                            text: I18n.t("Encoded data")
                         }
 
                         Repeater {
@@ -435,7 +435,7 @@ OverlayWindow {
                             Field {
                                 required property var modelData
 
-                                label: modelData[0]
+                                label: modelData[2] === true ? modelData[0] : I18n.t(modelData[0])
                                 value: modelData[1]
                                 code: modelData[2] === true
                             }
@@ -448,7 +448,7 @@ OverlayWindow {
                             spacing: Theme.spacing.small
 
                             Field {
-                                label: "Password"
+                                label: I18n.t("Password")
                                 value: win.revealed ? (win.code?.password ?? "") : "••••••••"
                             }
 
@@ -461,7 +461,7 @@ OverlayWindow {
                         }
 
                         Heading {
-                            text: "Content"
+                            text: I18n.t("Content")
                         }
 
                         Rectangle {
@@ -525,11 +525,11 @@ OverlayWindow {
                         }
 
                         Heading {
-                            text: "Format"
+                            text: I18n.t("Format")
                         }
 
                         Field {
-                            label: "Type"
+                            label: I18n.t("Type")
                             value: win.code?.format === "QR-Code" ? "QR Code" : (win.code?.format ?? "")
                         }
 
@@ -541,26 +541,26 @@ OverlayWindow {
                         }
 
                         Field {
-                            label: "Orientation"
-                            value: ({
+                            label: I18n.t("Orientation")
+                            value: I18n.t(({
                                     UP: "Upright",
                                     RIGHT: "Turned right",
                                     DOWN: "Upside down",
                                     LEFT: "Turned left"
-                                })[win.code?.orientation ?? ""] ?? "Unknown"
+                                })[win.code?.orientation ?? ""] ?? "Unknown")
                         }
 
                         Field {
-                            label: "Size on screen"
+                            label: I18n.t("Size on screen")
                             value: win.code ? Math.round(win.code.w) + " × " + Math.round(win.code.h) + " px" : ""
                         }
 
                         Heading {
-                            text: "Hex dump"
+                            text: I18n.t("Hex dump")
                         }
 
                         Value {
-                            text: win.hiding ? "Reveal the password to see the bytes." : win.hexDump(win.code?.data ?? "")
+                            text: win.hiding ? I18n.t("Reveal the password to see the bytes.") : win.hexDump(win.code?.data ?? "")
                             color: win.hiding ? Theme.dim : Theme.fg
                             wrapMode: TextEdit.NoWrap
                             renderType: TextEdit.NativeRendering
@@ -578,7 +578,7 @@ OverlayWindow {
 
                     Text {
                         Layout.fillWidth: true
-                        text: (win.count > 1 ? "Tab for the next code · " : "") + "Enter to " + win.verb(win.code?.kind ?? "").toLowerCase() + " · Esc to close"
+                        text: (win.count > 1 ? I18n.t("Tab for the next code · ") : "") + I18n.t("Enter to %1 · Esc to close").arg(I18n.t(win.verb(win.code?.kind ?? "")).toLowerCase())
                         color: Theme.dim
                         elide: Text.ElideRight
                         renderType: Text.NativeRendering
@@ -593,21 +593,21 @@ OverlayWindow {
                         Action {
                             visible: win.code?.kind !== "text"
                             icon: "content_copy"
-                            label: "Copy"
+                            label: I18n.t("Copy")
                             onClicked: Scan.copy(win.code.data)
                         }
 
                         Action {
                             visible: win.code?.kind === "wifi" && win.code.password !== ""
                             icon: "key"
-                            label: "Copy password"
+                            label: I18n.t("Copy password")
                             onClicked: Scan.copy(win.code.password)
                         }
 
                         Action {
                             primary: true
                             icon: win.code?.kind === "link" ? "open_in_new" : win.code?.kind === "text" ? "content_copy" : win.glyph(win.code?.kind ?? "")
-                            label: win.verb(win.code?.kind ?? "")
+                            label: I18n.t(win.verb(win.code?.kind ?? ""))
                             onClicked: win.actOnCurrent()
                         }
                     }
