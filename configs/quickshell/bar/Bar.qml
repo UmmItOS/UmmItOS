@@ -138,7 +138,6 @@ PanelWindow {
         BarButton {
             Layout.alignment: Qt.AlignVCenter
             icon: "power_settings_new"
-            baseColor: Theme.accentText
             onClicked: Session.open = !Session.open
         }
     }
