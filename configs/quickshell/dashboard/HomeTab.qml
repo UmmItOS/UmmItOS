@@ -58,7 +58,7 @@ ColumnLayout {
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
                     topPadding: Theme.padding.large
-                    text: Qt.formatDateTime(clock.date, "dddd, d MMMM")
+                    text: clock.date.toLocaleString(I18n.locale, I18n.t("dddd, d MMMM"))
                     color: Theme.dim
                     font.family: Theme.font
                     font.pixelSize: Theme.fontSize.normal

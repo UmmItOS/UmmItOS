@@ -542,7 +542,7 @@ OverlayWindow {
                 bottomMargin: Theme.padding.extraLarge
             }
             visible: !win.dragging && win.mode !== "screen"
-            text: win.mode === "window" ? "Point at a window  ·  Click or Enter to take it  ·  Esc to cancel" : "Drag to select  ·  Click or Enter for the whole screen  ·  Esc to cancel"
+            text: win.mode === "window" ? I18n.t("Point at a window  ·  Click or Enter to take it  ·  Esc to cancel") : I18n.t("Drag to select  ·  Click or Enter for the whole screen  ·  Esc to cancel")
             color: Theme.fg
             opacity: Theme.screenshot.hint
             font.family: Theme.font

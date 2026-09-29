@@ -26,7 +26,7 @@ Singleton {
     // i18n/<lang>.json, keyed by the English text; empty for English.
     property var words: ({})
     // For dates and numbers written by Qt.
-    readonly property var locale: Qt.locale(lang === "en" ? "en_GB" : lang.replace("-", "_"))
+    readonly property var locale: lang === "en" ? Qt.locale() : Qt.locale(lang.replace("-", "_"))
 
     // A missing translation falls back to the English key.
     function t(text: string): string {

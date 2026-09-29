@@ -48,7 +48,7 @@ Item {
     Text {
         anchors.centerIn: parent
         visible: !root.player
-        text: "Nothing playing"
+        text: I18n.t("Nothing playing")
         color: Theme.dim
         font.family: Theme.font
         font.pixelSize: Theme.fontSize.larger

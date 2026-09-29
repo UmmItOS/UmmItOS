@@ -167,7 +167,7 @@ Item {
         Text {
             anchors.centerIn: parent
             anchors.verticalCenterOffset: root.at(Theme.lock.dateAt)
-            text: Qt.formatDateTime(clock.date, "dddd, MMMM d")
+            text: clock.date.toLocaleString(I18n.locale, I18n.t("dddd, MMMM d"))
             color: Theme.lock.dateInk
             font.family: Theme.fontDisplay
             font.pixelSize: Theme.lock.date

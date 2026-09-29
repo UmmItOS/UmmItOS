@@ -32,7 +32,7 @@ ColumnLayout {
 
         Text {
             Layout.fillWidth: true
-            text: Qt.formatDate(new Date(root.year, root.month, 1), "MMMM yyyy")
+            text: new Date(root.year, root.month, 1).toLocaleString(I18n.locale, I18n.t("MMMM yyyy"))
             color: Theme.fg
             font {
                 family: Theme.fontDisplay
@@ -81,6 +81,7 @@ ColumnLayout {
     MonthGrid {
         id: grid
 
+        locale: I18n.locale
         Layout.fillWidth: true
         month: root.month
         year: root.year

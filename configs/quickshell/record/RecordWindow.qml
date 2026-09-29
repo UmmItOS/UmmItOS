@@ -126,7 +126,7 @@ OverlayWindow {
                 }
 
                 Text {
-                    text: "Screen recording"
+                    text: I18n.t("Screen recording")
                     color: Theme.fg
                     font.family: Theme.fontDisplay
                     font.pixelSize: Theme.fontSize.extraLarge
@@ -135,21 +135,21 @@ OverlayWindow {
 
                 Text {
                     Layout.bottomMargin: Theme.spacing.medium
-                    text: "The screen you are on. Which sound goes in?"
+                    text: I18n.t("The screen you are on. Which sound goes in?")
                     color: Theme.dim
                     font.family: Theme.font
                     font.pixelSize: Theme.fontSize.smaller
                 }
 
                 Choice {
-                    label: "System sound"
+                    label: I18n.t("System sound")
                     hint: "S"
                     checked: Recorder.system
                     onToggled: Recorder.system = !Recorder.system
                 }
 
                 Choice {
-                    label: "Microphone"
+                    label: I18n.t("Microphone")
                     hint: "M"
                     checked: Recorder.mic
                     onToggled: Recorder.mic = !Recorder.mic
@@ -162,20 +162,20 @@ OverlayWindow {
 
                     Text {
                         Layout.fillWidth: true
-                        text: !Recorder.system && !Recorder.mic ? "No sound" : Recorder.system && Recorder.mic ? "Both, mixed" : ""
+                        text: !Recorder.system && !Recorder.mic ? I18n.t("No sound") : Recorder.system && Recorder.mic ? I18n.t("Both, mixed") : ""
                         color: Theme.dim
                         font.family: Theme.font
                         font.pixelSize: Theme.fontSize.small
                     }
 
                     Action {
-                        label: "Cancel"
+                        label: I18n.t("Cancel")
                         rest: Theme.bgAlt
                         onClicked: Recorder.cancel()
                     }
 
                     Action {
-                        label: "Start"
+                        label: I18n.t("Start")
                         primary: true
                         onClicked: Recorder.start()
                     }
@@ -235,7 +235,7 @@ OverlayWindow {
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.top: number.bottom
-                    text: "Recording starts. Esc to cancel."
+                    text: I18n.t("Recording starts. Esc to cancel.")
                     color: Theme.dim
                     font.family: Theme.font
                     font.pixelSize: Theme.fontSize.smaller

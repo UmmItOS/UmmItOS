@@ -72,7 +72,7 @@ Rectangle {
 
         Text {
             Layout.fillWidth: true
-            text: Weather.condition + "   H:" + Weather.high + "°  L:" + Weather.low + "°"
+            text: I18n.t("%1   H:%2°  L:%3°").arg(Weather.condition).arg(Weather.high).arg(Weather.low)
             elide: Text.ElideRight
             color: Theme.dim
             font.family: Theme.font
@@ -97,7 +97,7 @@ Rectangle {
 
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        text: slot.modelData.label
+                        text: I18n.t(slot.modelData.label)
                         color: Theme.dim
                         font.family: Theme.font
                         font.pixelSize: Theme.fontSize.small

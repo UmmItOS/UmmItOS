@@ -173,7 +173,7 @@ PanelWindow {
 
         Text {
             Layout.alignment: Qt.AlignHCenter
-            text: Qt.formatDateTime(clock.date, "ddd d MMM")
+            text: clock.date.toLocaleString(I18n.locale, I18n.t("ddd d MMM"))
             color: Theme.dim
             font {
                 family: Theme.font

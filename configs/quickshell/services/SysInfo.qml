@@ -3,6 +3,7 @@ pragma Singleton
 import Quickshell
 import Quickshell.Io
 import QtQuick
+import ".."
 
 Singleton {
     id: root
@@ -25,11 +26,14 @@ Singleton {
         const h = Math.floor(uptimeSeconds / 3600);
         const m = Math.floor((uptimeSeconds % 3600) / 60);
         const d = Math.floor(h / 24);
+        const days = n => I18n.t(n === 1 ? "1 day" : "%1 days").arg(n);
+        const hours = n => I18n.t(n === 1 ? "1 hour" : "%1 hours").arg(n);
+        const minutes = n => I18n.t(n === 1 ? "1 minute" : "%1 minutes").arg(n);
         if (d > 0)
-            return `${d} day${d === 1 ? "" : "s"}, ${h % 24} hour${h % 24 === 1 ? "" : "s"}`;
+            return I18n.t("%1, %2").arg(days(d)).arg(hours(h % 24));
         if (h > 0)
-            return `${h} hour${h === 1 ? "" : "s"}, ${m} minute${m === 1 ? "" : "s"}`;
-        return `${m} minute${m === 1 ? "" : "s"}`;
+            return I18n.t("%1, %2").arg(hours(h)).arg(minutes(m));
+        return minutes(m);
     }
 
     function formatBytes(bytes: real): string {

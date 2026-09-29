@@ -85,7 +85,7 @@ OverlayWindow {
 
                             readonly property bool current: Dashboard.tab === index
 
-                            text: tab.modelData
+                            text: I18n.t(tab.modelData)
                             color: tab.current ? Theme.fg : hover.hovered ? Theme.accent2 : Theme.dim
                             font.family: Theme.fontDisplay
                             font.pixelSize: Theme.fontSize.large

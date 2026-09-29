@@ -161,7 +161,7 @@ Scope {
                 bottomMargin: Theme.padding.extraLarge * 2
             }
             opacity: root.progress < Theme.charge.labelIn ? root.progress / Theme.charge.labelIn : root.progress > Theme.charge.fadeFrom ? 1 - (root.progress - Theme.charge.fadeFrom) / (1 - Theme.charge.fadeFrom) : 1
-            text: Math.round((UPower.displayDevice?.percentage ?? 0) * 100) + " %  ·  Charging"
+            text: I18n.t("%1 %  ·  Charging").arg(Math.round((UPower.displayDevice?.percentage ?? 0) * 100))
             color: Theme.fg
             font.family: Theme.fontDisplay
             font.pixelSize: Theme.fontSize.larger

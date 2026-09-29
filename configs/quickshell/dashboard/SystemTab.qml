@@ -29,7 +29,7 @@ ColumnLayout {
                 Layout.alignment: Qt.AlignCenter
                 value: isNaN(SysInfo.gpuTemp) ? 0 : SysInfo.gpuTemp / 100
                 primary: isNaN(SysInfo.gpuTemp) ? "n/a" : Math.round(SysInfo.gpuTemp) + "°C"
-                label: isNaN(SysInfo.gpuTemp) ? "No GPU sensor" : "GPU temp"
+                label: isNaN(SysInfo.gpuTemp) ? I18n.t("No GPU sensor") : I18n.t("GPU temp")
             }
 
             Gauge {
@@ -43,14 +43,14 @@ ColumnLayout {
                 Layout.alignment: Qt.AlignCenter
                 value: SysInfo.memRatio
                 primary: SysInfo.formatBytes(SysInfo.memUsed)
-                label: "of " + SysInfo.formatBytes(SysInfo.memTotal)
+                label: I18n.t("of %1").arg(SysInfo.formatBytes(SysInfo.memTotal))
             }
 
             Gauge {
                 Layout.alignment: Qt.AlignCenter
                 value: SysInfo.storageRatio
                 primary: SysInfo.formatBytes(SysInfo.storageUsed)
-                label: "of " + SysInfo.formatBytes(SysInfo.storageTotal)
+                label: I18n.t("of %1").arg(SysInfo.formatBytes(SysInfo.storageTotal))
             }
         }
     }
@@ -77,15 +77,15 @@ ColumnLayout {
                 model: [
                     {
                         icon: "rocket_launch",
-                        label: "Distro"
+                        label: I18n.t("Distro")
                     },
                     {
                         icon: "desktop_windows",
-                        label: "Compositor"
+                        label: I18n.t("Compositor")
                     },
                     {
                         icon: "schedule",
-                        label: "Uptime"
+                        label: I18n.t("Uptime")
                     }
                 ]
 

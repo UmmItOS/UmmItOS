@@ -19,7 +19,7 @@ OverlayWindow {
             return "";
         const all = [...ws.toplevels.values];
         if (all.length === 0)
-            return "Empty";
+            return I18n.t("Empty");
         const top = all.find(w => w.activated) ?? all[0];
         return top.title === "" ? ws.name : top.title;
     }
@@ -148,7 +148,7 @@ OverlayWindow {
 
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: Switcher.pinned ? "Pinned" : "Keep open"
+                    text: Switcher.pinned ? I18n.t("Pinned") : I18n.t("Keep open")
                     color: Switcher.pinned ? Theme.accentOn : Theme.fg
                     font {
                         family: Theme.font
@@ -342,7 +342,7 @@ OverlayWindow {
                                         Text {
                                             anchors.centerIn: parent
                                             visible: card.windows.length === 0
-                                            text: "Empty"
+                                            text: I18n.t("Empty")
                                             color: Theme.dim
                                             font {
                                                 family: Theme.fontDisplay
@@ -462,7 +462,7 @@ OverlayWindow {
                     anchors.horizontalCenter: parent.horizontalCenter
                     // Opacity, not visibility, so the line stays reserved.
                     opacity: Switcher.pinned ? 1 : 0
-                    text: "Pinned  ·  Enter to switch  ·  Esc to close"
+                    text: I18n.t("Pinned  ·  Enter to switch  ·  Esc to close")
                     color: Theme.dim
                     font {
                         family: Theme.font
