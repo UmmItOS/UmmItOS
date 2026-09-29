@@ -95,74 +95,28 @@ ColumnLayout {
     function installAll(pkgs: var): void {
         if (install.running)
             return;
-        install.command = ["kitty", "-e", "sh", "-c", 'paru -S --needed "$@"; printf "\\nPress Enter to close. "; read -r _', "sh"].concat(pkgs.map(p => p.split("/").pop()));
+        // The UmmItOS folder this shell runs from first, then ~/script, then plain paru.
+        install.command = ["kitty", "-e", "sh", "-c", 'd=$(readlink -f "$1"); shift; for s in "$d/../../script/misc/install-packages.sh" "$HOME/script/misc/install-packages.sh"; do [ -x "$s" ] && exec "$s" "$@"; done; paru -S --needed "$@"; printf "\\nPress Enter to close. "; read -r _', "sh", Quickshell.shellDir].concat(pkgs.map(p => p.split("/").pop()));
         install.running = true;
     }
 
-    RowLayout {
-        Layout.fillWidth: true
-        spacing: Theme.spacing.medium
-
-        Item {
-            implicitWidth: Theme.icon.large
-            implicitHeight: Theme.icon.large
-
-            Spinner {
-                anchors.centerIn: parent
-                visible: page.result === "checking"
-                size: Theme.icon.large
-            }
-
-            MaterialIcon {
-                anchors.centerIn: parent
-                visible: page.result !== "checking"
-                text: page.result === "ok" ? "check_circle" : page.result === "missing" ? "download" : "search_off"
-                color: page.result === "ok" ? Theme.good : Theme.warn
-                size: Theme.icon.large
-                fill: 1
-
-                Behavior on color {
-                    ColorAnimation {
-                        duration: Theme.duration.expressiveFastEffects
-                    }
-                }
+    StatusHeader {
+        busy: page.result === "checking"
+        icon: page.result === "ok" ? "check_circle" : page.result === "missing" ? "download" : "search_off"
+        tone: page.result === "ok" ? Theme.good : Theme.warn
+        title: {
+            switch (page.result) {
+            case "checking":
+                return "Checking packages";
+            case "ok":
+                return "Everything is installed";
+            case "missing":
+                return page.missing.length === 1 ? "1 package missing" : page.missing.length + " packages missing";
+            default:
+                return "Package lists not found";
             }
         }
-
-        ColumnLayout {
-            Layout.fillWidth: true
-            spacing: 0
-
-            Text {
-                Layout.fillWidth: true
-                text: {
-                    switch (page.result) {
-                    case "checking":
-                        return "Checking packages";
-                    case "ok":
-                        return "Everything is installed";
-                    case "missing":
-                        return page.missing.length === 1 ? "1 package missing" : page.missing.length + " packages missing";
-                    default:
-                        return "Package lists not found";
-                    }
-                }
-                elide: Text.ElideRight
-                color: Theme.fg
-                font.family: Theme.fontDisplay
-                font.pixelSize: Theme.fontSize.larger
-                font.weight: Theme.weight.bold
-            }
-
-            Text {
-                Layout.fillWidth: true
-                text: page.result === "lost" ? "Run the installer once from the UmmItOS folder, so the shell knows where it is." : page.result === "checking" ? "Reading the installer's lists" : page.checked + " checked · " + page.lists
-                wrapMode: Text.Wrap
-                color: Theme.dim
-                font.family: Theme.font
-                font.pixelSize: Theme.fontSize.small
-            }
-        }
+        hint: page.result === "lost" ? "Run the installer once from the UmmItOS folder, so the shell knows where it is." : page.result === "checking" ? "Reading the installer's lists" : page.checked + " checked · " + page.lists
 
         Action {
             icon: "refresh"
@@ -181,14 +135,9 @@ ColumnLayout {
         }
     }
 
-    ListView {
+    SettingsList {
         id: rows
 
-        Layout.fillWidth: true
-        Layout.fillHeight: true
-        clip: true
-        spacing: Theme.spacing.extraSmall
-        boundsBehavior: Flickable.StopAtBounds
         // ScriptModel diffs, so a package still missing after a re-check keeps its row.
         model: ScriptModel {
             values: page.missing
@@ -212,50 +161,6 @@ ColumnLayout {
                 color: Theme.dim
                 font.family: Theme.font
                 font.pixelSize: Theme.fontSize.smaller
-            }
-        }
-
-        add: Transition {
-            NumberAnimation {
-                property: "opacity"
-                from: 0
-                to: 1
-                duration: Theme.duration.expressiveDefaultEffects
-            }
-            NumberAnimation {
-                property: "x"
-                from: Theme.spacing.extraLarge * 2
-                duration: Theme.duration.expressiveDefaultSpatial
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curve.emphasizedDecel
-            }
-        }
-        remove: Transition {
-            NumberAnimation {
-                property: "opacity"
-                to: 0
-                duration: Theme.duration.expressiveFastEffects
-            }
-            NumberAnimation {
-                property: "x"
-                to: Theme.spacing.extraLarge * 2
-                duration: Theme.duration.expressiveFastSpatial
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curve.emphasizedAccel
-            }
-        }
-        displaced: Transition {
-            NumberAnimation {
-                property: "y"
-                duration: Theme.duration.expressiveFastSpatial
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curve.standard
-            }
-            // A displaced row keeps the cancelled add's opacity otherwise.
-            NumberAnimation {
-                property: "opacity"
-                to: 1
-                duration: Theme.duration.expressiveFastEffects
             }
         }
 
