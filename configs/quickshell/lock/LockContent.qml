@@ -150,8 +150,8 @@ Item {
 
             Text {
                 anchors.verticalCenter: parent.verticalCenter
-                text: battery.full ? "full" : battery.charging ? "charging" : battery.pct < Theme.battery.critical ? "critical" : battery.low ? "low" : ""
-                visible: text !== ""
+                text: battery.full ? "full" : battery.charging ? "charging" : battery.low && battery.pct < Theme.battery.critical ? "critical" : battery.low ? "low" : ""
+                visible: battery.present && text !== ""
                 color: Theme.lock.dateInk
                 font.family: Theme.fontDisplay
                 font.pixelSize: Theme.lock.battery

@@ -7,15 +7,17 @@ RowLayout {
     id: root
 
     readonly property var battery: UPower.displayDevice
+    // Desktops report no laptop battery; every state below is false then, so nothing says "charging".
+    readonly property bool present: (battery?.isLaptopBattery ?? false) && (battery?.isPresent ?? false)
     readonly property real pct: battery ? battery.percentage : 1
     // Not `state`: every Item already has one, for its States.
     readonly property int charge: battery ? battery.state : UPowerDeviceState.Unknown
 
     // Charging from the plug, not the battery's report; not at a charge limit.
-    readonly property bool charging: !full && charge !== UPowerDeviceState.PendingCharge && (!UPower.onBattery || charge === UPowerDeviceState.Charging)
+    readonly property bool charging: present && !full && charge !== UPowerDeviceState.PendingCharge && (!UPower.onBattery || charge === UPowerDeviceState.Charging)
     // Drivers report "fully charged" briefly on plug-in; check the level.
-    readonly property bool full: charge === UPowerDeviceState.FullyCharged && Math.round(pct * 100) >= Theme.battery.full
-    readonly property bool low: pct < Theme.battery.low && !charging && !full
+    readonly property bool full: present && charge === UPowerDeviceState.FullyCharged && Math.round(pct * 100) >= Theme.battery.full
+    readonly property bool low: present && pct < Theme.battery.low && !charging && !full
 
     readonly property color tone: {
         if (low)
@@ -60,8 +62,7 @@ RowLayout {
         return "battery_1_bar";
     }
 
-    // Desktops report no laptop battery, so this hides itself with no config.
-    visible: battery ? battery.isLaptopBattery : false
+    visible: present
     spacing: Theme.spacing.small
 
     MaterialIcon {
