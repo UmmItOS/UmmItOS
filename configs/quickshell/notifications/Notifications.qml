@@ -121,7 +121,9 @@ Scope {
             x: list.x
             y: list.y
             width: list.width
-            height: list.contentHeight
+            // ListView keeps its old contentHeight when a card grows after arrival (a picture loading), so the
+            // cards' own extent counts too, or clicks on the picture fall through to the window below.
+            height: Math.min(list.height, Math.max(list.contentHeight, list.contentItem.childrenRect.y + list.contentItem.childrenRect.height - list.contentY))
         }
         color: "transparent"
 
