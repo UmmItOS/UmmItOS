@@ -54,9 +54,9 @@ OverlayWindow {
 
     function labelOf(entry: string): string {
         if (entry === "")
-            return "No match";
+            return I18n.t("No match");
         if (entry === "..")
-            return "Back";
+            return I18n.t("Back");
         if (isFolder(entry))
             return entry.slice(0, -1).slice(entry.slice(0, -1).lastIndexOf("/") + 1);
         return Wallpapers.name(entry);
@@ -250,7 +250,7 @@ OverlayWindow {
 
                 Text {
                     opacity: search.text === "" ? 1 : 0
-                    text: "type to filter"
+                    text: I18n.t("type to filter")
                     color: Theme.dim
                     font.family: Theme.font
                     font.pixelSize: Theme.fontSize.smaller

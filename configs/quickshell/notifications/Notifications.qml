@@ -330,7 +330,7 @@ Scope {
 
                         Text {
                             Layout.fillWidth: true
-                            text: card.kept.appName ?? ""
+                            text: I18n.t(card.kept.appName ?? "")
                             color: Theme.dim
                             font.family: Theme.font
                             font.pixelSize: Theme.fontSize.small

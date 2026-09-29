@@ -282,7 +282,7 @@ OverlayWindow {
                         margins: Theme.padding.large
                     }
                     visible: win.focusedEntry !== null
-                    text: "Enter to copy"
+                    text: I18n.t("Enter to copy")
                     color: Theme.dim
                     font.family: Theme.font
                     font.pixelSize: Theme.fontSize.small

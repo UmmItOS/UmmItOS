@@ -237,7 +237,7 @@ Item {
         Text {
             anchors.centerIn: parent
             anchors.verticalCenterOffset: root.at(Theme.lock.hintAt)
-            text: "Enter your password to unlock"
+            text: I18n.t("Enter your password to unlock")
             color: Theme.lock.hintInk
             font.family: Theme.fontDisplay
             font.pixelSize: Theme.lock.hint
@@ -385,7 +385,7 @@ Item {
         Text {
             anchors.centerIn: parent
             visible: input.text === "" && Lock.failed
-            text: "Wrong password · attempt " + Lock.attempts
+            text: I18n.t("Wrong password · attempt %1").arg(Lock.attempts)
             color: "white"
             font.family: Theme.font
             font.pixelSize: Theme.fontSize.normal

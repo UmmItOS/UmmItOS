@@ -93,7 +93,7 @@ PanelWindow {
 
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: Osd.muted ? "Muted" : Math.round(Osd.value * 100) + "%"
+                text: Osd.muted ? I18n.t("Muted") : Math.round(Osd.value * 100) + "%"
                 color: Osd.muted ? Theme.dim : Theme.fg
                 font {
                     family: Theme.fontDisplay

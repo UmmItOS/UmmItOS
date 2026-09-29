@@ -108,7 +108,7 @@ OverlayWindow {
                     anchors.fill: parent
                     verticalAlignment: Text.AlignVCenter
                     visible: search.text === ""
-                    text: "Search " + win.total + " apps"
+                    text: I18n.t("Search %1 apps").arg(win.total)
                     color: Theme.dim
                     font: search.font
                 }

@@ -144,7 +144,7 @@ OverlayWindow {
 
                         Text {
                             Layout.alignment: Qt.AlignHCenter
-                            text: tile.modelData.label
+                            text: I18n.t(tile.modelData.label)
                             color: tile.active ? Theme.accentOn : Theme.fg
                             font.family: Theme.font
                             font.pixelSize: Theme.fontSize.normal

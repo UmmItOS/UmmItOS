@@ -67,7 +67,7 @@ OverlayWindow {
 
                 Text {
                     Layout.leftMargin: Theme.spacing.hair
-                    text: "Notifications"
+                    text: I18n.t("Notifications")
                     color: Theme.fg
                     font {
                         family: Theme.fontDisplay
@@ -92,7 +92,7 @@ OverlayWindow {
                 // Left of both buttons, so they stay side by side.
                 Text {
                     id: clearLabel
-                    text: "Clear all?"
+                    text: I18n.t("Clear all?")
                     color: Theme.urgent
                     font {
                         family: Theme.font
@@ -240,7 +240,7 @@ OverlayWindow {
                 Layout.bottomMargin: Theme.spacing.large
                 horizontalAlignment: Text.AlignHCenter
                 visible: Notifs.history.count === 0
-                text: Notifs.dnd ? "Nothing here. Do not disturb is on." : "Nothing here."
+                text: Notifs.dnd ? I18n.t("Nothing here. Do not disturb is on.") : I18n.t("Nothing here.")
                 color: Theme.dim
                 font {
                     family: Theme.font
@@ -426,7 +426,7 @@ OverlayWindow {
 
                                 Text {
                                     Layout.fillWidth: true
-                                    text: card.model.appName ?? ""
+                                    text: I18n.t(card.model.appName ?? "")
                                     color: Theme.dim
                                     font {
                                         family: Theme.font

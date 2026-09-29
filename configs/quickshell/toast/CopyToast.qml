@@ -169,7 +169,7 @@ Scope {
 
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
-                            text: slot.label
+                            text: I18n.t(slot.label)
                             color: Theme.fg
                             font.family: Theme.font
                             font.pixelSize: Theme.fontSize.extraLarge
