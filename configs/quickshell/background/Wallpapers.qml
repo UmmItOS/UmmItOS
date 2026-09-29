@@ -61,6 +61,10 @@ Singleton {
                 }));
     }
 
+    // True only while the chosen folder still has pictures, so the bar never marks a fallback.
+    readonly property bool filtered: folder !== "" && list.some(p => p.startsWith(dir + "/" + folder + "/"))
+    readonly property bool scanning: scan.running
+
     function setFolder(path: string): void {
         folder = path;
         folderFile.setText(path);

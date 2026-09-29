@@ -317,5 +317,11 @@
     "Color picker": "取色器",
     "Shuffle from": "隨機挑選自",
     "All wallpapers": "所有桌布",
-    "Click the wallpaper button to shuffle from the chosen folder.": "按一下桌布按鈕，就會從選取的資料夾隨機換一張。"
+    "Click the wallpaper button to shuffle from the chosen folder.": "按一下桌布按鈕，就會從選取的資料夾隨機換一張。",
+    "%1 of %2": "第 %1 張，共 %2 張",
+    "%1  ·  Backspace to go up": "%1  ·  按 Backspace 回上一層",
+    "Shuffle from here": "從這裡隨機挑選",
+    "Shuffling from here": "目前從這裡隨機挑選",
+    "Looking for wallpapers": "正在尋找桌布",
+    "No wallpapers in ~/.wallpaper": "~/.wallpaper 中沒有桌布"
 }

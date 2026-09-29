@@ -279,6 +279,8 @@ Singleton {
         readonly property int workspace: 24
         readonly property int workspaceMin: 30
         readonly property int workspaceDot: 10
+        // Marks a bar button whose action is narrowed, like shuffle limited to one folder.
+        readonly property int badge: 6
         readonly property real workspaceIdle: 0.28
         readonly property real workspaceGlowBlur: 0.9
         readonly property real workspaceGlow: 0.55

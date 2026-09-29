@@ -10,10 +10,48 @@ BarButton {
     id: root
 
     property bool popupOpen: false
+    // Only a change of folder while open slides the pill, not the first placement.
+    property bool settled: false
 
     icon: "wallpaper"
     onClicked: Wallpapers.setRandom()
     onRightClicked: popupOpen = !popupOpen
+    onPopupOpenChanged: {
+        if (!popupOpen)
+            return;
+        settled = false;
+        Qt.callLater(() => {
+            list.positionViewAtIndex(list.currentIndex, ListView.Contain);
+            settled = true;
+        });
+    }
+
+    // Says the shuffle is narrowed to one folder, without recolouring the button.
+    Rectangle {
+        anchors {
+            top: parent.top
+            right: parent.right
+        }
+        width: Theme.bar.badge
+        height: width
+        radius: width / 2
+        color: Theme.accentText
+        scale: Wallpapers.filtered ? 1 : 0
+        opacity: Wallpapers.filtered ? 1 : 0
+
+        Behavior on scale {
+            NumberAnimation {
+                duration: Theme.duration.expressiveFastSpatial
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Wallpapers.filtered ? Theme.curve.emphasizedDecel : Theme.curve.emphasizedAccel
+            }
+        }
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Theme.duration.expressiveFastEffects
+            }
+        }
+    }
 
     Flyout {
         anchorItem: root
@@ -23,24 +61,60 @@ BarButton {
         hug: true
         onCloseRequested: root.popupOpen = false
 
+        FlyoutEmpty {
+            visible: Wallpapers.list.length === 0
+            searching: Wallpapers.scanning
+            icon: "hide_image"
+            text: Wallpapers.scanning ? I18n.t("Looking for wallpapers") : I18n.t("No wallpapers in ~/.wallpaper")
+        }
+
         ListView {
             id: list
 
+            readonly property var rows: [
+                {
+                    path: "",
+                    name: "",
+                    depth: 0,
+                    count: Wallpapers.list.length
+                }
+            ].concat(Wallpapers.folders)
+
             Layout.fillWidth: true
+            // As tall as its rows; the flyout stops at the screen, and past that the list scrolls.
+            Layout.fillHeight: true
             implicitHeight: contentHeight
-            interactive: false
+            visible: Wallpapers.list.length > 0
+            interactive: contentHeight > height
+            clip: true
+            boundsBehavior: Flickable.StopAtBounds
             spacing: Theme.spacing.extraSmall
-            // ScriptModel diffs by path, so a rescan keeps the rows that are still there.
+            // A chosen folder that is gone falls back to everything, so the pill does too.
+            currentIndex: Math.max(0, rows.findIndex(r => r.path === Wallpapers.folder && Wallpapers.filtered))
+            highlightFollowsCurrentItem: false
+            // ScriptModel diffs by path, so a new scan keeps the rows that are still there.
             model: ScriptModel {
                 objectProp: "path"
-                values: [
-                    {
-                        path: "",
-                        name: "",
-                        depth: 0,
-                        count: Wallpapers.list.length
+                values: list.rows
+            }
+
+            // One accent pill that slides to the chosen folder.
+            highlight: Rectangle {
+                width: list.width
+                height: Theme.control.row
+                radius: Theme.rounding.large
+                color: Theme.accent
+                y: list.currentItem?.y ?? 0
+
+                Behavior on y {
+                    enabled: root.settled
+
+                    NumberAnimation {
+                        duration: Theme.duration.expressiveFastSpatial
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curve.emphasized
                     }
-                ].concat(Wallpapers.folders)
+                }
             }
 
             add: Transition {
@@ -71,10 +145,13 @@ BarButton {
                 id: row
 
                 required property var modelData
+                required property int index
                 readonly property bool all: row.modelData.path === ""
 
                 width: list.width
-                active: Wallpapers.folder === row.modelData.path
+                active: list.currentIndex === row.index
+                // The pill is the fill; a row only shows its hover.
+                color: row.hovered && !row.active ? Theme.bgTray : "transparent"
                 scale: press.pressed ? Theme.pressScale : 1
 
                 Behavior on scale {
@@ -131,6 +208,7 @@ BarButton {
 
         Text {
             Layout.fillWidth: true
+            visible: Wallpapers.list.length > 0
             text: I18n.t("Click the wallpaper button to shuffle from the chosen folder.")
             wrapMode: Text.Wrap
             color: Theme.dim

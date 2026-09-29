@@ -229,7 +229,8 @@ OverlayWindow {
                 spacing: Theme.spacing.medium
 
                 Text {
-                    text: picker.matches.length === 0 ? "—" : (list.currentIndex + 1) + " of " + picker.matches.length
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: picker.matches.length === 0 ? "—" : I18n.t("%1 of %2").arg(list.currentIndex + 1).arg(picker.matches.length)
                     color: Theme.dim
                     font.family: Theme.font
                     font.pixelSize: Theme.fontSize.smaller
@@ -240,15 +241,29 @@ OverlayWindow {
 
                 // Where you are, when it is not the top.
                 Text {
+                    anchors.verticalCenter: parent.verticalCenter
                     visible: search.text === "" && !picker.atRoot
-                    text: picker.folder.slice(Wallpapers.dir.length + 1) + "  ·  Backspace to go up"
+                    text: I18n.t("%1  ·  Backspace to go up").arg(picker.folder.slice(Wallpapers.dir.length + 1))
                     color: Theme.accentText
                     font.family: Theme.font
                     font.pixelSize: Theme.fontSize.smaller
                     font.weight: Theme.weight.medium
                 }
 
+                // The bar's shuffle draws from here from now on; right-clicking its button does the same.
+                Action {
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: search.text === "" && !picker.atRoot
+                    readonly property string here: picker.folder.slice(Wallpapers.dir.length + 1)
+                    primary: Wallpapers.folder !== here
+                    icon: "shuffle"
+                    label: Wallpapers.folder === here ? I18n.t("Shuffling from here") : I18n.t("Shuffle from here")
+                    enabled: Wallpapers.folder !== here
+                    onClicked: Wallpapers.setFolder(here)
+                }
+
                 Text {
+                    anchors.verticalCenter: parent.verticalCenter
                     opacity: search.text === "" ? 1 : 0
                     text: I18n.t("type to filter")
                     color: Theme.dim
