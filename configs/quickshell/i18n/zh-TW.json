@@ -323,5 +323,9 @@
     "Shuffle from here": "從這裡隨機挑選",
     "Shuffling from here": "目前從這裡隨機挑選",
     "Looking for wallpapers": "正在尋找桌布",
-    "No wallpapers in ~/.wallpaper": "~/.wallpaper 中沒有桌布"
+    "No wallpapers in ~/.wallpaper": "~/.wallpaper 中沒有桌布",
+    "A window": "一個視窗",
+    "Go there": "前往",
+    "%1 wants your attention": "%1 需要你的注意",
+    "%1 · Workspace %2": "%1 · 工作區 %2"
 }

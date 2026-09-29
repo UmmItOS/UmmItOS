@@ -94,6 +94,8 @@ ShellRoot {
 
     // Wi-Fi and Bluetooth coming and going.
     ConnectionNotifier {}
+    // A window wanting attention on a workspace out of sight.
+    UrgentNotifier {}
     MicNotifier {}
     GreeterSync {}
 

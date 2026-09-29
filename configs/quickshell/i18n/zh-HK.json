@@ -323,5 +323,9 @@
     "Shuffle from here": "喺呢度隨機揀",
     "Shuffling from here": "而家喺呢度隨機揀",
     "Looking for wallpapers": "搵緊牆紙",
-    "No wallpapers in ~/.wallpaper": "~/.wallpaper 入面冇牆紙"
+    "No wallpapers in ~/.wallpaper": "~/.wallpaper 入面冇牆紙",
+    "A window": "一個視窗",
+    "Go there": "過去睇吓",
+    "%1 wants your attention": "%1 叫你睇吓",
+    "%1 · Workspace %2": "%1 · 工作區 %2"
 }
