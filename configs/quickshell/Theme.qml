@@ -268,6 +268,10 @@ Singleton {
         // The pill round a group of bar items.
         readonly property int cluster: 32
         readonly property int accentColumns: 4
+        // Your own colours shown at most, one row.
+        readonly property int accentYours: 4
+        // How much a swatch lightens under the pointer.
+        readonly property real swatchHover: 1.15
         // Bytes per second; below it the bandwidth arrows stay idle.
         readonly property int busyAt: 2048
         readonly property int workspace: 24
@@ -495,6 +499,8 @@ Singleton {
     }
 
     readonly property QtObject duration: QtObject {
+        // How often the time on the current accent is counted and saved.
+        readonly property int accentTick: 60000
         readonly property int small: 200
         readonly property int normal: 400
         readonly property int extraLarge: 1000
