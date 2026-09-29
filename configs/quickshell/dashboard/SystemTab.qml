@@ -77,15 +77,15 @@ ColumnLayout {
                 model: [
                     {
                         icon: "rocket_launch",
-                        label: I18n.t("Distro")
+                        key: "Distro"
                     },
                     {
                         icon: "desktop_windows",
-                        label: I18n.t("Compositor")
+                        key: "Compositor"
                     },
                     {
                         icon: "schedule",
-                        label: I18n.t("Uptime")
+                        key: "Uptime"
                     }
                 ]
 
@@ -93,7 +93,8 @@ ColumnLayout {
                     id: fact
 
                     required property var modelData
-                    readonly property string value: modelData.label === "Distro" ? SysInfo.distro : modelData.label === "Uptime" ? SysInfo.uptimeText : "Hyprland"
+                    // Picked by key, never by the shown label, which changes with the language.
+                    readonly property string value: modelData.key === "Distro" ? SysInfo.distro : modelData.key === "Uptime" ? SysInfo.uptimeText : "Hyprland"
 
                     spacing: Theme.spacing.medium
 
@@ -108,7 +109,7 @@ ColumnLayout {
                         spacing: 0
 
                         Text {
-                            text: fact.modelData.label
+                            text: I18n.t(fact.modelData.key)
                             color: Theme.dim
                             font {
                                 family: Theme.font
