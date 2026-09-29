@@ -314,5 +314,8 @@
     "Clipboard is empty": "剪貼簿是空的",
     "1 match, Enter to open": "找到 1 個，按 Enter 開啟",
     "%1 matches, Enter opens the first": "找到 %1 個，按 Enter 開啟第一個",
-    "Color picker": "取色器"
+    "Color picker": "取色器",
+    "Shuffle from": "隨機挑選自",
+    "All wallpapers": "所有桌布",
+    "Click the wallpaper button to shuffle from the chosen folder.": "按一下桌布按鈕，就會從選取的資料夾隨機換一張。"
 }

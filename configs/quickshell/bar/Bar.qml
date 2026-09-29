@@ -74,10 +74,7 @@ PanelWindow {
                 onClicked: Quickshell.execDetached(["kitty", "--execute", bar.home + "/script/misc/update.sh"])
             }
 
-            BarButton {
-                icon: "wallpaper"
-                onClicked: Wallpapers.setRandom()
-            }
+            WallpaperShuffle {}
 
             BarButton {
                 icon: "grid_view"

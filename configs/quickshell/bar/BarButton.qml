@@ -9,6 +9,7 @@ MaterialIcon {
     property color hoverColor: Theme.accent2
 
     signal clicked
+    signal rightClicked
 
     text: icon
     color: mouse.containsMouse ? hoverColor : baseColor
@@ -37,6 +38,7 @@ MaterialIcon {
         anchors.margins: -Theme.spacing.extraSmall
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onClicked: root.clicked()
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        onClicked: event => event.button === Qt.RightButton ? root.rightClicked() : root.clicked()
     }
 }
