@@ -141,7 +141,8 @@ Scope {
                 height: Theme.control.row * 2
 
                 Timer {
-                    running: true
+                    // Held while a screenshot is being taken, so the pill can be in it.
+                    running: !Screenshot.holding
                     interval: Theme.duration.extraLarge * 2
                     onTriggered: root.drop(slot.key)
                 }

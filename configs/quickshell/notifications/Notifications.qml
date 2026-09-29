@@ -297,7 +297,7 @@ Scope {
 
                 // Reading a notification should not race its own timer.
                 Timer {
-                    running: !hover.hovered && (card.detached || card.live !== null && !card.critical && card.timeout !== 0)
+                    running: !hover.hovered && !Screenshot.holding && (card.detached || card.live !== null && !card.critical && card.timeout !== 0)
                     interval: card.timeout > 0 ? card.timeout : Theme.duration.toast
                     onTriggered: card.detached ? root.drop(card.modelData) : card.live?.expire()
                 }

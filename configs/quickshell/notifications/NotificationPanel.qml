@@ -30,9 +30,22 @@ OverlayWindow {
 
     // Same dismissal as the bar's flyouts: a click outside closes it.
     HyprlandFocusGrab {
+        id: grab
+
         windows: [win]
         active: Notifs.panelOpen
-        onCleared: Notifs.panelOpen = false
+        // The screenshot overlay takes the keyboard, which clears the grab; the panel stays for the picture.
+        onCleared: if (!Screenshot.holding)
+            Notifs.panelOpen = false
+    }
+
+    // A cleared grab stays off; arm it again once the screenshot is done, so an outside click still closes.
+    Connections {
+        target: Screenshot
+        function onHoldingChanged(): void {
+            if (!Screenshot.holding && Notifs.panelOpen)
+                grab.active = true;
+        }
     }
 
     Surface {

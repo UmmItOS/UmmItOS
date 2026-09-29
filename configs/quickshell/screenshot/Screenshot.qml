@@ -33,6 +33,15 @@ Singleton {
         onTriggered: root.leaving = false
     }
 
+    // From Print until the picture is taken, notices hold still: picking a region takes longer than a notice lasts.
+    readonly property bool holding: open || leaving || settle.running || shotMargin.running
+
+    // grim runs detached after the overlay leaves; this covers it.
+    Timer {
+        id: shotMargin
+        interval: Theme.duration.extraLarge
+    }
+
     function start(newMode: string): void {
         if (leaving)
             return;
@@ -87,6 +96,7 @@ Singleton {
     }
 
     function take(target: var): void {
+        shotMargin.restart();
         const file = newFile();
         // Detached, so a second quick shot is not dropped.
         Quickshell.execDetached(["sh", "-c", 'd="$1" f="$2" ok="$3" bad="$4" why="$5" && shift 5 && mkdir -p "$d" && grim "$@" "$f" && wl-copy --type image/png < "$f" && notify-send -a Screenshot -h string:image-path:"$f" "$ok" "$(basename "$f")" || notify-send -a Screenshot -u critical "$bad" "$why"', "sh", root.dir, file, I18n.t("Screenshot saved"), I18n.t("Screenshot failed"), I18n.t("Could not save to %1").arg(root.dir), ...target]);
