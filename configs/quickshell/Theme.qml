@@ -533,8 +533,8 @@ Singleton {
         readonly property int confirmHold: 3000
         // A toast that set no timeout of its own.
         readonly property int toast: 6000
-        // Merges the burst of urgent events Hyprland sends for one request (a link opened twice is two notices).
-        readonly property int urgentRepeat: 3000
+        // Hyprland sends a pair of urgent events about 10 ms apart for one request; clicks even 150 ms apart stay separate.
+        readonly property int urgentRepeat: 150
         // An app that sent its own notification this recently gets no attention notice on top.
         readonly property int urgentQuiet: 5000
         readonly property int osdHide: 1400
