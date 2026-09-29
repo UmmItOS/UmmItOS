@@ -83,13 +83,13 @@ Singleton {
 
     // A window shot is saved by the shell itself (keeps transparency).
     function saved(file: string): void {
-        Quickshell.execDetached(["sh", "-c", 'wl-copy --type image/png < "$1" && notify-send -a Screenshot -h string:image-path:"$1" "Screenshot saved" "$(basename "$1")"', "sh", file]);
+        Quickshell.execDetached(["sh", "-c", 'wl-copy --type image/png < "$1" && notify-send -a Screenshot -h string:image-path:"$1" "$2" "$(basename "$1")"', "sh", file, I18n.t("Screenshot saved")]);
     }
 
     function take(target: var): void {
         const file = newFile();
         // Detached, so a second quick shot is not dropped.
-        Quickshell.execDetached(["sh", "-c", 'mkdir -p "$1" && f="$2" && shift 2 && grim "$@" "$f" && wl-copy --type image/png < "$f" && notify-send -a Screenshot -h string:image-path:"$f" "Screenshot saved" "$(basename "$f")" || notify-send -a Screenshot -u critical "Screenshot failed" "Could not save to $1"', "sh", root.dir, file, ...target]);
+        Quickshell.execDetached(["sh", "-c", 'd="$1" f="$2" ok="$3" bad="$4" why="$5" && shift 5 && mkdir -p "$d" && grim "$@" "$f" && wl-copy --type image/png < "$f" && notify-send -a Screenshot -h string:image-path:"$f" "$ok" "$(basename "$f")" || notify-send -a Screenshot -u critical "$bad" "$why"', "sh", root.dir, file, I18n.t("Screenshot saved"), I18n.t("Screenshot failed"), I18n.t("Could not save to %1").arg(root.dir), ...target]);
     }
 
     // grabToImage cannot create the folder, so it is made up front.

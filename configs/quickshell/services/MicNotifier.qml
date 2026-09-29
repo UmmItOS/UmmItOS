@@ -31,7 +31,7 @@ Scope {
                 root.warned = false;
             } else if (!root.warned) {
                 root.warned = true;
-                Quickshell.execDetached(["notify-send", "-a", "Microphone", "-u", "critical", "Microphone stopped working", "It gets stuck after some sleeps. Reboot to fix it."]);
+                Quickshell.execDetached(["notify-send", "-a", "Microphone", "-u", "critical", I18n.t("Microphone stopped working"), I18n.t("It gets stuck after some sleeps. Reboot to fix it.")]);
             }
         }
     }

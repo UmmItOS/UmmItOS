@@ -50,7 +50,7 @@ Scope {
         const entry = (notification.desktopEntry || "").toLowerCase();
         const hints = notification.hints ?? {};
         const ownSound = ["vesktop", "discord", "telegram", "telegramdesktop", "org.telegram.desktop"].some(a => app.includes(a) || entry.includes(a)) || hints["suppress-sound"] || hints["sound-file"] || hints["sound-name"];
-        const charging = app === "battery" && notification.summary === "Charging";
+        const charging = app === "battery" && notification.summary === I18n.t("Charging");
         let sound = "";
         // The screenshot tool has its own shutter, like an app with its own sound.
         if (app === "screenshot")

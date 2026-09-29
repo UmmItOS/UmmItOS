@@ -22,7 +22,9 @@ Singleton {
     // Where wttr.in matched the name, which may not be the place meant.
     readonly property string matched: [data?.nearest_area?.[0]?.areaName?.[0]?.value, data?.nearest_area?.[0]?.country?.[0]?.value].filter(v => v).join(", ")
     readonly property string temp: now?.temp_C ?? ""
-    readonly property string condition: (now?.weatherDesc?.[0]?.value ?? "").trim()
+    // wttr.in writes Traditional Chinese for zh-tw, which Hong Kong reads too.
+    readonly property string wttrLang: I18n.lang === "en" ? "" : "zh-tw"
+    readonly property string condition: (now?.["lang_" + wttrLang]?.[0]?.value ?? now?.weatherDesc?.[0]?.value ?? "").trim()
     readonly property int code: Number(now?.weatherCode ?? 113)
     readonly property string high: today?.maxtempC ?? ""
     readonly property string low: today?.mintempC ?? ""
@@ -101,7 +103,7 @@ Singleton {
         // The place this fetch asked for; an answer for an older place is dropped.
         property string place
 
-        command: ["curl", "-sf", "--max-time", "15", "https://wttr.in/" + encodeURIComponent(place) + "?format=j1"]
+        command: ["curl", "-sf", "--max-time", "15", "https://wttr.in/" + encodeURIComponent(place) + "?format=j1" + (root.wttrLang !== "" ? "&lang=" + root.wttrLang : "")]
         // 22 is wttr.in's HTTP error for an unknown place; any other failure (no network yet) is retried.
         onExited: code => {
             if (fetch.place !== root.location)
@@ -138,6 +140,14 @@ Singleton {
     }
 
     // Timers stop while the laptop sleeps, so waking would show last night's forecast.
+    // A new language needs the conditions written in it.
+    Connections {
+        target: I18n
+        function onLangChanged(): void {
+            root.refresh();
+        }
+    }
+
     Connections {
         target: Wake
         function onWoke(): void {

@@ -1,6 +1,7 @@
 import Quickshell
 import Quickshell.Services.UPower
 import QtQuick
+import ".."
 
 // Through notify-send, so they land in the history too.
 Scope {
@@ -44,10 +45,10 @@ Scope {
 
         if (pct <= root.criticalThreshold && root.warned > root.criticalThreshold) {
             root.warned = root.criticalThreshold;
-            root.notify("critical", "Battery critically low", pct + "% left. Plug in now.");
+            root.notify("critical", I18n.t("Battery critically low"), I18n.t("%1% left. Plug in now.").arg(pct));
         } else if (pct <= root.lowThreshold && root.warned > root.lowThreshold) {
             root.warned = root.lowThreshold;
-            root.notify("normal", "Battery low", pct + "% left.");
+            root.notify("normal", I18n.t("Battery low"), I18n.t("%1% left.").arg(pct));
         }
     }
 
@@ -67,7 +68,7 @@ Scope {
 
             // Not the brief "fully charged" some drivers report on plug-in.
             if (state === UPowerDeviceState.FullyCharged && root.percent() >= 99)
-                root.notify("low", "Battery full", "Charged. You can unplug.");
+                root.notify("low", I18n.t("Battery full"), I18n.t("Charged. You can unplug."));
         }
     }
 
@@ -81,9 +82,9 @@ Scope {
                 return;
             if (!UPower.onBattery) {
                 root.pluggedIn();
-                root.notify("low", "Charging", root.percent() + "%");
+                root.notify("low", I18n.t("Charging"), root.percent() + "%");
             } else {
-                root.notify("low", "On battery", root.percent() + "%");
+                root.notify("low", I18n.t("On battery"), root.percent() + "%");
             }
         }
     }

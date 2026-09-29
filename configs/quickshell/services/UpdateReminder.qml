@@ -1,6 +1,7 @@
 import Quickshell
 import Quickshell.Io
 import QtQuick
+import ".."
 
 // Once the last full upgrade (from pacman.log) is a week old, nags every half hour; transient (-e).
 Scope {
@@ -29,10 +30,10 @@ Scope {
                 const days = Math.floor((Date.now() - when.getTime()) / 86400000);
                 if (days < root.staleDays)
                     return;
-                const date = Qt.formatDate(when, "d MMMM");
+                const date = when.toLocaleString(I18n.locale, I18n.t("d MMMM"));
                 Quickshell.execDetached(["sh", "-c", `
-                    a=$(notify-send -e -a Update -A update="Update now" "$1" "$2")
-                    [ "$a" = update ] && kitty -e "$HOME/script/misc/update.sh"`, "sh", `System not updated for ${days} days`, `The last full upgrade was on ${date}.`]);
+                    a=$(notify-send -e -a Update -A update="$3" "$1" "$2")
+                    [ "$a" = update ] && kitty -e "$HOME/script/misc/update.sh"`, "sh", I18n.t("System not updated for %1 days").arg(days), I18n.t("The last full upgrade was on %1.").arg(date), I18n.t("Update now")]);
             }
         }
     }

@@ -38,19 +38,19 @@ Scope {
         }
         if (root.network !== root.lastNetwork) {
             if (root.network !== "")
-                root.notify("Wi-Fi", "Wi-Fi connected", root.network);
+                root.notify("Wi-Fi", I18n.t("Wi-Fi connected"), root.network);
             else
-                root.notify("Wi-Fi", "Wi-Fi disconnected", root.lastNetwork);
+                root.notify("Wi-Fi", I18n.t("Wi-Fi disconnected"), root.lastNetwork);
             root.lastNetwork = root.network;
         }
         const now = root.devices ? root.devices.split("\n") : [];
         const before = root.lastDevices ? root.lastDevices.split("\n") : [];
         for (const address of now)
             if (!before.includes(address))
-                root.notify("Bluetooth", "Connected", root.nameOf(address));
+                root.notify("Bluetooth", I18n.t("Connected"), root.nameOf(address));
         for (const address of before)
             if (!now.includes(address))
-                root.notify("Bluetooth", "Disconnected", root.nameOf(address));
+                root.notify("Bluetooth", I18n.t("Disconnected"), root.nameOf(address));
         root.lastDevices = root.devices;
     }
 
