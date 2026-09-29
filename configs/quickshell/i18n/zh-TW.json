@@ -310,5 +310,9 @@
     "Could not save to %1": "無法儲存到 %1",
     "System not updated for %1 days": "系統已 %1 天未更新",
     "The last full upgrade was on %1.": "上次完整升級是在 %1。",
-    "Battery": "電池"
+    "Battery": "電池",
+    "Clipboard is empty": "剪貼簿是空的",
+    "1 match, Enter to open": "找到 1 個，按 Enter 開啟",
+    "%1 matches, Enter opens the first": "找到 %1 個，按 Enter 開啟第一個",
+    "Color picker": "取色器"
 }

@@ -9,9 +9,9 @@ import ".."
 OverlayWindow {
     id: win
 
-    // A bind's description in the chosen language; numbered ones share one template.
+    // A bind's description in the chosen language; numbered ones ("1–10" once merged) share one template.
     function said(text: string): string {
-        const n = text.match(/^(.*workspace) (\d+)$/);
+        const n = text.match(/^(.*workspace) ([\d–-]+)$/);
         return n ? I18n.t(n[1] + " %1").arg(n[2]) : I18n.t(text);
     }
 

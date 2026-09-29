@@ -117,7 +117,7 @@ OverlayWindow {
             Text {
                 Layout.topMargin: Theme.spacing.extraSmall
                 opacity: search.text === "" ? 0 : 1
-                text: win.results.length === 0 ? "No match" : win.results.length === 1 ? "1 match, Enter to open" : win.results.length + " matches, Enter opens the first"
+                text: win.results.length === 0 ? I18n.t("No match") : win.results.length === 1 ? I18n.t("1 match, Enter to open") : I18n.t("%1 matches, Enter opens the first").arg(win.results.length)
                 color: Theme.dim
                 font.family: Theme.font
                 font.pixelSize: Theme.fontSize.smaller
