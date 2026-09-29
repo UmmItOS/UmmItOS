@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # First Hyprland login: offer the optional tuning pass once, then never again.
-# Launched by exec-once in hypr/hyprland/exec.conf.
+# Launched at login by hypr/hyprland/autostart.lua.
 
 state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/ummitos"
 sentinel="$state_dir/first-run-done"
@@ -21,7 +21,7 @@ if [[ "$1" == "--prompt" ]]; then
     echo "Welcome to UmmItOS. Your desktop is ready to use."
     echo ""
     echo "You can tune it further if you want to: lock the exact monitor mode, pick a"
-    echo "specific network interface for Waybar, or change the screenshot folder."
+
     echo ""
     read -rp "Run the optional tuning now? [y/N] " answer
     if [[ "$answer" =~ ^[Yy]$ ]]; then

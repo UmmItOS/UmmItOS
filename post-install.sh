@@ -8,6 +8,17 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/lib/common.sh"
 source "$SCRIPT_DIR/lib/display-utils.sh"
 
+# The first hl.monitor line of hyprland.lua, which the monitor step rewrites.
+monitor_line() {
+    grep -m1 '^hl\.monitor(' "$1"
+}
+
+# The HYPRSHOT_DIR value from env.lua: the path itself when it is a quoted
+# string, otherwise the Lua expression as written.
+hyprshot_dir() {
+    grep -m1 '^hl\.env("HYPRSHOT_DIR"' "$1" | sed -E 's/^hl\.env\("HYPRSHOT_DIR",[[:space:]]*(.*)\)[[:space:]]*$/\1/; s/^"(.*)"$/\1/'
+}
+
 # Function to display the post-installation banner
 display_post_install_banner() {
     cat <<EOF
@@ -27,129 +38,10 @@ run_interactive_configuration() {
     pause_and_continue "Press Enter to start with Configuration..."
     clear
 
-    # Hyprlock Configuration
-    print_header "Hyprlock Configuration"
-    echo "${COLOR_YELLOW}Hyprlock needs to know which monitor to display on.${COLOR_RESET}"
-    echo "${COLOR_GREY}The configuration file is: ${COLOR_GREEN}~/.config/hypr/hyprlock.conf${COLOR_RESET}"
-    echo "${COLOR_GREY}You can list your monitor names by running: ${COLOR_GREEN}hyprctl monitors${COLOR_RESET}"
-    echo ""
-
-    check_config_exists "$HOME/.config/hypr/hyprlock.conf" # Check if file exists first
-
-    # Get focused monitor name directly
-    local default_monitor_name=""
-    if command_exists hyprctl; then
-        # Extracts the name like "DP-1" from the "Monitor DP-1 (ID 0):" line
-        # for the monitor block that contains "focused: yes".
-        default_monitor_name=$(hyprctl monitors | awk '/^Monitor / { M=$2 } /focused: yes/ { print M; exit }')
-    fi
-
-    local selected_monitor_name
-    if [[  -n "$default_monitor_name"  ]]; then
-        echo "${COLOR_BLUE}We detected '${default_monitor_name}' as a likely candidate (your currently focused monitor).${COLOR_RESET}"
-        show_monitor_info
-        selected_monitor_name=$(prompt_with_default "Enter monitor name for Hyprlock (or press Enter for default '${default_monitor_name}'): " "$default_monitor_name")
-    else
-        echo "${COLOR_YELLOW}Could not automatically detect a focused monitor (are you in a Hyprland session?).${COLOR_RESET}"
-        echo "${COLOR_YELLOW}Please identify your monitor name from the list below or by running 'hyprctl monitors'.${COLOR_RESET}"
-        show_monitor_info 
-        selected_monitor_name=$(prompt_with_default "Enter monitor name for Hyprlock (e.g., DP-1): " "")
-    fi
-
-    if [[  -n "$selected_monitor_name"  ]]; then
-        echo ""
-        echo "${COLOR_GREEN}You entered: ${COLOR_CYAN}$selected_monitor_name${COLOR_RESET}"
-        echo "${COLOR_YELLOW}Attempting to update ${COLOR_GREEN}~/.config/hypr/hyprlock.conf${COLOR_YELLOW} with monitor '${COLOR_CYAN}$selected_monitor_name${COLOR_CYAN}'...${COLOR_RESET}"
-        
-        local hyprlock_conf_file_path="$HOME/.config/hypr/hyprlock.conf"
-        if [[  -f "$hyprlock_conf_file_path"  ]]; then
-            backup_file "$hyprlock_conf_file_path"
-            sed -i -E "s/^[[:space:]]*monitor[[:space:]]*=.*$/    monitor = $selected_monitor_name/" "$hyprlock_conf_file_path"
-            if grep -q "^[[:space:]]*monitor[[:space:]]*= $selected_monitor_name" "$hyprlock_conf_file_path"; then
-                echo "${COLOR_GREEN}Successfully updated monitor settings in ${hyprlock_conf_file_path}${COLOR_RESET}"
-            else
-                echo "${COLOR_DARK_RED}Failed to update monitor settings, or no monitor lines were found. Please check manually.${COLOR_RESET}"
-                echo "${COLOR_YELLOW}Original file backed up. You might need to restore it or edit manually.${COLOR_RESET}"
-            fi
-        else
-            echo "${COLOR_DARK_RED}Hyprlock configuration file not found at ${hyprlock_conf_file_path}. Cannot apply changes.${COLOR_RESET}"
-        fi
-    else
-        echo ""
-        echo "${COLOR_DARK_RED}No monitor name entered. You will need to configure Hyprlock manually.${COLOR_RESET}"
-        echo "${COLOR_YELLOW}Run ${COLOR_GREEN}hyprctl monitors${COLOR_YELLOW} to find your monitor name and edit ${COLOR_GREEN}~/.config/hypr/hyprlock.conf${COLOR_YELLOW}.${COLOR_RESET}"
-    fi
-    
-    # Add a pause after Hyprlock section
-    pause_and_continue "Press Enter to continue to Waybar Configuration..."
-    clear
-    
-    # Waybar Configuration
-    print_header "Waybar Configuration"
-    echo "${COLOR_YELLOW}Waybar needs to know which network interface to monitor.${COLOR_RESET}"
-    echo "${COLOR_GREY}The configuration file is: ${COLOR_GREEN}~/.config/waybar/config.jsonc${COLOR_RESET}"
-    echo ""
-    check_config_exists "$HOME/.config/waybar/config.jsonc"
-    declare -a interfaces
-    if ! show_network_info; then
-        echo "${COLOR_DARK_RED}Could not list network interfaces. Skipping Waybar network setup.${COLOR_RESET}"
-    else
-        # Prompt user to select interface directly
-        local choice
-        local num_interfaces=${#interfaces[@]}
-        local selected_interface_name=""
-
-        if (( num_interfaces == 0 )); then
-            echo "${COLOR_DARK_RED}No network interfaces found.${COLOR_RESET}"
-        else
-            while true; do
-                read -r -p "${COLOR_GREEN}Enter the number for the network interface you want to use (1-$num_interfaces): ${COLOR_RESET}" choice
-                if [[ "$choice" =~ ^[0-9]+$ ]] && (( choice >= 1 && choice <= num_interfaces )); then
-                    selected_interface_name="${interfaces[$((choice-1))]}"
-                    break
-                else
-                    echo "${COLOR_DARK_RED}Invalid selection. Please enter a number between 1 and $num_interfaces.${COLOR_RESET}"
-                fi
-            done
-        fi
-
-        if [[  -n "$selected_interface_name"  ]]; then
-            echo ""
-            echo "${COLOR_GREEN}You selected interface: ${COLOR_CYAN}$selected_interface_name${COLOR_RESET}"
-            local waybar_conf_file_path="$HOME/.config/waybar/config.jsonc"
-            if [[  -f "$waybar_conf_file_path"  ]]; then
-                if ! command_exists jq; then
-                    echo "${COLOR_DARK_RED}'jq' command not found. This script uses jq to modify JSON files.${COLOR_RESET}"
-                    echo "${COLOR_YELLOW}Please install jq (e.g., 'sudo pacman -S jq') and run this section again${COLOR_RESET}"
-                    echo "${COLOR_YELLOW}You need to set: ${COLOR_CYAN}\"interface\": \"$selected_interface_name\"${COLOR_YELLOW} in the network module.${COLOR_RESET}"
-                else
-                    backup_file "$waybar_conf_file_path"
-                    jq --arg new_iface "$selected_interface_name" '.network.interface = $new_iface' "$waybar_conf_file_path" > "${waybar_conf_file_path}.tmp" && mv "${waybar_conf_file_path}.tmp" "$waybar_conf_file_path"
-                    local current_waybar_iface
-                    current_waybar_iface=$(jq -r '.network.interface' "$waybar_conf_file_path")
-                    if [[  "$current_waybar_iface" == "$selected_interface_name"  ]]; then
-                        echo "${COLOR_GREEN}Successfully updated network interface in ${waybar_conf_file_path} to '${selected_interface_name}'${COLOR_RESET}"
-                    else
-                        echo "${COLOR_DARK_RED}Failed to update network interface in ${waybar_conf_file_path}. Current value: '${current_waybar_iface}'. Please check manually.${COLOR_RESET}"
-                        echo "${COLOR_YELLOW}Original file backed up. You might need to restore it or edit manually.${COLOR_RESET}"
-                    fi
-                fi
-            else 
-                echo "${COLOR_DARK_RED}Waybar configuration file not found at ${waybar_conf_file_path}. Cannot apply changes.${COLOR_RESET}"
-            fi
-        else
-            echo "${COLOR_DARK_RED}No network interface selected. You will need to configure Waybar manually.${COLOR_RESET}"
-        fi
-    fi
-    echo ""
-    # Add a pause after Waybar section
-    pause_and_continue "Press Enter to continue to Hyprland Main Configuration..."
-    clear
-
     # Hyprland Main Configuration (Monitor line)
-    print_header "Hyprland Main Configuration (hyprland.conf)"
+    print_header "Hyprland Main Configuration (hyprland.lua)"
     echo "${COLOR_YELLOW}This section will attempt to update the primary monitor configuration in your main Hyprland config.${COLOR_RESET}"
-    local hyprland_conf_file_path="$HOME/.config/hypr/hyprland.conf"
+    local hyprland_conf_file_path="$HOME/.config/hypr/hyprland.lua"
     echo "${COLOR_GREY}   Configuration file: ${COLOR_GREEN}${hyprland_conf_file_path}${COLOR_RESET}"
     echo ""
     if [[  ! -f "$hyprland_conf_file_path"  ]]; then
@@ -160,8 +52,8 @@ run_interactive_configuration() {
             echo "${COLOR_YELLOW}Please install jq (e.g., 'sudo pacman -S jq') to use this feature.${COLOR_RESET}"
         else
             local current_monitor_line_val
-            current_monitor_line_val=$(sed -n '3p' "$hyprland_conf_file_path")
-            echo "${COLOR_BLUE}Current monitor line (line 3) in ${hyprland_conf_file_path}:${COLOR_RESET}"
+            current_monitor_line_val=$(monitor_line "$hyprland_conf_file_path")
+            echo "${COLOR_BLUE}Current monitor line in ${hyprland_conf_file_path}:${COLOR_RESET}"
             echo "${COLOR_GREY}   $current_monitor_line_val${COLOR_RESET}"
             echo ""
             
@@ -188,7 +80,7 @@ run_interactive_configuration() {
                       scale_val="$scale"
                     fi
 
-                    new_monitor_line_val="monitor=$name,${width}x${height}@${refresh_rate},${x}x${y},${scale_val}"
+                    new_monitor_line_val="hl.monitor({ output = \"$name\", mode = \"${width}x${height}@${refresh_rate}\", position = \"${x}x${y}\", scale = ${scale_val} })"
                 fi
             fi
             
@@ -199,15 +91,19 @@ run_interactive_configuration() {
                 echo "${COLOR_BLUE}Detected focused monitor configuration:${COLOR_RESET}"
                 echo "   ${COLOR_CYAN}$new_monitor_line_val${COLOR_RESET}"
                 echo ""
-                if prompt_yna "Do you want to update line 3 of ${hyprland_conf_file_path} with this detected configuration?"; then
+                if prompt_yna "Do you want to replace the first hl.monitor line of ${hyprland_conf_file_path} with this detected configuration?"; then
                     backup_file "$hyprland_conf_file_path"
-                    sed -i "3s/.*/$new_monitor_line_val/" "$hyprland_conf_file_path"
+                    local monitor_line_no
+                    monitor_line_no=$(grep -n -m1 '^hl\.monitor(' "$hyprland_conf_file_path" | cut -d: -f1)
+                    if [[ -n "$monitor_line_no" ]]; then
+                        MONITOR_LINE="$new_monitor_line_val" awk -v n="$monitor_line_no" 'NR == n { print ENVIRON["MONITOR_LINE"]; next } { print }' "$hyprland_conf_file_path" > "$hyprland_conf_file_path.tmp" && mv "$hyprland_conf_file_path.tmp" "$hyprland_conf_file_path"
+                    fi
                     local updated_line_val
-                    updated_line_val=$(sed -n '3p' "$hyprland_conf_file_path")
+                    updated_line_val=$(monitor_line "$hyprland_conf_file_path")
                     if [[  "$updated_line_val" == "$new_monitor_line_val"  ]]; then
                         echo "${COLOR_GREEN}   Successfully updated monitor line in ${hyprland_conf_file_path}.${COLOR_RESET}"
                     else
-                        echo "${COLOR_DARK_RED}   Failed to verify monitor line update. Current line 3 is:${COLOR_RESET}"
+                        echo "${COLOR_DARK_RED}   Failed to verify monitor line update. Current monitor line is:${COLOR_RESET}"
                         echo "      ${COLOR_GREY}$updated_line_val${COLOR_RESET}"
                         echo "${COLOR_YELLOW}      Please check manually. Original file backed up.${COLOR_RESET}"
                     fi
@@ -223,17 +119,16 @@ run_interactive_configuration() {
     print_header "Hyprshot Configuration"
     echo "${COLOR_YELLOW}Hyprshot needs a directory to save screenshots.${COLOR_RESET}"
     pause_and_continue "Press Enter to continue to Hyprshot Configuration..."
-    echo "${COLOR_GREY}This is configured in: ${COLOR_GREEN}~/.config/hypr/hyprland/env.conf${COLOR_RESET}"
+    echo "${COLOR_GREY}This is configured in: ${COLOR_GREEN}~/.config/hypr/hyprland/env.lua${COLOR_RESET}"
     echo ""
-    check_config_exists "$HOME/.config/hypr/hyprland/env.conf"
+    check_config_exists "$HOME/.config/hypr/hyprland/env.lua"
     show_hyprshot_info
     
     # Get current HYPRSHOT_DIR value directly
     local current_hyprshot_dir_val=""
-    local env_file="$HOME/.config/hypr/hyprland/env.conf"
+    local env_file="$HOME/.config/hypr/hyprland/env.lua"
     if [[  -f "$env_file"  ]]; then
-        # Extracts the path from a line like "env = HYPRSHOT_DIR, /path/to/dir"
-        current_hyprshot_dir_val=$(grep -E "^[[:space:]]*env[[:space:]]*=[[:space:]]*HYPRSHOT_DIR[[:space:]]*,.*" "$env_file" | sed -E 's/^[[:space:]]*env[[:space:]]*=[[:space:]]*HYPRSHOT_DIR[[:space:]]*,[[:space:]]*(.*)[[:space:]]*$/\1/' | head -n 1)
+        current_hyprshot_dir_val=$(hyprshot_dir "$env_file")
     fi
     
     local desired_hyprshot_dir
@@ -257,12 +152,12 @@ run_interactive_configuration() {
             echo "${COLOR_GREEN}Directory '${desired_hyprshot_dir}' already exists.${COLOR_RESET}"
         fi
         
-        local env_conf_file_path="$HOME/.config/hypr/hyprland/env.conf"
+        local env_conf_file_path="$HOME/.config/hypr/hyprland/env.lua"
         if [[  -f "$env_conf_file_path"  ]]; then
             backup_file "$env_conf_file_path"
-            sed -i -E "s|^([[:space:]]*env[[:space:]]*=[[:space:]]*HYPRSHOT_DIR[[:space:]]*,)[[:space:]]*.*$|\1 $desired_hyprshot_dir|" "$env_conf_file_path"
+            HYPRSHOT_LINE="hl.env(\"HYPRSHOT_DIR\", \"$desired_hyprshot_dir\")" awk '/^hl\.env\("HYPRSHOT_DIR"/ { print ENVIRON["HYPRSHOT_LINE"]; next } { print }' "$env_conf_file_path" > "$env_conf_file_path.tmp" && mv "$env_conf_file_path.tmp" "$env_conf_file_path"
             local updated_hyprshot_dir_val
-            updated_hyprshot_dir_val=$(grep -E "^[[:space:]]*env[[:space:]]*=[[:space:]]*HYPRSHOT_DIR[[:space:]]*,.*" "$env_conf_file_path" | sed -E 's/^[[:space:]]*env[[:space:]]*=[[:space:]]*HYPRSHOT_DIR[[:space:]]*,[[:space:]]*(.*)[[:space:]]*$/\1/' | head -n 1)
+            updated_hyprshot_dir_val=$(hyprshot_dir "$env_conf_file_path")
             if [[  "$updated_hyprshot_dir_val" == "$desired_hyprshot_dir"  ]]; then
                 echo "${COLOR_GREEN}Successfully updated HYPRSHOT_DIR in ${env_conf_file_path} to '${desired_hyprshot_dir}'${COLOR_RESET}"
             else
@@ -307,54 +202,22 @@ display_usage() {
 show_current_settings() {
     print_header "Current Detected Settings"
 
-    echo "${COLOR_MAGENTA}Hyprlock Monitor(s):${COLOR_RESET}"
-    local hyprlock_conf_file="$HOME/.config/hypr/hyprlock.conf"
-    if [[  -f "$hyprlock_conf_file"  ]]; then
-        if grep -q -E "^[[:space:]]*monitor[[:space:]]*=" "$hyprlock_conf_file"; then
-            grep -E "^[[:space:]]*monitor[[:space:]]*=" "$hyprlock_conf_file" | awk '!seen[$0]++' | sed 's/^/   /'
-        else
-            echo "   ${COLOR_YELLOW}No 'monitor =' lines found in $hyprlock_conf_file.${COLOR_RESET}"
-        fi
-    else
-        echo "   ${COLOR_DARK_RED}${hyprlock_conf_file} not found.${COLOR_RESET}"
-    fi
-    echo ""
-
-    echo "${COLOR_MAGENTA}Waybar Network Interface:${COLOR_RESET}"
-    local waybar_conf_file="$HOME/.config/waybar/config.jsonc"
-    if [[  -f "$waybar_conf_file"  ]]; then
-        if command_exists jq; then
-            local current_iface
-            current_iface=$(jq -r '.network.interface' "$waybar_conf_file" 2>/dev/null)
-            if [[ -n "$current_iface" && "$current_iface" != "null" ]]; then
-                echo "   ${COLOR_CYAN}$current_iface${COLOR_RESET}"
-            else
-                echo "   ${COLOR_YELLOW}Network interface not set or 'network' block/key not found in $waybar_conf_file.${COLOR_RESET}"
-            fi
-        else
-            echo "   ${COLOR_YELLOW}'jq' not found. Cannot automatically read Waybar config.${COLOR_RESET}"
-        fi
-    else
-        echo "   ${COLOR_DARK_RED}${waybar_conf_file} not found.${COLOR_RESET}"
-    fi
-    echo ""
-
-    echo "${COLOR_MAGENTA}Hyprland Main Monitor (hyprland.conf line 3):${COLOR_RESET}"
-    local hyprland_conf_file="$HOME/.config/hypr/hyprland.conf"
+    echo "${COLOR_MAGENTA}Hyprland Main Monitor (hyprland.lua):${COLOR_RESET}"
+    local hyprland_conf_file="$HOME/.config/hypr/hyprland.lua"
     if [[  -f "$hyprland_conf_file"  ]]; then
         local current_monitor_line
-        current_monitor_line=$(sed -n '3p' "$hyprland_conf_file")
+        current_monitor_line=$(monitor_line "$hyprland_conf_file")
         echo "   ${COLOR_CYAN}$current_monitor_line${COLOR_RESET}"
     else
         echo "   ${COLOR_DARK_RED}${hyprland_conf_file} not found.${COLOR_RESET}"
     fi
     echo ""
     
-    echo "${COLOR_MAGENTA}Hyprshot Screenshot Directory (env.conf):${COLOR_RESET}"
+    echo "${COLOR_MAGENTA}Hyprshot Screenshot Directory (env.lua):${COLOR_RESET}"
     local current_hyprshot_dir=""
-    local env_file="$HOME/.config/hypr/hyprland/env.conf"
+    local env_file="$HOME/.config/hypr/hyprland/env.lua"
     if [[  -f "$env_file"  ]]; then
-        current_hyprshot_dir=$(grep -E "^[[:space:]]*env[[:space:]]*=[[:space:]]*HYPRSHOT_DIR[[:space:]]*,.*" "$env_file" | sed -E 's/^[[:space:]]*env[[:space:]]*=[[:space:]]*HYPRSHOT_DIR[[:space:]]*,[[:space:]]*(.*)[[:space:]]*$/\1/' | head -n 1)
+        current_hyprshot_dir=$(hyprshot_dir "$env_file")
     fi
     if [[  -n "$current_hyprshot_dir"  ]]; then
         echo "   ${COLOR_CYAN}$current_hyprshot_dir${COLOR_RESET}"
@@ -377,9 +240,6 @@ fi
 # Parse command line arguments
 case "$1" in
     --start-config)
-        # Check dependencies
-        check_git
-        check_paru
         run_interactive_configuration
         ;;
     --settings)

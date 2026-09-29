@@ -45,7 +45,7 @@ install_packages_with_paru() {
     fi
 
     if prompt_yna ":: Install these ${package_type} packages? - Total Package (${total_packages})"; then
-        paru -S "${packages[@]}"
+        paru -S --needed "${packages[@]}"
 
         pause_and_continue "${package_type} packages installed completed. Press any key to keep going :)"
         clear
@@ -90,6 +90,13 @@ install_main_packages() {
 
 # Function to install GPU packages
 install_gpu_packages() {
+    if has_nvidiagpu; then
+        echo "${COLOR_YELLOW}:: Nvidia GPU detected, but unfortunatly, this script is not support Nvidia GPU.${COLOR_RESET}"
+        echo "${COLOR_YELLOW}:: Since UmmItOS owner (UmmIt) is using AMD GPU, I dont even have Nvidia GPU to test for this script.${COLOR_RESET}"
+        echo "${COLOR_YELLOW}:: So, feel free to contribute to this script to support Nvidia GPU XD${COLOR_RESET}"
+        return 0
+    fi
+
     if ! has_amdgpu; then
         echo "${COLOR_YELLOW}:: No AMD GPU detected. Skipping GPU package installation.${COLOR_RESET}"
         return 0
@@ -99,6 +106,13 @@ install_gpu_packages() {
     local gpu_packages=()
 
     if read_packages_from_file "./install/packages_gpu" gpu_packages; then
+        if ! ensure_multilib; then
+            local kept=() package
+            for package in "${gpu_packages[@]}"; do
+                [[ $package == multilib/* ]] || kept+=("$package")
+            done
+            gpu_packages=("${kept[@]}")
+        fi
         display_packages gpu_packages "GPU"
         install_packages_with_paru gpu_packages "GPU"
     fi
@@ -120,7 +134,7 @@ install_laptop_packages() {
     fi
 }
 
-main() {
+install_all_packages() {
     # Display the banner
     display_banner_start
 
@@ -135,6 +149,13 @@ main() {
         display_laptop_banner
         install_laptop_packages
     fi
+
+    enable_bluetooth
+    enable_networkmanager
+    retire_old_notifier
 }
 
-main
+# install.sh and install-menu.sh source this file and call the functions themselves
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    install_all_packages
+fi

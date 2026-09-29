@@ -1,0 +1,150 @@
+pragma ComponentBehavior: Bound
+
+import Quickshell
+import Quickshell.Wayland
+import Quickshell.Widgets
+import QtQuick
+import ".."
+
+PanelWindow {
+    id: win
+
+    readonly property int segments: Theme.osd.segments
+    // Volume fills against its limit, so 300% of 400% is not a full bar.
+    readonly property int filled: Math.round(Osd.value / (Osd.kind === "volume" ? Audio.limit : 1) * win.segments)
+    readonly property bool app: Osd.kind === "app"
+
+    // Mapped until the fade ends.
+    visible: Osd.shown || card.opacity > 0.01
+    // No anchors: layer-shell centres it.
+    WlrLayershell.namespace: "ummitos-osd"
+    WlrLayershell.layer: WlrLayer.Overlay
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+    exclusionMode: ExclusionMode.Ignore
+    implicitWidth: Theme.osd.size
+    implicitHeight: Theme.osd.size
+    color: "transparent"
+    mask: Region {}
+
+    Surface {
+        id: card
+
+        anchors.fill: parent
+        radius: Theme.rounding.extraExtraLarge
+        tone: Theme.bgAlt
+        lift: Theme.lift.osd
+
+        opacity: Osd.shown ? 1 : 0
+        layer.enabled: opacity < 1
+        layer.effect: MotionBlur {
+            settled: card.opacity
+        }
+        scale: Osd.shown ? 1 : Theme.popScale
+
+        // Same length as the scale, or the unmap cut it mid-animation.
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Theme.duration.expressiveFastSpatial
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Theme.curve.emphasizedDecel
+            }
+        }
+        Behavior on scale {
+            NumberAnimation {
+                duration: Theme.duration.expressiveFastSpatial
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Theme.curve.emphasizedDecel
+            }
+        }
+
+        Column {
+            anchors.centerIn: parent
+            spacing: Theme.spacing.medium
+
+            Item {
+                anchors.horizontalCenter: parent.horizontalCenter
+                implicitWidth: Theme.icon.huge
+                implicitHeight: Theme.icon.huge
+
+                IconImage {
+                    id: appIcon
+
+                    anchors.fill: parent
+                    source: Osd.icon
+                    visible: win.app && appIcon.status === Image.Ready
+                    opacity: Osd.muted ? Theme.osd.mutedIcon : 1
+                }
+
+                MaterialIcon {
+                    anchors.centerIn: parent
+                    visible: !win.app || appIcon.status !== Image.Ready
+                    text: {
+                        if (Osd.kind === "brightness")
+                            return Osd.value > Theme.osd.brightnessHigh ? "brightness_high" : Osd.value > Theme.osd.brightnessMedium ? "brightness_medium" : "brightness_low";
+                        if (Osd.muted)
+                            return "volume_off";
+                        return Osd.value > Theme.volume.high ? "volume_up" : Osd.value > 0 ? "volume_down" : "volume_mute";
+                    }
+                    color: Osd.muted ? Theme.dim : Theme.fg
+                    fill: 1
+                    size: Theme.icon.huge
+                }
+            }
+
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: Osd.muted ? "Muted" : Math.round(Osd.value * 100) + "%"
+                color: Osd.muted ? Theme.dim : Theme.fg
+                font {
+                    family: Theme.fontDisplay
+                    pixelSize: Osd.muted ? Theme.fontSize.extraLarge : Theme.fontSize.huge
+                    weight: Theme.weight.bold
+                    // Tabular, or the square twitches as the digits change.
+                    features: ({
+                            tnum: 1
+                        })
+                }
+            }
+
+            Row {
+                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: Theme.spacing.hair
+
+                Repeater {
+                    model: win.segments
+
+                    Rectangle {
+                        required property int index
+
+                        implicitWidth: Theme.osd.segmentWidth
+                        implicitHeight: Theme.osd.segmentHeight
+                        radius: Theme.rounding.extraSmall / 2
+                        color: index < win.filled ? (Osd.muted ? Theme.dim : Theme.accentText) : Theme.bgTray
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: Theme.duration.expressiveFastEffects
+                            }
+                        }
+                    }
+                }
+            }
+
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: card.width - Theme.padding.extraLarge * 2
+                horizontalAlignment: Text.AlignHCenter
+                visible: win.app && Osd.label !== ""
+                text: Osd.label
+                color: Theme.dim
+                elide: Text.ElideRight
+                font {
+                    family: Theme.font
+                    pixelSize: Theme.fontSize.smaller
+                    weight: Theme.weight.medium
+                    letterSpacing: Theme.tracking.wider
+                }
+            }
+        }
+    }
+}

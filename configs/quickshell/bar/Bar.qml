@@ -1,0 +1,191 @@
+import Quickshell
+import Quickshell.Wayland
+import QtQuick
+import QtQuick.Layouts
+import ".."
+
+PanelWindow {
+    id: bar
+
+    required property var modelData
+    screen: modelData
+
+    readonly property string home: Quickshell.env("HOME")
+
+    WlrLayershell.namespace: "ummitos-bar"
+    anchors {
+        top: true
+        left: true
+        right: true
+    }
+    implicitHeight: Theme.barHeight
+    color: Theme.bg
+
+    SystemClock {
+        id: clock
+        precision: SystemClock.Seconds
+    }
+
+    component Cluster: Rectangle {
+        default property alias content: inner.data
+
+        implicitWidth: inner.implicitWidth + Theme.padding.large * 2
+        implicitHeight: Theme.bar.cluster
+        radius: Theme.rounding.full
+        color: "transparent"
+
+        Surface {
+            anchors.fill: parent
+            radius: parent.radius
+            tone: Theme.bgTray
+        }
+
+        RowLayout {
+            id: inner
+            anchors.centerIn: parent
+            spacing: Theme.spacing.large
+        }
+    }
+
+    RowLayout {
+        anchors.fill: parent
+        anchors.leftMargin: Theme.padding.large
+        anchors.rightMargin: Theme.padding.large
+        spacing: Theme.spacing.large
+
+        Workspaces {
+            Layout.alignment: Qt.AlignVCenter
+        }
+
+        Bandwidth {
+            Layout.alignment: Qt.AlignVCenter
+        }
+
+        Cluster {
+            Layout.alignment: Qt.AlignVCenter
+
+            BarButton {
+                icon: "terminal"
+                onClicked: Quickshell.execDetached(["kitty"])
+            }
+
+            BarButton {
+                icon: "system_update_alt"
+                onClicked: Quickshell.execDetached(["kitty", "--execute", bar.home + "/script/misc/update.sh"])
+            }
+
+            BarButton {
+                icon: "wallpaper"
+                onClicked: Wallpapers.setRandom()
+            }
+
+            BarButton {
+                icon: "grid_view"
+                onClicked: Wallpapers.pickerOpen = !Wallpapers.pickerOpen
+            }
+
+            BarButton {
+                icon: "keyboard"
+                onClicked: Cheatsheet.open = !Cheatsheet.open
+            }
+
+            BarButton {
+                // A second of grim and zbar: the spinner says it heard the click.
+                icon: Scan.scanning ? "" : "qr_code_scanner"
+                onClicked: Scan.start(bar.screen)
+
+                Spinner {
+                    anchors.centerIn: parent
+                    visible: Scan.scanning
+                }
+            }
+
+            AccentPicker {}
+
+            WeatherPicker {}
+        }
+
+        Item {
+            Layout.fillWidth: true
+        }
+
+        Cluster {
+            Layout.alignment: Qt.AlignVCenter
+
+            Tray {}
+
+            Network {}
+
+            Bluetooth {}
+
+            BarButton {
+                icon: Notifs.dnd ? "notifications_off" : Notifs.history.count > 0 ? "notifications_active" : "notifications"
+                baseColor: Notifs.dnd ? Theme.dim : Theme.fg
+                onClicked: Notifs.panelOpen = !Notifs.panelOpen
+            }
+
+            Volume {}
+
+            Battery {}
+        }
+
+        BarButton {
+            Layout.alignment: Qt.AlignVCenter
+            icon: "settings"
+            onClicked: Settings.toggle()
+        }
+
+        BarButton {
+            Layout.alignment: Qt.AlignVCenter
+            icon: "power_settings_new"
+            baseColor: Theme.accentText
+            onClicked: Session.open = !Session.open
+        }
+    }
+
+    // Beside the clock, so it never moves the centre or the clusters.
+    RecordingPill {
+        anchors.left: clockColumn.right
+        anchors.leftMargin: Theme.spacing.large
+        anchors.verticalCenter: parent.verticalCenter
+    }
+
+    // On the screen's centre line, not between spacers, so it never drifts.
+    ColumnLayout {
+        id: clockColumn
+
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: -Theme.spacing.hair
+
+        Text {
+            Layout.alignment: Qt.AlignHCenter
+            text: Qt.formatDateTime(clock.date, "HH:mm:ss")
+            color: Theme.fg
+            font {
+                family: Theme.fontDisplay
+                pixelSize: Theme.fontSize.larger
+                bold: true
+                features: ({
+                    tnum: 1
+                })
+            }
+        }
+
+        Text {
+            Layout.alignment: Qt.AlignHCenter
+            text: Qt.formatDateTime(clock.date, "ddd d MMM")
+            color: Theme.dim
+            font {
+                family: Theme.font
+                pixelSize: Theme.fontSize.small
+                weight: Theme.weight.medium
+                letterSpacing: Theme.tracking.wide
+            }
+        }
+
+        TapHandler {
+            onTapped: Dashboard.toggleTab(0)
+        }
+    }
+}

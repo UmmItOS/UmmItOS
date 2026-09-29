@@ -49,7 +49,9 @@ check_paru() {
         echo -e "${COLOR_YELLOW}:: paru is not installed.${COLOR_RESET}"
         if prompt_yna ":: Would you like to install paru?"; then
             echo -e "${COLOR_GREEN}:: Installing paru...${COLOR_RESET}"
+            # makepkg needs base-devel, which a minimal Arch install leaves out.
             if ! (
+                sudo pacman -S --needed --noconfirm base-devel &&
                 git clone https://aur.archlinux.org/paru.git &&
                 cd paru || exit 1
                 makepkg -si

@@ -36,7 +36,9 @@ check_paru() {
         echo -e "${COLOR_YELLOW}:: paru is not installed.${COLOR_RESET}"
         if prompt_yna ":: Would you like to install paru?"; then
             echo -e "${COLOR_GREEN}:: Installing paru...${COLOR_RESET}"
+            # makepkg needs base-devel, which a minimal Arch install leaves out.
             if ! (
+                sudo pacman -S --needed --noconfirm base-devel &&
                 git clone https://aur.archlinux.org/paru.git &&
                 cd paru || exit 1
                 makepkg -si
@@ -131,23 +133,6 @@ pause_and_continue() {
     read -rp ":: ${message}"
 }
 
-# Function to clear screen with optional pause
-clear_with_pause() {
-    if [[ "$1" == "pause" ]]; then
-        pause_and_continue
-    fi
-    clear
-}
-
-# Clear screen
-clear_screen() {
-    printf '\033[2J\033[H'
-}
-
-pause() {
-    read -rp "Press Enter to continue..."
-}
-
 # Function to check if running on a laptop
 is_laptop() {
     [[ -f /sys/class/power_supply/BAT0/capacity ]]
@@ -161,4 +146,93 @@ has_amdgpu() {
 # Function to check if Nvidia GPU is present
 has_nvidiagpu() {
     lsmod | grep -q '^nvidia\s'
+}
+
+# Function to enable the Bluetooth stack
+# bluez only ships the unit; nothing starts it, and the shell's Bluetooth menu
+# has no adapter to talk to until it runs.
+# The shell is the notification server now. A leftover daemon (swaync from an
+# older UmmItOS) gets D-Bus-activated whenever the shell reloads, takes the
+# notification name, and toasts silently stop.
+retire_old_notifier() {
+    if command_exists swaync; then
+        systemctl --user mask swaync.service &> /dev/null &&
+            echo "${COLOR_GREEN}:: Disabled the old swaync notification daemon.${COLOR_RESET}"
+    fi
+}
+
+enable_bluetooth() {
+    if ! command_exists bluetoothctl; then
+        return 0
+    fi
+
+    if systemctl is-enabled bluetooth.service &> /dev/null; then
+        echo "${COLOR_GREEN}:: Bluetooth is already enabled.${COLOR_RESET}"
+        return 0
+    fi
+
+    if prompt_yna ":: Enable Bluetooth at boot?"; then
+        if sudo systemctl enable --now bluetooth.service; then
+            echo "${COLOR_GREEN}:: Bluetooth enabled.${COLOR_RESET}"
+        else
+            echo "${COLOR_DARK_RED}:: Failed to enable Bluetooth.${COLOR_RESET}"
+            echo "${COLOR_YELLOW}:: You can enable it later with 'sudo systemctl enable --now bluetooth'${COLOR_RESET}"
+        fi
+    else
+        echo "${COLOR_YELLOW}:: Skipping Bluetooth. Enable it later with 'sudo systemctl enable --now bluetooth'${COLOR_RESET}"
+    fi
+}
+
+# The shell's Wi-Fi menu talks to NetworkManager, so it must be the running network service.
+enable_networkmanager() {
+    if ! command_exists NetworkManager; then
+        return 0
+    fi
+
+    if systemctl is-enabled NetworkManager.service &> /dev/null; then
+        echo "${COLOR_GREEN}:: NetworkManager is already enabled.${COLOR_RESET}"
+        return 0
+    fi
+
+    echo "${COLOR_YELLOW}:: The Wi-Fi menu needs NetworkManager. If you set up iwd or systemd-networkd, disable it first.${COLOR_RESET}"
+    if prompt_yna ":: Enable NetworkManager at boot?"; then
+        if sudo systemctl enable --now NetworkManager.service; then
+            echo "${COLOR_GREEN}:: NetworkManager enabled.${COLOR_RESET}"
+        else
+            echo "${COLOR_DARK_RED}:: Failed to enable NetworkManager.${COLOR_RESET}"
+            echo "${COLOR_YELLOW}:: You can enable it later with 'sudo systemctl enable --now NetworkManager'${COLOR_RESET}"
+        fi
+    else
+        echo "${COLOR_YELLOW}:: Skipping NetworkManager. Enable it later with 'sudo systemctl enable --now NetworkManager'${COLOR_RESET}"
+    fi
+}
+
+# The 32-bit graphics packages live in multilib, which a fresh Arch leaves off. Returns 1 if it stays off.
+ensure_multilib() {
+    if grep -q '^\[multilib\]$' /etc/pacman.conf; then
+        return 0
+    fi
+
+    if ! prompt_yna ":: Enable the multilib repository (32-bit graphics for games and Steam)?"; then
+        echo "${COLOR_YELLOW}:: Skipping the 32-bit graphics packages.${COLOR_RESET}"
+        return 1
+    fi
+
+    local backup
+    backup="/etc/pacman.conf.bak.$(date +%Y%m%d-%H%M%S)"
+    sudo cp /etc/pacman.conf "$backup" && echo "${COLOR_GREY}Backed up /etc/pacman.conf to ${backup}${COLOR_RESET}"
+    # Uncomment the stock section, or add one where there is none (trimmed images).
+    if grep -q '^#\[multilib\]$' /etc/pacman.conf; then
+        sudo sed -i '/^#\[multilib\]$/{N;s/^#\[multilib\]\n#Include/[multilib]\nInclude/}' /etc/pacman.conf
+    else
+        printf '\n[multilib]\nInclude = /etc/pacman.d/mirrorlist\n' | sudo tee -a /etc/pacman.conf > /dev/null
+    fi
+
+    # A full upgrade, not -Sy alone: installing only the GPU packages against a fresh database is a partial upgrade.
+    if grep -q '^\[multilib\]$' /etc/pacman.conf && paru -Syu; then
+        echo "${COLOR_GREEN}:: multilib enabled.${COLOR_RESET}"
+        return 0
+    fi
+    echo "${COLOR_DARK_RED}:: Could not enable multilib; skipping the 32-bit graphics packages.${COLOR_RESET}"
+    return 1
 }

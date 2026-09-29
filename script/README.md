@@ -1,16 +1,19 @@
-# Scripts
+# script
 
-This directory contains various scripts that utilize tools for managing applications and utilities, aiming to automate tasks and enhance workflows. The scripts included are:
+Helper scripts copied to `~/script`. The desktop shell itself lives in
+`configs/quickshell`; what remains here is what the shell, Hyprland keybinds and
+hypridle call out to.
 
-- **Cliphist**: Manages clipboard history and selection.
-- **hyprlock**: Controls system lock conditions for Hyprland.
-- **swaync**: Includes a script for `wf-recorder`
-- **swww**: Provides for selecting wallpapers.
-- **waybar**: System upgrades on Waybar status bar.
-- **hyprpicker**: Color picker for Hyprland.
+| Path | Called by |
+|------|-----------|
+| `cliphist/clip-store.sh` | `wl-paste --watch` in `autostart.lua` |
+| `hypr/lock/detect_vm.sh` | `hypridle.conf`, locks on idle unless a QEMU guest is running |
+| `hypr/hyprpicker/hyprpicker.sh` | Alt+P |
+| `misc/first-run.sh` | `autostart.lua`, once per user |
+| `misc/update.sh` | the bar's update button |
+| `misc/clear-clipboard.sh` | `update.sh`, offers to wipe the cliphist history |
+| `misc/screen-record.sh` | Super+Shift+R, through the shell's recording dialog |
+| `misc/mic-check.sh` | `screen-record.sh` and the shell after each wake; fails when the mic is stuck |
 
-## Loggers
-
-All the bash script including a logger function that logs messages to a file. The logger function is defined in all the scripts. which is track when access is attempted for the application.
-
-Instead of relying on swaync notifications, it is better to use the .log file to track the access of the application.
+Scripts log to a `.log` file beside themselves. Check the log rather than relying
+on the notification, which only reports the last run.
