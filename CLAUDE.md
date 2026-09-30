@@ -9,6 +9,12 @@ UmmItOS is Arch Linux plus Hyprland, shipped as a bash installer and a dotfiles 
 - **Installer** (bash): `setup.sh` → `install.sh` / `install-menu.sh` → `install/*.sh`, with shared helpers in `lib/common.sh` (`is_laptop`, `has_amdgpu`, `enable_bluetooth`, `prompt_yna`, `backup_file`, and so on).
 - **Desktop shell**: `configs/quickshell/`, a QML application for Quickshell 0.3.1. It draws the bar, notifications, wallpaper and its picker, the launcher and clipboard, the dashboard, the session menu, the volume/brightness OSD, the Wi-Fi, Bluetooth, audio and accent flyouts, an Alt+Tab switcher, a keybind cheat sheet, the screenshot tool, the screen recording dialog, a lecture pen (Super+D: draw and zoom over a frozen screen), a QR scanner (Super+Shift+Q or the bar's scan button: finds every code on screen with `zbarimg`, opens web links in the default browser, joins Wi-Fi codes, copies the rest), the lock screen, a settings panel (the gear beside the power button: recording options, recordings, the packages the installer would add that are missing, pending updates with where UmmItOS lives and whether `git pull` there updates the shell, About; it replaces the GTK `ummit-settings` app), a hot-corner overview, copy notices, a charging ripple and desktop widgets (a wttr.in weather card on the Bottom layer, under the windows). It replaced waybar, swaync, rofi, wlogout, swww, hyprshot and hyprlock. hypridle is still separate (`configs/hypr/`) and locks through the shell's IPC.
 
+## Before you build
+
+Every feature, fix or change goes through the checklist: programming reviewed with `/qt-development-skills:qt-qml`, UI and UX reviewed with `/hallmark` with motion included, and nothing is done until it is checked on screen.
+
+@CHECKLIST.md
+
 ## Commands
 
 ```sh
@@ -110,10 +116,6 @@ grep -A5 'name: "workspaces"' /usr/lib/qt6/qml/Quickshell/Hyprland/_Ipc/*.qmltyp
 - **Tray menus are drawn by the shell** (`bar/TrayMenu.qml`, a `Flyout` over `QsMenuOpener`), not by `QsMenuAnchor`: Qt's native menus follow the platform theme, which for this Qt 6 shell is plain light. `bar/Tray.qml` also swaps in a glyph or the app's desktop icon when a tray icon is missing, and on start re-registers `org.kde.StatusNotifierItem-*` names the new watcher does not list (apps such as Proton VPN register once and vanish after a shell restart).
 - **Closing on an outside click:** bar flyouts are `PopupWindow`s and use `grabFocus: true`. `HyprlandFocusGrab` only owns layer surfaces, so it works for `PanelWindow` surfaces such as `NotificationPanel` but silently does nothing on an xdg-popup.
 
-### Comments
-
-One short line, only for a why the code cannot show (a trap, a workaround, a reason for a number). No multi-line blocks, no restating what the code does, no history of what was tried. If it needs a paragraph, it belongs in this file.
-
 ### Design system
 
 `Theme.qml` is the single source of truth for colour, `rounding`, `spacing`, `padding`, `fontSize`, `icon`, `duration`, `curve` (M3 bezier control points), `tracking`, `weight`, `barHeight`, `glass` (a card's sheen on a blurred panel) and `panelTint`. **Surface files contain no magic numbers.** If you need a new value, add a token for it.
@@ -123,18 +125,6 @@ One short line, only for a why the code cannot show (a trap, a workaround, a rea
 - The cheat sheet's turning ring is the one deliberate border, by request.
 - Blur is Hyprland's, shared with every window, so every surface shows what is really under it and all blur looks alike. Do not draw a surface's own blur of the wallpaper: it shows the bottom layer, not the windows under the surface.
 - One Hyprland `hl.layer_rule` in `configs/hypr/hyprland/appearance.lua` matches `ummitos-.*`, so set `WlrLayershell.namespace: "ummitos-<name>"` on new surfaces. The exception is a surface that fades its own transparency over the screen (the wake, `wake-curtain`): the rule blurs and darkens what it covers until its alpha drops below 0.1 (`ignore_alpha`), then stops at once, which reads as a jump at the end of the fade. Such a surface uses a namespace outside the rule and stays mapped, so Hyprland never animates it in or out either.
-
-### Motion
-
-Motion is part of every surface by default, not an extra: anything new that appears, leaves, moves or changes state ships with its animation in the same change. A thing that snaps in, pops out or jumps is unfinished.
-
-- **Arrivals** slide or scale in, fade, and sharpen out of a blur (`MotionBlur`), all at once. Full-screen surfaces get this from `OverlayWindow`; anything else sets `layer.enabled: opacity < 1` with a `MotionBlur` effect and a fade from 0. Leaving plays the same in reverse.
-- **Timing and easing come from `Theme`**: `duration.*` and `curve.*`. Spatial moves (position, scale, size, rotation) always carry a curve, and are never linear. Use `emphasizedDecel` for arriving, `emphasizedAccel` for leaving, and `expressiveDefaultSpatial` (a small overshoot) only where a surface lands. Data (gauges, progress) and plain state changes do not overshoot. Fades and colour changes may be linear.
-- **Lists animate their changes**: `ListView` with `add`, `remove` and `displaced` transitions, a `ScriptModel` so rows survive updates, never a plain JS array that rebuilds every row.
-- **Every control answers the pointer**: a hover colour and `Theme.pressScale` on press, both animated; a pointing-hand cursor on anything clickable.
-- **Status breathes, gently.** A live indicator (recording, ready) may pulse or glow, kept small (a halo about 1.8× at 0.35 opacity, `duration.glow`), and runs only while it is on screen and not behind the lock.
-- **The mechanics**: animate transforms (`Scale`, `Translate`, opacity), not geometry. Gate a `Behavior` so the first value does not animate. Loop animations stop when nothing shows them. A new duration or curve is a new `Theme` token.
-- **Scope**: this is the shell's own motion. Hyprland's window animations (`animations.lua`) are Kin's own choice; do not retune them to match.
 
 ### Screenshots
 
@@ -147,22 +137,6 @@ Motion is part of every surface by default, not an extra: anything new that appe
 ### Lock screen
 
 `Lock` (singleton) and `lock/LockScreen.qml`: a `WlSessionLock` with one `WlSessionLockSurface` per screen, drawing `LockContent`. `ipc call lock preview` shows the same content in an ordinary window, which is how the look is worked on; never save a lock file while really locked, since a reload recreates the lock. The password goes through a `PamContext` whose stack lives in the shell (`lock/pam/password`, `pam_unix`), so no `/etc/pam.d` file is needed. Before locking, each screen is captured with `grim -t ppm` into `$XDG_RUNTIME_DIR/ummitos-lock` (PNG encoding was ~0.6s and read as lag); the lock fades in from that picture and fades back to it before releasing, because a lock surface is opaque and the desktop cannot show through. `misc:allow_session_lock_restore` is on, so if `qs` dies while locked: switch to a TTY, start `qs -c ummitos -d` in the session's environment, run `qs -c ummitos ipc call lock lock`, go back and unlock.
-
-### Review every change
-
-Every function, feature or fix is reviewed before it is committed, through four lenses at once:
-
-1. **Programmer (lazy, `/ponytail:ponytail`).** The simplest version that works. Reuse a shared component or an existing helper before writing a new one; no speculative options; delete what nothing uses.
-2. **Bug review.** Trace every path the change touches: null and empty states, races between processes and timers, reloads (IPC lost, singletons reset), sleep and wake, multi-monitor, and anything that could leave the screen blocked or a state stuck. Every rule in "Traps found the hard way" is a checklist item.
-3. **QML review (`qt-development-skills:qt-qml-review`).** Bindings, layouts, loaders, delegates, states and performance; qmllint on every touched file with no unqualified access and no unused imports (the Theme member-not-found warnings are the known false ones).
-4. **UI review (`/hallmark`, audit).** The house design system first: Theme tokens only, no borders, readable text (`accentOn` on accent fills, no cut-off meaning), every state designed (empty, loading, error, disabled), every control answering the pointer, and the Motion rules above.
-
-For anything larger than a small fix, run the lenses as parallel subagents, then verify each finding in the code before acting on it. The same fan-out does the fixing:
-
-- **Split by files.** Each fix agent owns a disjoint set of files, so no two agents write the same file. Exactly one agent at a time writes `Theme.qml`, and token passes run after the fix waves.
-- **Agents don't commit, and never run `qs -c ummitos` or `qs ipc`.** They read `qs log -c ummitos` and qmllint. The coordinator reviews each diff, checks the surface on screen, and commits per area.
-- **Nothing half-done stays in the tree.** If an agent is stopped mid-edit, revert its uncommitted files (`git checkout -- <paths>`) and relaunch it, above all anything under `lock/`.
-- **Done means checked.** The log shows a fresh `Configuration Loaded` with no new warning, qmllint is clean on the touched files, shellcheck is clean on touched scripts, and the changed surface has been seen in a screenshot or recording. Say plainly what could not be clicked from a terminal.
 
 ### Debugging state
 
