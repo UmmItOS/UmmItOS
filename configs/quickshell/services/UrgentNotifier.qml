@@ -49,7 +49,7 @@ Scope {
                 } catch (e) {
                     return;
                 }
-                const shown = monitors.flatMap(m => [m.activeWorkspace?.id, m.specialWorkspace?.id]).filter(id => id);
+                const shown = monitors.map(m => m.activeWorkspace?.id).concat(monitors.map(m => m.specialWorkspace?.id)).filter(id => id);
                 for (const address of waiting)
                     root.tell(list.find(c => c.address === address), shown);
             }
