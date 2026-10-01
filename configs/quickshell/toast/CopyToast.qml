@@ -13,14 +13,17 @@ Scope {
 
     property int serial: 0
 
-    function pop(): void {
-        Quickshell.execDetached(["pw-play", Quickshell.shellDir + "/toast/pop.ogg"]);
+    // Text pops; an image has its own ting, so the two are never confused.
+    function play(sound: string): void {
+        Quickshell.execDetached(["pw-play", Quickshell.shellDir + "/toast/" + sound]);
     }
 
     function show(kind: string): void {
         const image = kind === "image";
-        if (!image || Date.now() - Screenshot.delivered > Theme.duration.shotCopy)
-            pop();
+        if (!image)
+            play("pop.ogg");
+        else if (Date.now() - Screenshot.delivered > Theme.duration.shotCopy)
+            play("snap.ogg");
         // Newest at index 0, which the bottom-to-top list draws lowest.
         pills.insert(0, {
             key: ++serial,
