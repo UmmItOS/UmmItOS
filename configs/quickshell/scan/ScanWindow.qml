@@ -64,11 +64,11 @@ OverlayWindow {
     // What each symbology is, only for the ones zbar reports; others show just their name.
     function about(format: string): string {
         if (format === "QR-Code")
-            return "A square 2D code that cameras read. It can hold a link, text, a Wi-Fi login, a phone number or a place.";
+            return I18n.t("A square 2D code that cameras read. It can hold a link, text, a Wi-Fi login, a phone number or a place.");
         if (/^(EAN|UPC|ISBN)/.test(format))
-            return "A retail barcode: the digits identify a product or a book.";
+            return I18n.t("A retail barcode: the digits identify a product or a book.");
         if (/^(CODE-|CODABAR|I2\/5|DataBar)/.test(format))
-            return "A one-dimensional barcode, common on labels, tickets and parcels.";
+            return I18n.t("A one-dimensional barcode, common on labels, tickets and parcels.");
         return "";
     }
 
@@ -578,7 +578,7 @@ OverlayWindow {
 
                     Text {
                         Layout.fillWidth: true
-                        text: (win.count > 1 ? I18n.t("Tab for the next code · ") : "") + I18n.t("Enter to %1 · Esc to close").arg(I18n.t(win.verb(win.code?.kind ?? "")).toLowerCase())
+                        text: I18n.t(win.count > 1 ? "Tab for the next code · Enter to %1 · Esc to close" : "Enter to %1 · Esc to close").arg(I18n.t(win.verb(win.code?.kind ?? "")).toLowerCase())
                         color: Theme.dim
                         elide: Text.ElideRight
                         renderType: Text.NativeRendering

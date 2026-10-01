@@ -82,9 +82,9 @@ Scope {
                 return;
             if (!UPower.onBattery) {
                 root.pluggedIn();
-                root.notify("low", I18n.t("Charging"), root.percent() + "%");
+                root.notify("low", I18n.t("Charging"), I18n.t("%1%").arg(root.percent()));
             } else {
-                root.notify("low", I18n.t("On battery"), root.percent() + "%");
+                root.notify("low", I18n.t("On battery"), I18n.t("%1%").arg(root.percent()));
             }
         }
     }

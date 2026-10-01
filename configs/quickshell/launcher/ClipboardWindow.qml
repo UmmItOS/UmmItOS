@@ -137,7 +137,7 @@ OverlayWindow {
                                 anchors.fill: parent
                                 verticalAlignment: Text.AlignVCenter
                                 visible: search.text === ""
-                                text: win.results.length + " in history"
+                                text: I18n.t("%1 in history").arg(win.results.length)
                                 color: Theme.dim
                                 font: search.font
                             }

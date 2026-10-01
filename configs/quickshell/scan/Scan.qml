@@ -112,7 +112,7 @@ Singleton {
                 if (colon > 0)
                     values[part.slice(0, colon).toUpperCase()] = part.slice(colon + 1).replace(/\\(.)/g, "$1");
             }
-            const fields = [["Network", values.S ?? ""], ["Security", values.T || I18n.t("No password")]];
+            const fields = [["Network", values.S ?? ""], ["Security", values.T && values.T.toLowerCase() !== "nopass" ? values.T : I18n.t("No password")]];
             if ((values.H ?? "").toLowerCase() === "true")
                 fields.push(["Hidden", I18n.t("Yes")]);
             return {
@@ -135,7 +135,7 @@ Singleton {
 
     function act(code: var): void {
         if (code.kind === "wifi")
-            join.exec(["sh", "-c", 'nmcli dev wifi connect "$1" ${2:+password "$2"} >/dev/null || notify-send -a "Wi-Fi" "Could not join $1"', "sh", code.title, code.password]);
+            join.exec(["sh", "-c", 'nmcli dev wifi connect "$1" ${2:+password "$2"} >/dev/null || notify-send -a "Wi-Fi" "$3"', "sh", code.title, code.password, I18n.t("Could not join %1").arg(code.title)]);
         else if (code.kind === "text")
             return copy(code.data);
         else
