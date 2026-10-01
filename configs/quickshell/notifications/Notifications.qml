@@ -24,6 +24,7 @@ Scope {
                 key: root.serial++,
                 n: n,
                 detached: false,
+                time: Qt.formatDateTime(new Date(), "HH:mm"),
                 kept: root.snapshot(n)
             }]);
     }
@@ -121,8 +122,7 @@ Scope {
             x: list.x
             y: list.y
             width: list.width
-            // ListView keeps its old contentHeight when a card grows after arrival (a picture loading), so the
-            // cards' own extent counts too, or clicks on the picture fall through to the window below.
+            // contentHeight lags a card that grows after arrival, so count the cards' own extent too.
             height: Math.min(list.height, Math.max(list.contentHeight, list.contentItem.childrenRect.y + list.contentItem.childrenRect.height - list.contentY))
         }
         color: "transparent"
@@ -219,6 +219,20 @@ Scope {
                 property bool detached: modelData?.detached ?? false
                 readonly property Notification live: detached ? null : modelData?.n ?? null
                 property var kept: modelData?.kept ?? ({})
+                // Closed but still sliding out: a second click or the timer must not close it again.
+                property bool gone: false
+
+                function close(expire: bool): void {
+                    if (card.gone)
+                        return;
+                    card.gone = true;
+                    if (card.detached)
+                        root.drop(card.modelData);
+                    else if (expire)
+                        card.live?.expire();
+                    else
+                        card.live?.dismiss();
+                }
 
                 // A destroyed notification reads empty, not null.
                 function alive(): bool {
@@ -266,12 +280,14 @@ Scope {
                     function onImageChanged(): void {
                         Qt.callLater(card.changed);
                     }
+                    function onClosed(): void {
+                        card.gone = true;
+                    }
                 }
 
                 readonly property bool critical: card.kept.critical ?? false
                 readonly property string appIcon: card.kept.appIcon ? Quickshell.iconPath(card.kept.appIcon, true) : ""
-                // Delegates are created on arrival, so this is the arrival time.
-                readonly property string time: Qt.formatDateTime(new Date(), "HH:mm")
+                readonly property string time: card.modelData?.time ?? ""
                 readonly property var defaultAction: card.live?.actions?.find(a => a.identifier === "default") ?? null
 
                 width: list.width
@@ -283,12 +299,18 @@ Scope {
                     id: hover
                 }
 
-                TapHandler {
-                    onTapped: {
-                        if (card.defaultAction) {
-                            card.defaultAction.invoke();
-                        }
-                        card.detached ? root.drop(card.modelData) : card.live?.dismiss();
+                // Before the body, so the close button, actions and links take their own clicks.
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        if (card.gone)
+                            return;
+                        const action = card.defaultAction;
+                        action?.invoke();
+                        // invoke() already closes a notification that is not resident.
+                        if (!action || card.live?.resident)
+                            card.close(false);
                     }
                 }
 
@@ -297,9 +319,9 @@ Scope {
 
                 // Reading a notification should not race its own timer.
                 Timer {
-                    running: !hover.hovered && !Screenshot.holding && (card.detached || card.live !== null && !card.critical && card.timeout !== 0)
+                    running: !card.gone && !hover.hovered && !Screenshot.holding && (card.detached || card.live !== null && !card.critical && card.timeout !== 0)
                     interval: card.timeout > 0 ? card.timeout : Theme.duration.toast
-                    onTriggered: card.detached ? root.drop(card.modelData) : card.live?.expire()
+                    onTriggered: card.close(true)
                 }
 
                 ColumnLayout {
@@ -365,7 +387,7 @@ Scope {
                             MouseArea {
                                 anchors.fill: parent
                                 anchors.margins: -Theme.hitSlop
-                                onClicked: card.detached ? root.drop(card.modelData) : card.live?.dismiss()
+                                onClicked: card.close(false)
                             }
                         }
                     }

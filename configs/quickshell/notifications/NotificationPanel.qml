@@ -44,7 +44,7 @@ OverlayWindow {
         target: Screenshot
         function onHoldingChanged(): void {
             if (!Screenshot.holding && Notifs.panelOpen)
-                grab.active = true;
+                grab.active = Qt.binding(() => Notifs.panelOpen);
         }
     }
 
