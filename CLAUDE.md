@@ -169,7 +169,7 @@ For things that need input you cannot give from a terminal, mark every temporary
 - **A failed reload can leave the log stale and the watcher idle.** After an error, the last lines of `qs log` may still show it even once the file is fixed. `touch shell.qml` and wait for a fresh `Configuration Loaded` before believing either.
 - **Files in subfolders need `import ".."`** to see `Theme` and the other root types. Without it the error is `Theme is not defined` at runtime, not at load.
 - **`width`, `height` and friends are FINAL.** Declaring a property with such a name on a subclass fails the whole file with "Cannot override FINAL property".
-- **QML JavaScript has no object spread** (`{...a}`); build the object and assign fields.
+- **QML JavaScript has no object spread** (`{...a}`) **and no `Array.flatMap`**; build the object and assign fields, and use `map` plus `concat`. The error only shows when the code runs, not at load.
 - **`clip: true` clips to a rectangle.** Inside rounded surfaces, clip with a `ClippingRectangle` of the same radius, or corners show.
 - **A blurred shape is cut off at its own bounds**, which reads as a square edge. For soft light use a radial gradient that fades to zero before the edge (a `Canvas`). To glow an outline, capture it with a `ShaderEffectSource` whose `sourceRect` is padded past the item, then blur that; feeding one `MultiEffect` straight into another (with `layer.enabled` on the first) hid the first one.
 - **`ScreencopyView` captures whatever is on screen, including the shell.** Capture only when your own overlay is fully gone, or you photograph yourself.
