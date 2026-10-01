@@ -6,9 +6,12 @@ log="$HOME/script/misc/launch.log"
 
 # Only stderr is read, a line at a time, so a long-running app is not held up or cut off.
 sh -c "$1" 2>&1 >/dev/null | while IFS= read -r line; do
-    # "sh: line 1: smile: command not found", "…/x.sh: line 5: hyprpicker: command not found"
-    missing=$(printf '%s\n' "$line" | sed -n 's/.*: \([^: ]*\): \(command \)\{0,1\}not found$/\1/p')
-    [[ -n "$missing" ]] || continue
+    # Only bash, dash and zsh's own forms, so an app's "x: not found" warning is not taken for one.
+    if [[ $line =~ :\ ([^:\ ]+):\ command\ not\ found$ || $line =~ ^[^:]+:\ [0-9]+:\ ([^:\ ]+):\ not\ found$ || $line =~ command\ not\ found:\ ([^:\ ]+)$ ]]; then
+        missing=${BASH_REMATCH[1]}
+    else
+        continue
+    fi
 
     echo "<ERROR> $(date +"%Y-%m-%d %H:%M:%S"): $missing not found, running: $1" >> "$log"
     # In the background: the notice waits for a click, and the app must keep writing meanwhile.

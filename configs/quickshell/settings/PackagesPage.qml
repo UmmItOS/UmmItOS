@@ -54,16 +54,15 @@ ColumnLayout {
             lsmod | grep -q '^nvidia\\s' || { lsmod | grep -q '^amdgpu\\s' && l="$l gpu"; }
             [ -f /sys/class/power_supply/BAT0/capacity ] && l="$l laptop"
             grep -q '^\\[multilib\\]$' /etc/pacman.conf && ml=1
-            for g in $l; do
+            all=$(for g in $l; do
                 grep -v '^[[:space:]]*$' "$d/packages_$g" | while read -r p; do
                     case "$p" in multilib/*) [ -n "$ml" ] || continue ;; esac
                     printf '%s %s\\n' "$g" "$p"
                 done
-            done | tee "$2"
-            printf -- '--\\n'
-            cut -d' ' -f2 "$2" | sed 's#.*/##' | xargs pacman -T
-            rm -f "$2"
-            exit 0`, "sh", Quickshell.shellDir, Quickshell.env("XDG_RUNTIME_DIR") + "/ummitos-packages"]
+            done)
+            printf '%s\\n--\\n' "$all"
+            printf '%s\\n' "$all" | cut -d' ' -f2 | sed 's#.*/##' | xargs pacman -T
+            exit 0`, "sh", Quickshell.shellDir]
         stdout: StdioCollector {
             onStreamFinished: {
                 const [head, tail] = text.split("--\n");
@@ -175,6 +174,15 @@ ColumnLayout {
             readonly property string repo: row.modelData.split("/")[0]
 
             width: rows.width
+            scale: press.pressed ? Theme.pressScale : 1
+
+            Behavior on scale {
+                NumberAnimation {
+                    duration: Theme.duration.expressiveFastEffects
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curve.standard
+                }
+            }
 
             RowLayout {
                 anchors {
@@ -211,6 +219,7 @@ ColumnLayout {
             }
 
             TapHandler {
+                id: press
                 onTapped: page.installAll([row.modelData])
             }
         }

@@ -67,7 +67,7 @@ ColumnLayout {
                 for (const line of text.split("\n")) {
                     const m = line.match(/^(repo|aur) (\S+) (\S+) -> (\S+)/);
                     if (m)
-                        found.push([m[1], m[2], m[3], m[4]].join(" "));
+                        found.push(m.slice(1, 5).join(" "));
                 }
                 page.pending = found;
             }
@@ -123,7 +123,7 @@ ColumnLayout {
     Process {
         id: pull
 
-        command: ["git", "-C", page.source?.root ?? "", "pull", "--ff-only", "--quiet"]
+        command: ["timeout", "60", "git", "-C", page.source?.root ?? "", "pull", "--ff-only", "--quiet"]
         stderr: StdioCollector {
             id: pullError
         }
@@ -132,7 +132,7 @@ ColumnLayout {
             if (code !== 0)
                 Quickshell.execDetached(["notify-send", "-a", "Settings", I18n.t("Could not update UmmItOS"), pullError.text.trim() || I18n.t("git pull stopped; see the UmmItOS folder.")]);
             else
-                Quickshell.execDetached(["notify-send", "-a", "Settings", I18n.t("UmmItOS updated"), I18n.t("The shell reloads by itself. Hyprland config and ~/script are copies: copy their changes by hand.")]);
+                Quickshell.execDetached(["notify-send", "-a", "Settings", I18n.t("UmmItOS updated"), I18n.t("If the shell does not reload, restart it: qs kill -c ummitos && qs -c ummitos -d. Hyprland config and ~/script are copies: copy their changes by hand.")]);
             page.look(false);
         }
     }
@@ -202,7 +202,7 @@ ColumnLayout {
             primary: page.result === "pending" || (page.stale && page.result !== "idle")
             icon: upgrade.running ? "hourglass_top" : "system_update_alt"
             label: upgrade.running ? I18n.t("Updating") : I18n.t("Update now")
-            enabled: !upgrade.running
+            enabled: !upgrade.running && !page.pulling
             onClicked: page.runUpdate()
         }
     }
@@ -213,7 +213,12 @@ ColumnLayout {
 
         readonly property bool linked: page.source?.linked ?? false
         readonly property bool behind: (page.source?.behind ?? 0) > 0
-        readonly property string linkCommand: "ln -sfn " + (page.source?.known ?? "<UmmItOS folder>") + "/configs/quickshell " + Settings.home + "/.config/quickshell/ummitos"
+        // A real directory would take the link inside it, so it is moved aside first.
+        readonly property string linkCommand: {
+            const q = s => "'" + s.replace(/'/g, "'\\''") + "'";
+            const dir = Quickshell.shellDir.replace(/\/+$/, "");
+            return "mv -T " + q(dir) + " " + q(dir + ".bak") + " && ln -s " + q((page.source?.known ?? "<UmmItOS folder>") + "/configs/quickshell") + " " + q(dir);
+        }
 
         Layout.fillWidth: true
         implicitHeight: cardRow.implicitHeight + Theme.padding.large * 2
@@ -286,7 +291,8 @@ ColumnLayout {
                 primary: true
                 icon: page.pulling ? "hourglass_top" : "download"
                 label: page.pulling ? I18n.t("Pulling") : I18n.t("Pull")
-                enabled: !page.pulling
+                // A pull reloads the shell, which would kill the tracked upgrade terminal.
+                enabled: !page.pulling && !upgrade.running
                 onClicked: {
                     page.pulling = true;
                     pull.running = true;
@@ -319,40 +325,19 @@ ColumnLayout {
 
         ColumnLayout {
             anchors.centerIn: parent
-            visible: page.result === "idle"
+            visible: page.result === "idle" || page.result === "ok"
             spacing: Theme.spacing.small
 
             MaterialIcon {
                 Layout.alignment: Qt.AlignHCenter
-                text: "manage_search"
+                text: page.result === "idle" ? "manage_search" : "task_alt"
                 color: Theme.dim
                 size: Theme.icon.extraLarge
             }
 
             Text {
                 Layout.alignment: Qt.AlignHCenter
-                text: I18n.t("Press Check to see what an update would bring")
-                color: Theme.dim
-                font.family: Theme.font
-                font.pixelSize: Theme.fontSize.smaller
-            }
-        }
-
-        ColumnLayout {
-            anchors.centerIn: parent
-            visible: page.result === "ok"
-            spacing: Theme.spacing.small
-
-            MaterialIcon {
-                Layout.alignment: Qt.AlignHCenter
-                text: "task_alt"
-                color: Theme.dim
-                size: Theme.icon.extraLarge
-            }
-
-            Text {
-                Layout.alignment: Qt.AlignHCenter
-                text: page.stale ? I18n.t("Nothing new, but a full upgrade is still worth running") : I18n.t("Nothing to update")
+                text: page.result === "idle" ? I18n.t("Press Check to see what an update would bring") : page.stale ? I18n.t("Nothing new, but a full upgrade is still worth running") : I18n.t("Nothing to update")
                 color: Theme.dim
                 font.family: Theme.font
                 font.pixelSize: Theme.fontSize.smaller
@@ -367,6 +352,15 @@ ColumnLayout {
             readonly property bool aur: row.parts[0] === "aur"
 
             width: rows.width
+            scale: press.pressed ? Theme.pressScale : 1
+
+            Behavior on scale {
+                NumberAnimation {
+                    duration: Theme.duration.expressiveFastEffects
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curve.standard
+                }
+            }
 
             RowLayout {
                 anchors {
@@ -416,6 +410,7 @@ ColumnLayout {
 
             // The package's page, for its changelog and news.
             TapHandler {
+                id: press
                 onTapped: Quickshell.execDetached(["xdg-open", row.aur ? "https://aur.archlinux.org/packages/" + encodeURIComponent(row.parts[1]) : "https://archlinux.org/packages/?q=" + encodeURIComponent(row.parts[1])])
             }
         }
