@@ -209,6 +209,7 @@ Item {
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             visible: root.user !== ""
+            textFormat: Text.PlainText
             text: root.user
             color: Theme.lock.userInk
             font.family: Theme.fontDisplay
@@ -251,6 +252,7 @@ Item {
 
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
+            textFormat: Text.PlainText
             text: root.message !== "" ? root.message : root.busy ? "Signing in…" : "Enter your password to log in"
             color: root.message !== "" ? Theme.urgent : Theme.lock.hintInk
             font.family: Theme.fontDisplay

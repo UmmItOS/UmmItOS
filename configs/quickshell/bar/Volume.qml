@@ -265,6 +265,7 @@ RowLayout {
 
                     Text {
                         Layout.fillWidth: true
+                        textFormat: Text.PlainText
                         text: device.modelData.nickname || device.modelData.description
                         color: Theme.fg
                         elide: Text.ElideRight
@@ -376,6 +377,7 @@ RowLayout {
 
                     Text {
                         width: parent.width
+                        textFormat: Text.PlainText
                         text: root.numberedLabel(stream.modelData)
                         color: Theme.dim
                         elide: Text.ElideRight
@@ -388,6 +390,7 @@ RowLayout {
                     Text {
                         width: parent.width
                         visible: text !== ""
+                        textFormat: Text.PlainText
                         text: root.titleFor(stream.modelData)
                         color: Theme.fg
                         elide: Text.ElideRight

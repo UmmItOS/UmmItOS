@@ -350,6 +350,7 @@ OverlayWindow {
                         spacing: 0
 
                         Text {
+                            textFormat: Text.PlainText
                             text: I18n.t(win.code?.type ?? "")
                             color: Theme.fg
                             renderType: Text.NativeRendering

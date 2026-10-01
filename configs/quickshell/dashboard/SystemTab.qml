@@ -109,6 +109,7 @@ ColumnLayout {
                         spacing: 0
 
                         Text {
+                            textFormat: Text.PlainText
                             text: I18n.t(fact.modelData.key)
                             color: Theme.dim
                             font {
@@ -122,6 +123,7 @@ ColumnLayout {
                         Text {
                             // A Layout never elides without a width cap.
                             Layout.maximumWidth: root.width / Theme.dashboard.factShare
+                            textFormat: Text.PlainText
                             text: fact.value
                             color: Theme.fg
                             elide: Text.ElideRight

@@ -523,6 +523,7 @@ OverlayWindow {
             Text {
                 id: sizeText
                 anchors.centerIn: parent
+                textFormat: Text.PlainText
                 text: win.mode === "window" && win.picked ? win.picked.title : Math.round(win.selW) + " × " + Math.round(win.selH)
                 color: Theme.fg
                 font.family: Theme.font

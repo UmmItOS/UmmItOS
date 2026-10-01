@@ -189,6 +189,7 @@ OverlayWindow {
             Text {
                 width: parent.width
                 visible: search.text === ""
+                textFormat: Text.PlainText
                 text: picker.labelOf(picker.focusedPath)
                 color: Theme.fg
                 font.family: Theme.fontDisplay
@@ -245,6 +246,7 @@ OverlayWindow {
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: search.text === "" && !picker.atRoot
+                    textFormat: Text.PlainText
                     text: I18n.t("%1  ·  Backspace to go up").arg(picker.here)
                     color: Theme.accentText
                     font.family: Theme.font
@@ -511,6 +513,7 @@ OverlayWindow {
                             width: picker.focusedWidth - Theme.padding.large * 2
                             horizontalAlignment: Text.AlignHCenter
                             elide: Text.ElideRight
+                            textFormat: Text.PlainText
                             text: picker.labelOf(cell.modelData)
                             color: Theme.fg
                             font.family: Theme.fontDisplay

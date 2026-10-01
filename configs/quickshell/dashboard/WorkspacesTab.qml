@@ -40,6 +40,7 @@ GridView {
                 spacing: Theme.spacing.extraSmall
 
                 Text {
+                    textFormat: Text.PlainText
                     text: cell.modelData?.name ?? ""
                     color: cell.modelData?.urgent ? Theme.fg : cell.modelData?.focused ? Theme.accentOn : Theme.fg
                     font.family: Theme.fontDisplay
@@ -50,6 +51,7 @@ GridView {
                 Text {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
+                    textFormat: Text.PlainText
                     text: {
                         const names = cell.modelData?.toplevels.values.map(t => t.title) ?? [];
                         return names.length === 0 ? "empty" : names.join("\n");

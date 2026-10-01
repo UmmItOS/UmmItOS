@@ -49,6 +49,7 @@ Rectangle {
 
         Text {
             anchors.verticalCenter: parent.verticalCenter
+            textFormat: Text.PlainText
             text: action.label
             color: action.ink
             font.family: Theme.font

@@ -83,6 +83,7 @@ BarButton {
         Text {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
+            textFormat: Text.PlainText
             text: {
                 if (Weather.location === "")
                     return I18n.t("Type a place, then Enter. The weather shows once it is set.");

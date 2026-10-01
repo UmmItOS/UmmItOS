@@ -154,6 +154,7 @@ BarButton {
                     width: root.cell
                     horizontalAlignment: Text.AlignHCenter
                     elide: Text.ElideRight
+                    textFormat: Text.PlainText
                     text: AccentTime.spoken(AccentTime.seconds[entry.modelData] ?? 0)
                     color: entry.index === 0 ? Theme.fg : Theme.dim
                     font {

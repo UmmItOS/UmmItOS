@@ -66,6 +66,7 @@ RowLayout {
 
         Text {
             Layout.fillWidth: true
+            textFormat: Text.PlainText
             text: header.title
             elide: Text.ElideRight
             color: Theme.fg
@@ -77,6 +78,7 @@ RowLayout {
         Text {
             Layout.fillWidth: true
             visible: text !== ""
+            textFormat: Text.PlainText
             text: header.hint
             wrapMode: Text.Wrap
             color: Theme.dim

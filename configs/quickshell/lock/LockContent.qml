@@ -223,6 +223,7 @@ Item {
         Text {
             anchors.centerIn: parent
             anchors.verticalCenterOffset: root.at(Theme.lock.userAt)
+            textFormat: Text.PlainText
             text: Quickshell.env("USER")
             color: Theme.lock.userInk
             font.family: Theme.fontDisplay

@@ -354,6 +354,7 @@ Scope {
 
                         Text {
                             Layout.fillWidth: true
+                            textFormat: Text.PlainText
                             text: I18n.t(card.kept.appName ?? "")
                             color: Theme.dim
                             font.family: Theme.font
@@ -364,6 +365,7 @@ Scope {
                         }
 
                         Text {
+                            textFormat: Text.PlainText
                             text: card.time
                             color: Theme.dim
                             font.family: Theme.font
@@ -395,6 +397,7 @@ Scope {
                     Text {
                         Layout.fillWidth: true
                         Layout.topMargin: Theme.spacing.extraSmall
+                        textFormat: Text.PlainText
                         text: card.kept.summary ?? ""
                         color: card.critical ? Theme.urgent : Theme.accentText
                         font.family: Theme.fontDisplay
@@ -480,6 +483,7 @@ Scope {
                                     anchors.centerIn: parent
                                     width: Math.min(implicitWidth, action.width - Theme.padding.large * 2)
                                     elide: Text.ElideRight
+                                    textFormat: Text.PlainText
                                     text: action.modelData.text
                                     color: actionHover.hovered ? Theme.scrim(1) : Theme.fg
                                     font.family: Theme.font

@@ -116,6 +116,7 @@ PopupWindow {
                     // Not fillWidth: sharing with the spinner cut short long tray titles.
                     Layout.minimumWidth: 0
                     elide: Text.ElideRight
+                    textFormat: Text.PlainText
                     text: root.title
                     color: Theme.fg
                     font {

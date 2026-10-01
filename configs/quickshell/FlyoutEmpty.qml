@@ -33,6 +33,7 @@ Item {
         Text {
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
+            textFormat: Text.PlainText
             text: root.text
             color: Theme.dim
             font {

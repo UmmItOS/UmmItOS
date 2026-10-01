@@ -56,6 +56,7 @@ RowLayout {
                 id: label
                 anchors.centerIn: parent
                 opacity: pill.focused ? 1 : 0
+                textFormat: Text.PlainText
                 text: pill.modelData?.name ?? ""
                 color: Theme.accentOn
                 font.family: Theme.font

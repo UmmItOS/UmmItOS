@@ -135,6 +135,7 @@ PanelWindow {
                 width: card.width - Theme.padding.extraLarge * 2
                 horizontalAlignment: Text.AlignHCenter
                 visible: win.app && Osd.label !== ""
+                textFormat: Text.PlainText
                 text: Osd.label
                 color: Theme.dim
                 elide: Text.ElideRight

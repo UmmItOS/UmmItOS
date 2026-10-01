@@ -170,6 +170,7 @@ Scope {
 
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
+                            textFormat: Text.PlainText
                             text: I18n.t(slot.label)
                             color: Theme.fg
                             font.family: Theme.font

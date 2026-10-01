@@ -149,6 +149,7 @@ RowLayout {
 
                     Text {
                         Layout.fillWidth: true
+                        textFormat: Text.PlainText
                         text: row.modelData.name || row.modelData.deviceName || I18n.t("Unnamed device")
                         color: row.ink
                         elide: Text.ElideRight

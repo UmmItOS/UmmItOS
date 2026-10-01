@@ -20,7 +20,7 @@ Scope {
     property bool primed: false
 
     function notify(app: string, summary: string, body: string): void {
-        Quickshell.execDetached(["notify-send", "-a", app, summary, body]);
+        Quickshell.execDetached(["notify-send", "-a", app, "--", summary, Notifs.asText(body)]);
     }
 
     function nameOf(address: string): string {

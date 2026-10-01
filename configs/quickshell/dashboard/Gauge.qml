@@ -77,6 +77,7 @@ Item {
 
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
+            textFormat: Text.PlainText
             text: root.primary
             color: Theme.fg
             font.family: Theme.fontDisplay
@@ -88,6 +89,7 @@ Item {
 
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
+            textFormat: Text.PlainText
             text: root.label
             color: Theme.dim
             font.family: Theme.font

@@ -175,8 +175,10 @@ Singleton {
             root.setRandom();
         }
 
+        // Only a known wallpaper: GreeterSync copies it where every account can read it.
         function set(path: string): void {
-            root.set(path);
+            if (root.list.includes(path))
+                root.set(path);
         }
 
         function get(): string {

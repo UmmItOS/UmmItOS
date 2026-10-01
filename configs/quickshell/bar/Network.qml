@@ -226,6 +226,7 @@ RowLayout {
 
                         Text {
                             Layout.fillWidth: true
+                            textFormat: Text.PlainText
                             text: row.modelData.name
                             color: row.ink
                             elide: Text.ElideRight
@@ -251,6 +252,7 @@ RowLayout {
                         Text {
                             visible: opacity > 0
                             opacity: row.failed && !row.busy ? 1 : 0
+                            textFormat: Text.PlainText
                             text: root.failReason
                             color: Theme.urgent
                             font {

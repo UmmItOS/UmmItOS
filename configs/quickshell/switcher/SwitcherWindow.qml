@@ -412,6 +412,7 @@ OverlayWindow {
                     // Against the window, not the grid, to avoid a cycle.
                     width: Math.min(implicitWidth, win.width * Theme.switcher.captionWidth)
                     horizontalAlignment: Text.AlignHCenter
+                    textFormat: Text.PlainText
                     text: win.titleOf(caption.ws)
                     color: Theme.fg
                     font {

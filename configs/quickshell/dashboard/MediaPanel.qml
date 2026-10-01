@@ -143,6 +143,7 @@ Item {
             Text {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
+                textFormat: Text.PlainText
                 text: root.player?.trackTitle ?? ""
                 color: Theme.accentText
                 font.family: Theme.fontDisplay
@@ -154,6 +155,7 @@ Item {
             Text {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
+                textFormat: Text.PlainText
                 text: root.player?.trackArtist ?? ""
                 color: Theme.fg
                 font.family: Theme.font
@@ -164,6 +166,7 @@ Item {
             Text {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
+                textFormat: Text.PlainText
                 text: root.player?.trackAlbum ?? ""
                 color: Theme.dim
                 font.family: Theme.font
@@ -327,6 +330,7 @@ Item {
                             anchors.centerIn: parent
                             width: Math.min(implicitWidth, chip.width - Theme.padding.large * 2)
                             elide: Text.ElideRight
+                            textFormat: Text.PlainText
                             text: chip.modelData.identity
                             color: chip.current ? Theme.accentOn : Theme.fg
                             font.family: Theme.font

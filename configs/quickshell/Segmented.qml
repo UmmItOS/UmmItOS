@@ -73,6 +73,7 @@ Item {
                 Text {
                     anchors.centerIn: parent
                     scale: choiceTap.pressed ? Theme.popScale : 1
+                    textFormat: Text.PlainText
                     text: root.labels[choice.index]
                     color: choice.picked ? Theme.accentOn : choiceHover.hovered ? Theme.fg : Theme.dim
                     font {

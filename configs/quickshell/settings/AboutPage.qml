@@ -95,6 +95,7 @@ ColumnLayout {
                     required property int index
 
                     Layout.fillWidth: index % 2 === 1
+                    textFormat: Text.PlainText
                     text: index % 2 === 0 ? I18n.t(modelData) : modelData
                     elide: Text.ElideRight
                     color: index % 2 === 0 ? Theme.dim : Theme.fg

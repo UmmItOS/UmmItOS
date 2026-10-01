@@ -38,6 +38,7 @@ OverlayWindow {
         Text {
             id: text
             anchors.centerIn: parent
+            textFormat: Text.PlainText
             text: parent.label
             color: Theme.fg
             font.family: Theme.font
@@ -322,6 +323,7 @@ OverlayWindow {
                                 spacing: Theme.spacing.small
 
                                 Text {
+                                    textFormat: Text.PlainText
                                     text: I18n.t(group.modelData.title)
                                     color: Theme.accentText
                                     font.family: Theme.fontDisplay
@@ -356,6 +358,7 @@ OverlayWindow {
 
                                         Text {
                                             Layout.fillWidth: true
+                                            textFormat: Text.PlainText
                                             text: win.said(row.modelData.description)
                                             color: Theme.fg
                                             wrapMode: Text.Wrap

@@ -47,6 +47,7 @@ OverlayWindow {
 
             Text {
                 Layout.fillWidth: true
+                textFormat: Text.PlainText
                 text: choice.label
                 color: Theme.fg
                 font.family: Theme.font
@@ -54,6 +55,7 @@ OverlayWindow {
             }
 
             Text {
+                textFormat: Text.PlainText
                 text: choice.hint
                 color: Theme.dim
                 font.family: Theme.font

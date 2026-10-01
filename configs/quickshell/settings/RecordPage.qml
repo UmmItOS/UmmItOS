@@ -31,6 +31,7 @@ ColumnLayout {
             spacing: 0
 
             Text {
+                textFormat: Text.PlainText
                 text: setting.title
                 color: Theme.fg
                 font.family: Theme.font
@@ -41,6 +42,7 @@ ColumnLayout {
             Text {
                 Layout.fillWidth: true
                 visible: text !== ""
+                textFormat: Text.PlainText
                 text: setting.hint
                 color: setting.warn ? Theme.urgent : Theme.dim
                 wrapMode: Text.Wrap

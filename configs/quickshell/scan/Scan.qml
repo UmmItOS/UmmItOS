@@ -135,12 +135,19 @@ Singleton {
 
     function act(code: var): void {
         if (code.kind === "wifi")
-            join.exec(["sh", "-c", 'nmcli dev wifi connect "$1" ${2:+password "$2"} >/dev/null || notify-send -a "Wi-Fi" "$3"', "sh", code.title, code.password, I18n.t("Could not join %1").arg(code.title)]);
+            join.exec(["sh", "-c", 'nmcli dev wifi connect "$1" ${2:+password "$2"} >/dev/null || notify-send -a "Wi-Fi" -- "$3"', "sh", code.title, code.password, I18n.t("Could not join %1").arg(code.title)]);
         else if (code.kind === "text")
             return copy(code.data);
         else
-            Quickshell.execDetached(["xdg-open", code.data]);
+            Quickshell.execDetached(["xdg-open", code.kind === "mailto" ? mailto(code.data) : code.data]);
         open = false;
+    }
+
+    // Some mail clients attach a local file named in attach=; only the plain fields go through.
+    function mailto(link: string): string {
+        const [head, query] = link.split("?");
+        const kept = (query ?? "").split("&").filter(p => /^(to|cc|bcc|subject|body)=/i.test(p));
+        return kept.length > 0 ? head + "?" + kept.join("&") : head;
     }
 
     function copy(text: string): void {

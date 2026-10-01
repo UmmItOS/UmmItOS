@@ -210,6 +210,7 @@ OverlayWindow {
                     Text {
                         Layout.fillWidth: true
                         horizontalAlignment: Text.AlignHCenter
+                        textFormat: Text.PlainText
                         text: cell.modelData.name
                         color: cell.active ? Theme.fg : Theme.dim
                         font.family: Theme.font

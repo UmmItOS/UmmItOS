@@ -188,6 +188,7 @@ OverlayWindow {
 
                                 Text {
                                     Layout.fillWidth: true
+                                    textFormat: Text.PlainText
                                     text: row.modelData.image ? row.modelData.kind.toUpperCase() + "  " + row.modelData.detail : row.modelData.preview
                                     color: row.active ? Theme.fg : Theme.dim
                                     font.family: Theme.font
@@ -265,6 +266,7 @@ OverlayWindow {
                         id: fullText
                         width: parent.width
                         // The list's preview is cut and collapsed; it stands in until the full text lands.
+                        textFormat: Text.PlainText
                         text: Launcher.decodedTextId !== "" && Launcher.decodedTextId === win.focusedEntry?.id ? Launcher.decodedText : win.focusedEntry?.preview ?? ""
                         color: Theme.fg
                         font.family: Theme.font

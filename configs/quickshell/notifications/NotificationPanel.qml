@@ -297,6 +297,7 @@ OverlayWindow {
 
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
+                            textFormat: Text.PlainText
                             text: head.section + (head.count > 1 ? "  ·  " + head.count : "")
                             color: Theme.dim
                             font {
@@ -439,6 +440,7 @@ OverlayWindow {
 
                                 Text {
                                     Layout.fillWidth: true
+                                    textFormat: Text.PlainText
                                     text: I18n.t(card.model.appName ?? "")
                                     color: Theme.dim
                                     font {
@@ -451,6 +453,7 @@ OverlayWindow {
                                 }
 
                                 Text {
+                                    textFormat: Text.PlainText
                                     text: card.model.time ?? ""
                                     color: Theme.dim
                                     font {
@@ -484,6 +487,7 @@ OverlayWindow {
                             Text {
                                 Layout.fillWidth: true
                                 Layout.topMargin: Theme.spacing.extraSmall
+                                textFormat: Text.PlainText
                                 text: card.model.summary ?? ""
                                 color: card.model.critical ? Theme.urgent : Theme.accentText
                                 font {

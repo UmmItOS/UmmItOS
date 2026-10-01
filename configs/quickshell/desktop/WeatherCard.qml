@@ -38,6 +38,7 @@ Rectangle {
 
         Text {
             Layout.fillWidth: true
+            textFormat: Text.PlainText
             text: Weather.location
             elide: Text.ElideRight
             color: Theme.fg
@@ -51,6 +52,7 @@ Rectangle {
             spacing: Theme.spacing.medium
 
             Text {
+                textFormat: Text.PlainText
                 text: Weather.temp + "°"
                 color: Theme.fg
                 font.family: Theme.fontDisplay
@@ -72,6 +74,7 @@ Rectangle {
 
         Text {
             Layout.fillWidth: true
+            textFormat: Text.PlainText
             text: I18n.t("%1   H:%2°  L:%3°").arg(Weather.condition).arg(Weather.high).arg(Weather.low)
             elide: Text.ElideRight
             color: Theme.dim
@@ -97,6 +100,7 @@ Rectangle {
 
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
+                        textFormat: Text.PlainText
                         text: I18n.t(slot.modelData.label)
                         color: Theme.dim
                         font.family: Theme.font
@@ -116,6 +120,7 @@ Rectangle {
 
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
+                        textFormat: Text.PlainText
                         text: slot.modelData.temp + "°"
                         color: Theme.fg
                         font.family: Theme.font

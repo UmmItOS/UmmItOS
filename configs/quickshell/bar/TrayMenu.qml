@@ -137,6 +137,7 @@ Flyout {
                             Text {
                                 Layout.fillWidth: true
                                 // dbusmenu marks keyboard accelerators with an underscore.
+                                textFormat: Text.PlainText
                                 text: item.modelData.text.replace(/_([^_])/g, "$1")
                                 color: item.modelData.enabled ? Theme.fg : Theme.dim
                                 font.family: Theme.font

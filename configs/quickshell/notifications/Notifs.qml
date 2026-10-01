@@ -69,9 +69,15 @@ Singleton {
         history.clear();
     }
 
-    // StyledText loads remote <img>, which would tell the sender it was read.
+    // Only b, i, u, br and web links survive: StyledText fetches remote <img> (even "< img"), and a link shows its own address.
     function safeBody(body: string): string {
-        return (body ?? "").replace(/<img\b[^>]*>/gi, "");
+        const allowed = /^(<\/?[biu]>|<br\s*\/?>|<a href="https?:\/\/[^"\s<>]*">|<\/a>)$/i;
+        return (body ?? "").replace(/<a href="(https?:\/\/[^"\s<>]*)">[\s\S]*?<\/a>/gi, '<a href="$1">$1</a>').replace(/<[^>]*>?/g, tag => allowed.test(tag) ? tag : tag.replace(/</g, "&lt;"));
+    }
+
+    // For a body the shell sends itself: a window title or device name is text, not markup.
+    function asText(text: string): string {
+        return (text ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;");
     }
 
     // Only web links: a body can carry file:// or any scheme with a handler.

@@ -73,6 +73,7 @@ ColumnLayout {
 
                     Text {
                         Layout.fillWidth: true
+                        textFormat: Text.PlainText
                         text: choice.modelData.name
                         color: choice.ink
                         font.family: Theme.font
@@ -81,6 +82,7 @@ ColumnLayout {
                     }
 
                     Text {
+                        textFormat: Text.PlainText
                         text: choice.modelData.code
                         color: choice.inkDim
                         font.family: Theme.fontMono
