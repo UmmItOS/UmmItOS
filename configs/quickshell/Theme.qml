@@ -555,6 +555,8 @@ Singleton {
         readonly property int imeFocus: 400
         // A method switch is a glance, not a value to watch, so it leaves sooner than osdHide.
         readonly property int imeHide: 600
+        // An input card leaves faster than a volume card: it was only a glance.
+        readonly property int imeLeave: 250
         // Before listening for switches again after fcitx or the bus went away.
         readonly property int imeRetry: 5000
         // How long a Wi-Fi scan may run before the spinner gives up.

@@ -14,6 +14,8 @@ PanelWindow {
     readonly property int filled: Math.round(Osd.value / (Osd.kind === "volume" ? Audio.limit : 1) * win.segments)
     readonly property bool app: Osd.kind === "app"
     readonly property bool input: Osd.kind === "input"
+    // An input card leaves quicker: it was only a glance.
+    readonly property int leave: input && !Osd.shown ? Theme.duration.imeLeave : Theme.duration.expressiveFastSpatial
 
     // Anything past Latin (Han, kana, Hangul, bopomofo) draws in the CJK face, not a fallback Qt picks.
     function cjk(text: string): bool {
@@ -50,14 +52,14 @@ PanelWindow {
         // Same length as the scale, or the unmap cut it mid-animation.
         Behavior on opacity {
             NumberAnimation {
-                duration: Theme.duration.expressiveFastSpatial
+                duration: win.leave
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: Theme.curve.emphasizedDecel
             }
         }
         Behavior on scale {
             NumberAnimation {
-                duration: Theme.duration.expressiveFastSpatial
+                duration: win.leave
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: Theme.curve.emphasizedDecel
             }
