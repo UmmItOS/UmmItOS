@@ -1,0 +1,139 @@
+/**
+ * @name UmmItOS Style
+ * @description Material Discord, ret. to the UmmItOS theme (near-black + purple #a78bfa). Solid & readable, blur on floating menus only.
+ * @author CapnKitten (base) / UmmItOS (overrides)
+ * @source https://github.com/CapnKitten/BetterDiscord/blob/master/Themes/Material-Discord
+ */
+
+/* ===== Base: latest Material Discord (live upstream) =====
+   Material You addon intentionally NOT imported — it desaturates the whole
+   palette to a washed grey-purple. We drive colours explicitly below. */
+@import url("https://capnkitten.github.io/BetterDiscord/Themes/Material-Discord/css/source.css");
+
+:root {
+    /* APP FONT */
+    --app-font: "Google Sans Flex";
+    --app-font-width: 100;
+    --app-font-roundness: 100;
+
+    /* Full saturation (the Material You addon used to set this) */
+    --saturation-factor: 1;
+
+    /* ACCENT → UmmItOS purple (#a78bfa ≈ hsl(255,92%,76%)) */
+    --accent-hue: 255;
+    --accent-saturation: 88%;
+    --accent-lightness: 73%;
+    --accent-text-color: hsl(255,35%,10%);
+    --accent-button-action: hsl(255,35%,10%);
+    --button-action-color: hsl(255,35%,10%);
+
+    --alert-hue: 0;
+    --alert-saturation: 85%;
+    --alert-lightness: 61%;
+    --alert-text-color: hsl(0,0%,100%);
+
+    --warning-hue: 40;
+    --warning-saturation: 86.4%;
+    --warning-lightness: 56.9%;
+    --warning-text-color: hsl(0,0%,100%);
+
+    --message-radius: 18px;
+    --media-radius: 10px;
+    --card-radius: 8px;
+    --card-radius-big: 18px;
+    --button-height: 40px;
+    --input-height: 40px;
+    --popout-radius: 8px;
+    --popout-radius-big: 18px;
+
+    --tooltip-color: hsl(260,10%,12%);
+    --tooltip-text-color: hsl(0,0%,90%);
+    --tooltip-radius: 8px;
+
+    --scrollbar-width: 10px;
+    --scrollbar-thin-width: 6px;
+}
+
+/* ============================================================
+   UmmItOS surfaces — SOLID violet-tinted near-black (readable).
+   Overrides Material You so the palette is consistent.
+   ============================================================ */
+.theme-dark {
+    /* Backgrounds — deep, solid, layered (darkest rail → lighter panels) */
+    --main-alt: hsl(260,18%,4%);
+    --main-color: hsl(260,15%,6%);
+    --chat-color: hsl(260,15%,6%);
+    --status-picker-color: hsl(260,12%,11%);
+    --server-color: transparent;
+    --server-folder-color: hsl(255,35%,65%,0.14);
+
+    --sidebar-panel-color: hsl(260,14%,8%);
+    --profile-body-background-color: hsl(260,13%,9%);
+
+    --message-color: transparent;
+    --message-color-hover: hsl(260,13%,11%);
+    --message-color-alt: transparent;
+    --attachment-color: hsl(260,13%,9%);
+
+    --main-textarea-color: hsl(260,13%,10%);
+    --main-textarea-inner-color: hsl(260,13%,8%);
+
+    --input-color: hsl(260,13%,10%);
+    --input-color-alt: hsl(260,11%,14%);
+    --input-border-color: hsl(255,25%,55%,0.3);
+
+    --popout-color: hsl(260,14%,9%);
+    --popout-color-alt: hsl(260,14%,7%);
+
+    --card-color-filled: hsl(260,13%,9%);
+    --card-color-hover: hsl(260,13%,12%);
+    --card-color-active: hsl(260,13%,18%);
+    --card-color-alt: hsl(260,13%,11%);
+    --card-color-alt-hover: hsl(260,13%,14%);
+    --card-border-color: hsl(255,25%,65%,0.14);
+
+    --separator-color: hsl(255,30%,80%,0.09);
+
+    /* Text — high contrast for readability (neutral, not purple-tinted) */
+    --header-primary: hsl(0,0%,100%);
+    --header-secondary: hsl(0,0%,80%);
+    --text-normal: hsl(0,0%,94%);
+    --text-muted: hsl(0,0%,66%);
+    --interactive-normal: hsl(0,0%,88%);
+    --interactive-hover: hsl(0,0%,100%);
+    --interactive-active: hsl(0,0%,100%);
+    --channels-default: hsl(0,0%,82%);
+    --channel-icon: hsl(0,0%,66%);
+    --channel-text-area-placeholder: hsl(0,0%,58%);
+}
+
+/* ============================================================
+   Tasteful blur on floating overlays only (always readable —
+   they sit over the app with a dark translucent backing).
+   ============================================================ */
+[class*="menu_"],
+[class*="submenu"],
+[class*="colorPickerCustom"],
+[class*="autocomplete_"],
+[role="menu"],
+[role="tooltip"] {
+    background-color: hsl(260,12%,9%,0.82) !important;
+    backdrop-filter: blur(16px) saturate(1.3) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(1.3) !important;
+    border: 1px solid hsl(255,35%,80%,0.08) !important;
+}
+
+/* The elegant blur: frost the scrim behind modals (Settings, pickers,
+   image viewer). Content sits on an opaque card above, so readability
+   is untouched — this is the premium "glass backdrop" effect. */
+[class*="backdrop_"] {
+    background-color: hsl(260,24%,3%,0.55) !important;
+    backdrop-filter: blur(14px) saturate(1.2) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(1.2) !important;
+}
+
+/* Purple selection / mention polish */
+[class*="selected_"] [class*="link_"],
+[class*="mention"] {
+    color: hsl(255,82%,80%);
+}
