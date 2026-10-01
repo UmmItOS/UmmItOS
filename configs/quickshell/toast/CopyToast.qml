@@ -19,8 +19,7 @@ Scope {
 
     function show(kind: string): void {
         const image = kind === "image";
-        // Screenshots already have their shutter.
-        if (!image)
+        if (!image || Date.now() - Screenshot.delivered > Theme.duration.shotCopy)
             pop();
         // Newest at index 0, which the bottom-to-top list draws lowest.
         pills.insert(0, {

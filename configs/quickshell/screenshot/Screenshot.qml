@@ -58,6 +58,9 @@ Singleton {
 
     readonly property string dir: Quickshell.env("HYPRSHOT_DIR") || Quickshell.env("HOME") + "/Pictures/Screenshots"
 
+    // When the last shot went to the clipboard, so its copy pill stays quiet.
+    property real delivered: 0
+
     // grim geometry ("x,y wxh"), held while the overlay leaves.
     property string pendingGeometry: ""
 
@@ -87,6 +90,7 @@ Singleton {
 
     // Runs grim when given its arguments, then copies and announces the file; detached, so a quick second shot is not dropped.
     function deliver(file: string, grimArgs: var): void {
+        delivered = Date.now();
         Quickshell.execDetached(["sh", "-c", 'd="$1" f="$2" ok="$3" bad="$4" why="$5"; shift 5; if [ $# -gt 0 ]; then { mkdir -p "$d" && grim "$@" "$f"; } || { notify-send -a Screenshot -u critical "$bad" "$why"; exit 1; }; fi; wl-copy --type image/png < "$f"; notify-send -a Screenshot -h string:image-path:"$f" "$ok" "$(basename "$f")"', "sh", root.dir, file, I18n.t("Screenshot saved"), I18n.t("Screenshot failed"), I18n.t("Could not save to %1").arg(root.dir), ...grimArgs]);
     }
 

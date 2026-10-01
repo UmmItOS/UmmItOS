@@ -537,6 +537,8 @@ Singleton {
         readonly property int confirmHold: 3000
         // A toast that set no timeout of its own.
         readonly property int toast: 6000
+        // An image copied this soon after a screenshot is that screenshot, which has its shutter already.
+        readonly property int shotCopy: 3000
         // Hyprland sends a pair of urgent events about 10 ms apart for one request; clicks even 150 ms apart stay separate.
         readonly property int urgentRepeat: 150
         // An app that sent its own notification this recently gets no attention notice on top.
