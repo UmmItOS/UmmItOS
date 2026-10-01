@@ -319,6 +319,10 @@ Singleton {
         readonly property int slide: 60
         readonly property int lines: 6
         readonly property int collapsedLines: 4
+        // Toasts on screen at once; a flood that never expires still leaves the screen usable (older ones stay in history).
+        readonly property int max: 6
+        // A body is cut here before parsing: megabytes of markup would stall the shell for seconds.
+        readonly property int bodyChars: 4000
     }
 
     // The copy notices (toast/).

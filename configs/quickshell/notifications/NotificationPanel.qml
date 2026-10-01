@@ -427,7 +427,7 @@ OverlayWindow {
                                 IconImage {
                                     id: icon
                                     implicitSize: Theme.icon.tiny
-                                    source: card.model.appIcon ? Quickshell.iconPath(card.model.appIcon, true) : ""
+                                    source: Notifs.iconFor(card.model.appIcon ?? "")
                                     visible: status === Image.Ready
                                 }
 

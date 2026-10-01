@@ -62,7 +62,7 @@ RowLayout {
     function iconFor(node: var): string {
         const props = node.properties;
         const name = props["application.icon-name"] || props["application.process.binary"] || props["application.name"] || "";
-        return name === "" ? "" : Quickshell.iconPath(name.toLowerCase(), true);
+        return Notifs.iconFor(name.toLowerCase());
     }
 
     spacing: Theme.spacing.small

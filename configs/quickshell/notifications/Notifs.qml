@@ -3,6 +3,7 @@ pragma Singleton
 import Quickshell
 import Quickshell.Io
 import QtQuick
+import ".."
 
 // Plain records: notification objects die when they expire.
 Singleton {
@@ -69,10 +70,16 @@ Singleton {
         history.clear();
     }
 
-    // Only b, i, u, br and web links survive: StyledText fetches remote <img> (even "< img"), and a link shows its own address.
+    // StyledText fetches remote <img> (even "< img"): only b, i, u, br and whole links showing their own host survive.
     function safeBody(body: string): string {
-        const allowed = /^(<\/?[biu]>|<br\s*\/?>|<a href="https?:\/\/[^"\s<>]*">|<\/a>)$/i;
-        return (body ?? "").replace(/<a href="(https?:\/\/[^"\s<>]*)">[\s\S]*?<\/a>/gi, '<a href="$1">$1</a>').replace(/<[^>]*>?/g, tag => allowed.test(tag) ? tag : tag.replace(/</g, "&lt;"));
+        return (body ?? "").slice(0, Theme.notification.bodyChars).replace(/<a href="(https?:\/\/[^"\s<>@\/]*(?:\/[^"\s<>]*)?)">[\s\S]*?<\/a>|<[^>]*>?/gi, (tag, href) => href ? '<a href="' + href + '">' + href + '</a>' : /^(<\/?[biu]>|<br\s*\/?>)$/i.test(tag) ? tag : tag.replace(/</g, "&lt;"));
+    }
+
+    // A theme icon name, or a file under /usr/share: opening a sender's FIFO would hang the shell.
+    function iconFor(name: string): string {
+        if (!name || name.startsWith("/") && (!name.startsWith("/usr/share/") || name.includes("..")) || name.includes("://"))
+            return "";
+        return Quickshell.iconPath(name, true);
     }
 
     // For a body the shell sends itself: a window title or device name is text, not markup.

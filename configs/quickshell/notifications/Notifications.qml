@@ -26,7 +26,7 @@ Scope {
                 detached: false,
                 time: Qt.formatDateTime(new Date(), "HH:mm"),
                 kept: root.snapshot(n)
-            }]);
+            }]).slice(-Theme.notification.max);
     }
 
     function drop(entry: var): void {
@@ -286,7 +286,7 @@ Scope {
                 }
 
                 readonly property bool critical: card.kept.critical ?? false
-                readonly property string appIcon: card.kept.appIcon ? Quickshell.iconPath(card.kept.appIcon, true) : ""
+                readonly property string appIcon: Notifs.iconFor(card.kept.appIcon ?? "")
                 readonly property string time: card.modelData?.time ?? ""
                 readonly property var defaultAction: card.live?.actions?.find(a => a.identifier === "default") ?? null
 
