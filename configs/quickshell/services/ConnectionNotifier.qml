@@ -11,7 +11,7 @@ Scope {
     readonly property var wifi: Networking.devices.values.find(d => d.type === DeviceType.Wifi) ?? null
     readonly property string network: root.wifi?.networks.values.find(n => n.connected)?.name ?? ""
     // By address: names repeat and can arrive late.
-    readonly property string devices: [...Bluez.Bluetooth.devices.values].filter(d => d.connected).map(d => d.address).sort().join("\n")
+    readonly property string devices: Bluez.Bluetooth.devices.values.filter(d => d.connected).map(d => d.address).sort().join("\n")
 
     // What was last said, compared against once things settle.
     property string lastNetwork: ""
@@ -24,7 +24,7 @@ Scope {
     }
 
     function nameOf(address: string): string {
-        const d = [...Bluez.Bluetooth.devices.values].find(d => d.address === address);
+        const d = Bluez.Bluetooth.devices.values.find(d => d.address === address);
         return d?.name || address;
     }
 

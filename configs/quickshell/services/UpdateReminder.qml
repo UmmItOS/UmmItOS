@@ -12,11 +12,6 @@ Scope {
     // Not straight away: a shell reload should not nag.
     readonly property int firstCheck: 2 * 60 * 1000
 
-    function check(): void {
-        if (!last.running)
-            last.running = true;
-    }
-
     Process {
         id: last
         command: ["sh", "-c", "tac /var/log/pacman.log | grep -a -m1 'starting full system upgrade'"]
@@ -41,13 +36,13 @@ Scope {
     Timer {
         running: true
         interval: root.firstCheck
-        onTriggered: root.check()
+        onTriggered: last.running = true
     }
 
     Timer {
         running: true
         repeat: true
         interval: root.every
-        onTriggered: root.check()
+        onTriggered: last.running = true
     }
 }

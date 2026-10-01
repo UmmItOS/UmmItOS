@@ -80,6 +80,7 @@ Singleton {
         if (location === "" || fetch.running)
             return;
         fetch.place = location;
+        fetch.lang = wttrLang;
         fetch.running = true;
     }
 
@@ -102,11 +103,13 @@ Singleton {
 
         // The place this fetch asked for; an answer for an older place is dropped.
         property string place
+        // A language switch mid-fetch asks again once this one ends.
+        property string lang
 
-        command: ["curl", "-sf", "--max-time", "15", "https://wttr.in/" + encodeURIComponent(place) + "?format=j1" + (root.wttrLang !== "" ? "&lang=" + root.wttrLang : "")]
+        command: ["curl", "-sf", "--max-time", "15", "https://wttr.in/" + encodeURIComponent(place) + "?format=j1" + (lang !== "" ? "&lang=" + lang : "")]
         // 22 is wttr.in's HTTP error for an unknown place; any other failure (no network yet) is retried.
         onExited: code => {
-            if (fetch.place !== root.location)
+            if (fetch.place !== root.location || fetch.lang !== root.wttrLang)
                 Qt.callLater(root.refresh);
             else if (code === 22)
                 root.failed = true;
@@ -139,7 +142,6 @@ Singleton {
         }
     }
 
-    // Timers stop while the laptop sleeps, so waking would show last night's forecast.
     // A new language needs the conditions written in it.
     Connections {
         target: I18n
@@ -148,6 +150,7 @@ Singleton {
         }
     }
 
+    // Timers stop while the laptop sleeps, so waking would show last night's forecast.
     Connections {
         target: Wake
         function onWoke(): void {

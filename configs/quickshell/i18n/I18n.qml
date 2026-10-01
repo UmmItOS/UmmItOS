@@ -42,6 +42,7 @@ Singleton {
         id: saved
 
         path: Quickshell.statePath("language.txt")
+        blockLoading: true
         printErrors: false
         blockWrites: false
         onLoaded: {
