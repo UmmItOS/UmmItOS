@@ -20,8 +20,8 @@
     --saturation-factor: 1;
 
     /* Title bar wordmark: first part bold, second regular (Material Discord draws "MaterialDiscord") */
-    --app-watermark-one: "UmmItOS";
-    --app-watermark-two: "\00a0Theme";
+    --app-watermark-one: "UmmIt";
+    --app-watermark-two: "OS";
 
     /* ACCENT → UmmItOS purple (#a78bfa ≈ hsl(255,92%,76%)) */
     --accent-hue: 255;
