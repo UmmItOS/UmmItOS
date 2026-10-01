@@ -58,6 +58,8 @@ Singleton {
     readonly property string fontDisplay: "SF Pro Display"
     // Raw content and hex dumps, where columns must line up.
     readonly property string fontMono: "JetBrains Mono"
+    // A lone Chinese glyph drawn large, in Hong Kong forms rather than whatever fallback Qt finds.
+    readonly property string fontCjk: "Noto Sans CJK HK"
 
     // Material 3 scales, from caelestia-dots/shell tokens.hpp.
     readonly property QtObject rounding: QtObject {
@@ -307,6 +309,9 @@ Singleton {
         readonly property int segments: 16
         readonly property int segmentWidth: 6
         readonly property int segmentHeight: 14
+        // The input method dots, and the pill marking the one in use.
+        readonly property int dot: 8
+        readonly property int dotPill: 22
         readonly property real mutedIcon: 0.4
         readonly property real brightnessHigh: 0.6
         readonly property real brightnessMedium: 0.25
@@ -546,6 +551,10 @@ Singleton {
         readonly property int osdHide: 1400
         // Settle before arming the OSD, or a new sink flashes a volume nobody touched.
         readonly property int osdArm: 1200
+        // A method change this soon after a focus change is that window's own, not a switch.
+        readonly property int imeFocus: 400
+        // Before listening for switches again after fcitx or the bus went away.
+        readonly property int imeRetry: 5000
         // How long a Wi-Fi scan may run before the spinner gives up.
         readonly property int scanGrace: 12000
         // awww's --transition-duration 2.5.
