@@ -229,7 +229,7 @@ OverlayWindow {
 
     Timer {
         id: settleThenCommit
-        // After the opening has played in full, so Print shows it too.
+        // Long enough to see the frame fill the screen before it is taken.
         interval: win.sproutDelay + win.sproutDuration + Theme.duration.normal
         onTriggered: win.commit()
     }
@@ -288,7 +288,7 @@ OverlayWindow {
 
         Behavior on x {
             // A region's corners are the pointer, no spring.
-            enabled: !win.snap && win.mode !== "region"
+            enabled: !win.snap && win.mode === "window"
 
             SpringAnimation {
                 spring: Theme.spring.stiffness
@@ -297,7 +297,7 @@ OverlayWindow {
         }
         Behavior on y {
             // A region's corners are the pointer, no spring.
-            enabled: !win.snap && win.mode !== "region"
+            enabled: !win.snap && win.mode === "window"
 
             SpringAnimation {
                 spring: Theme.spring.stiffness
@@ -511,7 +511,7 @@ OverlayWindow {
 
         // Size, under the selection while dragging.
         Rectangle {
-            visible: (win.dragging || win.mode !== "region") && win.selW > 0
+            visible: (win.dragging || win.mode === "window") && win.selW > 0
             opacity: 1 - win.release
             x: Math.min(Math.max(bl.x, Theme.padding.large), parent.width - width - Theme.padding.large)
             y: Math.min(bl.y + Theme.spacing.medium, parent.height - height - Theme.padding.large)
@@ -555,7 +555,7 @@ OverlayWindow {
 
             onPressed: mouse => {
                 win.pressed = true;
-                if (win.mode !== "region")
+                if (win.mode === "window")
                     return;
                 win.from = Qt.point(mouse.x, mouse.y);
                 win.to = win.from;
@@ -566,7 +566,7 @@ OverlayWindow {
                     const b = win.boxAt(mouse.x, mouse.y);
                     if (b && b !== win.picked)
                         win.pick(b);
-                } else if (win.mode === "region") {
+                } else {
                     if (win.dragging)
                         win.to = Qt.point(mouse.x, mouse.y);
                     else
@@ -576,7 +576,7 @@ OverlayWindow {
             enabled: !finishing.running
             // Scroll to zoom the frozen screen for a precise region.
             onWheel: wheel => {
-                if (win.mode === "region")
+                if (win.mode !== "window")
                     win.zoomAt(wheel.x, wheel.y, wheel.angleDelta.y / 120);
             }
             onReleased: mouse => {

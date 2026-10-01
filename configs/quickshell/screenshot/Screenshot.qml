@@ -58,14 +58,13 @@ Singleton {
 
     readonly property string dir: Quickshell.env("HYPRSHOT_DIR") || Quickshell.env("HOME") + "/Pictures/Screenshots"
 
-    // grim geometry ("x,y wxh") or an output name.
+    // grim geometry ("x,y wxh"), held while the overlay leaves.
     property string pendingGeometry: ""
-    property string pendingOutput: ""
 
     function region(geometry: string): void {
         pendingGeometry = geometry;
-        pendingOutput = "";
-        finish();
+        open = false;
+        settle.restart();
     }
 
     // Print: the focused screen at once; nothing on it needs picking, so no overlay to wait through.
@@ -75,38 +74,30 @@ Singleton {
         take(["-o", Hyprland.focusedMonitor?.name ?? Quickshell.screens[0]?.name ?? ""]);
     }
 
-    function output(name: string): void {
-        pendingGeometry = "";
-        pendingOutput = name;
-        finish();
-    }
-
-    function finish(): void {
-        open = false;
-        settle.restart();
-    }
-
     // Long enough for the exit animation, so the overlay is not captured.
     Timer {
         id: settle
         interval: Theme.duration.expressiveFastSpatial + Theme.duration.small
-        onTriggered: root.take(root.pendingGeometry !== "" ? ["-g", root.pendingGeometry] : ["-o", root.pendingOutput])
+        onTriggered: root.take(["-g", root.pendingGeometry])
     }
 
     function newFile(): string {
         return root.dir + "/Screenshot_" + Qt.formatDateTime(new Date(), "yyyy-MM-dd_HH-mm-ss") + ".png";
     }
 
+    // Runs grim when given its arguments, then copies and announces the file; detached, so a quick second shot is not dropped.
+    function deliver(file: string, grimArgs: var): void {
+        Quickshell.execDetached(["sh", "-c", 'd="$1" f="$2" ok="$3" bad="$4" why="$5"; shift 5; if [ $# -gt 0 ]; then { mkdir -p "$d" && grim "$@" "$f"; } || { notify-send -a Screenshot -u critical "$bad" "$why"; exit 1; }; fi; wl-copy --type image/png < "$f"; notify-send -a Screenshot -h string:image-path:"$f" "$ok" "$(basename "$f")"', "sh", root.dir, file, I18n.t("Screenshot saved"), I18n.t("Screenshot failed"), I18n.t("Could not save to %1").arg(root.dir), ...grimArgs]);
+    }
+
     // A window shot is saved by the shell itself (keeps transparency).
     function saved(file: string): void {
-        Quickshell.execDetached(["sh", "-c", 'wl-copy --type image/png < "$1" && notify-send -a Screenshot -h string:image-path:"$1" "$2" "$(basename "$1")"', "sh", file, I18n.t("Screenshot saved")]);
+        deliver(file, []);
     }
 
     function take(target: var): void {
         shotMargin.restart();
-        const file = newFile();
-        // Detached, so a second quick shot is not dropped.
-        Quickshell.execDetached(["sh", "-c", 'd="$1" f="$2" ok="$3" bad="$4" why="$5" && shift 5 && mkdir -p "$d" && grim "$@" "$f" && wl-copy --type image/png < "$f" && notify-send -a Screenshot -h string:image-path:"$f" "$ok" "$(basename "$f")" || notify-send -a Screenshot -u critical "$bad" "$why"', "sh", root.dir, file, I18n.t("Screenshot saved"), I18n.t("Screenshot failed"), I18n.t("Could not save to %1").arg(root.dir), ...target]);
+        deliver(newFile(), target);
     }
 
     // grabToImage cannot create the folder, so it is made up front.
