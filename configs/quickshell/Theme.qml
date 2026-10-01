@@ -553,6 +553,8 @@ Singleton {
         readonly property int osdArm: 1200
         // A method change this soon after a focus change is that window's own, not a switch.
         readonly property int imeFocus: 400
+        // A method switch is a glance, not a value to watch, so it leaves sooner than osdHide.
+        readonly property int imeHide: 600
         // Before listening for switches again after fcitx or the bus went away.
         readonly property int imeRetry: 5000
         // How long a Wi-Fi scan may run before the spinner gives up.

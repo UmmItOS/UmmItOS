@@ -51,7 +51,7 @@ Singleton {
 
     Timer {
         id: hide
-        interval: Theme.duration.osdHide
+        interval: root.kind === "input" ? Theme.duration.imeHide : Theme.duration.osdHide
         onTriggered: root.shown = false
     }
 
