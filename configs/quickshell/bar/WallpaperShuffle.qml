@@ -14,6 +14,7 @@ BarButton {
     property bool settled: false
 
     icon: "wallpaper"
+    rightClickable: true
     onClicked: Wallpapers.setRandom()
     onRightClicked: popupOpen = !popupOpen
     onPopupOpenChanged: {
@@ -40,6 +41,8 @@ BarButton {
         opacity: Wallpapers.filtered ? 1 : 0
 
         Behavior on scale {
+            enabled: Wallpapers.ready
+
             NumberAnimation {
                 duration: Theme.duration.expressiveFastSpatial
                 easing.type: Easing.BezierSpline
@@ -47,6 +50,8 @@ BarButton {
             }
         }
         Behavior on opacity {
+            enabled: Wallpapers.ready
+
             NumberAnimation {
                 duration: Theme.duration.expressiveFastEffects
             }
@@ -90,7 +95,11 @@ BarButton {
             boundsBehavior: Flickable.StopAtBounds
             spacing: Theme.spacing.extraSmall
             // A chosen folder that is gone falls back to everything, so the pill does too.
-            currentIndex: Math.max(0, rows.findIndex(r => r.path === Wallpapers.folder && Wallpapers.filtered))
+            readonly property int chosen: Math.max(0, rows.findIndex(r => r.path === Wallpapers.folder && Wallpapers.filtered))
+
+            // ListView shifts currentIndex on inserts before it, so set it again after each change.
+            onChosenChanged: Qt.callLater(() => currentIndex = chosen)
+            Component.onCompleted: currentIndex = chosen
             highlightFollowsCurrentItem: false
             // ScriptModel diffs by path, so a new scan keeps the rows that are still there.
             model: ScriptModel {
@@ -149,7 +158,7 @@ BarButton {
                 readonly property bool all: row.modelData.path === ""
 
                 width: list.width
-                active: list.currentIndex === row.index
+                active: Wallpapers.filtered ? row.modelData.path === Wallpapers.folder : row.all
                 // The pill is the fill; a row only shows its hover.
                 color: row.hovered && !row.active ? Theme.bgTray : "transparent"
                 scale: press.pressed ? Theme.pressScale : 1

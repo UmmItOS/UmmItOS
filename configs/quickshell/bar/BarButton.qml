@@ -7,6 +7,8 @@ MaterialIcon {
     required property string icon
     property color baseColor: Theme.fg
     property color hoverColor: Theme.accent2
+    // Only a button that handles rightClicked takes the right button, so others do not press for nothing.
+    property bool rightClickable: false
 
     signal clicked
     signal rightClicked
@@ -38,7 +40,7 @@ MaterialIcon {
         anchors.margins: -Theme.spacing.extraSmall
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        acceptedButtons: root.rightClickable ? Qt.LeftButton | Qt.RightButton : Qt.LeftButton
         onClicked: event => event.button === Qt.RightButton ? root.rightClicked() : root.clicked()
     }
 }

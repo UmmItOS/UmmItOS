@@ -19,6 +19,8 @@ OverlayWindow {
     // Folder paths end in "/"; ".." goes back up.
     property string folder: Wallpapers.dir
     readonly property bool atRoot: folder === Wallpapers.dir
+    // The open folder relative to the wallpaper dir; "" at the top.
+    readonly property string here: folder.slice(Wallpapers.dir.length + 1)
     readonly property var matches: {
         if (filter !== "")
             return Wallpapers.list.filter(p => Wallpapers.name(p).toLowerCase().includes(filter.toLowerCase()));
@@ -243,7 +245,7 @@ OverlayWindow {
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: search.text === "" && !picker.atRoot
-                    text: I18n.t("%1  ·  Backspace to go up").arg(picker.folder.slice(Wallpapers.dir.length + 1))
+                    text: I18n.t("%1  ·  Backspace to go up").arg(picker.here)
                     color: Theme.accentText
                     font.family: Theme.font
                     font.pixelSize: Theme.fontSize.smaller
@@ -252,14 +254,40 @@ OverlayWindow {
 
                 // The bar's shuffle draws from here from now on; right-clicking its button does the same.
                 Action {
+                    id: shuffleHere
+
+                    readonly property bool shown: search.text === "" && !picker.atRoot
+
                     anchors.verticalCenter: parent.verticalCenter
-                    visible: search.text === "" && !picker.atRoot
-                    readonly property string here: picker.folder.slice(Wallpapers.dir.length + 1)
-                    primary: Wallpapers.folder !== here
+                    // Stays laid out until the fade ends, so it leaves before the row closes up.
+                    visible: opacity > 0
+                    opacity: shown ? 1 : 0
+                    // Disabled, Action draws flat whatever primary says.
+                    primary: true
                     icon: "shuffle"
-                    label: Wallpapers.folder === here ? I18n.t("Shuffling from here") : I18n.t("Shuffle from here")
-                    enabled: Wallpapers.folder !== here
-                    onClicked: Wallpapers.setFolder(here)
+                    label: Wallpapers.folder === picker.here ? I18n.t("Shuffling from here") : I18n.t("Shuffle from here")
+                    enabled: Wallpapers.folder !== picker.here
+                    onClicked: Wallpapers.setFolder(picker.here)
+                    transform: Scale {
+                        origin.x: shuffleHere.width / 2
+                        origin.y: shuffleHere.height / 2
+                        xScale: shuffleHere.shown ? 1 : Theme.pressScale
+                        yScale: xScale
+
+                        Behavior on xScale {
+                            NumberAnimation {
+                                duration: Theme.duration.expressiveFastSpatial
+                                easing.type: Easing.BezierSpline
+                                easing.bezierCurve: shuffleHere.shown ? Theme.curve.emphasizedDecel : Theme.curve.emphasizedAccel
+                            }
+                        }
+                    }
+
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: Theme.duration.expressiveFastEffects
+                        }
+                    }
                 }
 
                 Text {

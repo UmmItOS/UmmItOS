@@ -32,11 +32,9 @@ Singleton {
 
     // The folder the random pick draws from, relative to dir; "" is every wallpaper.
     property string folder: ""
+    readonly property var inFolder: folder === "" ? [] : list.filter(p => p.startsWith(dir + "/" + folder + "/"))
     // Falls back to everything when the chosen folder is gone or empty, so a pick never does nothing.
-    readonly property var pool: {
-        const inside = folder === "" ? [] : list.filter(p => p.startsWith(dir + "/" + folder + "/"));
-        return inside.length > 0 ? inside : list;
-    }
+    readonly property var pool: inFolder.length > 0 ? inFolder : list
     // Every folder holding pictures, a parent before its subfolders: {path, name, depth, count}.
     readonly property var folders: {
         const counts = {};
@@ -53,17 +51,29 @@ Singleton {
                 if (a[i] !== b[i])
                     return a[i].localeCompare(b[i]);
             return a.length - b.length;
-        }).map(parts => ({
-                    path: parts.join("/"),
-                    name: parts[parts.length - 1],
-                    depth: parts.length - 1,
-                    count: counts[parts.join("/")]
-                }));
+        }).map(parts => {
+            const path = parts.join("/");
+            return {
+                path: path,
+                name: parts[parts.length - 1],
+                depth: parts.length - 1,
+                count: counts[path]
+            };
+        });
     }
 
     // True only while the chosen folder still has pictures, so the bar never marks a fallback.
-    readonly property bool filtered: folder !== "" && list.some(p => p.startsWith(dir + "/" + folder + "/"))
+    readonly property bool filtered: inFolder.length > 0
     readonly property bool scanning: scan.running
+    // Set after the first scan, so views can skip animating the values it brings.
+    property bool ready: false
+    // The first scan waits for both state files, or it picks over the saved wallpaper or folder.
+    property int loading: 2
+
+    function loadedOne(): void {
+        if (--loading === 0)
+            scan.running = true;
+    }
 
     function setFolder(path: string): void {
         folder = path;
@@ -124,6 +134,7 @@ Singleton {
                     root.pendingRandom = false;
                     root.pickRandom();
                 }
+                root.ready = true;
             }
         }
     }
@@ -135,14 +146,13 @@ Singleton {
         printErrors: false
         // Never stall the UI thread on Enter to save one line of text.
         blockWrites: false
-        // The first scan waits for this, or it picks a random one over the saved one.
         onLoaded: {
             const saved = text().trim();
             if (saved)
                 root.actual = saved;
-            scan.running = true;
+            root.loadedOne();
         }
-        onLoadFailed: scan.running = true
+        onLoadFailed: root.loadedOne()
     }
 
     FileView {
@@ -150,7 +160,11 @@ Singleton {
         path: Quickshell.statePath("wallpaper-folder.txt")
         printErrors: false
         blockWrites: false
-        onLoaded: root.folder = text().trim()
+        onLoaded: {
+            root.folder = text().trim();
+            root.loadedOne();
+        }
+        onLoadFailed: root.loadedOne()
     }
 
     // qs -c ummitos ipc call wallpaper next
