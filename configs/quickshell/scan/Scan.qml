@@ -85,7 +85,12 @@ Singleton {
             };
         }
         const uri = data.match(/^(mailto|tel|geo):([\x21-\x7e]+)$/i);
-        if (uri) {
+        // A tel: or geo: of any other shape is shown as text, not handed to whatever handler is installed.
+        const shaped = {
+            tel: /^[+\d().\-]+$/,
+            geo: /^-?[\d.]+,-?[\d.]+(,-?[\d.]+)?([;?][\w.=,;&+\-%]*)?$/
+        }[uri?.[1].toLowerCase()];
+        if (uri && (!shaped || shaped.test(uri[2]))) {
             const kind = uri[1].toLowerCase();
             const head = uri[2].split("?")[0];
             const label = {
