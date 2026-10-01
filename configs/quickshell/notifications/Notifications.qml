@@ -50,7 +50,9 @@ Scope {
         const app = (notification.appName || "").toLowerCase();
         const entry = (notification.desktopEntry || "").toLowerCase();
         const hints = notification.hints ?? {};
-        const ownSound = ["vesktop", "discord", "telegram", "telegramdesktop", "org.telegram.desktop"].some(a => app.includes(a) || entry.includes(a)) || hints["suppress-sound"] || hints["sound-file"] || hints["sound-name"];
+        // Vesktop sends a desktop notice only while unfocused, when Discord plays nothing itself.
+        const discord = ["vesktop", "discord"].some(a => app.includes(a) || entry.includes(a));
+        const ownSound = !discord && !hints["x-ummitos-chime"] && (["telegram", "telegramdesktop", "org.telegram.desktop"].some(a => app.includes(a) || entry.includes(a)) || hints["suppress-sound"] || hints["sound-file"] || hints["sound-name"]);
         const charging = app === "battery" && notification.summary === I18n.t("Charging");
         let sound = "";
         // The screenshot tool has its own shutter, like an app with its own sound.

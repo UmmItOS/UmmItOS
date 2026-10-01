@@ -87,7 +87,7 @@ Scope {
         const app = entry?.name || client.class || I18n.t("A window");
         if (root.spokeLately(cls, app))
             return;
-        Quickshell.execDetached(["sh", "-c", 'a=$(notify-send -a "$1" -i "$2" -A focus="$3" -- "$4" "$5") && [ "$a" = focus ] && hyprctl dispatch "hl.dsp.focus({ window = \\"address:$6\\" })"',
+        Quickshell.execDetached(["sh", "-c", 'a=$(notify-send -a "$1" -i "$2" -h boolean:x-ummitos-chime:true -A focus="$3" -- "$4" "$5") && [ "$a" = focus ] && hyprctl dispatch "hl.dsp.focus({ window = \\"address:$6\\" })"',
             "sh", app, entry?.icon ?? "", I18n.t("Go there"), I18n.t("%1 wants your attention").arg(app), I18n.t("%1 · Workspace %2").replace(/%([12])/g, (_, n) => Notifs.asText(n === "1" ? client.title : client.workspace?.name ?? "?")), client.address]);
     }
 }
