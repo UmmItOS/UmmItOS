@@ -13,10 +13,12 @@ greeter_dir=/usr/share/ummitos/greeter
 # Written by the user's shell (GreeterSync) and read by the greeter, which cannot read the user's home.
 shared_dir=/var/lib/ummitos-greeter
 
-# The greeter user's home is /, which it cannot write, so quickshell keeps its cache and state in /tmp;
+# The greeter user's home is /, which it cannot write, so quickshell keeps its cache and state in a folder only it owns
+# (not /tmp: another account could make that first and plant compiled QML that reads passwords);
 # cage draws no title bars, so Qt must not draw its own.
+greeter_cache=/var/cache/ummitos-greeter
 greeter_command() {
-    printf 'env QT_WAYLAND_DISABLE_WINDOWDECORATION=1 XDG_CACHE_HOME=/tmp/ummitos-greeter XDG_STATE_HOME=/tmp/ummitos-greeter XDG_DATA_HOME=/tmp/ummitos-greeter cage -s -- qs -p %s' "$greeter_dir"
+    printf 'env QT_WAYLAND_DISABLE_WINDOWDECORATION=1 XDG_CACHE_HOME=%s XDG_STATE_HOME=%s XDG_DATA_HOME=%s cage -s -- qs -p %s' "$greeter_cache" "$greeter_cache" "$greeter_cache" "$greeter_dir"
 }
 
 # The QML greeter, its config for greetd, and the keyring unlock GDM used to do at login.
@@ -29,6 +31,8 @@ install_greeter() {
     echo "${COLOR_BLUE}:: Installing the login screen to ${greeter_dir}...${COLOR_RESET}"
     sudo mkdir -p "$greeter_dir" &&
         sudo cp -rL "$PARENT_DIR/configs/greeter/." "$greeter_dir/" || return 1
+
+    sudo install -d -o greeter -g greeter -m 700 "$greeter_cache" || return 1
 
     sudo mkdir -p "$shared_dir" &&
         sudo chown "$USER:" "$shared_dir" &&

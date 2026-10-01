@@ -139,6 +139,9 @@ run_interactive_configuration() {
     fi
     if [[  -z "$desired_hyprshot_dir"  ]]; then
         echo "${COLOR_DARK_RED}No path entered for HYPRSHOT_DIR. Skipping modification.${COLOR_RESET}"
+    elif [[ "$desired_hyprshot_dir" == *[\"\\]* ]]; then
+        # The path goes into a Lua string in env.lua.
+        echo "${COLOR_DARK_RED}A path with \" or \\ cannot go into env.lua. Skipping modification.${COLOR_RESET}"
     else
         echo "${COLOR_GREEN}You chose HYPRSHOT_DIR as: ${COLOR_CYAN}$desired_hyprshot_dir${COLOR_RESET}"
         if [[  ! -d "$desired_hyprshot_dir"  ]]; then

@@ -18,7 +18,7 @@ if [[ -f "$conf" ]]; then
 fi
 dir="$folder"
 log="$HOME/script/misc/screen-record.log"
-state="${XDG_RUNTIME_DIR:-/tmp}/screen-record"
+state="${XDG_RUNTIME_DIR:?not in a session}/screen-record"
 
 # Undo the temporary mix sink, if this recording made one.
 unmix() {

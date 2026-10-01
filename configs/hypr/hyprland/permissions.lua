@@ -7,6 +7,5 @@ end
 
 allow("/usr/bin/wl-screenrec")
 allow("/usr/bin/grim")
-allow(os.getenv("HOME") .. "/scripts/.*")
 allow("/usr/bin/hyprpicker")
-allow("/usr/bin/wommer")
+allow("/usr/bin/woomer")
