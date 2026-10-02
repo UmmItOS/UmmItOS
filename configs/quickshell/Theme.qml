@@ -189,7 +189,7 @@ Singleton {
         readonly property int extraLarge: 46
         readonly property int huge: 52
         // Launcher tiles, where the icon is the content.
-        readonly property int app: 60
+        readonly property int app: 112
         // Material Symbols GRAD: a lighter stroke, which reads right on a dark ground.
         readonly property int grade: -25
     }
@@ -340,8 +340,9 @@ Singleton {
     }
 
     readonly property QtObject launcher: QtObject {
-        readonly property int cellMin: 190
-        readonly property int cellHeight: 168
+        readonly property int cellMin: 220
+        // The icon plus two lines of name.
+        readonly property int cellHeight: 224
         readonly property int minColumns: 4
         readonly property int nameLines: 2
         readonly property real glow: 0.5
