@@ -57,13 +57,13 @@ Scope {
         let sound = "";
         // The screenshot tool has its own shutter, like an app with its own sound.
         if (app === "screenshot")
-            sound = "/screenshot/shutter.ogg";
+            sound = "screenshot";
         else if (["color picker", "screen recording", "update", "wi-fi", "bluetooth"].includes(app))
-            sound = "/toast/pop.ogg";
+            sound = "notice";
         else if (!ownSound && !charging)
-            sound = "/notifications/chime.ogg";
+            sound = "notification";
         if (sound !== "" && !Notifs.dnd)
-            Quickshell.execDetached(["pw-play", Quickshell.shellDir + sound]);
+            Sounds.play(sound);
     }
 
     NotificationServer {

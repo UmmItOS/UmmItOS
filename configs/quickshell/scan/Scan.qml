@@ -208,7 +208,7 @@ Singleton {
         });
         if (codes.length > 0) {
             // A rising two-note bip, only when something was found.
-            Quickshell.execDetached(["pw-play", Quickshell.shellDir + "/scan/found.ogg"]);
+            Sounds.play("qr-found");
             open = true;
         } else {
             forget();

@@ -28,6 +28,8 @@ import "wake"
 ShellRoot {
     // Singletons start only when read; the accent clock must run from the start.
     readonly property bool accentTimed: AccentTime.loaded
+    // And the sound settings, so sounds.conf exists to edit before anything has played.
+    readonly property string soundsFile: Sounds.file
 
     // One bar per connected screen. Plugging a monitor in adds one.
     Variants {

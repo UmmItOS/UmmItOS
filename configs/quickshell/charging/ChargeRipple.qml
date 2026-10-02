@@ -18,8 +18,7 @@ Scope {
         seed();
         playing = true;
         run.restart();
-        // Original chime, synthesised for this (plug.ogg).
-        Quickshell.execDetached(["pw-play", Qt.resolvedUrl("plug.ogg").toString().replace("file://", "")]);
+        Sounds.play("charging");
     }
 
     // Grains as (distance 0-1, angle); each lights as the ring passes.

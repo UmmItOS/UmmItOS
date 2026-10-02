@@ -13,17 +13,13 @@ Scope {
 
     property int serial: 0
 
-    // Text pops; an image has its own ting, so the two are never confused.
-    function play(sound: string): void {
-        Quickshell.execDetached(["pw-play", Quickshell.shellDir + "/toast/" + sound]);
-    }
-
     function show(kind: string): void {
         const image = kind === "image";
+        // Text and images have their own sounds, so the two are never confused.
         if (!image)
-            play("pop.ogg");
+            Sounds.play("text-copied");
         else if (Date.now() - Screenshot.delivered > Theme.duration.shotCopy)
-            play("snap.ogg");
+            Sounds.play("image-copied");
         // Newest at index 0, which the bottom-to-top list draws lowest.
         pills.insert(0, {
             key: ++serial,

@@ -71,14 +71,10 @@ Singleton {
             after.stop();
             next = "";
             selected = 0;
-            play("open.ogg");
+            Sounds.play("sao-open");
         }
     }
 
-    // Original sounds made with ffmpeg in the anime's spirit: a rising three-note open, a short tap.
-    function play(sound: string): void {
-        Quickshell.execDetached(["pw-play", Quickshell.shellDir + "/sao/" + sound]);
-    }
 
     function show(on: var): void {
         // Only while closed, so an open menu never jumps screens.
@@ -99,7 +95,7 @@ Singleton {
             return;
         asking = false;
         selected = index;
-        play("tap.ogg");
+        Sounds.play("sao-tap");
         const id = items[index].id;
         if (id === "profile" || id === "skills") {
             if (id === "skills" && skills.length === 0 && !scanning) {
