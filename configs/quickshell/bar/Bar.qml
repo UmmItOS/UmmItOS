@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import Quickshell
 import Quickshell.Wayland
 import QtQuick
@@ -65,41 +67,100 @@ PanelWindow {
             Layout.alignment: Qt.AlignVCenter
 
             BarButton {
-                icon: "terminal"
-                onClicked: Quickshell.execDetached(["kitty"])
-            }
+                Layout.alignment: Qt.AlignVCenter
+                icon: "keyboard_double_arrow_right"
+                // First in the pill, so it stays under the pointer while the tools unfold beside it; turns to point back once open.
+                rotation: Toolbox.open ? 180 : 0
+                onClicked: Toolbox.toggle()
 
-            BarButton {
-                icon: "system_update_alt"
-                onClicked: Quickshell.execDetached(["kitty", "--execute", bar.home + "/script/misc/update.sh"])
-            }
+                Behavior on rotation {
+                    enabled: Toolbox.ready
 
-            WallpaperShuffle {}
-
-            BarButton {
-                icon: "grid_view"
-                onClicked: Wallpapers.pickerOpen = !Wallpapers.pickerOpen
-            }
-
-            BarButton {
-                icon: "keyboard"
-                onClicked: Cheatsheet.open = !Cheatsheet.open
-            }
-
-            BarButton {
-                // A second of grim and zbar: the spinner says it heard the click.
-                icon: Scan.scanning ? "" : "qr_code_scanner"
-                onClicked: Scan.start(bar.screen)
-
-                Spinner {
-                    anchors.centerIn: parent
-                    visible: Scan.scanning
+                    NumberAnimation {
+                        duration: Theme.duration.expressiveDefaultSpatial
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curve.emphasized
+                    }
                 }
             }
 
-            AccentPicker {}
+            // The tools fold away behind the toggle; the pill has to really shrink, so this one
+            // holder animates its width, while the tools themselves slide, fade and sharpen.
+            Item {
+                id: fold
 
-            WeatherPicker {}
+                property real progress: Toolbox.open ? 1 : 0
+
+                Layout.alignment: Qt.AlignVCenter
+                implicitWidth: tools.implicitWidth * progress
+                implicitHeight: tools.implicitHeight
+                clip: true
+                // Fully folded, the tools are gone, so nothing can be clicked through the fold.
+                visible: progress > 0
+
+                Behavior on progress {
+                    enabled: Toolbox.ready
+
+                    NumberAnimation {
+                        duration: Theme.duration.expressiveDefaultSpatial
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Toolbox.open ? Theme.curve.emphasizedDecel : Theme.curve.emphasizedAccel
+                    }
+                }
+
+                RowLayout {
+                    id: tools
+
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: Theme.spacing.large
+                    opacity: fold.progress
+                    layer.enabled: opacity < 1
+                    layer.effect: MotionBlur {
+                        settled: tools.opacity
+                    }
+                    transform: Translate {
+                        // Out from behind the toggle, to its right.
+                        x: -(1 - fold.progress) * Theme.spacing.extraLarge
+                    }
+
+                    BarButton {
+                        icon: "terminal"
+                        onClicked: Quickshell.execDetached(["kitty"])
+                    }
+
+                    BarButton {
+                        icon: "system_update_alt"
+                        onClicked: Quickshell.execDetached(["kitty", "--execute", bar.home + "/script/misc/update.sh"])
+                    }
+
+                    WallpaperShuffle {}
+
+                    BarButton {
+                        icon: "grid_view"
+                        onClicked: Wallpapers.pickerOpen = !Wallpapers.pickerOpen
+                    }
+
+                    BarButton {
+                        icon: "keyboard"
+                        onClicked: Cheatsheet.open = !Cheatsheet.open
+                    }
+
+                    BarButton {
+                        // A second of grim and zbar: the spinner says it heard the click.
+                        icon: Scan.scanning ? "" : "qr_code_scanner"
+                        onClicked: Scan.start(bar.screen)
+
+                        Spinner {
+                            anchors.centerIn: parent
+                            visible: Scan.scanning
+                        }
+                    }
+
+                    AccentPicker {}
+
+                    WeatherPicker {}
+                }
+            }
         }
 
         Item {
