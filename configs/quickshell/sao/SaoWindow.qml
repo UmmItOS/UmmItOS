@@ -502,7 +502,8 @@ OverlayWindow {
                         spacing: Theme.spacing.extraSmall
                         boundsBehavior: Flickable.StopAtBounds
                         model: Sao.skills
-                        onDraggingChanged: if (dragging) Sounds.play("sao-scroll")
+                        // Not dragging: the wheel and touchpad never set it; movementStarted comes from every scroll but code's own.
+                        onMovementStarted: Sounds.play("sao-scroll")
                         ScrollBar.vertical: ScrollBar {
                             contentItem: Rectangle {
                                 implicitWidth: Theme.sao.scroll
