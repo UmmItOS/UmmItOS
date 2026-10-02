@@ -502,6 +502,7 @@ OverlayWindow {
                         spacing: Theme.spacing.extraSmall
                         boundsBehavior: Flickable.StopAtBounds
                         model: Sao.skills
+                        onDraggingChanged: if (dragging) Sounds.play("sao-scroll")
                         ScrollBar.vertical: ScrollBar {
                             contentItem: Rectangle {
                                 implicitWidth: Theme.sao.scroll

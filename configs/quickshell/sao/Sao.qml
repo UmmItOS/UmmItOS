@@ -90,12 +90,12 @@ Singleton {
             show(null);
     }
 
-    // Moving through the buttons ticks, as the anime's menu does; the reset on open and a pick stay quiet here.
+    // Hovering a different button plays the tap sound, same as clicking one.
     function select(index: int): void {
         if (index === selected)
             return;
         selected = index;
-        Sounds.play("sao-scroll");
+        Sounds.play("sao-tap");
     }
 
     function pick(index: int): void {
