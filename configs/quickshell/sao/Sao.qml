@@ -90,6 +90,14 @@ Singleton {
             show(null);
     }
 
+    // Moving through the buttons ticks, as the anime's menu does; the reset on open and a pick stay quiet here.
+    function select(index: int): void {
+        if (index === selected)
+            return;
+        selected = index;
+        Sounds.play("sao-scroll");
+    }
+
     function pick(index: int): void {
         if (index < 0 || index >= items.length)
             return;

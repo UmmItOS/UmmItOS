@@ -83,9 +83,9 @@ OverlayWindow {
         focus: true
 
         Keys.onUpPressed: if (!Sao.asking)
-            Sao.selected = (Sao.selected + Sao.items.length - 1) % Sao.items.length
+            Sao.select((Sao.selected + Sao.items.length - 1) % Sao.items.length)
         Keys.onDownPressed: if (!Sao.asking)
-            Sao.selected = (Sao.selected + 1) % Sao.items.length
+            Sao.select((Sao.selected + 1) % Sao.items.length)
         Keys.onLeftPressed: {
             if (Sao.asking)
                 Sao.choice = 0;
@@ -218,7 +218,7 @@ OverlayWindow {
                     HoverHandler {
                         cursorShape: Qt.PointingHandCursor
                         onPointChanged: if (!Sao.asking && win.pointerMoved(button, point.position.x, point.position.y))
-                            Sao.selected = button.index
+                            Sao.select(button.index)
                     }
 
                     TapHandler {
