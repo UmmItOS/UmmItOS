@@ -22,6 +22,7 @@ end
 bind("Apps", mainMod .. " + T", run("kitty"), "Launch terminal (kitty)")
 bind("Apps", mainMod .. " + E", run("kitty -e yazi $HOME"), "Launch file manager (yazi)")
 bind("Shell", mainMod .. " + Return", shell("launcher", "apps"), "Application launcher")
+bind("Shell", mainMod .. " + M", shell("sao", "toggle"), "SAO menu")
 bind("Shell", mainMod .. " + X", shell("session", "toggle"), "Session menu")
 bind("Shell", mainMod .. " + slash", shell("cheatsheet", "toggle"), "Keybind cheat sheet")
 bind("Shell", mainMod .. " + D", shell("draw", "toggle"), "Draw on the screen")

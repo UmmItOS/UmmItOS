@@ -43,8 +43,10 @@ Singleton {
         return (bytes / (1024 * 1024)).toFixed(0) + "MiB";
     }
 
-    // Nothing polls while off; turning on samples at once.
-    property bool active: false
+    // Nothing polls unless something on screen shows it; turning on samples at once.
+    property bool onDashboard: false
+    property bool onProfile: false
+    readonly property bool active: onDashboard || onProfile
 
     property real lastIdle: 0
     property real lastTotal: 0

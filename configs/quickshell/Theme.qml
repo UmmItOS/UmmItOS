@@ -624,6 +624,66 @@ Singleton {
         readonly property int settleFrames: 2
     }
 
+    // The SAO menu (sao/): Sword Art Online's own palette and sizes, apart from the shell's look on purpose.
+    readonly property QtObject sao: QtObject {
+        readonly property color paper: "#cfd0c5"
+        readonly property color paperDeep: "#bdbeb2"
+        readonly property color ink: "#616256"
+        // SAO's ink, darker: the anime's palette was made for large text on a TV, this one reads at desktop sizes.
+        readonly property color inkDeep: "#4a4b41"
+        readonly property color orange: "#d49c17"
+        readonly property color accept: "#5898be"
+        readonly property color decline: "#e2576e"
+        // The ○ and × marks; paper on those discs is under 2.5:1.
+        readonly property color mark: "#ffffff"
+        readonly property color hpHigh: "#8ec63f"
+        readonly property color hpMid: "#e6c63c"
+        readonly property color hpLow: "#e2576e"
+        readonly property color mp: "#5898be"
+        // A card's inner well, the anime's inset shadow, fading out this far in from each edge.
+        readonly property color well: Qt.alpha(ink, 0.35)
+        readonly property real wellFade: 0.2
+        // The paper floats over the world; the anime never dims it, so a shadow keeps it readable instead.
+        readonly property color shadow: Qt.rgba(0, 0, 0, 0.45)
+        readonly property int shadowBlur: 24
+        // HP turns yellow, then red, under these.
+        readonly property real hpWarn: 0.5
+        readonly property real hpDanger: 0.2
+        readonly property int button: 64
+        // The ring sits this far outside the disc.
+        readonly property int ringGap: 4
+        readonly property int ring: 2
+        readonly property int gap: 20
+        // The column's place: in from the left edge, and down from the bar.
+        readonly property int inset: 40
+        readonly property int top: 40
+        readonly property int ribbon: 40
+        readonly property int ribbonWidth: 180
+        readonly property int ribbonTip: 16
+        readonly property int panel: 380
+        readonly property int panelMax: 520
+        readonly property int scroll: 4
+        readonly property int bar: 10
+        readonly property int avatar: 72
+        readonly property int dialog: 360
+        readonly property int choice: 44
+        readonly property int choiceMark: 18
+        readonly property int choiceStroke: 4
+        readonly property int choiceGap: 120
+        // The focused choice grows a ring this far out.
+        readonly property int choiceRing: 3
+        // The drag-down strip on the left edge, how far down it reaches, and how far a drag must go.
+        readonly property int edge: 4
+        readonly property real edgeReach: 0.35
+        readonly property int pull: 80
+        // Each button drops in this long after the one above.
+        readonly property int stagger: 35
+        readonly property int drop: 48
+        // A card swings open from this angle, like a door; the dialog flips down from the top.
+        readonly property real swing: -70
+        readonly property real flip: -90
+    }
+
     // Lower damping overshoots more.
     readonly property QtObject spring: QtObject {
         readonly property real stiffness: 12

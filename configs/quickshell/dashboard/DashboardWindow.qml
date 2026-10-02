@@ -18,7 +18,7 @@ OverlayWindow {
     // Polling runs only while the tab showing it is on screen.
     Binding {
         target: SysInfo
-        property: "active"
+        property: "onDashboard"
         value: win.visible && Dashboard.tab === 1
     }
 

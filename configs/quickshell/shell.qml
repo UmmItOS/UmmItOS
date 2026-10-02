@@ -21,6 +21,7 @@ import "scan"
 import "session"
 import "settings"
 import "switcher"
+import "sao"
 import "toast"
 import "wake"
 
@@ -53,6 +54,14 @@ ShellRoot {
         model: Quickshell.screens
 
         HotCorner {}
+    }
+
+    SaoWindow {}
+
+    Variants {
+        model: Quickshell.screens
+
+        SaoEdge {}
     }
 
     CheatsheetWindow {}
