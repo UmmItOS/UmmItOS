@@ -14,20 +14,24 @@ Singleton {
     // Pinned: the Alt release no longer closes it.
     property bool pinned: false
     property bool overviewing: false
-    // The hot corner fired; the window ripples the corner.
-    signal cornerHit
 
     // Entries go null while workspaces are created and destroyed.
     readonly property var workspaces: [...Hyprland.workspaces.values].filter(w => w && w.id > 0).sort((a, b) => a.id - b.id)
 
     // The selection follows its workspace when others come and go.
     property int selectedId: -1
-    onIndexChanged: selectedId = workspaces[index]?.id ?? -1
-    onWorkspacesChanged: {
-        const i = workspaces.findIndex(w => w.id === selectedId);
-        index = i >= 0 ? i : Math.max(0, Math.min(index, workspaces.length - 1));
-        selectedId = workspaces[index]?.id ?? -1;
-    }
+
+    readonly property string shotPath: Quickshell.env("XDG_RUNTIME_DIR") + "/ummitos-overview/screen.ppm"
+    property bool shotReady: false
+    property int shotCount: 0
+    readonly property string shotUrl: "file://" + shotPath + "?" + shotCount
+    // The workspace the overview opened on: the picture only matches it.
+    property int startId: -1
+    readonly property int startIndex: workspaces.findIndex(w => w.id === startId)
+    // Captures and decode happen here, off the zoom's first frames.
+    property bool warming: false
+    // The hot corner fired; the window ripples the corner.
+    signal cornerHit
 
     function step(delta: int): void {
         const count = workspaces.length;
@@ -89,16 +93,6 @@ Singleton {
         grab.running = true;
     }
 
-    readonly property string shotPath: Quickshell.env("XDG_RUNTIME_DIR") + "/ummitos-overview/screen.ppm"
-    property bool shotReady: false
-    property int shotCount: 0
-    readonly property string shotUrl: "file://" + shotPath + "?" + shotCount
-    // The workspace the overview opened on: the picture only matches it.
-    property int startId: -1
-    readonly property int startIndex: workspaces.findIndex(w => w.id === startId)
-    // Captures and decode happen here, off the zoom's first frames.
-    property bool warming: false
-
     function reveal(): void {
         if (!warming)
             return;
@@ -109,21 +103,12 @@ Singleton {
         pinned = true;
     }
 
-    Timer {
-        id: warmLimit
-        interval: Theme.duration.warmLimit
-        onTriggered: root.reveal()
-    }
+    onIndexChanged: selectedId = workspaces[index]?.id ?? -1
 
-    Process {
-        id: grab
-        onExited: code => {
-            root.shotCount++;
-            root.shotReady = code === 0;
-            if (!root.shotReady)
-                return root.reveal();
-            warmLimit.restart();
-        }
+    onWorkspacesChanged: {
+        const i = workspaces.findIndex(w => w.id === selectedId);
+        index = i >= 0 ? i : Math.max(0, Math.min(index, workspaces.length - 1));
+        selectedId = workspaces[index]?.id ?? -1;
     }
 
     onOpenChanged: {
@@ -135,40 +120,63 @@ Singleton {
     }
 
     Timer {
+        id: warmLimit
+
+        onTriggered: root.reveal()
+
+        interval: Theme.duration.warmLimit
+    }
+
+    Process {
+        id: grab
+
+        onExited: code => {
+            root.shotCount++;
+            root.shotReady = code === 0;
+            if (!root.shotReady)
+                return root.reveal();
+            warmLimit.restart();
+        }
+    }
+
+    Timer {
         id: overviewDone
-        interval: Theme.duration.expressiveDefaultSpatial
+
         // The picture is let go too, not kept decoded until the next overview.
         onTriggered: {
             root.overviewing = false;
             root.shotReady = false;
         }
+
+        interval: Theme.duration.expressiveDefaultSpatial
     }
 
     GlobalShortcut {
+        onPressed: root.cycle(1)
+
         appid: "quickshell"
         name: "switcherNext"
         description: "Cycle workspaces forward"
-        onPressed: root.cycle(1)
     }
 
     // Hyprland's bind layer eats the Alt release; its release bind wins.
     GlobalShortcut {
+        onPressed: root.release()
+
         appid: "quickshell"
         name: "switcherCommit"
         description: "Commit the workspace switch"
-        onPressed: root.release()
     }
 
     GlobalShortcut {
+        onPressed: root.cycle(-1)
+
         appid: "quickshell"
         name: "switcherPrev"
         description: "Cycle workspaces backward"
-        onPressed: root.cycle(-1)
     }
 
     IpcHandler {
-        target: "switcher"
-
         function commit(): void {
             root.commit();
         }
@@ -181,5 +189,6 @@ Singleton {
             root.overview(false);
         }
 
+        target: "switcher"
     }
 }

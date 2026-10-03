@@ -10,10 +10,6 @@ import ".."
 OverlayWindow {
     id: win
 
-    shown: Launcher.open && Launcher.mode === "apps"
-    name: "launcher"
-    scrim: Theme.shade.heavy
-
     property string filter: ""
 
     readonly property int total: [...DesktopEntries.applications.values].filter(a => !a.noDisplay).length
@@ -44,6 +40,12 @@ OverlayWindow {
                 })).filter(r => r.rank >= 0).sort((x, y) => (x.rank - y.rank) || (y.used - x.used) || x.app.name.localeCompare(y.app.name)).map(r => r.app);
     }
 
+    function accept(): void {
+        const item = results[grid.currentIndex];
+        if (item)
+            Launcher.launch(item);
+    }
+
     onOpened: {
         used = Launcher.launches;
         filter = "";
@@ -52,15 +54,14 @@ OverlayWindow {
         search.forceActiveFocus();
     }
 
-    function accept(): void {
-        const item = results[grid.currentIndex];
-        if (item)
-            Launcher.launch(item);
-    }
+    shown: Launcher.open && Launcher.mode === "apps"
+    name: "launcher"
+    scrim: Theme.shade.heavy
 
     MouseArea {
-        anchors.fill: parent
         onClicked: Launcher.open = false
+
+        anchors.fill: parent
     }
 
     FocusScope {
@@ -80,17 +81,11 @@ OverlayWindow {
                 leftMargin: Theme.spacing.extraLarge * 3
                 rightMargin: Theme.spacing.extraLarge * 3
             }
+
             spacing: Theme.spacing.small
 
             TextInput {
                 id: search
-
-                Layout.fillWidth: true
-                color: Theme.fg
-                font.family: Theme.fontDisplay
-                font.pixelSize: Theme.fontSize.query
-                font.weight: Theme.weight.bold
-                focus: true
 
                 onTextChanged: {
                     win.filter = text;
@@ -103,6 +98,13 @@ OverlayWindow {
                 Keys.onUpPressed: grid.moveCurrentIndexUp()
                 Keys.onDownPressed: grid.moveCurrentIndexDown()
                 Keys.onReturnPressed: win.accept()
+
+                Layout.fillWidth: true
+                color: Theme.fg
+                font.family: Theme.fontDisplay
+                font.pixelSize: Theme.fontSize.query
+                font.weight: Theme.weight.bold
+                focus: true
 
                 Text {
                     anchors.fill: parent
@@ -139,6 +141,7 @@ OverlayWindow {
                 rightMargin: Theme.spacing.extraLarge * 3 - Theme.spacing.medium
                 bottomMargin: Theme.spacing.extraLarge
             }
+
             clip: true
             cellWidth: Math.floor(width / Math.max(Theme.launcher.minColumns, Math.floor(width / Theme.launcher.cellMin)))
             cellHeight: Theme.launcher.cellHeight
@@ -152,6 +155,7 @@ OverlayWindow {
 
             delegate: Item {
                 id: cell
+
                 required property DesktopEntry modelData
                 required property int index
 
@@ -160,20 +164,28 @@ OverlayWindow {
                 width: grid.cellWidth
                 height: grid.cellHeight
 
+                scale: cell.active ? Theme.launcher.activeScale : 1
+
+                Behavior on scale {
+                    NumberAnimation {
+                        duration: Theme.duration.expressiveFastSpatial
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curve.expressiveDefaultSpatial
+                    }
+                }
+
                 Surface {
                     anchors {
                         fill: parent
                         margins: Theme.spacing.medium
                     }
+
                     radius: Theme.rounding.extraLarge
                     tone: Theme.bgTray
                     opacity: cell.active ? 1 : 0
 
-                    Behavior on opacity {
-                        FastFade {}
-                    }
-
                     layer.enabled: cell.active
+
                     layer.effect: MultiEffect {
                         shadowEnabled: true
                         shadowColor: Theme.accent
@@ -181,6 +193,10 @@ OverlayWindow {
                         shadowOpacity: Theme.launcher.glow
                         shadowVerticalOffset: 0
                         shadowHorizontalOffset: 0
+                    }
+
+                    Behavior on opacity {
+                        FastFade {}
                     }
                 }
 
@@ -191,6 +207,7 @@ OverlayWindow {
 
                     IconImage {
                         id: appIcon
+
                         Layout.alignment: Qt.AlignHCenter
                         implicitSize: Theme.icon.app
                         visible: status === Image.Ready
@@ -220,27 +237,19 @@ OverlayWindow {
                     }
                 }
 
-                scale: cell.active ? Theme.launcher.activeScale : 1
-
-                Behavior on scale {
-                    NumberAnimation {
-                        duration: Theme.duration.expressiveFastSpatial
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: Theme.curve.expressiveDefaultSpatial
-                    }
-                }
-
                 MouseArea {
-                    anchors.fill: parent
-                    hoverEnabled: true
                     onPositionChanged: mouse => {
                         if (win.pointerMoved(this, mouse.x, mouse.y))
                             grid.currentIndex = cell.index;
                     }
+
                     onClicked: {
                         grid.currentIndex = cell.index;
                         win.accept();
                     }
+
+                    anchors.fill: parent
+                    hoverEnabled: true
                 }
             }
         }

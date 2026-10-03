@@ -15,8 +15,14 @@ Rectangle {
     radius: height / 2
     color: root.checked ? Theme.accent : Theme.bgTray
 
+    scale: press.pressed ? Theme.pressScale : 1
+
     Behavior on color {
         FastColor {}
+    }
+
+    Behavior on scale {
+        PressAnim {}
     }
 
     Rectangle {
@@ -40,16 +46,12 @@ Rectangle {
         }
     }
 
-    scale: press.pressed ? Theme.pressScale : 1
-
-    Behavior on scale {
-        PressAnim {}
-    }
-
     MouseArea {
         id: press
+
+        onClicked: root.toggled()
+
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
-        onClicked: root.toggled()
     }
 }

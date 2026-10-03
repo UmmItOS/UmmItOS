@@ -10,14 +10,15 @@ Item {
     required property var labels
     required property var current
 
-    signal picked(var value)
-
     // Only a change of choice slides the pill; the width arriving on first open must not.
     property bool settled: false
-    onWidthChanged: if (width > 0)
-        Qt.callLater(() => settled = true)
 
     readonly property real cell: width / values.length
+
+    signal picked(var value)
+
+    onWidthChanged: if (width > 0)
+        Qt.callLater(() => settled = true)
 
     implicitHeight: Theme.control.field
 
@@ -33,6 +34,7 @@ Item {
         radius: Theme.rounding.full
         color: Theme.accent
         visible: root.values.indexOf(root.current) >= 0
+
         transform: Translate {
             x: Math.max(0, root.values.indexOf(root.current)) * root.cell
 
@@ -76,10 +78,12 @@ Item {
                     textFormat: Text.PlainText
                     text: root.labels[choice.index]
                     color: choice.picked ? Theme.accentOn : choiceHover.hovered ? Theme.fg : Theme.dim
+
                     font {
                         family: Theme.font
                         pixelSize: Theme.fontSize.smaller
                         weight: choice.picked ? Theme.weight.medium : Theme.weight.regular
+
                         features: ({
                                 tnum: 1
                             })
@@ -88,6 +92,7 @@ Item {
                     Behavior on scale {
                         PressAnim {}
                     }
+
                     Behavior on color {
                         FastColor {}
                     }
@@ -95,11 +100,13 @@ Item {
 
                 HoverHandler {
                     id: choiceHover
+
                     cursorShape: Qt.PointingHandCursor
                 }
 
                 TapHandler {
                     id: choiceTap
+
                     onTapped: root.picked(root.values[choice.index])
                 }
             }

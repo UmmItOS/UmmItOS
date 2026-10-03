@@ -25,7 +25,8 @@ ColumnLayout {
     // UpdateReminder starts nagging at a week.
     readonly property bool stale: daysSince >= 7
 
-    spacing: Theme.spacing.large
+    // Opening the page reads only local state: the pacman log and the clone, without fetching.
+    readonly property bool watching: Settings.open && visible
 
     // Only on request: checkupdates and git fetch go to the network.
     function check(): void {
@@ -45,14 +46,24 @@ ColumnLayout {
         return days === 0 ? I18n.t("today") : days === 1 ? I18n.t("yesterday") : I18n.t("%1 days ago").arg(days);
     }
 
-    // Opening the page reads only local state: the pacman log and the clone, without fetching.
-    readonly property bool watching: Settings.open && visible
+    function runUpdate(): void {
+        if (upgrade.running)
+            return;
+        // The UmmItOS folder this shell runs from first, then ~/script, then plain paru.
+        upgrade.command = ["kitty", "-e", "sh", "-c", 'for s in "$(readlink -f "$1")/../../script/misc/update.sh" "$HOME/script/misc/update.sh"; do [ -x "$s" ] && exec "$s"; done; paru; printf "\\nPress Enter to close. "; read -r _', "sh", Quickshell.shellDir];
+        upgrade.running = true;
+    }
+
     onWatchingChanged: if (watching && !where.running)
         look(false)
+
+    spacing: Theme.spacing.large
 
     // checkupdates syncs a copy of the databases, so it needs no root and leaves pacman's alone.
     Process {
         id: scan
+
+        onExited: code => page.result = code === 4 ? "noTool" : code === 5 ? "offline" : page.pending.length > 0 ? "pending" : "ok"
 
         command: ["sh", "-c", `
             command -v checkupdates >/dev/null || exit 4
@@ -61,6 +72,7 @@ ColumnLayout {
             printf '%s\\n' "$out" | sed '/^$/d; s/^/repo /'
             command -v paru >/dev/null && paru -Qua 2>/dev/null | sed 's/^/aur /'
             exit 0`]
+
         stdout: StdioCollector {
             onStreamFinished: {
                 const found = [];
@@ -72,7 +84,6 @@ ColumnLayout {
                 page.pending = found;
             }
         }
-        onExited: code => page.result = code === 4 ? "noTool" : code === 5 ? "offline" : page.pending.length > 0 ? "pending" : "ok"
     }
 
     // Linked means the running shell resolves into a git clone, so `git pull` updates it.
@@ -95,6 +106,7 @@ ColumnLayout {
             echo "upstream $u"
             [ "$2" = 1 ] && timeout 15 git -C "$r" fetch --quiet 2>/dev/null
             echo "behind $(git -C "$r" rev-list --count 'HEAD..@{u}')"`, "sh", Quickshell.shellDir, where.fetch ? "1" : "0"]
+
         stdout: StdioCollector {
             onStreamFinished: {
                 const info = {
@@ -123,10 +135,6 @@ ColumnLayout {
     Process {
         id: pull
 
-        command: ["timeout", "60", "git", "-C", page.source?.root ?? "", "pull", "--ff-only", "--quiet"]
-        stderr: StdioCollector {
-            id: pullError
-        }
         onExited: code => {
             page.pulling = false;
             if (code !== 0)
@@ -134,6 +142,12 @@ ColumnLayout {
             else
                 Notifs.say("Settings", I18n.t("UmmItOS updated"), I18n.t("If the shell does not reload, restart it: qs kill -c ummitos && qs -c ummitos -d. Hyprland config and ~/script are copies: copy their changes by hand."));
             page.look(false);
+        }
+
+        command: ["timeout", "60", "git", "-C", page.source?.root ?? "", "pull", "--ff-only", "--quiet"]
+
+        stderr: StdioCollector {
+            id: pullError
         }
     }
 
@@ -149,18 +163,11 @@ ColumnLayout {
         }
     }
 
-    function runUpdate(): void {
-        if (upgrade.running)
-            return;
-        // The UmmItOS folder this shell runs from first, then ~/script, then plain paru.
-        upgrade.command = ["kitty", "-e", "sh", "-c", 'for s in "$(readlink -f "$1")/../../script/misc/update.sh" "$HOME/script/misc/update.sh"; do [ -x "$s" ] && exec "$s"; done; paru; printf "\\nPress Enter to close. "; read -r _', "sh", Quickshell.shellDir];
-        upgrade.running = true;
-    }
-
     StatusHeader {
         busy: page.result === "checking"
         icon: page.result === "idle" ? "update" : page.result === "ok" ? "check_circle" : page.result === "pending" ? "update" : page.result === "offline" ? "cloud_off" : "help"
         tone: page.result === "idle" ? (page.stale ? Theme.warn : Theme.dim) : page.result === "ok" && !page.stale ? Theme.good : page.result === "pending" ? Theme.accentText : Theme.warn
+
         title: {
             switch (page.result) {
             case "idle":
@@ -177,6 +184,7 @@ ColumnLayout {
                 return I18n.t("Cannot check for updates");
             }
         }
+
         hint: {
             if (page.result === "noTool")
                 return I18n.t("checkupdates comes with pacman-contrib; the Packages page can install it.");
@@ -191,19 +199,21 @@ ColumnLayout {
         }
 
         Action {
+            onClicked: page.check()
+
             primary: page.result === "idle"
             icon: "refresh"
             label: I18n.t("Check")
             enabled: page.result !== "checking" && !upgrade.running
-            onClicked: page.check()
         }
 
         Action {
+            onClicked: page.runUpdate()
+
             primary: page.result === "pending" || (page.stale && page.result !== "idle")
             icon: upgrade.running ? "hourglass_top" : "system_update_alt"
             label: upgrade.running ? I18n.t("Updating") : I18n.t("Update now")
             enabled: !upgrade.running && !page.pulling
-            onClicked: page.runUpdate()
         }
     }
 
@@ -213,6 +223,7 @@ ColumnLayout {
 
         readonly property bool linked: page.source?.linked ?? false
         readonly property bool behind: (page.source?.behind ?? 0) > 0
+
         // A real directory would take the link inside it, so it is moved aside first.
         readonly property string linkCommand: {
             const q = s => "'" + s.replace(/'/g, "'\\''") + "'";
@@ -240,6 +251,7 @@ ColumnLayout {
                 fill: parent
                 margins: Theme.spacing.large
             }
+
             spacing: Theme.spacing.medium
 
             MaterialIcon {
@@ -271,6 +283,7 @@ ColumnLayout {
                     color: card.linked ? Theme.dim : Theme.warn
                     font.family: Theme.font
                     font.pixelSize: Theme.fontSize.small
+
                     text: {
                         const s = page.source;
                         if (!s)
@@ -287,30 +300,33 @@ ColumnLayout {
             }
 
             Action {
+                onClicked: {
+                    page.pulling = true;
+                    pull.running = true;
+                }
+
                 visible: card.linked && card.behind && (page.source?.upstream ?? "") !== ""
                 primary: true
                 icon: page.pulling ? "hourglass_top" : "download"
                 label: page.pulling ? I18n.t("Pulling") : I18n.t("Pull")
                 // A pull reloads the shell, which would kill the tracked upgrade terminal.
                 enabled: !page.pulling && !upgrade.running
-                onClicked: {
-                    page.pulling = true;
-                    pull.running = true;
-                }
             }
 
             Action {
+                onClicked: Quickshell.execDetached(["xdg-open", page.source.root])
+
                 visible: card.linked
                 icon: "folder_open"
                 label: I18n.t("Open")
-                onClicked: Quickshell.execDetached(["xdg-open", page.source.root])
             }
 
             Action {
+                onClicked: Quickshell.execDetached(["wl-copy", "--", card.linkCommand])
+
                 visible: !card.linked
                 icon: "content_copy"
                 label: I18n.t("Copy command")
-                onClicked: Quickshell.execDetached(["wl-copy", "--", card.linkCommand])
             }
         }
     }
@@ -364,6 +380,7 @@ ColumnLayout {
                     leftMargin: Theme.spacing.medium
                     rightMargin: Theme.spacing.medium
                 }
+
                 spacing: Theme.spacing.medium
 
                 MaterialIcon {
@@ -389,6 +406,7 @@ ColumnLayout {
                     color: Theme.dim
                     font.family: Theme.font
                     font.pixelSize: Theme.fontSize.small
+
                     font.features: ({
                             tnum: 1
                         })
@@ -407,6 +425,7 @@ ColumnLayout {
             // The package's page, for its changelog and news.
             TapHandler {
                 id: press
+
                 onTapped: Quickshell.execDetached(["xdg-open", row.aur ? "https://aur.archlinux.org/packages/" + encodeURIComponent(row.parts[1]) : "https://archlinux.org/packages/?q=" + encodeURIComponent(row.parts[1])])
             }
         }

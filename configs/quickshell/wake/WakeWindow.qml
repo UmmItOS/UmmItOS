@@ -21,12 +21,14 @@ Variants {
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
         exclusionMode: ExclusionMode.Ignore
+
         anchors {
             top: true
             bottom: true
             left: true
             right: true
         }
+
         mask: Region {}
         color: "transparent"
 

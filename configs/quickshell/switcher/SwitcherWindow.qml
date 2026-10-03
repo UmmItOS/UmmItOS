@@ -10,9 +10,15 @@ import ".."
 OverlayWindow {
     id: win
 
-    shown: Switcher.open
-    name: "switcher"
-    scrim: Theme.shade.light
+    // 0 is the grid, 1 the card at full screen.
+    property real zoom: 0
+    property Item focusCell: null
+    property rect zoomCard: Qt.rect(0, 0, 1, 1)
+
+    readonly property real zoomW: zoomCard.width + ((win.screen?.width ?? width) - zoomCard.width) * zoom
+    readonly property real zoomScale: zoomW / zoomCard.width
+    readonly property real zoomX: zoomCard.x + (-stage.x - zoomCard.x) * zoom
+    readonly property real zoomY: zoomCard.y + (-stage.y - zoomCard.y) * zoom
 
     function titleOf(ws: var): string {
         if (!ws)
@@ -22,6 +28,19 @@ OverlayWindow {
             return I18n.t("Empty");
         const top = all.find(w => w.activated) ?? all[0];
         return top.title === "" ? ws.name : top.title;
+    }
+
+    // Called a frame late, once the grid is laid out.
+    function zoomFrom(start: real): void {
+        const c = focusCell;
+        if (c) {
+            const r = c.mapToItem(stage, 0, 0, c.width, c.height);
+            zoomCard = Qt.rect(r.x, r.y, Math.max(1, r.width), Math.max(1, r.height));
+        }
+        zoomAnim.stop();
+        zoom = start;
+        zoomAnim.to = start === 1 ? 0 : 1;
+        zoomAnim.start();
     }
 
     onOpened: {
@@ -38,31 +57,18 @@ OverlayWindow {
         }
     }
 
-    // 0 is the grid, 1 the card at full screen.
-    property real zoom: 0
-    property Item focusCell: null
-    property rect zoomCard: Qt.rect(0, 0, 1, 1)
-
-    // Called a frame late, once the grid is laid out.
-    function zoomFrom(start: real): void {
-        const c = focusCell;
-        if (c) {
-            const r = c.mapToItem(stage, 0, 0, c.width, c.height);
-            zoomCard = Qt.rect(r.x, r.y, Math.max(1, r.width), Math.max(1, r.height));
-        }
-        zoomAnim.stop();
-        zoom = start;
-        zoomAnim.to = start === 1 ? 0 : 1;
-        zoomAnim.start();
-    }
-
     onShownChanged: {
         if (!shown)
             zoomFrom(0);
     }
 
+    shown: Switcher.open
+    name: "switcher"
+    scrim: Theme.shade.light
+
     NumberAnimation {
         id: zoomAnim
+
         target: win
         property: "zoom"
         duration: Theme.duration.expressiveDefaultSpatial
@@ -70,18 +76,8 @@ OverlayWindow {
         easing.bezierCurve: Theme.curve.emphasizedDecel
     }
 
-    readonly property real zoomW: zoomCard.width + ((win.screen?.width ?? width) - zoomCard.width) * zoom
-    readonly property real zoomScale: zoomW / zoomCard.width
-    readonly property real zoomX: zoomCard.x + (-stage.x - zoomCard.x) * zoom
-    readonly property real zoomY: zoomCard.y + (-stage.y - zoomCard.y) * zoom
-
     FocusScope {
         id: scope
-        opacity: Math.min(1, win.reveal)
-        scale: Theme.popScale + (1 - Theme.popScale) * win.reveal
-
-        anchors.fill: parent
-        focus: true
 
         Keys.onPressed: event => {
             if (event.key === Qt.Key_Tab) {
@@ -114,6 +110,12 @@ OverlayWindow {
             }
         }
 
+        opacity: Math.min(1, win.reveal)
+        scale: Theme.popScale + (1 - Theme.popScale) * win.reveal
+
+        anchors.fill: parent
+        focus: true
+
         // Holding Alt, a click is easier than a key.
         Surface {
             id: pin
@@ -135,6 +137,7 @@ OverlayWindow {
 
             Row {
                 id: pinRow
+
                 anchors.centerIn: parent
                 spacing: Theme.spacing.small
 
@@ -150,6 +153,7 @@ OverlayWindow {
                     anchors.verticalCenter: parent.verticalCenter
                     text: Switcher.pinned ? I18n.t("Pinned") : I18n.t("Keep open")
                     color: Switcher.pinned ? Theme.accentOn : Theme.fg
+
                     font {
                         family: Theme.font
                         pixelSize: Theme.fontSize.normal
@@ -160,14 +164,20 @@ OverlayWindow {
             }
 
             MouseArea {
+                onClicked: Switcher.pinned = !Switcher.pinned
+
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked: Switcher.pinned = !Switcher.pinned
             }
         }
 
         // Full-resolution picture over the zoomed card; the live one is small.
         Image {
+            onStatusChanged: {
+                if (status === Image.Ready || status === Image.Error)
+                    Switcher.reveal();
+            }
+
             x: stage.x + win.zoomX
             y: stage.y + win.zoomY
             width: win.zoomCard.width * win.zoomScale
@@ -177,10 +187,6 @@ OverlayWindow {
             cache: false
             // Decoded off the UI thread while the overview waits to open.
             asynchronous: true
-            onStatusChanged: {
-                if (status === Image.Ready || status === Image.Error)
-                    Switcher.reveal();
-            }
             fillMode: Image.PreserveAspectCrop
             visible: win.zoom > 0 && Switcher.index === Switcher.startIndex
             opacity: Math.min(1, win.zoom * Theme.switcher.shotFade)
@@ -205,8 +211,6 @@ OverlayWindow {
 
             Column {
                 id: grid
-                anchors.horizontalCenter: parent.horizontalCenter
-                spacing: Theme.spacing.large
 
                 // Rows by hand, so a short last row is centred.
                 readonly property int count: Math.max(1, Switcher.workspaces.length)
@@ -218,11 +222,15 @@ OverlayWindow {
                 readonly property int cellWidth: Math.min(Theme.switcher.cellMax, roomWide, roomTall / Theme.switcher.aspect)
                 readonly property int cellHeight: cellWidth * Theme.switcher.aspect
 
+                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: Theme.spacing.large
+
                 Repeater {
                     model: grid.rows
 
                     Row {
                         id: cardRow
+
                         required property int index
 
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -233,11 +241,15 @@ OverlayWindow {
 
                             Item {
                                 id: cell
+
                                 required property HyprlandWorkspace modelData
                                 required property int index
 
                                 readonly property int slot: cardRow.index * grid.columns + index
                                 readonly property bool current: Switcher.index === slot
+
+                                width: grid.cellWidth
+                                height: grid.cellHeight
 
                                 Binding {
                                     target: win
@@ -247,9 +259,6 @@ OverlayWindow {
                                     // Two cells swap in no set order.
                                     restoreMode: Binding.RestoreNone
                                 }
-
-                                width: grid.cellWidth
-                                height: grid.cellHeight
 
                                 Surface {
                                     id: card
@@ -265,6 +274,18 @@ OverlayWindow {
                                     tone: Theme.bgAlt
 
                                     opacity: current ? 1 : Switcher.overviewing ? Theme.switcher.dimOverview : Theme.switcher.dim
+
+                                    // Off while zooming: a scaled layer magnifies pixels.
+                                    layer.enabled: card.current && win.zoom < 0.01
+
+                                    layer.effect: MultiEffect {
+                                        shadowEnabled: true
+                                        shadowColor: Switcher.overviewing ? Theme.accentText : Theme.accent
+                                        shadowBlur: 1
+                                        shadowOpacity: Switcher.overviewing ? 1 : Theme.switcher.glow
+                                        shadowVerticalOffset: 0
+                                        shadowHorizontalOffset: 0
+                                    }
 
                                     Behavior on opacity {
                                         NumberAnimation {
@@ -282,17 +303,6 @@ OverlayWindow {
                                         }
                                     }
 
-                                    // Off while zooming: a scaled layer magnifies pixels.
-                                    layer.enabled: card.current && win.zoom < 0.01
-                                    layer.effect: MultiEffect {
-                                        shadowEnabled: true
-                                        shadowColor: Switcher.overviewing ? Theme.accentText : Theme.accent
-                                        shadowBlur: 1
-                                        shadowOpacity: Switcher.overviewing ? 1 : Theme.switcher.glow
-                                        shadowVerticalOffset: 0
-                                        shadowHorizontalOffset: 0
-                                    }
-
                                     // An unrendered workspace returns its last frame; a compositor limit.
                                     ClippingRectangle {
                                         anchors.fill: parent
@@ -302,6 +312,7 @@ OverlayWindow {
 
                                         Grid {
                                             id: tiles
+
                                             anchors.fill: parent
                                             columns: card.windows.length > 1 ? 2 : 1
                                             spacing: Theme.spacing.hair
@@ -344,6 +355,7 @@ OverlayWindow {
                                             visible: card.windows.length === 0
                                             text: I18n.t("Empty")
                                             color: Theme.dim
+
                                             font {
                                                 family: Theme.fontDisplay
                                                 pixelSize: Theme.fontSize.large
@@ -364,13 +376,16 @@ OverlayWindow {
 
                                         Text {
                                             id: countText
+
                                             anchors.centerIn: parent
                                             text: cell.modelData?.toplevels.values.length ?? 0
                                             color: Theme.fg
+
                                             font {
                                                 family: Theme.font
                                                 pixelSize: Theme.fontSize.normal
                                                 weight: Theme.weight.medium
+
                                                 features: ({
                                                     tnum: 1
                                                 })
@@ -380,18 +395,19 @@ OverlayWindow {
                                 }
 
                                 MouseArea {
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-
                                     // Only real pointer movement changes the selection.
                                     onPositionChanged: mouse => {
                                         if (win.pointerMoved(this, mouse.x, mouse.y))
                                             Switcher.index = cell.slot;
                                     }
+
                                     onClicked: {
                                         Switcher.index = cell.slot;
                                         Switcher.commit();
                                     }
+
+                                    anchors.fill: parent
+                                    hoverEnabled: true
                                 }
                             }
                         }
@@ -401,13 +417,15 @@ OverlayWindow {
 
             Column {
                 id: caption
-                anchors.horizontalCenter: parent.horizontalCenter
-                spacing: Theme.spacing.extraSmall
 
                 readonly property var ws: Switcher.workspaces[Switcher.index] ?? null
 
+                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: Theme.spacing.extraSmall
+
                 Text {
                     id: captionTitle
+
                     anchors.horizontalCenter: parent.horizontalCenter
                     // Against the window, not the grid, to avoid a cycle.
                     width: Math.min(implicitWidth, win.width * Theme.switcher.captionWidth)
@@ -415,11 +433,13 @@ OverlayWindow {
                     textFormat: Text.PlainText
                     text: win.titleOf(caption.ws)
                     color: Theme.fg
+
                     font {
                         family: Theme.fontDisplay
                         pixelSize: Theme.fontSize.extraLarge
                         weight: Theme.weight.bold
                     }
+
                     elide: Text.ElideRight
 
                     Behavior on text {
@@ -430,7 +450,9 @@ OverlayWindow {
                                 to: 0
                                 duration: Theme.duration.expressiveFastEffects / 2
                             }
+
                             PropertyAction {}
+
                             NumberAnimation {
                                 target: captionTitle
                                 property: "opacity"
@@ -443,6 +465,7 @@ OverlayWindow {
 
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
+
                     text: {
                         const ws = caption.ws;
                         if (!ws)
@@ -450,7 +473,9 @@ OverlayWindow {
                         const n = ws.toplevels.values.length;
                         return n === 1 ? "1 window" : n + " windows";
                     }
+
                     color: Theme.accentText
+
                     font {
                         family: Theme.font
                         pixelSize: Theme.fontSize.normal
@@ -465,6 +490,7 @@ OverlayWindow {
                     opacity: Switcher.pinned ? 1 : 0
                     text: I18n.t("Pinned  ·  Enter to switch  ·  Esc to close")
                     color: Theme.dim
+
                     font {
                         family: Theme.font
                         pixelSize: Theme.fontSize.small
@@ -484,15 +510,16 @@ OverlayWindow {
         visible: t < 1
 
         Connections {
-            target: Switcher
-
             function onCornerHit(): void {
                 rippleAnim.restart();
             }
+
+            target: Switcher
         }
 
         NumberAnimation {
             id: rippleAnim
+
             target: cornerRipple
             property: "t"
             from: 0

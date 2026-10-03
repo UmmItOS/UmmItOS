@@ -23,8 +23,6 @@ Singleton {
     }
 
     IpcHandler {
-        target: "draw"
-
         function toggle(): void {
             root.toggle();
         }
@@ -32,5 +30,7 @@ Singleton {
         function close(): void {
             root.open = false;
         }
+
+        target: "draw"
     }
 }

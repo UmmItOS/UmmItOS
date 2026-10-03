@@ -95,6 +95,7 @@ Singleton {
 
     SystemClock {
         id: clock
+
         precision: SystemClock.Hours
     }
 
@@ -106,7 +107,6 @@ Singleton {
         // A language switch mid-fetch asks again once this one ends.
         property string lang
 
-        command: ["curl", "-sf", "--max-time", "15", "https://wttr.in/" + encodeURIComponent(place) + "?format=j1" + (lang !== "" ? "&lang=" + lang : "")]
         // 22 is wttr.in's HTTP error for an unknown place; any other failure (no network yet) is retried.
         onExited: code => {
             if (fetch.place !== root.location || fetch.lang !== root.wttrLang)
@@ -116,6 +116,9 @@ Singleton {
             else if (code !== 0)
                 retry.restart();
         }
+
+        command: ["curl", "-sf", "--max-time", "15", "https://wttr.in/" + encodeURIComponent(place) + "?format=j1" + (lang !== "" ? "&lang=" + lang : "")]
+
         stdout: StdioCollector {
             // A failed fetch keeps the last forecast rather than blanking the widget.
             onStreamFinished: {
@@ -133,47 +136,52 @@ Singleton {
 
     FileView {
         id: locationFile
-        path: Quickshell.statePath("weather-location.txt")
-        printErrors: false
-        blockWrites: false
+
         onLoaded: {
             root.location = text().trim();
             root.refresh();
         }
+
+        path: Quickshell.statePath("weather-location.txt")
+        printErrors: false
+        blockWrites: false
     }
 
     // A new language needs the conditions written in it.
     Connections {
-        target: I18n
         function onLangChanged(): void {
             root.refresh();
         }
+
+        target: I18n
     }
 
     // Timers stop while the laptop sleeps, so waking would show last night's forecast.
     Connections {
-        target: Wake
         function onWoke(): void {
             root.refresh();
         }
+
+        target: Wake
     }
 
     Timer {
         id: retry
-        interval: Theme.duration.weatherRetry
+
         onTriggered: root.refresh()
+
+        interval: Theme.duration.weatherRetry
     }
 
     Timer {
+        onTriggered: root.refresh()
+
         running: true
         repeat: true
         interval: Theme.duration.weatherRefresh
-        onTriggered: root.refresh()
     }
 
     IpcHandler {
-        target: "weather"
-
         // A place name wttr.in understands ("Hong Kong"); an empty string turns the weather off.
         function setLocation(place: string): void {
             root.setLocation(place);
@@ -182,5 +190,7 @@ Singleton {
         function refresh(): void {
             root.refresh();
         }
+
+        target: "weather"
     }
 }

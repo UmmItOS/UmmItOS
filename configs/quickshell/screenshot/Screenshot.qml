@@ -20,27 +20,15 @@ Singleton {
     // A press mid-fade would reopen it half torn down.
     property bool leaving: false
 
-    onOpenChanged: {
-        if (!open) {
-            leaving = true;
-            left.restart();
-        }
-    }
-
-    Timer {
-        id: left
-        interval: Theme.duration.expressiveFastSpatial + Theme.duration.small
-        onTriggered: root.leaving = false
-    }
-
     // From Print until the picture is taken, notices hold still: picking a region takes longer than a notice lasts.
     readonly property bool holding: freeze.running || open || leaving || shotMargin.running
 
-    // The capture runs detached; this covers it.
-    Timer {
-        id: shotMargin
-        interval: Theme.duration.extraLarge
-    }
+    readonly property string frozen: Quickshell.env("XDG_RUNTIME_DIR") + "/ummitos-shot.ppm"
+
+    readonly property string dir: Quickshell.env("HYPRSHOT_DIR") || Quickshell.env("HOME") + "/Pictures/Screenshots"
+
+    // When the last shot went to the clipboard, so its copy pill stays quiet.
+    property real delivered: 0
 
     function start(newMode: string): void {
         if (leaving || freeze.running)
@@ -56,19 +44,6 @@ Singleton {
         freeze.command = ["grim", "-t", "ppm", "-o", screen?.name ?? "", frozen];
         freeze.running = true;
     }
-
-    readonly property string frozen: Quickshell.env("XDG_RUNTIME_DIR") + "/ummitos-shot.ppm"
-
-    // ppm, since PNG encoding is slow enough to read as lag before the overlay.
-    Process {
-        id: freeze
-        onExited: root.open = true
-    }
-
-    readonly property string dir: Quickshell.env("HYPRSHOT_DIR") || Quickshell.env("HOME") + "/Pictures/Screenshots"
-
-    // When the last shot went to the clipboard, so its copy pill stays quiet.
-    property real delivered: 0
 
     // geometry is global logical "x,y wxh"; the frozen frame is in device pixels, hence the fx scaling.
     function region(geometry: string): void {
@@ -108,16 +83,48 @@ Singleton {
         deliver(newFile(), target);
     }
 
+    onOpenChanged: {
+        if (!open) {
+            leaving = true;
+            left.restart();
+        }
+    }
+
+    Timer {
+        id: left
+
+        onTriggered: root.leaving = false
+
+        interval: Theme.duration.expressiveFastSpatial + Theme.duration.small
+    }
+
+    // The capture runs detached; this covers it.
+    Timer {
+        id: shotMargin
+
+        interval: Theme.duration.extraLarge
+    }
+
+    // ppm, since PNG encoding is slow enough to read as lag before the overlay.
+    Process {
+        id: freeze
+
+        onExited: root.open = true
+    }
+
     // grabToImage cannot create the folder, so it is made up front.
     Process {
         id: makeDir
+
         command: ["mkdir", "-p", root.dir]
     }
 
     Process {
         id: clients
+
         // Workspace and windows in one call, so they cannot disagree.
         command: ["sh", "-c", `ws=$(hyprctl activeworkspace -j | jq .id) && hyprctl clients -j | jq --argjson ws "$ws" '[.[] | select(.workspace.id == $ws and .mapped and (.hidden | not) and .size[0] > ${Theme.screenshot.minWindow} and .size[1] > ${Theme.screenshot.minWindow})]'`]
+
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
@@ -137,8 +144,6 @@ Singleton {
     }
 
     IpcHandler {
-        target: "screenshot"
-
         function toggle(): void {
             if (root.open)
                 root.open = false;
@@ -153,5 +158,7 @@ Singleton {
         function window(): void {
             root.start("window");
         }
+
+        target: "screenshot"
     }
 }

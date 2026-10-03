@@ -44,9 +44,11 @@ PanelWindow {
 
         opacity: Osd.shown ? 1 : 0
         layer.enabled: opacity < 1
+
         layer.effect: MotionBlur {
             settled: card.opacity
         }
+
         scale: Osd.shown ? 1 : Theme.popScale
 
         // Same length as the scale, or the unmap cut it mid-animation.
@@ -57,6 +59,7 @@ PanelWindow {
                 easing.bezierCurve: Theme.curve.emphasizedDecel
             }
         }
+
         Behavior on scale {
             NumberAnimation {
                 duration: win.leave
@@ -94,11 +97,13 @@ PanelWindow {
                     textFormat: Text.PlainText
                     text: Osd.glyph
                     color: Theme.fg
+
                     font {
                         family: win.cjk(Osd.glyph) ? Theme.fontCjk : Theme.fontDisplay
                         pixelSize: Theme.icon.huge
                         weight: Theme.weight.bold
                     }
+
                     transform: Scale {
                         id: glyphPop
 
@@ -118,6 +123,7 @@ PanelWindow {
                             easing.type: Easing.BezierSpline
                             easing.bezierCurve: Theme.curve.emphasizedDecel
                         }
+
                         NumberAnimation {
                             targets: [glyph, inputName]
                             property: "opacity"
@@ -128,11 +134,11 @@ PanelWindow {
                     }
 
                     Connections {
-                        target: Osd
-
                         function onInputSwitched(): void {
                             pop.restart();
                         }
+
+                        target: Osd
                     }
                 }
 
@@ -140,6 +146,7 @@ PanelWindow {
                     anchors.centerIn: parent
                     // An input method with no label of its own shows a keyboard instead of a blank.
                     visible: win.input ? Osd.glyph === "" : !win.app || appIcon.status !== Image.Ready
+
                     text: {
                         if (win.input)
                             return "keyboard";
@@ -149,6 +156,7 @@ PanelWindow {
                             return "volume_off";
                         return Osd.value > Theme.volume.high ? "volume_up" : Osd.value > 0 ? "volume_down" : "volume_mute";
                     }
+
                     color: Osd.muted ? Theme.dim : Theme.fg
                     fill: 1
                     size: Theme.icon.huge
@@ -166,6 +174,7 @@ PanelWindow {
                 textFormat: Text.PlainText
                 text: I18n.t(Osd.inputName)
                 color: Theme.fg
+
                 font {
                     family: win.cjk(text) ? Theme.fontCjk : Theme.fontDisplay
                     pixelSize: Theme.fontSize.large
@@ -178,10 +187,12 @@ PanelWindow {
                 visible: !win.input
                 text: Osd.muted ? I18n.t("Muted") : Math.round(Osd.value * 100) + "%"
                 color: Osd.muted ? Theme.dim : Theme.fg
+
                 font {
                     family: Theme.fontDisplay
                     pixelSize: Osd.muted ? Theme.fontSize.extraLarge : Theme.fontSize.huge
                     weight: Theme.weight.bold
+
                     // Tabular, or the square twitches as the digits change.
                     features: ({
                             tnum: 1
@@ -219,6 +230,7 @@ PanelWindow {
                     height: Theme.osd.dot
                     radius: Theme.osd.dot / 2
                     color: Theme.accentText
+
                     transform: Translate {
                         x: Osd.inputIndex * (Theme.osd.dot + dots.spacing) - (Theme.osd.dotPill - Theme.osd.dot) / 2
 
@@ -268,6 +280,7 @@ PanelWindow {
                 text: Osd.label
                 color: Theme.dim
                 elide: Text.ElideRight
+
                 font {
                     family: Theme.font
                     pixelSize: Theme.fontSize.smaller

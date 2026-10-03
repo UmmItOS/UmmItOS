@@ -20,6 +20,7 @@ ColumnLayout {
     Process {
         running: Settings.open && page.facts.length === 0
         command: ["sh", "-c", ". /etc/os-release; echo \"$PRETTY_NAME\"; uname -r; hyprctl version | head -n 1 | cut -d ' ' -f 2; qs --version | cut -d ' ' -f 2; cat /etc/hostname"]
+
         stdout: StdioCollector {
             onStreamFinished: {
                 const v = text.split("\n");
@@ -83,6 +84,7 @@ ColumnLayout {
                 fill: parent
                 margins: Theme.spacing.large
             }
+
             columns: 2
             columnSpacing: Theme.spacing.extraLarge
             rowSpacing: Theme.spacing.medium
@@ -111,16 +113,18 @@ ColumnLayout {
         spacing: Theme.spacing.medium
 
         Action {
+            onClicked: Quickshell.execDetached(["xdg-open", "https://github.com/UmmItOS/UmmItOS"])
+
             primary: true
             icon: "code"
             label: I18n.t("UmmItOS on GitHub")
-            onClicked: Quickshell.execDetached(["xdg-open", "https://github.com/UmmItOS/UmmItOS"])
         }
 
         Action {
+            onClicked: Quickshell.execDetached(["xdg-open", "https://github.com/UmmItOS/UmmItOS/issues"])
+
             icon: "bug_report"
             label: I18n.t("Report a problem")
-            onClicked: Quickshell.execDetached(["xdg-open", "https://github.com/UmmItOS/UmmItOS/issues"])
         }
     }
 

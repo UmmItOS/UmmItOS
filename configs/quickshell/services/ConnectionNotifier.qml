@@ -54,20 +54,21 @@ Scope {
     onDevicesChanged: if (primed) settle.start_()
 
     Connections {
-        target: Wake
         function onWoke(): void {
             quiet.restart();
         }
+
+        target: Wake
     }
 
     Timer {
         id: quiet
+
         interval: 15000
     }
 
     Timer {
         id: settle
-        interval: 1500
 
         property real since: 0
 
@@ -77,16 +78,19 @@ Scope {
         }
 
         onTriggered: root.settleNow()
+
+        interval: 1500
     }
 
     // Whatever is connected a moment after start is the baseline.
     Timer {
-        running: true
-        interval: 3000
         onTriggered: {
             root.lastNetwork = root.network;
             root.lastDevices = root.devices;
             root.primed = true;
         }
+
+        running: true
+        interval: 3000
     }
 }

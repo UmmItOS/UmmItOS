@@ -46,11 +46,13 @@ RowLayout {
 
     MaterialIcon {
         Layout.alignment: Qt.AlignVCenter
+
         text: {
             if (!root.adapter || !root.on)
                 return "bluetooth_disabled";
             return root.connectedDevice ? "bluetooth_connected" : "bluetooth";
         }
+
         color: root.connectedDevice ? Theme.fg : Theme.dim
     }
 
@@ -59,14 +61,15 @@ RowLayout {
     }
 
     Flyout {
+        onToggled: root.adapter.enabled = !root.adapter.enabled
+        onCloseRequested: root.popupOpen = false
+
         anchorItem: root
         visible: root.popupOpen
         title: I18n.t("Bluetooth")
         busy: root.searching && root.devices.length > 0
         checked: root.on
         toggleVisible: root.adapter !== null
-        onToggled: root.adapter.enabled = !root.adapter.enabled
-        onCloseRequested: root.popupOpen = false
 
         // Only while this flyout is open, so other screens' scans survive.
         Binding {
@@ -81,6 +84,7 @@ RowLayout {
             visible: !root.adapter || !root.on || root.devices.length === 0
             searching: root.searching
             icon: root.on ? "bluetooth_searching" : "bluetooth_disabled"
+
             text: {
                 if (!root.adapter)
                     return I18n.t("No Bluetooth adapter");
@@ -114,6 +118,7 @@ RowLayout {
                         leftMargin: Theme.spacing.medium
                         rightMargin: Theme.spacing.medium
                     }
+
                     spacing: Theme.spacing.medium
 
                     MaterialIcon {
@@ -128,6 +133,7 @@ RowLayout {
                         text: row.modelData.name || row.modelData.deviceName || I18n.t("Unnamed device")
                         color: row.ink
                         elide: Text.ElideRight
+
                         font {
                             family: Theme.font
                             pixelSize: Theme.fontSize.smaller
@@ -140,9 +146,11 @@ RowLayout {
                         visible: row.modelData.connected && row.modelData.batteryAvailable
                         text: Math.round(row.modelData.battery * 100) + " %"
                         color: row.inkDim
+
                         font {
                             family: Theme.font
                             pixelSize: Theme.fontSize.small
+
                             features: ({
                                     tnum: 1
                                 })
@@ -154,6 +162,7 @@ RowLayout {
                         // Says what a click does.
                         text: row.hovered ? I18n.t("Disconnect") : I18n.t("Connected")
                         color: row.ink
+
                         font {
                             family: Theme.font
                             pixelSize: Theme.fontSize.small
@@ -167,21 +176,18 @@ RowLayout {
                     }
 
                     BarButton {
+                        onClicked: row.modelData.forget()
+
                         visible: !row.busy && row.modelData.paired && row.hovered
                         icon: "delete"
                         label: "Forget device"
                         baseColor: row.inkDim
                         hoverColor: row.ink
                         size: Theme.icon.small
-                        onClicked: row.modelData.forget()
                     }
                 }
 
                 MouseArea {
-                    // Under the content, so the forget button gets its own click.
-                    z: -1
-                    anchors.fill: parent
-                    enabled: !row.busy
                     // BlueZ will not connect a device it has not bonded with.
                     onClicked: {
                         if (row.modelData.connected)
@@ -191,6 +197,11 @@ RowLayout {
                         else
                             row.modelData.pair();
                     }
+
+                    // Under the content, so the forget button gets its own click.
+                    z: -1
+                    anchors.fill: parent
+                    enabled: !row.busy
                 }
             }
         }

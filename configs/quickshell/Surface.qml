@@ -13,6 +13,7 @@ Rectangle {
             position: 0
             color: Qt.lighter(root.tone, root.lift)
         }
+
         GradientStop {
             position: Theme.lift.reach
             color: root.tone

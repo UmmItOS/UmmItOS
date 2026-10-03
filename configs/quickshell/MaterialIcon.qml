@@ -12,6 +12,7 @@ Text {
 
     font.family: "Material Symbols Rounded"
     font.pixelSize: root.size
+
     font.variableAxes: ({
             FILL: root.fill.toFixed(1),
             GRAD: root.grade,

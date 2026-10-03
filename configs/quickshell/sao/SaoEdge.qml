@@ -14,10 +14,12 @@ PanelWindow {
     WlrLayershell.namespace: "sao-edge"
     WlrLayershell.layer: WlrLayer.Top
     exclusionMode: ExclusionMode.Ignore
+
     anchors {
         top: true
         left: true
     }
+
     margins.top: Theme.barHeight
     implicitWidth: Theme.sao.edge
     implicitHeight: Math.round((modelData?.height ?? 0) * Theme.sao.edgeReach)
@@ -40,13 +42,11 @@ PanelWindow {
         property real from: 0
         property bool pulled: false
 
-        anchors.fill: parent
-        hoverEnabled: true
-        cursorShape: pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
         onPressed: mouse => {
             from = mouse.y;
             pulled = false;
         }
+
         // Opens mid-pull, the moment the drag is far enough, as a pull should feel.
         onPositionChanged: mouse => {
             if (pressed && !pulled && mouse.y - from > Theme.sao.pull) {
@@ -54,5 +54,9 @@ PanelWindow {
                 Sao.show(root.modelData);
             }
         }
+
+        anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
     }
 }

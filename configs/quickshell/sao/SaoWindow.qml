@@ -14,10 +14,6 @@ import ".."
 OverlayWindow {
     id: win
 
-    shown: Sao.open
-    name: "sao"
-    screen: Sao.screen
-
     readonly property int slot: Theme.sao.button + (Theme.sao.ringGap + Theme.sao.ring) * 2
     readonly property var battery: UPower.displayDevice
     readonly property bool hasBattery: (battery?.isLaptopBattery ?? false) && (battery?.isPresent ?? false)
@@ -25,8 +21,6 @@ OverlayWindow {
     readonly property real mp: SysInfo.memTotal > 0 ? 1 - SysInfo.memRatio : 0
     // The last card shown, kept while it swings shut.
     property string shownCard: ""
-
-    onOpened: stage.forceActiveFocus()
 
     // Latin in the anime's Rationale; anything past it (Chinese) in the CJK face.
     function family(text: string): string {
@@ -44,8 +38,15 @@ OverlayWindow {
             Sao.answer();
     }
 
+    onOpened: stage.forceActiveFocus()
+
+    shown: Sao.open
+    name: "sao"
+    screen: Sao.screen
+
     FontLoader {
         id: rationale
+
         source: Qt.resolvedUrl("Rationale-Regular.ttf")
     }
 
@@ -57,41 +58,42 @@ OverlayWindow {
     }
 
     Connections {
-        target: Sao
-
         function onCardChanged(): void {
             if (Sao.card !== "")
                 win.shownCard = Sao.card;
         }
+
+        target: Sao
     }
 
     // A click on nothing backs out one step.
     MouseArea {
-        anchors.fill: parent
         onClicked: {
             if (Sao.asking)
                 Sao.asking = false;
             else
                 Sao.open = false;
         }
+
+        anchors.fill: parent
     }
 
     Item {
         id: stage
 
-        anchors.fill: parent
-        focus: true
-
         Keys.onUpPressed: if (!Sao.asking)
             Sao.select((Sao.selected + Sao.items.length - 1) % Sao.items.length)
+
         Keys.onDownPressed: if (!Sao.asking)
             Sao.select((Sao.selected + 1) % Sao.items.length)
+
         Keys.onLeftPressed: {
             if (Sao.asking)
                 Sao.choice = 0;
             else
                 Sao.card = "";
         }
+
         // Right opens a card; it never runs an action the way Enter does.
         Keys.onRightPressed: {
             if (Sao.asking)
@@ -99,8 +101,10 @@ OverlayWindow {
             else if (["profile", "skills"].includes(Sao.items[Sao.selected].id) && Sao.card !== Sao.items[Sao.selected].id)
                 Sao.pick(Sao.selected);
         }
+
         Keys.onReturnPressed: event => win.enter(event)
         Keys.onEnterPressed: event => win.enter(event)
+
         Keys.onEscapePressed: {
             if (Sao.asking)
                 Sao.asking = false;
@@ -109,6 +113,9 @@ OverlayWindow {
             else
                 Sao.open = false;
         }
+
+        anchors.fill: parent
+        focus: true
 
         Column {
             id: column
@@ -135,6 +142,7 @@ OverlayWindow {
                     width: win.slot
                     height: win.slot
                     opacity: drop
+
                     transform: Translate {
                         y: (1 - button.drop) * -Theme.sao.drop
                     }
@@ -147,6 +155,7 @@ OverlayWindow {
                             PauseAnimation {
                                 duration: falling.targetValue > 0 ? button.index * Theme.sao.stagger : 0
                             }
+
                             NumberAnimation {
                                 duration: falling.targetValue > 0 ? Theme.duration.expressiveDefaultSpatial : Theme.duration.expressiveFastSpatial
                                 easing.type: Easing.BezierSpline
@@ -190,6 +199,7 @@ OverlayWindow {
                         Behavior on color {
                             FastColor {}
                         }
+
                         Behavior on scale {
                             PressAnim {}
                         }
@@ -208,13 +218,15 @@ OverlayWindow {
                     }
 
                     HoverHandler {
-                        cursorShape: Qt.PointingHandCursor
                         onPointChanged: if (!Sao.asking && win.pointerMoved(button, point.position.x, point.position.y))
                             Sao.select(button.index)
+
+                        cursorShape: Qt.PointingHandCursor
                     }
 
                     TapHandler {
                         id: tap
+
                         onTapped: Sao.pick(button.index)
                     }
                 }
@@ -234,6 +246,7 @@ OverlayWindow {
             width: Theme.sao.ribbonWidth
             height: Theme.sao.ribbon
             opacity: reveal
+
             transform: [
                 Scale {
                     xScale: ribbon.reveal
@@ -277,14 +290,17 @@ OverlayWindow {
                         x: ribbon.width - Theme.sao.ribbonTip
                         y: 0
                     }
+
                     PathLine {
                         x: ribbon.width
                         y: ribbon.height / 2
                     }
+
                     PathLine {
                         x: ribbon.width - Theme.sao.ribbonTip
                         y: ribbon.height
                     }
+
                     PathLine {
                         x: 0
                         y: ribbon.height
@@ -320,17 +336,21 @@ OverlayWindow {
             visible: reveal > 0
             opacity: reveal
             layer.enabled: opacity < 1
+
             layer.effect: MotionBlur {
                 settled: card.reveal
             }
+
             transform: Rotation {
                 origin.x: Theme.sao.shadowBlur
                 origin.y: card.height / 2
+
                 axis {
                     x: 0
                     y: 1
                     z: 0
                 }
+
                 angle: (1 - card.reveal) * Theme.sao.swing
             }
 
@@ -375,6 +395,7 @@ OverlayWindow {
                         top: parent.top
                         margins: Theme.spacing.extraLarge
                     }
+
                     visible: win.shownCard === "profile"
                     spacing: Theme.spacing.large
 
@@ -483,6 +504,9 @@ OverlayWindow {
                     ListView {
                         id: skillList
 
+                        // Not dragging: the wheel and touchpad never set it; movementStarted comes from every scroll but code's own.
+                        onMovementStarted: Sounds.play("sao-scroll")
+
                         anchors {
                             top: skillsHint.bottom
                             topMargin: Theme.spacing.medium
@@ -490,12 +514,12 @@ OverlayWindow {
                             right: parent.right
                             bottom: parent.bottom
                         }
+
                         clip: true
                         spacing: Theme.spacing.extraSmall
                         boundsBehavior: Flickable.StopAtBounds
                         model: Sao.skills
-                        // Not dragging: the wheel and touchpad never set it; movementStarted comes from every scroll but code's own.
-                        onMovementStarted: Sounds.play("sao-scroll")
+
                         ScrollBar.vertical: ScrollBar {
                             contentItem: Rectangle {
                                 implicitWidth: Theme.sao.scroll
@@ -519,6 +543,7 @@ OverlayWindow {
                             Behavior on color {
                                 FastColor {}
                             }
+
                             Behavior on scale {
                                 PressAnim {}
                             }
@@ -557,11 +582,13 @@ OverlayWindow {
 
                             HoverHandler {
                                 id: skillHover
+
                                 cursorShape: Qt.PointingHandCursor
                             }
 
                             TapHandler {
                                 id: skillTap
+
                                 onTapped: {
                                     Sao.copySkill(skill.modelData.name);
                                     skill.copied = true;
@@ -571,8 +598,10 @@ OverlayWindow {
 
                             Timer {
                                 id: unflash
-                                interval: Theme.duration.osdHide
+
                                 onTriggered: skill.copied = false
+
+                                interval: Theme.duration.osdHide
                             }
                         }
                     }
@@ -615,17 +644,21 @@ OverlayWindow {
             visible: reveal > 0
             opacity: reveal
             layer.enabled: opacity < 1
+
             layer.effect: MotionBlur {
                 settled: dialog.reveal
             }
+
             transform: Rotation {
                 origin.x: dialog.width / 2
                 origin.y: Theme.sao.shadowBlur
+
                 axis {
                     x: 1
                     y: 0
                     z: 0
                 }
+
                 angle: (1 - dialog.reveal) * Theme.sao.flip
             }
 
@@ -684,19 +717,23 @@ OverlayWindow {
                         // The anime's inset shadow along the top and bottom of the well.
                         Rectangle {
                             anchors.fill: parent
+
                             gradient: Gradient {
                                 GradientStop {
                                     position: 0
                                     color: Theme.sao.well
                                 }
+
                                 GradientStop {
                                     position: Theme.sao.wellFade
                                     color: "transparent"
                                 }
+
                                 GradientStop {
                                     position: 1 - Theme.sao.wellFade
                                     color: "transparent"
                                 }
+
                                 GradientStop {
                                     position: 1
                                     color: Theme.sao.well
@@ -726,10 +763,11 @@ OverlayWindow {
                         spacing: Theme.sao.choiceGap
 
                         Choice {
-                            tint: Theme.sao.accept
-                            focused: Sao.choice === 0
                             onHovered: Sao.choice = 0
                             onChosen: Sao.logout()
+
+                            tint: Theme.sao.accept
+                            focused: Sao.choice === 0
 
                             // The anime's ○: a ring inside the disc.
                             Rectangle {
@@ -744,10 +782,11 @@ OverlayWindow {
                         }
 
                         Choice {
-                            tint: Theme.sao.decline
-                            focused: Sao.choice === 1
                             onHovered: Sao.choice = 1
                             onChosen: Sao.asking = false
+
+                            tint: Theme.sao.decline
+                            focused: Sao.choice === 1
 
                             MaterialIcon {
                                 anchors.centerIn: parent
@@ -811,6 +850,7 @@ OverlayWindow {
                 height: parent.height
                 radius: height / 2
                 color: gauge.tint
+
                 transform: Scale {
                     xScale: gauge.ready ? Math.max(0, Math.min(1, gauge.ratio)) : 0
 
@@ -872,13 +912,15 @@ OverlayWindow {
 
         // Movement, not entry: the dialog flips in under a resting pointer, which must not move the focus to ○.
         HoverHandler {
-            cursorShape: Qt.PointingHandCursor
             onPointChanged: if (win.pointerMoved(choice, point.position.x, point.position.y))
                 choice.hovered()
+
+            cursorShape: Qt.PointingHandCursor
         }
 
         TapHandler {
             id: choiceTap
+
             onTapped: choice.chosen()
         }
     }

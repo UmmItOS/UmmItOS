@@ -13,6 +13,10 @@ BarButton {
 
     property bool popupOpen: false
 
+    readonly property var used: AccentTime.ranked.slice(0, Theme.bar.accentYours)
+    // Every cell the same width, so the used row lines up with the presets under it.
+    property real cell: 0
+
     // "#rrggbb", "#aarrggbb", or "rgba(r, g, b[, a])" with a in 0-1.
     function parse(input: string): var {
         const s = input.trim();
@@ -24,12 +28,14 @@ BarButton {
         return Qt.rgba(m[1] / 255, m[2] / 255, m[3] / 255, m[4] === undefined ? 1 : Number(m[4]));
     }
 
-    readonly property var used: AccentTime.ranked.slice(0, Theme.bar.accentYours)
-    // Every cell the same width, so the used row lines up with the presets under it.
-    property real cell: 0
+    onClicked: popupOpen = !popupOpen
+
+    icon: "palette"
+    label: "Accent colour"
 
     component Heading: Text {
         color: Theme.fg
+
         font {
             family: Theme.font
             pixelSize: Theme.fontSize.smaller
@@ -53,6 +59,7 @@ BarButton {
         Behavior on color {
             FastColor {}
         }
+
         Behavior on scale {
             NumberAnimation {
                 duration: Theme.duration.expressiveFastSpatial
@@ -71,26 +78,25 @@ BarButton {
 
         HoverHandler {
             id: hover
+
             cursorShape: Qt.PointingHandCursor
         }
 
         TapHandler {
             id: tap
+
             onTapped: Theme.setAccent(swatch.colour)
         }
     }
 
-    icon: "palette"
-    label: "Accent colour"
-    onClicked: popupOpen = !popupOpen
-
     Flyout {
+        onCloseRequested: root.popupOpen = false
+
         anchorItem: root
         visible: root.popupOpen
         title: I18n.t("Accent")
         toggleVisible: false
         hug: true
-        onCloseRequested: root.popupOpen = false
 
         Heading {
             visible: root.used.length > 0
@@ -107,6 +113,7 @@ BarButton {
             orientation: ListView.Horizontal
             interactive: false
             spacing: Theme.spacing.medium
+
             model: ScriptModel {
                 values: root.used
             }
@@ -119,6 +126,7 @@ BarButton {
                     duration: Theme.duration.expressiveDefaultEffects
                 }
             }
+
             move: Transition {
                 NumberAnimation {
                     property: "x"
@@ -127,6 +135,7 @@ BarButton {
                     easing.bezierCurve: Theme.curve.emphasizedDecel
                 }
             }
+
             displaced: Transition {
                 NumberAnimation {
                     property: "x"
@@ -156,10 +165,12 @@ BarButton {
                     textFormat: Text.PlainText
                     text: AccentTime.spoken(AccentTime.seconds[entry.modelData] ?? 0)
                     color: entry.index === 0 ? Theme.fg : Theme.dim
+
                     font {
                         family: Theme.font
                         pixelSize: Theme.fontSize.small
                         weight: entry.index === 0 ? Theme.weight.bold : Theme.weight.regular
+
                         features: ({
                                 tnum: 1
                             })
@@ -175,9 +186,10 @@ BarButton {
 
         // Always shown, so it measures the cells for both rows.
         Flow {
+            onWidthChanged: root.cell = (width - (Theme.bar.accentColumns - 1) * spacing) / Theme.bar.accentColumns
+
             Layout.fillWidth: true
             spacing: Theme.spacing.medium
-            onWidthChanged: root.cell = (width - (Theme.bar.accentColumns - 1) * spacing) / Theme.bar.accentColumns
 
             Repeater {
                 model: root.presets
@@ -203,6 +215,7 @@ BarButton {
                     leftMargin: Theme.spacing.large
                     rightMargin: Theme.spacing.medium
                 }
+
                 spacing: Theme.spacing.small
 
                 TextInput {
@@ -210,25 +223,6 @@ BarButton {
 
                     property bool bad: false
 
-                    Layout.fillWidth: true
-                    text: Theme.accent.toString()
-                    color: bad ? Theme.urgent : Theme.fg
-                    selectByMouse: true
-                    font {
-                        family: Theme.font
-                        pixelSize: Theme.fontSize.smaller
-                    }
-
-                    onTextEdited: bad = false
-
-                    // Typing breaks the text binding; follow every accent change.
-                    Connections {
-                        target: Theme
-                        function onAccentChanged(): void {
-                            field.text = Theme.accent.toString();
-                            field.bad = false;
-                        }
-                    }
                     function commit(): void {
                         const c = root.parse(text);
                         bad = c === null;
@@ -236,8 +230,30 @@ BarButton {
                             Theme.setAccent(c);
                     }
 
+                    onTextEdited: bad = false
+
                     Keys.onReturnPressed: commit()
                     Keys.onEnterPressed: commit()
+
+                    Layout.fillWidth: true
+                    text: Theme.accent.toString()
+                    color: bad ? Theme.urgent : Theme.fg
+                    selectByMouse: true
+
+                    font {
+                        family: Theme.font
+                        pixelSize: Theme.fontSize.smaller
+                    }
+
+                    // Typing breaks the text binding; follow every accent change.
+                    Connections {
+                        function onAccentChanged(): void {
+                            field.text = Theme.accent.toString();
+                            field.bad = false;
+                        }
+
+                        target: Theme
+                    }
                 }
 
                 // Live preview of what is in effect.
@@ -254,6 +270,7 @@ BarButton {
             Layout.fillWidth: true
             text: I18n.t("#hex or rgba(r, g, b, a), then Enter")
             color: Theme.dim
+
             font {
                 family: Theme.font
                 pixelSize: Theme.fontSize.small

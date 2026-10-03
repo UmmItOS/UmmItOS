@@ -10,21 +10,25 @@ PanelWindow {
     id: bar
 
     required property var modelData
-    screen: modelData
 
     readonly property string home: Quickshell.env("HOME")
 
+    screen: modelData
+
     WlrLayershell.namespace: "ummitos-bar"
+
     anchors {
         top: true
         left: true
         right: true
     }
+
     implicitHeight: Theme.barHeight
     color: Theme.bg
 
     SystemClock {
         id: clock
+
         precision: SystemClock.Seconds
     }
 
@@ -44,6 +48,7 @@ PanelWindow {
 
         RowLayout {
             id: inner
+
             anchors.centerIn: parent
             spacing: Theme.spacing.large
         }
@@ -67,12 +72,13 @@ PanelWindow {
             Layout.alignment: Qt.AlignVCenter
 
             BarButton {
+                onClicked: Toolbox.toggle()
+
                 Layout.alignment: Qt.AlignVCenter
                 icon: "keyboard_double_arrow_right"
                 label: Toolbox.open ? "Hide tools" : "Show tools"
                 // First in the pill, so it stays under the pointer while the tools unfold beside it; turns to point back once open.
                 rotation: Toolbox.open ? 180 : 0
-                onClicked: Toolbox.toggle()
 
                 Behavior on rotation {
                     enabled: Toolbox.ready
@@ -116,45 +122,52 @@ PanelWindow {
                     spacing: Theme.spacing.large
                     opacity: fold.progress
                     layer.enabled: opacity < 1
+
                     layer.effect: MotionBlur {
                         settled: tools.opacity
                     }
+
                     transform: Translate {
                         // Out from behind the toggle, to its right.
                         x: -(1 - fold.progress) * Theme.spacing.extraLarge
                     }
 
                     BarButton {
+                        onClicked: Quickshell.execDetached(["kitty"])
+
                         icon: "terminal"
                         label: "Terminal"
-                        onClicked: Quickshell.execDetached(["kitty"])
                     }
 
                     BarButton {
+                        onClicked: Quickshell.execDetached(["kitty", "--execute", bar.home + "/script/misc/update.sh"])
+
                         icon: "system_update_alt"
                         label: "Update UmmItOS"
-                        onClicked: Quickshell.execDetached(["kitty", "--execute", bar.home + "/script/misc/update.sh"])
                     }
 
                     WallpaperShuffle {}
 
                     BarButton {
+                        onClicked: Wallpapers.pickerOpen = !Wallpapers.pickerOpen
+
                         icon: "grid_view"
                         label: "Wallpapers"
-                        onClicked: Wallpapers.pickerOpen = !Wallpapers.pickerOpen
                     }
 
                     BarButton {
+                        onClicked: Cheatsheet.open = !Cheatsheet.open
+
                         icon: "keyboard"
                         label: "Keyboard shortcuts"
-                        onClicked: Cheatsheet.open = !Cheatsheet.open
                     }
 
                     BarButton {
+                        onClicked: Scan.start(bar.screen)
+
                         // A second of grim and zbar: the spinner says it heard the click.
                         icon: Scan.scanning ? "" : "qr_code_scanner"
                         label: "Scan QR codes"
-                        onClicked: Scan.start(bar.screen)
 
                         Spinner {
                             anchors.centerIn: parent
@@ -183,10 +196,11 @@ PanelWindow {
             Bluetooth {}
 
             BarButton {
+                onClicked: Notifs.panelOpen = !Notifs.panelOpen
+
                 icon: Notifs.dnd ? "notifications_off" : Notifs.history.count > 0 ? "notifications_active" : "notifications"
                 label: "Notifications"
                 baseColor: Notifs.dnd ? Theme.dim : Theme.fg
-                onClicked: Notifs.panelOpen = !Notifs.panelOpen
             }
 
             Volume {}
@@ -195,17 +209,19 @@ PanelWindow {
         }
 
         BarButton {
+            onClicked: Settings.toggle()
+
             Layout.alignment: Qt.AlignVCenter
             icon: "settings"
             label: "Settings"
-            onClicked: Settings.toggle()
         }
 
         BarButton {
+            onClicked: Session.open = !Session.open
+
             Layout.alignment: Qt.AlignVCenter
             icon: "power_settings_new"
             label: "Power"
-            onClicked: Session.open = !Session.open
         }
     }
 
@@ -228,10 +244,12 @@ PanelWindow {
             Layout.alignment: Qt.AlignHCenter
             text: Qt.formatDateTime(clock.date, "HH:mm:ss")
             color: Theme.fg
+
             font {
                 family: Theme.fontDisplay
                 pixelSize: Theme.fontSize.larger
                 bold: true
+
                 features: ({
                     tnum: 1
                 })
@@ -242,6 +260,7 @@ PanelWindow {
             Layout.alignment: Qt.AlignHCenter
             text: clock.date.toLocaleString(I18n.locale, I18n.t("ddd d MMM"))
             color: Theme.dim
+
             font {
                 family: Theme.font
                 pixelSize: Theme.fontSize.small

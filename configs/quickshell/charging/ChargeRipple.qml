@@ -14,16 +14,16 @@ Scope {
     property bool playing: false
     property real progress: 0
 
+    // Grains as (distance 0-1, angle); each lights as the ring passes.
+    property var sparks: []
+    property var wobble: []
+
     function play(): void {
         seed();
         playing = true;
         run.restart();
         Sounds.play("charging");
     }
-
-    // Grains as (distance 0-1, angle); each lights as the ring passes.
-    property var sparks: []
-    property var wobble: []
 
     function seed(): void {
         const s = [];
@@ -52,6 +52,9 @@ Scope {
 
     NumberAnimation {
         id: run
+
+        onFinished: root.playing = false
+
         target: root
         property: "progress"
         from: 0
@@ -59,7 +62,6 @@ Scope {
         duration: Theme.duration.extraLarge * 2
         easing.type: Easing.BezierSpline
         easing.bezierCurve: Theme.curve.standardDecel
-        onFinished: root.playing = false
     }
 
     PanelWindow {
@@ -70,30 +72,20 @@ Scope {
         WlrLayershell.namespace: "charge-ripple"
         WlrLayershell.layer: WlrLayer.Overlay
         exclusionMode: ExclusionMode.Ignore
+
         anchors {
             top: true
             bottom: true
             left: true
             right: true
         }
+
         color: "transparent"
         // Nothing here takes a click.
         mask: Region {}
 
         Canvas {
             id: canvas
-
-            anchors.fill: parent
-            renderTarget: Canvas.FramebufferObject
-            renderStrategy: Canvas.Threaded
-
-            Connections {
-                target: root
-
-                function onProgressChanged(): void {
-                    canvas.requestPaint();
-                }
-            }
 
             onPaint: {
                 const ctx = getContext("2d");
@@ -150,6 +142,18 @@ Scope {
                     ctx.fill();
                 }
             }
+
+            anchors.fill: parent
+            renderTarget: Canvas.FramebufferObject
+            renderStrategy: Canvas.Threaded
+
+            Connections {
+                function onProgressChanged(): void {
+                    canvas.requestPaint();
+                }
+
+                target: root
+            }
         }
 
         // The charge, low and centred, like the phone's line under its clock.
@@ -159,6 +163,7 @@ Scope {
                 bottom: parent.bottom
                 bottomMargin: Theme.spacing.extraLarge * 2
             }
+
             opacity: root.progress < Theme.charge.labelIn ? root.progress / Theme.charge.labelIn : root.progress > Theme.charge.fadeFrom ? 1 - (root.progress - Theme.charge.fadeFrom) / (1 - Theme.charge.fadeFrom) : 1
             text: I18n.t("%1 %  ·  Charging").arg(Math.round((UPower.displayDevice?.percentage ?? 0) * 100))
             color: Theme.fg
@@ -169,11 +174,11 @@ Scope {
     }
 
     IpcHandler {
-        target: "charge"
-
         // For seeing it without unplugging anything.
         function play(): void {
             root.play();
         }
+
+        target: "charge"
     }
 }

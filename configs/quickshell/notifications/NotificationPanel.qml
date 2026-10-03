@@ -10,6 +10,11 @@ import ".."
 OverlayWindow {
     id: win
 
+    readonly property int inset: Theme.spacing.small
+    readonly property int maxHeight: (screen?.height ?? Theme.fallbackScreen.height) - Theme.barHeight - inset * 2
+    // What the list may take once the header has had its share.
+    readonly property int listRoom: maxHeight - inset * 2 - Theme.spacing.large * 2 - header.implicitHeight - Theme.spacing.medium
+
     shown: Notifs.panelOpen
     name: "notification-panel"
     focusMode: WlrKeyboardFocus.OnDemand
@@ -22,37 +27,36 @@ OverlayWindow {
     implicitHeight: Math.min(shell.implicitHeight + (Theme.spacing.large + inset) * 2, maxHeight)
     color: "transparent"
 
-    readonly property int inset: Theme.spacing.small
-    readonly property int maxHeight: (screen?.height ?? Theme.fallbackScreen.height) - Theme.barHeight - inset * 2
-    // What the list may take once the header has had its share.
-    readonly property int listRoom: maxHeight - inset * 2 - Theme.spacing.large * 2 - header.implicitHeight - Theme.spacing.medium
-
     // Same dismissal as the bar's flyouts: a click outside closes it.
     HyprlandFocusGrab {
         id: grab
 
-        windows: [win]
-        active: Notifs.panelOpen
         // The screenshot overlay takes the keyboard, which clears the grab; the panel stays for the picture.
         onCleared: if (!Screenshot.holding)
             Notifs.panelOpen = false
+
+        windows: [win]
+        active: Notifs.panelOpen
     }
 
     // A cleared grab stays off; arm it again once the screenshot is done, so an outside click still closes.
     Connections {
-        target: Screenshot
         function onHoldingChanged(): void {
             if (!Screenshot.holding && Notifs.panelOpen)
                 grab.active = Qt.binding(() => Notifs.panelOpen);
         }
+
+        target: Screenshot
     }
 
     Surface {
         id: sheet
+
         anchors {
             fill: parent
             margins: win.inset
         }
+
         radius: Theme.rounding.extraExtraLarge
         // Glass, like the toasts: the blur behind should show.
         tone: Theme.scrim(Theme.panelTint)
@@ -60,20 +64,24 @@ OverlayWindow {
 
         // Translate, not `x`: the anchors own x.
         opacity: Math.min(1, win.reveal)
+
         transform: Translate {
             x: (1 - win.reveal) * sheet.width
         }
 
         ColumnLayout {
             id: shell
+
             anchors {
                 fill: parent
                 margins: Theme.spacing.large
             }
+
             spacing: Theme.spacing.medium
 
             RowLayout {
                 id: header
+
                 Layout.fillWidth: true
                 spacing: Theme.spacing.medium
 
@@ -81,6 +89,7 @@ OverlayWindow {
                     Layout.leftMargin: Theme.spacing.hair
                     text: I18n.t("Notifications")
                     color: Theme.fg
+
                     font {
                         family: Theme.fontDisplay
                         pixelSize: Theme.fontSize.large
@@ -92,9 +101,11 @@ OverlayWindow {
                     Layout.fillWidth: true
                     text: Notifs.history.count === 0 ? "" : Notifs.history.count
                     color: Theme.dim
+
                     font {
                         family: Theme.font
                         pixelSize: Theme.fontSize.smaller
+
                         features: ({
                                 tnum: 1
                             })
@@ -104,20 +115,26 @@ OverlayWindow {
                 // Left of both buttons, so they stay side by side.
                 Text {
                     id: clearLabel
+
                     text: I18n.t("Clear all?")
                     color: Theme.urgent
+
                     font {
                         family: Theme.font
                         pixelSize: Theme.fontSize.smaller
                         weight: Theme.weight.medium
                     }
+
                     opacity: clear.armed ? 1 : 0
                     layer.enabled: opacity < 1
+
                     layer.effect: MotionBlur {
                         settled: clearLabel.opacity
                     }
+
                     transform: Translate {
                         x: clear.armed ? 0 : Theme.spacing.large
+
                         Behavior on x {
                             NumberAnimation {
                                 duration: Theme.duration.expressiveFastSpatial
@@ -143,6 +160,7 @@ OverlayWindow {
                     Behavior on color {
                         FastColor {}
                     }
+
                     Behavior on scale {
                         PressAnim {}
                     }
@@ -161,11 +179,13 @@ OverlayWindow {
 
                     HoverHandler {
                         id: dndHover
+
                         cursorShape: Qt.PointingHandCursor
                     }
 
                     TapHandler {
                         id: dndTap
+
                         onTapped: Notifs.dnd = !Notifs.dnd
                     }
                 }
@@ -176,33 +196,38 @@ OverlayWindow {
 
                     property bool armed: false
 
+                    onArmedChanged: if (armed)
+                        disarm.restart()
+
                     implicitWidth: Theme.control.button
                     implicitHeight: Theme.control.button
                     radius: width / 2
                     color: clear.armed || clearHover.hovered ? Theme.urgent : Theme.bgTray
                     scale: clearTap.pressed ? Theme.pressScale : 1
                     visible: Notifs.history.count > 0
-                    onArmedChanged: if (armed)
-                        disarm.restart()
 
                     Behavior on color {
                         FastColor {}
                     }
+
                     Behavior on scale {
                         PressAnim {}
                     }
 
                     Timer {
                         id: disarm
-                        interval: Theme.duration.confirmHold
+
                         onTriggered: clear.armed = false
+
+                        interval: Theme.duration.confirmHold
                     }
 
                     Connections {
-                        target: win
                         function onOpened(): void {
                             clear.armed = false;
                         }
+
+                        target: win
                     }
 
                     MaterialIcon {
@@ -214,13 +239,16 @@ OverlayWindow {
 
                     HoverHandler {
                         id: clearHover
-                        cursorShape: Qt.PointingHandCursor
+
                         onHoveredChanged: if (!hovered)
                             clear.armed = false
+
+                        cursorShape: Qt.PointingHandCursor
                     }
 
                     TapHandler {
                         id: clearTap
+
                         onTapped: {
                             if (clear.armed)
                                 Notifs.clear();
@@ -238,6 +266,7 @@ OverlayWindow {
                 visible: Notifs.history.count === 0
                 text: Notifs.dnd ? I18n.t("Nothing here. Do not disturb is on.") : I18n.t("Nothing here.")
                 color: Theme.dim
+
                 font {
                     family: Theme.font
                     pixelSize: Theme.fontSize.normal
@@ -253,10 +282,12 @@ OverlayWindow {
                 model: Notifs.history
 
                 section.property: "appName"
+
                 section.delegate: Item {
                     id: head
 
                     required property string section
+
                     readonly property int count: {
                         void Notifs.history.count;
                         let c = 0;
@@ -265,6 +296,7 @@ OverlayWindow {
                                 c++;
                         return c;
                     }
+
                     readonly property bool open: Notifs.expanded[head.section] ?? false
 
                     width: ListView.view.width
@@ -283,6 +315,7 @@ OverlayWindow {
                             textFormat: Text.PlainText
                             text: head.section + (head.count > 1 ? "  ·  " + head.count : "")
                             color: Theme.dim
+
                             font {
                                 family: Theme.font
                                 pixelSize: Theme.fontSize.smaller
@@ -310,22 +343,26 @@ OverlayWindow {
                     }
 
                     TapHandler {
-                        enabled: head.count > 1
                         onTapped: Notifs.toggleGroup(head.section)
+
+                        enabled: head.count > 1
                     }
                 }
+
                 delegate: Item {
                     id: card
 
-                    layer.enabled: opacity < 1
-                    layer.effect: MotionBlur {
-                        settled: card.opacity
-                    }
                     // Read with fallbacks: a delegate outlives its row while removed.
                     required property var model
 
                     // Collapsed groups show their newest card only.
                     readonly property bool shownInGroup: (Notifs.expanded[card.model.appName ?? ""] ?? false) || card.ListView.previousSection !== card.ListView.section
+
+                    layer.enabled: opacity < 1
+
+                    layer.effect: MotionBlur {
+                        settled: card.opacity
+                    }
 
                     width: ListView.view.width
                     // Height snaps: animating it re-blurred the window every frame.
@@ -349,12 +386,14 @@ OverlayWindow {
 
                         ColumnLayout {
                             id: body
+
                             anchors {
                                 left: parent.left
                                 right: parent.right
                                 verticalCenter: parent.verticalCenter
                                 margins: Theme.spacing.large
                             }
+
                             spacing: Theme.spacing.extraSmall
 
                             RowLayout {
@@ -363,6 +402,7 @@ OverlayWindow {
 
                                 IconImage {
                                     id: icon
+
                                     implicitSize: Theme.icon.tiny
                                     source: Notifs.iconFor(card.model.appIcon ?? "")
                                     visible: status === Image.Ready
@@ -380,12 +420,14 @@ OverlayWindow {
                                     textFormat: Text.PlainText
                                     text: I18n.t(card.model.appName ?? "")
                                     color: Theme.dim
+
                                     font {
                                         family: Theme.font
                                         pixelSize: Theme.fontSize.smaller
                                         weight: Theme.weight.medium
                                         letterSpacing: Theme.tracking.wide
                                     }
+
                                     elide: Text.ElideRight
                                 }
 
@@ -393,9 +435,11 @@ OverlayWindow {
                                     textFormat: Text.PlainText
                                     text: card.model.time ?? ""
                                     color: Theme.dim
+
                                     font {
                                         family: Theme.font
                                         pixelSize: Theme.fontSize.small
+
                                         features: ({
                                                 tnum: 1
                                             })
@@ -412,9 +456,10 @@ OverlayWindow {
                                     }
 
                                     MouseArea {
+                                        onClicked: Notifs.forget(card.model.key)
+
                                         anchors.fill: parent
                                         anchors.margins: -Theme.hitSlop
-                                        onClicked: Notifs.forget(card.model.key)
                                     }
                                 }
                             }
@@ -425,11 +470,13 @@ OverlayWindow {
                                 textFormat: Text.PlainText
                                 text: card.model.summary ?? ""
                                 color: card.model.critical ? Theme.urgent : Theme.accentText
+
                                 font {
                                     family: Theme.fontDisplay
                                     pixelSize: Theme.fontSize.larger
                                     weight: Theme.weight.bold
                                 }
+
                                 wrapMode: Text.Wrap
                             }
 
@@ -440,18 +487,21 @@ OverlayWindow {
                                 property bool open: false
                                 readonly property bool togglable: truncated || open
 
+                                onLinkActivated: link => Notifs.openLink(link)
+
                                 Layout.fillWidth: true
                                 text: card.model.body ?? ""
                                 color: Theme.fg
+
                                 font {
                                     family: Theme.font
                                     pixelSize: Theme.fontSize.normal
                                 }
+
                                 textFormat: Text.StyledText
                                 wrapMode: Text.Wrap
                                 elide: Text.ElideRight
                                 visible: text !== ""
-                                onLinkActivated: link => Notifs.openLink(link)
 
                                 Binding on maximumLineCount {
                                     when: !bodyText.open
@@ -463,11 +513,12 @@ OverlayWindow {
                                 }
 
                                 TapHandler {
-                                    enabled: bodyText.togglable
                                     onTapped: (point, button) => {
                                         if (bodyText.linkAt(point.position.x, point.position.y) === "")
                                             bodyText.open = !bodyText.open;
                                     }
+
+                                    enabled: bodyText.togglable
                                 }
                             }
 
@@ -482,6 +533,7 @@ OverlayWindow {
 
                                 Image {
                                     id: preview
+
                                     anchors.fill: parent
                                     source: card.model.image ? card.model.image : ""
                                     fillMode: Image.PreserveAspectCrop

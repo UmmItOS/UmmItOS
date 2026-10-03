@@ -57,8 +57,7 @@ Singleton {
 
     Timer {
         id: tick
-        interval: 1000
-        repeat: true
+
         onTriggered: {
             if (root.count > 1) {
                 root.count--;
@@ -69,30 +68,38 @@ Singleton {
             root.open = false;
             begin.restart();
         }
+
+        interval: 1000
+        repeat: true
     }
 
     // After the dialog's exit, so it is not in the video.
     Timer {
         id: begin
-        interval: Theme.duration.expressiveDefaultSpatial + Theme.duration.small
+
         onTriggered: {
             root.starting = true;
             startLimit.restart();
             Quickshell.execDetached(["bash", Quickshell.env("HOME") + "/script/misc/screen-record.sh", "start", root.system ? "1" : "0", root.mic ? "1" : "0"]);
         }
+
+        interval: Theme.duration.expressiveDefaultSpatial + Theme.duration.small
     }
 
     // A script that never reports in must not leave the dialog locked out.
     Timer {
         id: startLimit
-        interval: Theme.duration.recordStart
+
         onTriggered: root.starting = false
+
+        interval: Theme.duration.recordStart
     }
 
     // A recording already running when the shell (re)starts, dated by its state file.
     Process {
         running: true
         command: ["sh", "-c", 'pgrep -u "$USER" -x wl-screenrec > /dev/null && stat -c %Y "$XDG_RUNTIME_DIR/screen-record/path"']
+
         stdout: StdioCollector {
             onStreamFinished: {
                 const seconds = Number(text.trim());
@@ -106,9 +113,7 @@ Singleton {
 
     FileView {
         id: choiceFile
-        path: Quickshell.statePath("record.json")
-        printErrors: false
-        blockWrites: false
+
         onLoaded: {
             try {
                 const saved = JSON.parse(text());
@@ -116,11 +121,13 @@ Singleton {
                 root.mic = saved.mic ?? false;
             } catch (e) {}
         }
+
+        path: Quickshell.statePath("record.json")
+        printErrors: false
+        blockWrites: false
     }
 
     IpcHandler {
-        target: "record"
-
         function open(): void {
             if (!root.busy)
                 root.open = true;
@@ -145,5 +152,7 @@ Singleton {
         function close(): void {
             root.cancel();
         }
+
+        target: "record"
     }
 }

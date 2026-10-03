@@ -25,10 +25,6 @@ Singleton {
     readonly property string crop: shot + ".crop"
     readonly property url picture: "file://" + shot + "?" + taken
 
-    // The scan picture stays for the detail panel's crop until the overlay has gone.
-    onShowingChanged: if (!showing && !open)
-        forget()
-
     function start(on: var): void {
         if (open || showing) {
             open = false;
@@ -220,10 +216,15 @@ Singleton {
         Quickshell.execDetached(["rm", "-f", shot]);
     }
 
+    // The scan picture stays for the detail panel's crop until the overlay has gone.
+    onShowingChanged: if (!showing && !open)
+        forget()
+
     Process {
         id: find
 
         command: ["sh", "-c", 'grim -t ppm -o "$1" "$2" || exit; head -c 32 "$2" | sed -n 2p; zbarimg -q --xml "$2"', "sh", root.screen?.name ?? "", root.shot]
+
         // Also ends a scan whose grim or zbar failed, so a second press works.
         stdout: StdioCollector {
             onStreamFinished: root.parse(text)
@@ -254,8 +255,6 @@ Singleton {
     }
 
     IpcHandler {
-        target: "scan"
-
         function toggle(): void {
             root.start(null);
         }
@@ -263,5 +262,7 @@ Singleton {
         function close(): void {
             root.open = false;
         }
+
+        target: "scan"
     }
 }

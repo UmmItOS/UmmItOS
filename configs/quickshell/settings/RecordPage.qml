@@ -57,6 +57,7 @@ ColumnLayout {
 
         Item {
             id: slot
+
             Layout.preferredWidth: Theme.settings.choice
             implicitHeight: Theme.control.field
         }
@@ -64,6 +65,7 @@ ColumnLayout {
 
     SystemClock {
         id: clock
+
         enabled: Recorder.recording
         precision: SystemClock.Seconds
     }
@@ -102,6 +104,7 @@ ColumnLayout {
                         easing.type: Easing.BezierSpline
                         easing.bezierCurve: Theme.curve.emphasizedDecel
                     }
+
                     NumberAnimation {
                         target: halo
                         property: "opacity"
@@ -120,16 +123,13 @@ ColumnLayout {
             font.family: Theme.fontDisplay
             font.pixelSize: Theme.fontSize.larger
             font.weight: Theme.weight.bold
+
             font.features: ({
                     tnum: 1
                 })
         }
 
         Action {
-            primary: true
-            icon: Recorder.recording ? "stop" : "radio_button_checked"
-            label: Recorder.recording ? I18n.t("Stop and save") : I18n.t("Start recording")
-            enabled: Recorder.recording || !Recorder.busy
             onClicked: {
                 if (Recorder.recording) {
                     Recorder.stop();
@@ -138,12 +138,18 @@ ColumnLayout {
                     Recorder.open = true;
                 }
             }
+
+            primary: true
+            icon: Recorder.recording ? "stop" : "radio_button_checked"
+            label: Recorder.recording ? I18n.t("Stop and save") : I18n.t("Start recording")
+            enabled: Recorder.recording || !Recorder.busy
         }
 
         Action {
+            onClicked: Settings.openFolder()
+
             icon: "folder_open"
             label: I18n.t("Open folder")
-            onClicked: Settings.openFolder()
         }
     }
 
@@ -160,11 +166,22 @@ ColumnLayout {
             TextInput {
                 id: folder
 
+                Keys.onReturnPressed: page.folderRejected = !Settings.setFolder(text)
+                Keys.onEnterPressed: page.folderRejected = !Settings.setFolder(text)
+                onTextEdited: page.folderRejected = false
+
+                // Leaving the field unsaved puts the saved folder back.
+                onActiveFocusChanged: if (!activeFocus) {
+                    page.folderRejected = false;
+                    text = Qt.binding(() => Settings.tilde(Settings.folder));
+                }
+
                 anchors {
                     fill: parent
                     leftMargin: Theme.spacing.large
                     rightMargin: Theme.spacing.large
                 }
+
                 verticalAlignment: TextInput.AlignVCenter
                 text: Settings.tilde(Settings.folder)
                 color: Theme.fg
@@ -172,14 +189,6 @@ ColumnLayout {
                 clip: true
                 font.family: Theme.font
                 font.pixelSize: Theme.fontSize.smaller
-                Keys.onReturnPressed: page.folderRejected = !Settings.setFolder(text)
-                Keys.onEnterPressed: page.folderRejected = !Settings.setFolder(text)
-                onTextEdited: page.folderRejected = false
-                // Leaving the field unsaved puts the saved folder back.
-                onActiveFocusChanged: if (!activeFocus) {
-                    page.folderRejected = false;
-                    text = Qt.binding(() => Settings.tilde(Settings.folder));
-                }
             }
         }
     }
@@ -189,11 +198,12 @@ ColumnLayout {
         hint: I18n.t("Higher looks sharper and makes bigger files")
 
         Segmented {
+            onPicked: value => Settings.set("bitrate", value)
+
             anchors.fill: parent
             values: ["2 MB", "5 MB", "10 MB"]
             labels: [I18n.t("Small"), I18n.t("Balanced"), I18n.t("Sharp")]
             current: Settings.bitrate
-            onPicked: value => Settings.set("bitrate", value)
         }
     }
 
@@ -202,11 +212,12 @@ ColumnLayout {
         hint: I18n.t("The most frames per second it records")
 
         Segmented {
+            onPicked: value => Settings.set("fps", value)
+
             anchors.fill: parent
             values: [30, 60, 120, 0]
             labels: ["30", "60", "120", I18n.t("No cap")]
             current: Settings.fps
-            onPicked: value => Settings.set("fps", value)
         }
     }
 
@@ -215,11 +226,12 @@ ColumnLayout {
         hint: I18n.t("H.264 plays everywhere; HEVC and AV1 are smaller")
 
         Segmented {
+            onPicked: value => Settings.set("codec", value)
+
             anchors.fill: parent
             values: ["auto", "avc", "hevc", "av1"]
             labels: [I18n.t("Auto"), "H.264", "HEVC", "AV1"]
             current: Settings.codec
-            onPicked: value => Settings.set("codec", value)
         }
     }
 
@@ -227,10 +239,11 @@ ColumnLayout {
         title: I18n.t("Show the cursor")
 
         Toggle {
+            onToggled: Settings.set("cursor", !Settings.cursor)
+
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             checked: Settings.cursor
-            onToggled: Settings.set("cursor", !Settings.cursor)
         }
     }
 
@@ -282,9 +295,10 @@ ColumnLayout {
             // The first click on the bin asks; the second moves it to the Trash.
             property bool confirming: false
 
-            width: files.width
             onHoveredChanged: if (!hovered)
                 confirming = false
+
+            width: files.width
 
             RowLayout {
                 anchors {
@@ -292,6 +306,7 @@ ColumnLayout {
                     leftMargin: Theme.spacing.medium
                     rightMargin: Theme.spacing.small
                 }
+
                 spacing: Theme.spacing.medium
 
                 ColumnLayout {
@@ -306,6 +321,7 @@ ColumnLayout {
                         font.family: Theme.font
                         font.pixelSize: Theme.fontSize.smaller
                         font.weight: Theme.weight.medium
+
                         font.features: ({
                                 tnum: 1
                             })
@@ -316,6 +332,7 @@ ColumnLayout {
                         color: Theme.dim
                         font.family: Theme.font
                         font.pixelSize: Theme.fontSize.small
+
                         font.features: ({
                                 tnum: 1
                             })
@@ -338,6 +355,7 @@ ColumnLayout {
 
                     HoverHandler {
                         id: binHover
+
                         cursorShape: Qt.PointingHandCursor
                     }
 

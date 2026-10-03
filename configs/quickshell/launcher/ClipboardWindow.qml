@@ -8,17 +8,19 @@ import ".."
 OverlayWindow {
     id: win
 
-    shown: Launcher.open && Launcher.mode === "clipboard"
-    name: "clipboard"
-    scrim: Theme.shade.light
-
     property string filter: ""
 
     readonly property var results: {
         const f = filter.toLowerCase();
         return f === "" ? Launcher.clipboard : Launcher.clipboard.filter(c => c.preview.toLowerCase().includes(f));
     }
+
     readonly property var focusedEntry: results[list.currentIndex] ?? null
+
+    function accept(): void {
+        if (focusedEntry)
+            Launcher.copy(focusedEntry.id);
+    }
 
     onOpened: {
         filter = "";
@@ -30,9 +32,13 @@ OverlayWindow {
     // Deferred so a held key does not decode every entry.
     onFocusedEntryChanged: decodeDebounce.restart()
 
+    shown: Launcher.open && Launcher.mode === "clipboard"
+    name: "clipboard"
+    scrim: Theme.shade.light
+
     Timer {
         id: decodeDebounce
-        interval: Theme.duration.decodeDebounce
+
         onTriggered: {
             const entry = win.focusedEntry;
             if (entry && entry.image)
@@ -42,19 +48,19 @@ OverlayWindow {
             else
                 Launcher.clearDecode();
         }
-    }
 
-    function accept(): void {
-        if (focusedEntry)
-            Launcher.copy(focusedEntry.id);
+        interval: Theme.duration.decodeDebounce
     }
 
     MouseArea {
-        anchors.fill: parent
         onClicked: Launcher.open = false
+
+        anchors.fill: parent
     }
 
     FocusScope {
+        Keys.onEscapePressed: Launcher.open = false
+
         anchors.centerIn: parent
         opacity: Math.min(1, win.reveal)
         scale: Theme.popScale + (1 - Theme.popScale) * win.reveal
@@ -62,8 +68,6 @@ OverlayWindow {
         width: Theme.clipboard.width
         height: Theme.clipboard.height
         focus: true
-
-        Keys.onEscapePressed: Launcher.open = false
 
         MouseArea {
             anchors.fill: parent
@@ -79,11 +83,13 @@ OverlayWindow {
                 Layout.fillHeight: true
                 topLeftRadius: Theme.rounding.extraLarge
                 bottomLeftRadius: Theme.rounding.extraLarge
+
                 gradient: Gradient {
                     GradientStop {
                         position: 0
                         color: Qt.lighter(Theme.bg, Theme.lift.panel)
                     }
+
                     GradientStop {
                         position: Theme.lift.reach
                         color: Theme.bg
@@ -95,6 +101,7 @@ OverlayWindow {
                         fill: parent
                         margins: Theme.spacing.large
                     }
+
                     spacing: Theme.spacing.medium
 
                     Rectangle {
@@ -112,17 +119,6 @@ OverlayWindow {
                         TextInput {
                             id: search
 
-                            anchors {
-                                fill: parent
-                                leftMargin: Theme.spacing.large
-                                rightMargin: Theme.spacing.large
-                            }
-                            verticalAlignment: TextInput.AlignVCenter
-                            color: Theme.fg
-                            font.family: Theme.font
-                            font.pixelSize: Theme.fontSize.normal
-                            focus: true
-
                             onTextChanged: {
                                 win.filter = text;
                                 list.currentIndex = 0;
@@ -132,6 +128,18 @@ OverlayWindow {
                             Keys.onUpPressed: list.decrementCurrentIndex()
                             Keys.onDownPressed: list.incrementCurrentIndex()
                             Keys.onReturnPressed: win.accept()
+
+                            anchors {
+                                fill: parent
+                                leftMargin: Theme.spacing.large
+                                rightMargin: Theme.spacing.large
+                            }
+
+                            verticalAlignment: TextInput.AlignVCenter
+                            color: Theme.fg
+                            font.family: Theme.font
+                            font.pixelSize: Theme.fontSize.normal
+                            focus: true
 
                             Text {
                                 anchors.fill: parent
@@ -156,6 +164,7 @@ OverlayWindow {
 
                         delegate: Rectangle {
                             id: row
+
                             required property var modelData
                             required property int index
 
@@ -176,6 +185,7 @@ OverlayWindow {
                                     leftMargin: Theme.spacing.medium
                                     rightMargin: Theme.spacing.medium
                                 }
+
                                 spacing: Theme.spacing.medium
 
                                 MaterialIcon {
@@ -196,16 +206,18 @@ OverlayWindow {
                             }
 
                             MouseArea {
-                                anchors.fill: parent
-                                hoverEnabled: true
                                 onPositionChanged: mouse => {
                                     if (win.pointerMoved(this, mouse.x, mouse.y))
                                         list.currentIndex = row.index;
                                 }
+
                                 onClicked: {
                                     list.currentIndex = row.index;
                                     win.accept();
                                 }
+
+                                anchors.fill: parent
+                                hoverEnabled: true
                             }
                         }
                     }
@@ -235,6 +247,7 @@ OverlayWindow {
                         fill: parent
                         margins: Theme.spacing.extraLarge
                     }
+
                     visible: win.focusedEntry?.image ?? false
                     radius: Theme.rounding.large
                     color: "transparent"
@@ -255,6 +268,7 @@ OverlayWindow {
                         fill: parent
                         margins: Theme.spacing.extraLarge
                     }
+
                     visible: (win.focusedEntry !== null) && !(win.focusedEntry?.image ?? false)
                     contentHeight: fullText.implicitHeight
                     clip: true
@@ -262,6 +276,7 @@ OverlayWindow {
 
                     Text {
                         id: fullText
+
                         width: parent.width
                         // The list's preview is cut and collapsed; it stands in until the full text lands.
                         textFormat: Text.PlainText
@@ -281,6 +296,7 @@ OverlayWindow {
                         bottom: parent.bottom
                         margins: Theme.spacing.large
                     }
+
                     visible: win.focusedEntry !== null
                     text: I18n.t("Enter to copy")
                     color: Theme.dim

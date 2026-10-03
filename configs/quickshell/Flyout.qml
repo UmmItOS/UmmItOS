@@ -17,25 +17,16 @@ PopupWindow {
     property bool toggleVisible: true
     // Size to the content; a scrolling list wants the fixed height.
     property bool hug: false
+    // Never taller than the screen; long content scrolls inside.
+    readonly property real maxHeight: (root.screen?.height ?? Theme.fallbackScreen.height) - Theme.barHeight - Theme.spacing.small * 2
 
     signal toggled
     signal closeRequested
 
-    anchor {
-        item: root.anchorItem
-        edges: Edges.Bottom
-        gravity: Edges.Bottom
-        margins.top: Theme.spacing.small
+    function release(): void {
+        if (Notifs.flyout === root)
+            Notifs.flyout = null;
     }
-
-    implicitWidth: Theme.control.flyout
-    implicitHeight: root.hug ? Math.min(column.implicitHeight + Theme.spacing.large * 2, root.maxHeight) : Theme.control.flyoutHeight
-    // Never taller than the screen; long content scrolls inside.
-    readonly property real maxHeight: (root.screen?.height ?? Theme.fallbackScreen.height) - Theme.barHeight - Theme.spacing.small * 2
-    color: "transparent"
-
-    // Not HyprlandFocusGrab: it only owns layer surfaces, not popups.
-    grabFocus: true
 
     // The grab closes the window itself, so hand the state back.
     onVisibleChanged: {
@@ -58,23 +49,36 @@ PopupWindow {
     // A dropdown destroyed while open (its screen unplugged) lets go too.
     Component.onDestruction: release()
 
-    function release(): void {
-        if (Notifs.flyout === root)
-            Notifs.flyout = null;
+    anchor {
+        item: root.anchorItem
+        edges: Edges.Bottom
+        gravity: Edges.Bottom
+        margins.top: Theme.spacing.small
     }
+
+    implicitWidth: Theme.control.flyout
+    implicitHeight: root.hug ? Math.min(column.implicitHeight + Theme.spacing.large * 2, root.maxHeight) : Theme.control.flyoutHeight
+    color: "transparent"
+
+    // Not HyprlandFocusGrab: it only owns layer surfaces, not popups.
+    grabFocus: true
 
     Surface {
         id: sheet
 
         layer.enabled: opacity < 1
+
         layer.effect: MotionBlur {
             settled: sheet.opacity
         }
+
         anchors.fill: parent
         radius: Theme.rounding.extraLarge
 
         // Opening only: an outside click unmaps the popup at once.
         transformOrigin: Item.Top
+        tone: Theme.bg
+        lift: Theme.lift.panel
 
         ParallelAnimation {
             id: entrance
@@ -86,6 +90,7 @@ PopupWindow {
                 from: 0
                 to: 1
             }
+
             Reveal {
                 opening: true
                 target: sheet
@@ -94,8 +99,6 @@ PopupWindow {
                 to: 1
             }
         }
-        tone: Theme.bg
-        lift: Theme.lift.panel
 
         ColumnLayout {
             id: column
@@ -104,6 +107,7 @@ PopupWindow {
                 fill: parent
                 margins: Theme.spacing.large
             }
+
             spacing: Theme.spacing.medium
 
             RowLayout {
@@ -119,6 +123,7 @@ PopupWindow {
                     textFormat: Text.PlainText
                     text: root.title
                     color: Theme.fg
+
                     font {
                         family: Theme.fontDisplay
                         pixelSize: Theme.fontSize.larger
@@ -138,9 +143,10 @@ PopupWindow {
                 }
 
                 Toggle {
+                    onToggled: root.toggled()
+
                     visible: root.toggleVisible
                     checked: root.checked
-                    onToggled: root.toggled()
                 }
             }
 

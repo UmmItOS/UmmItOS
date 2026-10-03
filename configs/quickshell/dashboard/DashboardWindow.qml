@@ -8,12 +8,12 @@ import ".."
 OverlayWindow {
     id: win
 
+    readonly property var tabs: ["Dashboard", "System", "Workspaces"]
+
     shown: Dashboard.open
     name: "dashboard"
     scrim: 0
     focusMode: WlrKeyboardFocus.OnDemand
-
-    readonly property var tabs: ["Dashboard", "System", "Workspaces"]
 
     // Polling runs only while the tab showing it is on screen.
     Binding {
@@ -29,8 +29,9 @@ OverlayWindow {
     }
 
     MouseArea {
-        anchors.fill: parent
         onClicked: Dashboard.open = false
+
+        anchors.fill: parent
     }
 
     Rectangle {
@@ -64,6 +65,7 @@ OverlayWindow {
                 fill: parent
                 margins: Theme.spacing.extraLarge
             }
+
             spacing: 0
 
             Item {
@@ -72,14 +74,17 @@ OverlayWindow {
 
                 Row {
                     id: tabRow
+
                     spacing: Theme.spacing.extraLarge
 
                     Repeater {
                         id: tabs
+
                         model: win.tabs
 
                         Text {
                             id: tab
+
                             required property string modelData
                             required property int index
 
@@ -113,6 +118,7 @@ OverlayWindow {
 
                             TapHandler {
                                 id: press
+
                                 onTapped: Dashboard.tab = tab.index
                             }
                         }
@@ -142,6 +148,7 @@ OverlayWindow {
                             easing.bezierCurve: Theme.curve.expressiveDefaultSpatial
                         }
                     }
+
                     Behavior on width {
                         enabled: Dashboard.open
 
@@ -159,11 +166,6 @@ OverlayWindow {
 
                 property int last: 0
 
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                Layout.topMargin: Theme.spacing.large
-                currentIndex: Dashboard.tab
-
                 onCurrentIndexChanged: {
                     if (!Dashboard.open) {
                         last = currentIndex;
@@ -174,6 +176,11 @@ OverlayWindow {
                     enter.restart();
                 }
 
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.topMargin: Theme.spacing.large
+                currentIndex: Dashboard.tab
+
                 transform: Translate {
                     id: slide
                 }
@@ -183,6 +190,7 @@ OverlayWindow {
 
                     NumberAnimation {
                         id: shift
+
                         target: slide
                         property: "x"
                         to: 0
@@ -190,6 +198,7 @@ OverlayWindow {
                         easing.type: Easing.BezierSpline
                         easing.bezierCurve: Theme.curve.emphasizedDecel
                     }
+
                     NumberAnimation {
                         target: pages
                         property: "opacity"

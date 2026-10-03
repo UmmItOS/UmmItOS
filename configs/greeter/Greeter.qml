@@ -46,27 +46,28 @@ Item {
     }
 
     FileView {
+        onLoaded: root.user = text().trim()
+
         path: root.shared + "/user"
         printErrors: false
-        onLoaded: root.user = text().trim()
     }
 
     FileView {
+        onLoaded: Theme.savedAccent = text().trim()
+
         path: root.shared + "/accent"
         printErrors: false
-        onLoaded: Theme.savedAccent = text().trim()
     }
 
     // Checked first, so a fresh install without one logs no error.
     Process {
+        onExited: code => root.hasWall = code === 0
+
         running: true
         command: ["test", "-r", root.shared + "/wallpaper"]
-        onExited: code => root.hasWall = code === 0
     }
 
     Connections {
-        target: Greetd
-
         function onAuthMessage(message: string, error: bool, responseRequired: bool, echoResponse: bool): void {
             if (responseRequired) {
                 Greetd.respond(root.pending);
@@ -88,17 +89,22 @@ Item {
         function onError(error: string): void {
             root.refuse(error);
         }
+
+        target: Greetd
     }
 
     // Outside greetd (qs -p for a look), nothing can log in.
     Timer {
         id: preview
-        interval: Theme.duration.normal
+
         onTriggered: root.refuse("Preview only: greetd is not running")
+
+        interval: Theme.duration.normal
     }
 
     Image {
         id: wall
+
         anchors.fill: parent
         source: root.hasWall ? "file://" + root.shared + "/wallpaper" : ""
         fillMode: Image.PreserveAspectCrop
@@ -128,6 +134,7 @@ Item {
     component Shade: MultiEffect {
         required property int size
         required property int passes
+
         shadowEnabled: true
         shadowColor: "black"
         shadowHorizontalOffset: 0
@@ -140,6 +147,7 @@ Item {
 
     SystemClock {
         id: clock
+
         precision: SystemClock.Minutes
     }
 
@@ -156,6 +164,7 @@ Item {
             font.pixelSize: Theme.lock.date
             font.weight: Theme.weight.medium
             layer.enabled: true
+
             layer.effect: Shade {
                 size: Theme.lock.shadow
                 passes: Theme.lock.shadowPasses
@@ -170,6 +179,7 @@ Item {
             font.pixelSize: Theme.lock.clock
             font.weight: Font.Light
             layer.enabled: true
+
             layer.effect: Shade {
                 size: Theme.lock.shadowClock
                 passes: Theme.lock.shadowPasses
@@ -191,6 +201,7 @@ Item {
             border.width: Theme.lock.ring
             border.color: Theme.lock.ringInk
             layer.enabled: true
+
             layer.effect: Shade {
                 size: Theme.lock.shadow
                 passes: Theme.lock.shadowPasses
@@ -216,6 +227,7 @@ Item {
             font.pixelSize: Theme.lock.user
             font.weight: Theme.weight.medium
             layer.enabled: true
+
             layer.effect: Shade {
                 size: Theme.lock.shadowText
                 passes: Theme.lock.shadowPasses
@@ -224,6 +236,15 @@ Item {
 
         TextInput {
             id: name
+
+            Keys.onReturnPressed: {
+                if (text.trim() === "")
+                    return;
+                root.user = text.trim();
+                root.typedUser = true;
+                input.forceActiveFocus();
+            }
+
             anchors.horizontalCenter: parent.horizontalCenter
             visible: root.user === ""
             width: root.width * Theme.lock.fieldWidth
@@ -233,13 +254,6 @@ Item {
             font.pixelSize: Theme.lock.user
             font.weight: Theme.weight.medium
             focus: visible
-            Keys.onReturnPressed: {
-                if (text.trim() === "")
-                    return;
-                root.user = text.trim();
-                root.typedUser = true;
-                input.forceActiveFocus();
-            }
 
             Text {
                 anchors.centerIn: parent
@@ -258,6 +272,7 @@ Item {
             font.family: Theme.fontDisplay
             font.pixelSize: Theme.lock.hint
             layer.enabled: true
+
             layer.effect: Shade {
                 size: Theme.lock.shadowText
                 passes: 1
@@ -272,6 +287,7 @@ Item {
             height: Theme.lock.field
             radius: height / 2
             color: root.busy ? Theme.lock.glassStrong : root.message !== "" ? Theme.lock.failed : Theme.lock.glass
+
             transform: Translate {
                 id: shake
             }
@@ -294,6 +310,7 @@ Item {
                     easing.type: Easing.BezierSpline
                     easing.bezierCurve: Theme.curve.standard
                 }
+
                 NumberAnimation {
                     target: shake
                     property: "x"
@@ -302,6 +319,7 @@ Item {
                     easing.type: Easing.BezierSpline
                     easing.bezierCurve: Theme.curve.standard
                 }
+
                 NumberAnimation {
                     target: shake
                     property: "x"
@@ -310,6 +328,7 @@ Item {
                     easing.type: Easing.BezierSpline
                     easing.bezierCurve: Theme.curve.standard
                 }
+
                 NumberAnimation {
                     target: shake
                     property: "x"
@@ -323,6 +342,15 @@ Item {
             TextInput {
                 id: input
 
+                onTextEdited: root.message = ""
+
+                Keys.onReturnPressed: {
+                    root.submit(text);
+                    text = "";
+                }
+
+                Keys.onEscapePressed: text = ""
+
                 anchors.fill: parent
                 anchors.leftMargin: Theme.spacing.large
                 anchors.rightMargin: Theme.spacing.large
@@ -334,12 +362,6 @@ Item {
                 color: "transparent"
                 cursorDelegate: Item {}
                 enabled: !root.busy
-                onTextEdited: root.message = ""
-                Keys.onReturnPressed: {
-                    root.submit(text);
-                    text = "";
-                }
-                Keys.onEscapePressed: text = ""
             }
 
             // Never more dots than fit in the field.
@@ -382,6 +404,7 @@ Item {
 
         HoverHandler {
             id: powerHover
+
             cursorShape: Qt.PointingHandCursor
         }
 
@@ -396,6 +419,7 @@ Item {
             bottom: parent.bottom
             margins: Theme.spacing.extraLarge
         }
+
         spacing: Theme.spacing.medium
 
         Power {

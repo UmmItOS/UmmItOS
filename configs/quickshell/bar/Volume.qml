@@ -21,10 +21,6 @@ RowLayout {
     readonly property var streams: Pipewire.nodes.values.filter(n => n.audio && n.isSink && n.isStream)
 
     property bool popupOpen: false
-    // Without a tracker the nodes' audio properties stay unbound and read empty.
-    PwObjectTracker {
-        objects: [...root.devices, ...root.streams]
-    }
 
     function setVolume(value: real): void {
         if (root.audio)
@@ -67,6 +63,11 @@ RowLayout {
 
     spacing: Theme.spacing.small
 
+    // Without a tracker the nodes' audio properties stay unbound and read empty.
+    PwObjectTracker {
+        objects: [...root.devices, ...root.streams]
+    }
+
     MaterialIcon {
         Layout.alignment: Qt.AlignVCenter
         visible: root.audio
@@ -79,9 +80,11 @@ RowLayout {
         visible: root.audio
         text: !root.audio ? "" : root.muted ? I18n.t("muted") : Math.round(root.level * 100) + " %"
         color: Theme.fg
+
         font {
             family: Theme.font
             pixelSize: Theme.fontSize.normal
+
             features: ({
                     tnum: 1
                 })
@@ -101,12 +104,13 @@ RowLayout {
     }
 
     Flyout {
+        onCloseRequested: root.popupOpen = false
+
         anchorItem: root
         visible: root.popupOpen
         title: I18n.t("Audio")
         hug: true
         toggleVisible: false
-        onCloseRequested: root.popupOpen = false
 
         RowLayout {
             Layout.fillWidth: true
@@ -119,11 +123,11 @@ RowLayout {
                 radius: width / 2
                 color: root.muted ? Theme.accent : Theme.bgTray
 
+                scale: muteMouse.pressed ? Theme.pressScale : 1
+
                 Behavior on color {
                     FastColor {}
                 }
-
-                scale: muteMouse.pressed ? Theme.pressScale : 1
 
                 Behavior on scale {
                     PressAnim {}
@@ -142,23 +146,26 @@ RowLayout {
 
                 MouseArea {
                     id: muteMouse
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
+
                     onClicked: {
                         if (root.audio)
                             root.audio.muted = !root.audio.muted;
                     }
+
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
                 }
             }
 
             Slider {
+                onMoved: value => root.setVolume(value * Audio.limit)
+
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignVCenter
                 // The whole track is the chosen limit, not 100%.
                 value: root.level / Audio.limit
                 fill: root.muted ? Theme.dim : Theme.accentText
-                onMoved: value => root.setVolume(value * Audio.limit)
             }
 
             Text {
@@ -167,9 +174,11 @@ RowLayout {
                 horizontalAlignment: Text.AlignRight
                 text: Math.round(root.level * 100) + " %"
                 color: Theme.dim
+
                 font {
                     family: Theme.font
                     pixelSize: Theme.fontSize.smaller
+
                     features: ({
                             tnum: 1
                         })
@@ -182,6 +191,7 @@ RowLayout {
             Layout.topMargin: Theme.spacing.small
             text: I18n.t("Volume limit")
             color: Theme.dim
+
             font {
                 family: Theme.font
                 pixelSize: Theme.fontSize.small
@@ -191,11 +201,12 @@ RowLayout {
         }
 
         Segmented {
+            onPicked: value => Audio.setLimit(value)
+
             Layout.fillWidth: true
             values: Audio.limits
             labels: Audio.limits.map(l => Math.round(l * 100) + "%")
             current: Audio.limit
-            onPicked: value => Audio.setLimit(value)
         }
 
         // Output devices. Only worth showing when there is a choice to make.
@@ -205,6 +216,7 @@ RowLayout {
             visible: root.devices.length > 1
             text: I18n.t("Output")
             color: Theme.dim
+
             font {
                 family: Theme.font
                 pixelSize: Theme.fontSize.small
@@ -244,6 +256,7 @@ RowLayout {
                         leftMargin: Theme.spacing.medium
                         rightMargin: Theme.spacing.medium
                     }
+
                     spacing: Theme.spacing.medium
 
                     MaterialIcon {
@@ -259,6 +272,7 @@ RowLayout {
                         text: device.modelData.nickname || device.modelData.description
                         color: Theme.fg
                         elide: Text.ElideRight
+
                         font {
                             family: Theme.font
                             pixelSize: Theme.fontSize.smaller
@@ -268,9 +282,10 @@ RowLayout {
                 }
 
                 MouseArea {
+                    onClicked: Pipewire.preferredDefaultAudioSink = device.modelData
+
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: Pipewire.preferredDefaultAudioSink = device.modelData
                 }
             }
         }
@@ -281,6 +296,7 @@ RowLayout {
             visible: root.streams.length > 0
             text: I18n.t("Playing")
             color: Theme.dim
+
             font {
                 family: Theme.font
                 pixelSize: Theme.fontSize.small
@@ -349,11 +365,13 @@ RowLayout {
 
                     MouseArea {
                         id: streamMouse
+
+                        onClicked: stream.modelData.audio.muted = !stream.modelData.audio.muted
+
                         anchors.fill: parent
                         anchors.margins: -Theme.spacing.extraSmall
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: stream.modelData.audio.muted = !stream.modelData.audio.muted
                     }
                 }
 
@@ -367,6 +385,7 @@ RowLayout {
                         text: root.numberedLabel(stream.modelData)
                         color: Theme.dim
                         elide: Text.ElideRight
+
                         font {
                             family: Theme.font
                             pixelSize: Theme.fontSize.smaller
@@ -380,6 +399,7 @@ RowLayout {
                         text: root.titleFor(stream.modelData)
                         color: Theme.fg
                         elide: Text.ElideRight
+
                         font {
                             family: Theme.font
                             pixelSize: Theme.fontSize.small
@@ -388,14 +408,15 @@ RowLayout {
                 }
 
                 Slider {
-                    Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignVCenter
-                    value: stream.level
-                    fill: stream.muted ? Theme.dim : Theme.accent2
                     onMoved: value => {
                         stream.modelData.audio.volume = value;
                         Osd.presentApp(root.iconFor(stream.modelData), root.labelFor(stream.modelData), value, stream.muted);
                     }
+
+                    Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignVCenter
+                    value: stream.level
+                    fill: stream.muted ? Theme.dim : Theme.accent2
                 }
 
                 Text {
@@ -404,9 +425,11 @@ RowLayout {
                     horizontalAlignment: Text.AlignRight
                     text: Math.round(stream.level * 100) + " %"
                     color: Theme.dim
+
                     font {
                         family: Theme.font
                         pixelSize: Theme.fontSize.smaller
+
                         features: ({
                                 tnum: 1
                             })

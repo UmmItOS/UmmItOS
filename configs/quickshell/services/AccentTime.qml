@@ -47,27 +47,26 @@ Singleton {
     onCountingChanged: credit()
 
     Connections {
-        target: Theme
         function onAccentChanged(): void {
             if (root.counting)
                 root.credit();
         }
+
+        target: Theme
     }
 
     // Saves once a minute, so a crash or reload loses at most that.
     Timer {
+        onTriggered: root.credit()
+
         running: root.counting
         repeat: true
         interval: Theme.duration.accentTick
-        onTriggered: root.credit()
     }
 
     FileView {
         id: file
 
-        path: Quickshell.statePath("accent-time.json")
-        printErrors: false
-        blockWrites: false
         onLoaded: {
             let saved;
             try {
@@ -84,9 +83,14 @@ Singleton {
             root.seconds = clean;
             root.loaded = true;
         }
+
         onLoadFailed: error => {
             if (error === FileViewError.FileNotFound)
                 root.loaded = true;
         }
+
+        path: Quickshell.statePath("accent-time.json")
+        printErrors: false
+        blockWrites: false
     }
 }

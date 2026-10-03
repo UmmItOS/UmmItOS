@@ -9,10 +9,6 @@ import ".."
 OverlayWindow {
     id: win
 
-    shown: Settings.open
-    name: "settings"
-    focusMode: WlrKeyboardFocus.OnDemand
-
     // Only a change of page while open animates; the page picked before opening just shows.
     property bool settled: false
     // 1 when the new page is below the old one in the list, -1 when above.
@@ -29,8 +25,11 @@ OverlayWindow {
         Qt.callLater(() => settled = true);
     }
 
+    shown: Settings.open
+    name: "settings"
+    focusMode: WlrKeyboardFocus.OnDemand
+
     Connections {
-        target: Settings
         function onPageChanged(): void {
             if (!win.settled) {
                 stack.currentIndex = Settings.page;
@@ -39,6 +38,8 @@ OverlayWindow {
             win.travel = Settings.page > stack.currentIndex ? 1 : -1;
             swap.restart();
         }
+
+        target: Settings
     }
 
     // The old page leaves the way the pill goes, then the new one arrives from the other side.
@@ -52,6 +53,7 @@ OverlayWindow {
                 to: 0
                 duration: Theme.duration.expressiveFastEffects
             }
+
             NumberAnimation {
                 target: shift
                 property: "y"
@@ -61,14 +63,17 @@ OverlayWindow {
                 easing.bezierCurve: Theme.curve.emphasizedAccel
             }
         }
+
         ScriptAction {
             script: stack.currentIndex = Settings.page
         }
+
         PropertyAction {
             target: shift
             property: "y"
             value: win.travel * Theme.settings.pageShift
         }
+
         ParallelAnimation {
             NumberAnimation {
                 target: stack
@@ -76,6 +81,7 @@ OverlayWindow {
                 to: 1
                 duration: Theme.duration.expressiveDefaultEffects
             }
+
             NumberAnimation {
                 target: shift
                 property: "y"
@@ -88,12 +94,15 @@ OverlayWindow {
     }
 
     MouseArea {
-        anchors.fill: parent
         onClicked: Settings.open = false
+
+        anchors.fill: parent
     }
 
     FocusScope {
         id: panel
+
+        Keys.onEscapePressed: Settings.open = false
 
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
@@ -104,8 +113,6 @@ OverlayWindow {
         scale: Theme.popScale + (1 - Theme.popScale) * win.reveal
         transformOrigin: Item.Top
 
-        Keys.onEscapePressed: Settings.open = false
-
         Surface {
             anchors.fill: parent
             radius: Theme.rounding.extraExtraLarge
@@ -115,8 +122,9 @@ OverlayWindow {
 
         // Swallow clicks so they do not reach the dismiss handler.
         MouseArea {
-            anchors.fill: parent
             onClicked: panel.forceActiveFocus()
+
+            anchors.fill: parent
         }
 
         RowLayout {
@@ -124,6 +132,7 @@ OverlayWindow {
                 fill: parent
                 margins: Theme.spacing.extraLarge
             }
+
             spacing: Theme.spacing.extraLarge
 
             ColumnLayout {
@@ -150,6 +159,7 @@ OverlayWindow {
                         height: Theme.control.row
                         radius: Theme.rounding.large
                         color: Theme.accent
+
                         transform: Translate {
                             // Through count: itemAt() in a binding runs once otherwise.
                             y: tabs.count > 0 ? tabs.itemAt(Settings.page)?.y ?? 0 : 0
@@ -199,6 +209,7 @@ OverlayWindow {
                                         leftMargin: Theme.spacing.medium
                                         rightMargin: Theme.spacing.medium
                                     }
+
                                     spacing: Theme.spacing.medium
 
                                     MaterialIcon {
@@ -220,6 +231,7 @@ OverlayWindow {
 
                                 TapHandler {
                                     id: press
+
                                     onTapped: Settings.page = entry.index
                                 }
                             }
@@ -237,10 +249,13 @@ OverlayWindow {
 
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+
                 transform: Translate {
                     id: shift
                 }
+
                 layer.enabled: opacity < 1
+
                 layer.effect: MotionBlur {
                     settled: stack.opacity
                 }

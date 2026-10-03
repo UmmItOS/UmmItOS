@@ -99,8 +99,6 @@ Singleton {
     }
 
     IpcHandler {
-        target: "notifications"
-
         function toggle(): void {
             root.panelOpen = !root.panelOpen;
         }
@@ -116,5 +114,7 @@ Singleton {
         function dnd(): void {
             root.dnd = !root.dnd;
         }
+
+        target: "notifications"
     }
 }

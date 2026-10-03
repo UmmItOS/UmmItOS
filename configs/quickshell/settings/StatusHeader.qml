@@ -13,6 +13,9 @@ RowLayout {
     property string hint
     default property alias actions: slot.data
 
+    onBusyChanged: if (!busy)
+        pop.restart()
+
     Layout.fillWidth: true
     spacing: Theme.spacing.medium
 
@@ -55,9 +58,6 @@ RowLayout {
         }
     }
 
-    onBusyChanged: if (!busy)
-        pop.restart()
-
     ColumnLayout {
         Layout.fillWidth: true
         spacing: 0
@@ -87,6 +87,7 @@ RowLayout {
 
     RowLayout {
         id: slot
+
         spacing: Theme.spacing.medium
     }
 }

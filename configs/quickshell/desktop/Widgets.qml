@@ -16,14 +16,17 @@ Variants {
         WlrLayershell.layer: WlrLayer.Bottom
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
         exclusionMode: ExclusionMode.Ignore
+
         anchors {
             top: true
             right: true
         }
+
         margins {
             top: Theme.barHeight + Theme.windowInset
             right: Theme.windowInset
         }
+
         implicitWidth: card.implicitWidth
         implicitHeight: card.implicitHeight
         color: "transparent"

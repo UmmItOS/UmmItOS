@@ -10,22 +10,25 @@ Scope {
     property bool warned: false
 
     Connections {
-        target: Wake
         function onWoke(): void {
             settle.restart();
         }
+
+        target: Wake
     }
 
     // After the audio devices have come back from the sleep.
     Timer {
         id: settle
-        interval: 5000
+
         onTriggered: check.running = true
+
+        interval: 5000
     }
 
     Process {
         id: check
-        command: [Quickshell.env("HOME") + "/script/misc/mic-check.sh"]
+
         onExited: code => {
             if (code === 0) {
                 root.warned = false;
@@ -34,5 +37,7 @@ Scope {
                 Notifs.say("Microphone", I18n.t("Microphone stopped working"), I18n.t("It gets stuck after some sleeps. Reboot to fix it."), "critical");
             }
         }
+
+        command: [Quickshell.env("HOME") + "/script/misc/mic-check.sh"]
     }
 }

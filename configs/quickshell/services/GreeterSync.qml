@@ -14,19 +14,21 @@ Scope {
         Quickshell.execDetached(["sh", "-c", '[ -w "$1" ] || exit 0; cp -f "$2" "$1/wallpaper" && printf "%s" "$3" > "$1/accent"', "sh", root.shared, Wallpapers.actual, Theme.accent.toString()]);
     }
 
+    Component.onCompleted: root.sync()
+
     Connections {
-        target: Wallpapers
         function onActualChanged(): void {
             root.sync();
         }
+
+        target: Wallpapers
     }
 
     Connections {
-        target: Theme
         function onAccentChanged(): void {
             root.sync();
         }
-    }
 
-    Component.onCompleted: root.sync()
+        target: Theme
+    }
 }

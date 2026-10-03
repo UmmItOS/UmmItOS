@@ -48,9 +48,6 @@ Scope {
     }
 
     Connections {
-        target: root.battery
-        enabled: root.present
-
         function onStateChanged() {
             const state = root.battery.state;
             if (!root.primed) {
@@ -65,13 +62,13 @@ Scope {
             if (state === UPowerDeviceState.FullyCharged && root.percent() >= 99)
                 Notifs.say("Battery", I18n.t("Battery full"), I18n.t("Charged. You can unplug."), "low");
         }
+
+        target: root.battery
+        enabled: root.present
     }
 
     // The charger reports at once; the battery lags seconds behind.
     Connections {
-        target: UPower
-        enabled: root.present
-
         function onOnBatteryChanged() {
             if (!root.primed)
                 return;
@@ -82,15 +79,19 @@ Scope {
                 Notifs.say("Battery", I18n.t("On battery"), I18n.t("%1%").arg(root.percent()), "low");
             }
         }
+
+        target: UPower
+        enabled: root.present
     }
 
     // One pass to settle the starting state, then arm.
     Timer {
-        running: true
-        interval: 1200
         onTriggered: {
             root.lastState = root.battery?.state ?? -1;
             root.primed = true;
         }
+
+        running: true
+        interval: 1200
     }
 }

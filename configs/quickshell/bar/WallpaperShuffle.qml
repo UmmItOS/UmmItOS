@@ -13,11 +13,9 @@ BarButton {
     // Only a change of folder while open slides the pill, not the first placement.
     property bool settled: false
 
-    icon: "wallpaper"
-    label: "Random wallpaper · right-click to choose a folder"
-    rightClickable: true
     onClicked: Wallpapers.setRandom()
     onRightClicked: popupOpen = !popupOpen
+
     onPopupOpenChanged: {
         if (!popupOpen)
             return;
@@ -28,12 +26,17 @@ BarButton {
         });
     }
 
+    icon: "wallpaper"
+    label: "Random wallpaper · right-click to choose a folder"
+    rightClickable: true
+
     // Says the shuffle is narrowed to one folder, without recolouring the button.
     Rectangle {
         anchors {
             top: parent.top
             right: parent.right
         }
+
         width: Theme.bar.badge
         height: width
         radius: width / 2
@@ -50,6 +53,7 @@ BarButton {
                 easing.bezierCurve: Wallpapers.filtered ? Theme.curve.emphasizedDecel : Theme.curve.emphasizedAccel
             }
         }
+
         Behavior on opacity {
             enabled: Wallpapers.ready
 
@@ -60,12 +64,13 @@ BarButton {
     }
 
     Flyout {
+        onCloseRequested: root.popupOpen = false
+
         anchorItem: root
         visible: root.popupOpen
         title: I18n.t("Shuffle from")
         toggleVisible: false
         hug: true
-        onCloseRequested: root.popupOpen = false
 
         FlyoutEmpty {
             visible: Wallpapers.list.length === 0
@@ -86,6 +91,13 @@ BarButton {
                 }
             ].concat(Wallpapers.folders)
 
+            // A chosen folder that is gone falls back to everything, so the pill does too.
+            readonly property int chosen: Math.max(0, rows.findIndex(r => r.path === Wallpapers.folder && Wallpapers.filtered))
+
+            // ListView shifts currentIndex on inserts before it, so set it again after each change.
+            onChosenChanged: Qt.callLater(() => currentIndex = chosen)
+            Component.onCompleted: currentIndex = chosen
+
             Layout.fillWidth: true
             // As tall as its rows; the flyout stops at the screen, and past that the list scrolls.
             Layout.fillHeight: true
@@ -95,17 +107,38 @@ BarButton {
             clip: true
             boundsBehavior: Flickable.StopAtBounds
             spacing: Theme.spacing.extraSmall
-            // A chosen folder that is gone falls back to everything, so the pill does too.
-            readonly property int chosen: Math.max(0, rows.findIndex(r => r.path === Wallpapers.folder && Wallpapers.filtered))
-
-            // ListView shifts currentIndex on inserts before it, so set it again after each change.
-            onChosenChanged: Qt.callLater(() => currentIndex = chosen)
-            Component.onCompleted: currentIndex = chosen
             highlightFollowsCurrentItem: false
+
             // ScriptModel diffs by path, so a new scan keeps the rows that are still there.
             model: ScriptModel {
                 objectProp: "path"
                 values: list.rows
+            }
+
+            add: Transition {
+                NumberAnimation {
+                    property: "opacity"
+                    from: 0
+                    to: 1
+                    duration: Theme.duration.expressiveDefaultEffects
+                }
+            }
+
+            remove: Transition {
+                NumberAnimation {
+                    property: "opacity"
+                    to: 0
+                    duration: Theme.duration.expressiveFastEffects
+                }
+            }
+
+            displaced: Transition {
+                NumberAnimation {
+                    property: "y"
+                    duration: Theme.duration.expressiveFastSpatial
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curve.standard
+                }
             }
 
             // One accent pill that slides to the chosen folder.
@@ -124,30 +157,6 @@ BarButton {
                         easing.type: Easing.BezierSpline
                         easing.bezierCurve: Theme.curve.emphasized
                     }
-                }
-            }
-
-            add: Transition {
-                NumberAnimation {
-                    property: "opacity"
-                    from: 0
-                    to: 1
-                    duration: Theme.duration.expressiveDefaultEffects
-                }
-            }
-            remove: Transition {
-                NumberAnimation {
-                    property: "opacity"
-                    to: 0
-                    duration: Theme.duration.expressiveFastEffects
-                }
-            }
-            displaced: Transition {
-                NumberAnimation {
-                    property: "y"
-                    duration: Theme.duration.expressiveFastSpatial
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curve.standard
                 }
             }
 
@@ -174,6 +183,7 @@ BarButton {
                         leftMargin: Theme.spacing.medium + row.modelData.depth * Theme.spacing.large
                         rightMargin: Theme.spacing.medium
                     }
+
                     spacing: Theme.spacing.medium
 
                     MaterialIcon {
@@ -199,6 +209,7 @@ BarButton {
                         color: row.inkDim
                         font.family: Theme.font
                         font.pixelSize: Theme.fontSize.small
+
                         font.features: ({
                                 tnum: 1
                             })
@@ -207,6 +218,7 @@ BarButton {
 
                 TapHandler {
                     id: press
+
                     onTapped: Wallpapers.setFolder(row.modelData.path)
                 }
             }

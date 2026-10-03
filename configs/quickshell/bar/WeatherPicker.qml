@@ -8,18 +8,14 @@ BarButton {
 
     property bool popupOpen: false
 
-    icon: Weather.ready ? Weather.icon(Weather.code, Weather.hour) : "add_location_alt"
-    label: "Weather"
     onClicked: popupOpen = !popupOpen
 
+    icon: Weather.ready ? Weather.icon(Weather.code, Weather.hour) : "add_location_alt"
+    label: "Weather"
+
     Flyout {
-        anchorItem: root
-        visible: root.popupOpen
-        title: I18n.t("Weather")
-        busy: Weather.location !== "" && !Weather.ready && !Weather.failed
-        toggleVisible: false
-        hug: true
         onCloseRequested: root.popupOpen = false
+
         // Typing breaks the text binding, so each opening starts from the saved place.
         onVisibleChanged: {
             if (visible) {
@@ -27,6 +23,13 @@ BarButton {
                 field.forceActiveFocus();
             }
         }
+
+        anchorItem: root
+        visible: root.popupOpen
+        title: I18n.t("Weather")
+        busy: Weather.location !== "" && !Weather.ready && !Weather.failed
+        toggleVisible: false
+        hug: true
 
         Rectangle {
             Layout.fillWidth: true
@@ -40,6 +43,7 @@ BarButton {
                     leftMargin: Theme.spacing.large
                     rightMargin: Theme.spacing.medium
                 }
+
                 spacing: Theme.spacing.small
 
                 MaterialIcon {
@@ -51,22 +55,25 @@ BarButton {
                 TextInput {
                     id: field
 
+                    Keys.onReturnPressed: Weather.setLocation(text)
+
                     Layout.fillWidth: true
                     text: Weather.location
                     color: Theme.fg
                     selectByMouse: true
                     clip: true
+
                     font {
                         family: Theme.font
                         pixelSize: Theme.fontSize.smaller
                     }
-                    Keys.onReturnPressed: Weather.setLocation(text)
 
                     Connections {
-                        target: Weather
                         function onLocationChanged(): void {
                             field.text = Weather.location;
                         }
+
+                        target: Weather
                     }
 
                     Text {
@@ -85,6 +92,7 @@ BarButton {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             textFormat: Text.PlainText
+
             text: {
                 if (Weather.location === "")
                     return I18n.t("Type a place, then Enter. The weather shows once it is set.");
@@ -94,7 +102,9 @@ BarButton {
                     return I18n.t("Looking up %1…").arg(Weather.location);
                 return I18n.t("Matched %1: %2°, %3. Empty and Enter turns it off.").arg(Weather.matched).arg(Weather.temp).arg(Weather.condition.toLowerCase());
             }
+
             color: Weather.failed ? Theme.urgent : Theme.dim
+
             font {
                 family: Theme.font
                 pixelSize: Theme.fontSize.small

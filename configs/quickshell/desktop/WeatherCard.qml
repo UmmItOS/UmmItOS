@@ -15,14 +15,16 @@ Rectangle {
 
     // Its window maps when the forecast arrives, so this runs on each appearance.
     opacity: Weather.ready ? 1 : 0
+    layer.enabled: opacity < 1
+
+    layer.effect: MotionBlur {
+        settled: card.opacity
+    }
+
     Behavior on opacity {
         NumberAnimation {
             duration: Theme.duration.expressiveDefaultEffects
         }
-    }
-    layer.enabled: opacity < 1
-    layer.effect: MotionBlur {
-        settled: card.opacity
     }
 
     ColumnLayout {
@@ -34,6 +36,7 @@ Rectangle {
             top: parent.top
             margins: Theme.spacing.large
         }
+
         spacing: Theme.spacing.extraSmall
 
         Text {
@@ -105,6 +108,7 @@ Rectangle {
                         color: Theme.dim
                         font.family: Theme.font
                         font.pixelSize: Theme.fontSize.small
+
                         font.features: ({
                                 tnum: 1
                             })

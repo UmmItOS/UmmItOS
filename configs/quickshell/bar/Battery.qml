@@ -89,6 +89,7 @@ RowLayout {
                 duration: Theme.duration.extraLarge
                 easing.type: Easing.InOutSine
             }
+
             NumberAnimation {
                 to: 1
                 duration: Theme.duration.extraLarge
@@ -103,6 +104,7 @@ RowLayout {
         color: root.tone
         font.family: Theme.font
         font.pixelSize: Theme.fontSize.normal
+
         font.features: ({
                 tnum: 1
             })

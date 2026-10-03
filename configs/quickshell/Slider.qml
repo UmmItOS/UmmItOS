@@ -21,6 +21,7 @@ Item {
             right: parent.right
             verticalCenter: parent.verticalCenter
         }
+
         implicitHeight: root.thickness
         radius: height / 2
         color: Theme.bgTray
@@ -51,20 +52,21 @@ Item {
     MouseArea {
         id: drag
 
-        anchors.fill: parent
-        // A slider thin enough to look right is thinner than a finger.
-        anchors.margins: -Theme.spacing.small
-        cursorShape: Qt.PointingHandCursor
-
         // In track coordinates: the hit area starts left of the track.
         function apply(x: real): void {
             root.moved(Math.max(0, Math.min(1, drag.mapToItem(track, x, 0).x / track.width)));
         }
 
         onPressed: event => drag.apply(event.x)
+
         onPositionChanged: event => {
             if (drag.pressed)
                 drag.apply(event.x);
         }
+
+        anchors.fill: parent
+        // A slider thin enough to look right is thinner than a finger.
+        anchors.margins: -Theme.spacing.small
+        cursorShape: Qt.PointingHandCursor
     }
 }

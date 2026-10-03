@@ -10,23 +10,6 @@ Singleton {
     // The desktop's "animations" switch (GNOME's key, which GTK apps follow too); false means reduce motion.
     property bool reduceMotion: false
 
-    Process {
-        running: true
-        command: ["gsettings", "get", "org.gnome.desktop.interface", "enable-animations"]
-        stdout: StdioCollector {
-            onStreamFinished: root.reduceMotion = text.trim() === "false"
-        }
-    }
-
-    // The program itself, not a pipeline, so a reload cannot orphan it.
-    Process {
-        running: true
-        command: ["gsettings", "monitor", "org.gnome.desktop.interface", "enable-animations"]
-        stdout: SplitParser {
-            onRead: line => root.reduceMotion = line.trim().endsWith("false")
-        }
-    }
-
     readonly property color bg: Qt.rgba(20 / 255, 20 / 255, 35 / 255, 0.72)
     readonly property color bgAlt: Qt.rgba(30 / 255, 25 / 255, 45 / 255, 0.82)
     // One step brighter than bgAlt, for a tray sitting on top of a panel.
@@ -39,24 +22,6 @@ Singleton {
     readonly property color accent2: Qt.hsla(Math.max(0, accent.hslHue), accent.hslSaturation, 0.82, 1)
     // Text and icons drawn on an accent fill: ink on a light accent, fg on a dark one (WCAG luminance, 0.17 is where both contrast equally).
     readonly property color accentOn: luminance(accent) > 0.17 ? Qt.rgba(bg.r, bg.g, bg.b, 1) : fg
-
-    function luminance(c: color): real {
-        const lin = v => v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
-        return 0.2126 * lin(c.r) + 0.7152 * lin(c.g) + 0.0722 * lin(c.b);
-    }
-
-    function setAccent(c: color): void {
-        savedAccent = c.toString();
-        accentFile.setText(savedAccent);
-    }
-
-    FileView {
-        id: accentFile
-        path: Quickshell.statePath("accent.txt")
-        printErrors: false
-        blockWrites: false
-        onLoaded: root.savedAccent = text().trim()
-    }
     // Ink over a panel on Hyprland's blur; lower shows more of it.
     readonly property real panelTint: 0.45
     // A card on a blurred panel: a faint sheen, not a fill.
@@ -69,11 +34,6 @@ Singleton {
     readonly property color good: "#6bdf9a"
     // The window border's hues, darkened, for the cheat sheet ring.
     readonly property list<color> ring: ["#4a3d94", "#5a4f8c", "#12131b", "#2f4a7d"]
-
-    // Ink, not black: black reads as a hole and kills the blur behind.
-    function scrim(alpha: real): color {
-        return Qt.rgba(bg.r, bg.g, bg.b, alpha);
-    }
 
     readonly property string font: "SF Pro Text"
     readonly property string fontDisplay: "SF Pro Display"
@@ -211,6 +171,7 @@ Singleton {
     readonly property int cardFeather: 56
     // A desktop widget's width (a medium macOS widget).
     readonly property int widgetWidth: 340
+
     // The lecture pen (draw/).
     readonly property QtObject draw: QtObject {
         readonly property var widths: [3, 6, 12]
@@ -226,6 +187,7 @@ Singleton {
         // The toolbar steps back while a stroke is drawn.
         readonly property real toolbarDrawing: 0.2
     }
+
     // The QR scanner (scan/).
     readonly property QtObject scan: QtObject {
         // How far the highlight reaches past a code's edge.
@@ -243,6 +205,7 @@ Singleton {
         readonly property real tint: 0.14
         readonly property real tintPeak: 0.3
     }
+
     // The settings panel (settings/).
     readonly property QtObject settings: QtObject {
         readonly property int width: 880
@@ -253,6 +216,7 @@ Singleton {
         // How far a page travels as it leaves and the next one arrives.
         readonly property int pageShift: 24
     }
+
     readonly property QtObject control: QtObject {
         // A list row in a flyout or the clipboard.
         readonly property int row: 46
@@ -720,5 +684,49 @@ Singleton {
         readonly property list<real> expressiveDefaultSpatial: [0.38, 1.21, 0.22, 1, 1, 1]
         readonly property list<real> expressiveDefaultEffects: [0.34, 0.8, 0.34, 1, 1, 1]
         readonly property list<real> expressiveSlowEffects: [0.34, 0.88, 0.34, 1, 1, 1]
+    }
+
+    function luminance(c: color): real {
+        const lin = v => v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+        return 0.2126 * lin(c.r) + 0.7152 * lin(c.g) + 0.0722 * lin(c.b);
+    }
+
+    function setAccent(c: color): void {
+        savedAccent = c.toString();
+        accentFile.setText(savedAccent);
+    }
+
+    // Ink, not black: black reads as a hole and kills the blur behind.
+    function scrim(alpha: real): color {
+        return Qt.rgba(bg.r, bg.g, bg.b, alpha);
+    }
+
+    Process {
+        running: true
+        command: ["gsettings", "get", "org.gnome.desktop.interface", "enable-animations"]
+
+        stdout: StdioCollector {
+            onStreamFinished: root.reduceMotion = text.trim() === "false"
+        }
+    }
+
+    // The program itself, not a pipeline, so a reload cannot orphan it.
+    Process {
+        running: true
+        command: ["gsettings", "monitor", "org.gnome.desktop.interface", "enable-animations"]
+
+        stdout: SplitParser {
+            onRead: line => root.reduceMotion = line.trim().endsWith("false")
+        }
+    }
+
+    FileView {
+        id: accentFile
+
+        onLoaded: root.savedAccent = text().trim()
+
+        path: Quickshell.statePath("accent.txt")
+        printErrors: false
+        blockWrites: false
     }
 }

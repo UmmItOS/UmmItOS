@@ -24,18 +24,9 @@ Singleton {
     // Held only until PAM asks for it.
     property string pending: ""
 
-    signal wrong
-
     // ~/.face when there is one, the bundled picture otherwise.
     property bool hasFace: false
     readonly property url face: hasFace ? "file://" + Quickshell.env("HOME") + "/.face" : Qt.resolvedUrl("avatar.webp")
-
-    FileView {
-        path: Quickshell.env("HOME") + "/.face"
-        printErrors: false
-        onLoaded: root.hasFace = true
-        onLoadFailed: root.hasFace = false
-    }
 
     // PPM, not PNG: PNG took ~0.6s a screen and read as lag.
     readonly property string shotDir: Quickshell.env("XDG_RUNTIME_DIR") + "/ummitos-lock"
@@ -43,6 +34,8 @@ Singleton {
     property bool preparing: false
     // Gates the preload, or the last lock's deleted files count as loaded.
     property bool captured: false
+
+    signal wrong
 
     function shotOf(screenName: string): string {
         return "file://" + shotDir + "/" + screenName + ".ppm?" + shot;
@@ -80,6 +73,53 @@ Singleton {
             capture(() => previewing = true);
     }
 
+    function readyCheck(): void {
+        if (!preparing || !captured)
+            return;
+        for (let i = 0; i < preload.count; i++) {
+            const s = preload.objectAt(i)?.status;
+            if (s !== Image.Ready && s !== Image.Error)
+                return;
+        }
+        waitLimit.stop();
+        release2();
+    }
+
+    function release2(): void {
+        preparing = false;
+        const next = grab.then;
+        grab.then = null;
+        next?.();
+    }
+
+    function submit(password: string): void {
+        if (checking || password === "")
+            return;
+        pending = password;
+        checking = true;
+        failed = false;
+        if (!pam.start())
+            fail();
+    }
+
+    function fail(): void {
+        if (!checking)
+            return;
+        checking = false;
+        pending = "";
+        failed = true;
+        attempts++;
+        wrong();
+    }
+
+    FileView {
+        onLoaded: root.hasFace = true
+        onLoadFailed: root.hasFace = false
+
+        path: Quickshell.env("HOME") + "/.face"
+        printErrors: false
+    }
+
     Process {
         id: grab
 
@@ -107,82 +147,46 @@ Singleton {
         Image {
             required property var modelData
 
+            onStatusChanged: root.readyCheck()
+
             asynchronous: true
             // Fills the cache LockContent reads; released after unlocking.
             cache: true
             source: root.captured && root.shot > 0 && (root.locked || root.preparing) ? root.shotOf(modelData.name) : ""
-            onStatusChanged: root.readyCheck()
         }
-    }
-
-    function readyCheck(): void {
-        if (!preparing || !captured)
-            return;
-        for (let i = 0; i < preload.count; i++) {
-            const s = preload.objectAt(i)?.status;
-            if (s !== Image.Ready && s !== Image.Error)
-                return;
-        }
-        waitLimit.stop();
-        release2();
-    }
-
-    function release2(): void {
-        preparing = false;
-        const next = grab.then;
-        grab.then = null;
-        next?.();
     }
 
     // Never keeps the lock waiting on a picture for long.
     Timer {
         id: waitLimit
-        interval: Theme.duration.lockWait
+
         onTriggered: root.release2()
+
+        interval: Theme.duration.lockWait
     }
 
     Process {
         id: forget
+
         command: ["rm", "-rf", root.shotDir]
-    }
-
-    function submit(password: string): void {
-        if (checking || password === "")
-            return;
-        pending = password;
-        checking = true;
-        failed = false;
-        if (!pam.start())
-            fail();
-    }
-
-    function fail(): void {
-        if (!checking)
-            return;
-        checking = false;
-        pending = "";
-        failed = true;
-        attempts++;
-        wrong();
     }
 
     Timer {
         id: release
-        interval: Theme.duration.expressiveDefaultSpatial
+
         onTriggered: {
             root.locked = false;
             root.previewing = false;
             root.unlocking = false;
             forget.running = true;
         }
+
+        interval: Theme.duration.expressiveDefaultSpatial
     }
 
     // A private PAM stack: no /etc/pam.d file needed.
     PamContext {
         id: pam
-
-        configDirectory: Quickshell.shellDir + "/lock/pam"
-        config: "password"
 
         onResponseRequiredChanged: {
             if (responseRequired) {
@@ -190,6 +194,7 @@ Singleton {
                 root.pending = "";
             }
         }
+
         onCompleted: result => {
             if (result !== PamResult.Success)
                 return root.fail();
@@ -199,13 +204,15 @@ Singleton {
             root.unlocking = true;
             release.restart();
         }
+
         // A no-op after completed(); kept so an error with no completed() cannot leave it checking.
         onError: root.fail()
+
+        configDirectory: Quickshell.shellDir + "/lock/pam"
+        config: "password"
     }
 
     IpcHandler {
-        target: "lock"
-
         function lock(): void {
             root.lock();
         }
@@ -217,5 +224,7 @@ Singleton {
         function preview(): void {
             root.preview();
         }
+
+        target: "lock"
     }
 }

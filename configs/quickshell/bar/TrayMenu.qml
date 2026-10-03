@@ -17,17 +17,18 @@ Flyout {
 
     signal done
 
-    implicitWidth: Theme.control.menu
-    hug: true
-    toggleVisible: false
-
     onVisibleChanged: {
         if (!visible)
             trail = [];
     }
 
+    implicitWidth: Theme.control.menu
+    hug: true
+    toggleVisible: false
+
     QsMenuOpener {
         id: opener
+
         // Only while open: an opener keeps the D-Bus menu live.
         menu: !root.visible ? null : root.trail.length > 0 ? root.trail[root.trail.length - 1] : root.menu
     }
@@ -59,6 +60,7 @@ Flyout {
                         leftMargin: Theme.spacing.medium
                         rightMargin: Theme.spacing.medium
                     }
+
                     spacing: Theme.spacing.medium
 
                     MaterialIcon {
@@ -111,16 +113,19 @@ Flyout {
                                 leftMargin: Theme.spacing.medium
                                 rightMargin: Theme.spacing.medium
                             }
+
                             spacing: Theme.spacing.medium
 
                             MaterialIcon {
                                 visible: item.modelData.buttonType !== QsMenuButtonType.None
+
                                 text: {
                                     const on = item.modelData.checkState === Qt.Checked;
                                     if (item.modelData.buttonType === QsMenuButtonType.RadioButton)
                                         return on ? "radio_button_checked" : "radio_button_unchecked";
                                     return on ? "check_box" : "check_box_outline_blank";
                                 }
+
                                 color: item.modelData.checkState === Qt.Checked ? Theme.accentText : Theme.dim
                                 fill: item.modelData.checkState === Qt.Checked ? 1 : 0
                             }
@@ -153,7 +158,6 @@ Flyout {
                         }
 
                         TapHandler {
-                            enabled: item.modelData.enabled
                             onTapped: {
                                 if (item.modelData.hasChildren) {
                                     root.trail = root.trail.concat([item.modelData]);
@@ -162,6 +166,8 @@ Flyout {
                                     root.done();
                                 }
                             }
+
+                            enabled: item.modelData.enabled
                         }
                     }
                 }

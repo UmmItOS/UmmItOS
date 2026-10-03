@@ -9,17 +9,17 @@ Item {
     property real value: 0          // 0-1
     // Snap to the first reading, or every open sweeps up from zero.
     property bool animated: false
-
-    onValueChanged: {
-        if (value > 0 && !animated)
-            Qt.callLater(() => animated = true);
-    }
     property string primary: ""
     property string label: ""
 
     readonly property real ring: Theme.dashboard.gaugeRing
     // Clamped: a negative radius crashes the shell.
     readonly property real radius: Math.max(1, Math.min(width, height) / 2 - ring / 2)
+
+    onValueChanged: {
+        if (value > 0 && !animated)
+            Qt.callLater(() => animated = true);
+    }
 
     implicitWidth: Theme.dashboard.gauge
     implicitHeight: Theme.dashboard.gauge
@@ -52,6 +52,7 @@ Item {
 
             PathAngleArc {
                 id: arc
+
                 centerX: root.width / 2
                 centerY: root.height / 2
                 radiusX: root.radius
@@ -61,6 +62,7 @@ Item {
 
                 Behavior on sweepAngle {
                     enabled: root.animated
+
                     NumberAnimation {
                         duration: Theme.duration.expressiveDefaultSpatial
                         easing.type: Easing.BezierSpline
@@ -82,6 +84,7 @@ Item {
             color: Theme.fg
             font.family: Theme.fontDisplay
             font.pixelSize: Theme.fontSize.extraLarge
+
             font.features: ({
                     tnum: 1
                 })

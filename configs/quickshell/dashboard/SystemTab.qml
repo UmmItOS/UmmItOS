@@ -23,6 +23,7 @@ ColumnLayout {
                 fill: parent
                 margins: Theme.spacing.extraLarge
             }
+
             spacing: Theme.spacing.extraLarge
 
             Gauge {
@@ -66,6 +67,7 @@ ColumnLayout {
                 fill: parent
                 margins: Theme.spacing.large
             }
+
             spacing: Theme.spacing.extraLarge
 
             Item {
@@ -112,6 +114,7 @@ ColumnLayout {
                             textFormat: Text.PlainText
                             text: I18n.t(fact.modelData.key)
                             color: Theme.dim
+
                             font {
                                 family: Theme.font
                                 pixelSize: Theme.fontSize.small
@@ -127,6 +130,7 @@ ColumnLayout {
                             text: fact.value
                             color: Theme.fg
                             elide: Text.ElideRight
+
                             font {
                                 family: Theme.fontDisplay
                                 pixelSize: Theme.fontSize.larger

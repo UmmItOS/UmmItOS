@@ -15,21 +15,25 @@ ColumnLayout {
     property int checked: 0
     // The lists checked, as keys of listNames.
     property var groups: []
+
     readonly property string listText: {
         const names = groups.map(g => I18n.t(listNames[g] ?? g));
         return names.length > 1 ? I18n.t("%1 and %2").arg(names.slice(0, -1).join(I18n.t(", "))).arg(names[names.length - 1]) : names[0] ?? "";
     }
+
     // "repo/name", in the lists' order.
     property var missing: []
     // name → the list it came from.
     property var source: ({})
+
     readonly property var listNames: ({
             main: "main",
             gpu: "GPU",
             laptop: "laptop"
         })
 
-    spacing: Theme.spacing.large
+    // Each open of the page, and again once an install window closes.
+    readonly property bool watching: Settings.open && visible
 
     function check(): void {
         result = "checking";
@@ -37,14 +41,29 @@ ColumnLayout {
         scan.running = true;
     }
 
-    // Each open of the page, and again once an install window closes.
-    readonly property bool watching: Settings.open && visible
+    function installAll(pkgs: var): void {
+        if (install.running)
+            return;
+        // The UmmItOS folder this shell runs from first, then ~/script, then plain paru.
+        install.command = ["kitty", "-e", "sh", "-c", 'd=$(readlink -f "$1"); shift; for s in "$d/../../script/misc/install-packages.sh" "$HOME/script/misc/install-packages.sh"; do [ -x "$s" ] && exec "$s" "$@"; done; paru -S --needed "$@"; printf "\\nPress Enter to close. "; read -r _', "sh", Quickshell.shellDir].concat(pkgs.map(p => p.split("/").pop()));
+        install.running = true;
+    }
+
     onWatchingChanged: if (watching && !install.running)
         check()
+
+    spacing: Theme.spacing.large
 
     // Same rules as install/install-packages.sh: GPU on AMD only, laptop with a battery, multilib when enabled.
     Process {
         id: scan
+
+        onExited: code => {
+            if (code !== 0) {
+                page.missing = [];
+                page.result = "lost";
+            }
+        }
 
         command: ["sh", "-c", `
             d="$(readlink -f "$1")/../../install"
@@ -63,6 +82,7 @@ ColumnLayout {
             printf '%s\\n--\\n' "$all"
             printf '%s\\n' "$all" | cut -d' ' -f2 | sed 's#.*/##' | xargs pacman -T
             exit 0`, "sh", Quickshell.shellDir]
+
         stdout: StdioCollector {
             onStreamFinished: {
                 const [head, tail] = text.split("--\n");
@@ -80,12 +100,6 @@ ColumnLayout {
                 page.result = page.missing.length > 0 ? "missing" : "ok";
             }
         }
-        onExited: code => {
-            if (code !== 0) {
-                page.missing = [];
-                page.result = "lost";
-            }
-        }
     }
 
     // A terminal, so paru can ask for the password and show its progress.
@@ -95,18 +109,11 @@ ColumnLayout {
         onExited: page.check()
     }
 
-    function installAll(pkgs: var): void {
-        if (install.running)
-            return;
-        // The UmmItOS folder this shell runs from first, then ~/script, then plain paru.
-        install.command = ["kitty", "-e", "sh", "-c", 'd=$(readlink -f "$1"); shift; for s in "$d/../../script/misc/install-packages.sh" "$HOME/script/misc/install-packages.sh"; do [ -x "$s" ] && exec "$s" "$@"; done; paru -S --needed "$@"; printf "\\nPress Enter to close. "; read -r _', "sh", Quickshell.shellDir].concat(pkgs.map(p => p.split("/").pop()));
-        install.running = true;
-    }
-
     StatusHeader {
         busy: page.result === "checking"
         icon: page.result === "ok" ? "check_circle" : page.result === "missing" ? "download" : "search_off"
         tone: page.result === "ok" ? Theme.good : Theme.warn
+
         title: {
             switch (page.result) {
             case "checking":
@@ -119,22 +126,25 @@ ColumnLayout {
                 return I18n.t("Package lists not found");
             }
         }
+
         hint: page.result === "lost" ? I18n.t("Run the installer once from the UmmItOS folder, so the shell knows where it is.") : page.result === "checking" ? I18n.t("Reading the installer's lists") : I18n.t("%1 checked · %2").arg(page.checked).arg(page.listText)
 
         Action {
+            onClicked: page.check()
+
             icon: "refresh"
             label: I18n.t("Check again")
             enabled: page.result !== "checking" && !install.running
-            onClicked: page.check()
         }
 
         Action {
+            onClicked: page.installAll(page.missing)
+
             visible: page.result === "missing"
             primary: true
             icon: install.running ? "hourglass_top" : "download"
             label: install.running ? I18n.t("Installing") : I18n.t("Install missing")
             enabled: !install.running
-            onClicked: page.installAll(page.missing)
         }
     }
 
@@ -186,6 +196,7 @@ ColumnLayout {
                     leftMargin: Theme.spacing.medium
                     rightMargin: Theme.spacing.medium
                 }
+
                 spacing: Theme.spacing.medium
 
                 MaterialIcon {
@@ -216,6 +227,7 @@ ColumnLayout {
 
             TapHandler {
                 id: press
+
                 onTapped: page.installAll([row.modelData])
             }
         }

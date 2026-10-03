@@ -58,8 +58,6 @@ Item {
     }
 
     ShaderEffect {
-        anchors.fill: parent
-
         property var source: hazeShot
         property size size: Qt.size(width, height)
         property real reveal: root.radius(Wake.open)
@@ -67,6 +65,8 @@ Item {
         property real haze: Wake.haze
         property real dim: Theme.wakeDim
         property real hasPicture: before.status === Image.Ready ? 1 : 0
+
+        anchors.fill: parent
 
         fragmentShader: Qt.resolvedUrl("curtain.frag.qsb")
     }
@@ -90,6 +90,7 @@ Item {
         autoPaddingEnabled: true
         blurEnabled: true
         visible: Wake.draw > 0 && Wake.open < 0.5
+
         transform: Scale {
             origin.x: root.width / 2
             xScale: Wake.draw

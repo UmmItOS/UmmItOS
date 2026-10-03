@@ -12,6 +12,7 @@ ColumnLayout {
 
     SystemClock {
         id: clock
+
         precision: SystemClock.Minutes
     }
 
@@ -38,6 +39,7 @@ ColumnLayout {
                     font.family: Theme.fontDisplay
                     font.pixelSize: Theme.fontSize.hero
                     font.bold: true
+
                     font.features: ({
                             tnum: 1
                         })
@@ -50,6 +52,7 @@ ColumnLayout {
                     font.family: Theme.fontDisplay
                     font.pixelSize: Theme.fontSize.hero
                     font.bold: true
+
                     font.features: ({
                             tnum: 1
                         })
@@ -64,7 +67,6 @@ ColumnLayout {
                     font.pixelSize: Theme.fontSize.normal
                 }
             }
-
         }
 
         // The month the date sits in, a card of its own.

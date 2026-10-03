@@ -11,37 +11,31 @@ Variants {
 
     PanelWindow {
         id: win
+
         required property var modelData
+
         screen: modelData
 
         WlrLayershell.namespace: "ummitos-background"
         WlrLayershell.layer: WlrLayer.Background
         exclusionMode: ExclusionMode.Ignore
+
         anchors {
             top: true
             bottom: true
             left: true
             right: true
         }
+
         color: "black"
 
         // Crossfade adapted from caelestia-dots/shell (GPL-3.0).
         Item {
             id: fader
-            anchors.fill: parent
 
             readonly property int duration: Theme.duration.expressiveSlowEffects
             readonly property int revealDuration: Theme.duration.wallpaperReveal
             property Item currentImage
-
-            Component.onCompleted: swap(Wallpapers.current)
-
-            Connections {
-                target: Wallpapers
-                function onCurrentChanged() {
-                    fader.swap(Wallpapers.current);
-                }
-            }
 
             function swap(path: string): void {
                 if (!path)
@@ -56,11 +50,30 @@ Variants {
                 currentImage = (reveal ? revealComp : imgComp).createObject(fader, props);
             }
 
+            Component.onCompleted: swap(Wallpapers.current)
+
+            anchors.fill: parent
+
+            Connections {
+                function onCurrentChanged() {
+                    fader.swap(Wallpapers.current);
+                }
+
+                target: Wallpapers
+            }
+
             Component {
                 id: imgComp
 
                 Image {
                     id: img
+
+                    readonly property int transition: fader.duration
+
+                    onStatusChanged: {
+                        if (status === Image.Ready)
+                            fade.start();
+                    }
 
                     anchors.fill: parent
                     fillMode: Image.PreserveAspectCrop
@@ -70,13 +83,9 @@ Variants {
                     sourceSize.width: fader.width * Theme.wallpaper.decodeScale
                     sourceSize.height: fader.height * Theme.wallpaper.decodeScale
 
-                    onStatusChanged: {
-                        if (status === Image.Ready)
-                            fade.start();
-                    }
-
                     NumberAnimation on opacity {
                         id: fade
+
                         running: false
                         from: 0
                         to: 1
@@ -86,12 +95,11 @@ Variants {
                     }
 
                     Timer {
+                        onTriggered: img.destroy()
+
                         running: fader.currentImage !== img && (fader.currentImage?.status ?? Image.Null) === Image.Ready
                         interval: fader.currentImage?.transition ?? fader.duration
-                        onTriggered: img.destroy()
                     }
-
-                    readonly property int transition: fader.duration
                 }
             }
 
@@ -125,6 +133,11 @@ Variants {
                     Image {
                         id: pic
 
+                        onStatusChanged: {
+                            if (status === Image.Ready)
+                                grow.start();
+                        }
+
                         x: -disc.x
                         y: -disc.y
                         width: fader.width
@@ -134,15 +147,11 @@ Variants {
                         cache: false
                         sourceSize.width: fader.width * Theme.wallpaper.decodeScale
                         sourceSize.height: fader.height * Theme.wallpaper.decodeScale
-
-                        onStatusChanged: {
-                            if (status === Image.Ready)
-                                grow.start();
-                        }
                     }
 
                     NumberAnimation on progress {
                         id: grow
+
                         running: false
                         from: 0
                         to: 1
@@ -152,9 +161,10 @@ Variants {
                     }
 
                     Timer {
+                        onTriggered: disc.destroy()
+
                         running: fader.currentImage !== disc && (fader.currentImage?.status ?? Image.Null) === Image.Ready
                         interval: fader.currentImage?.transition ?? fader.duration
-                        onTriggered: disc.destroy()
                     }
                 }
             }

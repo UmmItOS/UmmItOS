@@ -23,6 +23,7 @@ Rectangle {
     Behavior on color {
         FastColor {}
     }
+
     Behavior on scale {
         PressAnim {}
     }
@@ -54,11 +55,13 @@ Rectangle {
 
     HoverHandler {
         id: hover
+
         cursorShape: Qt.PointingHandCursor
     }
 
     TapHandler {
         id: tap
+
         onTapped: action.clicked()
     }
 }

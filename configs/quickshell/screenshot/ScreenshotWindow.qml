@@ -12,11 +12,6 @@ import ".."
 OverlayWindow {
     id: win
 
-    shown: Screenshot.open
-    blurIn: false
-    name: "screenshot"
-    screen: Screenshot.screen ?? Quickshell.screens[0]
-
     property point from: Qt.point(width / 2, height / 2)
     property point to: from
     property bool dragging: false
@@ -35,10 +30,38 @@ OverlayWindow {
     property real zoom: 1
     property real tx: 0
     property real ty: 0
+    property real haze: 0
+
+    readonly property real rootWidth: Theme.spacing.medium + Theme.spacing.hair
+    readonly property real tipWidth: Theme.screenshot.tendrilTip
+
+    property real sprout: 0
+
+    readonly property int sproutDelay: Theme.duration.expressiveSlowEffects
+    readonly property int sproutDuration: Theme.duration.extraLarge + Theme.duration.small
+
+    readonly property real selX: Math.min(from.x, to.x)
+    readonly property real selY: Math.min(from.y, to.y)
+    readonly property real selW: Math.abs(to.x - from.x)
+    readonly property real selH: Math.abs(to.y - from.y)
+
+    readonly property string mode: Screenshot.mode
+    // Window mode: the window the frame is on, in local coordinates.
+    property var picked: null
+
+    readonly property var boxes: Screenshot.windows.map(b => ({
+                x: b.x - (win.screen?.x ?? 0),
+                y: b.y - (win.screen?.y ?? 0),
+                w: b.w,
+                h: b.h,
+                title: b.title,
+                address: b.address
+            }))
 
     function toScreenX(v: real): real {
         return (v - tx) / zoom;
     }
+
     function toScreenY(v: real): real {
         return (v - ty) / zoom;
     }
@@ -50,50 +73,6 @@ OverlayWindow {
         tx = Math.max(w - w * z, Math.min(0, px - (px - tx) * z / zoom));
         ty = Math.max(h - h * z, Math.min(0, py - (py - ty) * z / zoom));
         zoom = z;
-    }
-    property real haze: 0
-
-    NumberAnimation {
-        id: hazeIn
-        target: win
-        property: "haze"
-        to: 1
-        duration: Theme.duration.extraLarge * 2
-        easing.type: Easing.BezierSpline
-        easing.bezierCurve: Theme.curve.standardDecel
-    }
-
-    NumberAnimation on phase {
-        running: win.visible
-        from: 0
-        to: 1
-        duration: Theme.duration.sway
-        loops: Animation.Infinite
-    }
-
-    readonly property real rootWidth: Theme.spacing.medium + Theme.spacing.hair
-    readonly property real tipWidth: Theme.screenshot.tendrilTip
-
-    property real sprout: 0
-
-    readonly property int sproutDelay: Theme.duration.expressiveSlowEffects
-    readonly property int sproutDuration: Theme.duration.extraLarge + Theme.duration.small
-
-    SequentialAnimation {
-        id: sproutIn
-
-        PauseAnimation {
-            duration: win.sproutDelay
-        }
-        NumberAnimation {
-            target: win
-            property: "sprout"
-            from: 0
-            to: 1
-            duration: win.sproutDuration
-            easing.type: Easing.BezierSpline
-            easing.bezierCurve: Theme.curve.standard
-        }
     }
 
     function tendril(ax: real, ay: real, cx: real, cy: real, t0: real, seed: real, grow: real): list<point> {
@@ -124,23 +103,6 @@ OverlayWindow {
     function anchorOf(sx: real, corner: real): real {
         return sx + (corner - sx) * release;
     }
-
-    readonly property real selX: Math.min(from.x, to.x)
-    readonly property real selY: Math.min(from.y, to.y)
-    readonly property real selW: Math.abs(to.x - from.x)
-    readonly property real selH: Math.abs(to.y - from.y)
-
-    readonly property string mode: Screenshot.mode
-    // Window mode: the window the frame is on, in local coordinates.
-    property var picked: null
-    readonly property var boxes: Screenshot.windows.map(b => ({
-                x: b.x - (win.screen?.x ?? 0),
-                y: b.y - (win.screen?.y ?? 0),
-                w: b.w,
-                h: b.h,
-                title: b.title,
-                address: b.address
-            }))
 
     // Pull the frame onto a box; the springs carry the corners there.
     function frame(b: var): void {
@@ -173,6 +135,42 @@ OverlayWindow {
         });
         snap = false;
         Qt.callLater(() => pick(b));
+    }
+
+    // Spread the frame to the screen's edges, let it settle, then take it.
+    function wholeScreen(): void {
+        frame({
+            x: 0,
+            y: 0,
+            w: screen?.width ?? width,
+            h: screen?.height ?? height
+        });
+        settleThenCommit.restart();
+    }
+
+    function commit(): void {
+        if (finishing.running || !win.shown)
+            return;
+        // A window shot needs a window: nothing is taken before one is picked.
+        if (mode === "window" && !picked)
+            return;
+        if (selW < Theme.screenshot.minSelection || selH < Theme.screenshot.minSelection) {
+            wholeScreen();
+            return;
+        }
+        const x = Math.round(win.screen.x + toScreenX(selX));
+        const y = Math.round(win.screen.y + toScreenY(selY));
+        pendingGeometry = `${x},${y} ${Math.round(selW / zoom)}x${Math.round(selH / zoom)}`;
+        finishing.start();
+    }
+
+    // A window that closed or never sent a frame is taken as a region instead.
+    function cutFailed(): void {
+        cutFallback.stop();
+        if (!cutting)
+            return;
+        cutting = null;
+        Screenshot.region(pendingGeometry);
     }
 
     // The window list arrives after the overlay opens: start on the active one.
@@ -216,38 +214,55 @@ OverlayWindow {
             Qt.callLater(() => focusFirst(boxes[0] ?? null));
     }
 
-    // Spread the frame to the screen's edges, let it settle, then take it.
-    function wholeScreen(): void {
-        frame({
-            x: 0,
-            y: 0,
-            w: screen?.width ?? width,
-            h: screen?.height ?? height
-        });
-        settleThenCommit.restart();
+    shown: Screenshot.open
+    blurIn: false
+    name: "screenshot"
+    screen: Screenshot.screen ?? Quickshell.screens[0]
+
+    NumberAnimation {
+        id: hazeIn
+
+        target: win
+        property: "haze"
+        to: 1
+        duration: Theme.duration.extraLarge * 2
+        easing.type: Easing.BezierSpline
+        easing.bezierCurve: Theme.curve.standardDecel
+    }
+
+    NumberAnimation on phase {
+        running: win.visible
+        from: 0
+        to: 1
+        duration: Theme.duration.sway
+        loops: Animation.Infinite
+    }
+
+    SequentialAnimation {
+        id: sproutIn
+
+        PauseAnimation {
+            duration: win.sproutDelay
+        }
+
+        NumberAnimation {
+            target: win
+            property: "sprout"
+            from: 0
+            to: 1
+            duration: win.sproutDuration
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Theme.curve.standard
+        }
     }
 
     Timer {
         id: settleThenCommit
+
+        onTriggered: win.commit()
+
         // Long enough to see the frame fill the screen before it is taken.
         interval: win.sproutDelay + win.sproutDuration + Theme.duration.normal
-        onTriggered: win.commit()
-    }
-
-    function commit(): void {
-        if (finishing.running || !win.shown)
-            return;
-        // A window shot needs a window: nothing is taken before one is picked.
-        if (mode === "window" && !picked)
-            return;
-        if (selW < Theme.screenshot.minSelection || selH < Theme.screenshot.minSelection) {
-            wholeScreen();
-            return;
-        }
-        const x = Math.round(win.screen.x + toScreenX(selX));
-        const y = Math.round(win.screen.y + toScreenY(selY));
-        pendingGeometry = `${x},${y} ${Math.round(selW / zoom)}x${Math.round(selH / zoom)}`;
-        finishing.start();
     }
 
     SequentialAnimation {
@@ -262,6 +277,7 @@ OverlayWindow {
             easing.type: Easing.BezierSpline
             easing.bezierCurve: Theme.curve.emphasized
         }
+
         ScriptAction {
             script: {
                 // A window is cut from its own surface; anything else is grim.
@@ -295,6 +311,7 @@ OverlayWindow {
                 damping: Theme.spring.damping
             }
         }
+
         Behavior on y {
             // A region's corners are the pointer, no spring.
             enabled: !win.snap && win.mode === "window"
@@ -308,21 +325,28 @@ OverlayWindow {
 
     Corner {
         id: tl
+
         tx: win.selX
         ty: win.selY
     }
+
     Corner {
         id: tr
+
         tx: win.selX + win.selW
         ty: win.selY
     }
+
     Corner {
         id: bl
+
         tx: win.selX
         ty: win.selY + win.selH
     }
+
     Corner {
         id: br
+
         tx: win.selX + win.selW
         ty: win.selY + win.selH
     }
@@ -330,15 +354,16 @@ OverlayWindow {
     FocusScope {
         id: scope
 
+        Keys.onEscapePressed: Screenshot.open = false
+        Keys.onReturnPressed: win.commit()
+
         anchors.fill: parent
         focus: true
         opacity: Math.min(1, win.reveal)
 
-        Keys.onEscapePressed: Screenshot.open = false
-        Keys.onReturnPressed: win.commit()
-
         ScreencopyView {
             id: frozen
+
             anchors.fill: parent
             captureSource: win.screen
             live: false
@@ -347,6 +372,7 @@ OverlayWindow {
 
         MultiEffect {
             anchors.fill: parent
+
             transform: [
                 Scale {
                     xScale: win.zoom
@@ -357,6 +383,7 @@ OverlayWindow {
                     y: win.ty
                 }
             ]
+
             source: frozen
             blurEnabled: true
             blurMax: Theme.screenshot.blurMax
@@ -390,18 +417,21 @@ OverlayWindow {
                 height: tl.y
                 color: Theme.scrim(Theme.shade.outside)
             }
+
             Rectangle {
                 y: bl.y
                 width: parent.width
                 height: parent.height - bl.y
                 color: Theme.scrim(Theme.shade.outside)
             }
+
             Rectangle {
                 y: tl.y
                 width: tl.x
                 height: bl.y - tl.y
                 color: Theme.scrim(Theme.shade.outside)
             }
+
             Rectangle {
                 x: tr.x
                 y: tr.y
@@ -417,11 +447,12 @@ OverlayWindow {
 
             // Filled, not stroked, so it can taper.
             component Thread: ShapePath {
+                // Offsets the wave so the four do not move in step.
+                id: thread
+
                 required property real sx
                 required property real sy
                 required property QtObject corner
-                // Offsets the wave so the four do not move in step.
-                id: thread
                 property real seed: 0
 
                 readonly property real ax: win.anchorOf(sx, corner.x)
@@ -442,18 +473,21 @@ OverlayWindow {
                 corner: tl
                 seed: 0
             }
+
             Thread {
                 sx: win.width
                 sy: 0
                 corner: tr
                 seed: 1.7
             }
+
             Thread {
                 sx: 0
                 sy: win.height
                 corner: bl
                 seed: 3.1
             }
+
             Thread {
                 sx: win.width
                 sy: win.height
@@ -472,14 +506,17 @@ OverlayWindow {
                     x: tr.x
                     y: tr.y
                 }
+
                 PathLine {
                     x: br.x
                     y: br.y
                 }
+
                 PathLine {
                     x: bl.x
                     y: bl.y
                 }
+
                 PathLine {
                     x: tl.x
                     y: tl.y
@@ -495,12 +532,13 @@ OverlayWindow {
                 required property QtObject modelData
                 required property int index
 
-                x: modelData.x - width / 2
-                y: modelData.y - height / 2
                 readonly property real arrived: {
                     const x = Math.max(0, Math.min(1, (win.sprout - Theme.screenshot.cornersAt) / (1 - Theme.screenshot.cornersAt)));
                     return x * x * (3 - 2 * x);
                 }
+
+                x: modelData.x - width / 2
+                y: modelData.y - height / 2
                 scale: (1 + Theme.screenshot.cornerPulse * Math.sin(2 * Math.PI * (win.phase * 2) + index)) * arrived
                 width: Theme.spacing.medium
                 height: width
@@ -522,12 +560,14 @@ OverlayWindow {
 
             Text {
                 id: sizeText
+
                 anchors.centerIn: parent
                 textFormat: Text.PlainText
                 text: win.mode === "window" && win.picked ? win.picked.title : Math.round(win.selW) + " × " + Math.round(win.selH)
                 color: Theme.fg
                 font.family: Theme.font
                 font.pixelSize: Theme.fontSize.smaller
+
                 font.features: ({
                         tnum: 1
                     })
@@ -540,6 +580,7 @@ OverlayWindow {
                 horizontalCenter: parent.horizontalCenter
                 bottomMargin: Theme.spacing.extraLarge
             }
+
             visible: !win.dragging
             text: win.mode === "window" ? I18n.t("Point at a window  ·  Click or Enter to take it  ·  Esc to cancel") : I18n.t("Drag to select  ·  Click or Enter for the whole screen  ·  Esc to cancel")
             color: Theme.fg
@@ -549,11 +590,6 @@ OverlayWindow {
         }
 
         MouseArea {
-            anchors.fill: parent
-            hoverEnabled: true
-
-            cursorShape: win.mode === "window" ? Qt.PointingHandCursor : Qt.CrossCursor
-
             onPressed: mouse => {
                 win.pressed = true;
                 if (win.mode === "window")
@@ -562,6 +598,7 @@ OverlayWindow {
                 win.to = win.from;
                 win.dragging = true;
             }
+
             onPositionChanged: mouse => {
                 if (win.mode === "window") {
                     const b = win.boxAt(mouse.x, mouse.y);
@@ -574,12 +611,13 @@ OverlayWindow {
                         win.from = win.to = Qt.point(mouse.x, mouse.y);
                 }
             }
-            enabled: !finishing.running
+
             // Scroll to zoom the frozen screen for a precise region.
             onWheel: wheel => {
                 if (win.mode !== "window")
                     win.zoomAt(wheel.x, wheel.y, wheel.angleDelta.y / 120);
             }
+
             onReleased: mouse => {
                 if (!win.pressed)
                     return;
@@ -592,22 +630,21 @@ OverlayWindow {
                 }
                 win.commit();
             }
-        }
-    }
 
-    // A window that closed or never sent a frame is taken as a region instead.
-    function cutFailed(): void {
-        cutFallback.stop();
-        if (!cutting)
-            return;
-        cutting = null;
-        Screenshot.region(pendingGeometry);
+            anchors.fill: parent
+            hoverEnabled: true
+
+            cursorShape: win.mode === "window" ? Qt.PointingHandCursor : Qt.CrossCursor
+            enabled: !finishing.running
+        }
     }
 
     Timer {
         id: cutFallback
-        interval: Theme.duration.extraLarge * 2
+
         onTriggered: win.cutFailed()
+
+        interval: Theme.duration.extraLarge * 2
     }
 
     // Off screen, clipped to Hyprland's rounding; keeps transparency.
@@ -623,11 +660,8 @@ OverlayWindow {
         color: "transparent"
 
         ScreencopyView {
-            anchors.fill: parent
-            captureSource: win.cutting?.toplevel ?? null
-            live: false
-
             onStopped: win.cutFailed()
+
             onHasContentChanged: {
                 if (!hasContent || !win.cutting)
                     return;
@@ -645,6 +679,10 @@ OverlayWindow {
                 if (!ok)
                     win.cutFailed();
             }
+
+            anchors.fill: parent
+            captureSource: win.cutting?.toplevel ?? null
+            live: false
         }
     }
 }

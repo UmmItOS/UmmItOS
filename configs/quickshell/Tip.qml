@@ -11,6 +11,15 @@ PopupWindow {
     property bool wanted: false
     property bool showing: false
 
+    onWantedChanged: {
+        if (wanted && text !== "") {
+            delay.restart();
+        } else {
+            delay.stop();
+            showing = false;
+        }
+    }
+
     anchor {
         item: root.anchorItem
         edges: Edges.Bottom
@@ -25,19 +34,12 @@ PopupWindow {
     // Never takes the pointer, so it cannot cover what it describes or flicker under the cursor.
     mask: Region {}
 
-    onWantedChanged: {
-        if (wanted && text !== "") {
-            delay.restart();
-        } else {
-            delay.stop();
-            showing = false;
-        }
-    }
-
     Timer {
         id: delay
-        interval: Theme.duration.tipDelay
+
         onTriggered: root.showing = true
+
+        interval: Theme.duration.tipDelay
     }
 
     Rectangle {
@@ -51,6 +53,7 @@ PopupWindow {
         opacity: root.showing ? 1 : 0
         scale: root.showing ? 1 : Theme.popScale
         layer.enabled: opacity < 1
+
         layer.effect: MotionBlur {
             settled: sheet.opacity
         }
@@ -58,6 +61,7 @@ PopupWindow {
         Behavior on opacity {
             FastFade {}
         }
+
         Behavior on scale {
             NumberAnimation {
                 duration: Theme.duration.expressiveFastSpatial

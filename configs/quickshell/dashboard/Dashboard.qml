@@ -24,8 +24,6 @@ Singleton {
     }
 
     IpcHandler {
-        target: "dashboard"
-
         function toggle(): void {
             root.toggle();
         }
@@ -44,5 +42,7 @@ Singleton {
         function toggleTab(index: int): void {
             root.toggleTab(index);
         }
+
+        target: "dashboard"
     }
 }

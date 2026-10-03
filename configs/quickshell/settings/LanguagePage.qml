@@ -58,6 +58,7 @@ ColumnLayout {
                         leftMargin: Theme.spacing.medium
                         rightMargin: Theme.spacing.medium
                     }
+
                     spacing: Theme.spacing.medium
 
                     MaterialIcon {
@@ -88,6 +89,7 @@ ColumnLayout {
 
                 TapHandler {
                     id: press
+
                     onTapped: I18n.set(choice.modelData.code)
                 }
             }

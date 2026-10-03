@@ -20,13 +20,15 @@ Singleton {
     FileView {
         id: saved
 
-        path: Quickshell.statePath("toolbox.txt")
-        printErrors: false
-        blockWrites: false
         onLoaded: {
             root.open = text().trim() === "1";
             Qt.callLater(() => root.ready = true);
         }
+
         onLoadFailed: Qt.callLater(() => root.ready = true)
+
+        path: Quickshell.statePath("toolbox.txt")
+        printErrors: false
+        blockWrites: false
     }
 }

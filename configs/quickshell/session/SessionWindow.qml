@@ -8,10 +8,6 @@ import ".."
 OverlayWindow {
     id: win
 
-    shown: Session.open
-    name: "session"
-    scrim: Theme.shade.normal
-
     property int current: 0
 
     onOpened: {
@@ -19,23 +15,24 @@ OverlayWindow {
         scope.forceActiveFocus();
     }
 
+    shown: Session.open
+    name: "session"
+    scrim: Theme.shade.normal
+
     MouseArea {
-        anchors.fill: parent
         onClicked: Session.open = false
+
+        anchors.fill: parent
     }
 
     FocusScope {
         id: scope
-        opacity: Math.min(1, win.reveal)
-        scale: Theme.popScale + (1 - Theme.popScale) * win.reveal
-
-        anchors.fill: parent
-        focus: true
 
         Keys.onEscapePressed: Session.open = false
         Keys.onLeftPressed: win.current = (win.current - 1 + Session.actions.length) % Session.actions.length
         Keys.onRightPressed: win.current = (win.current + 1) % Session.actions.length
         Keys.onReturnPressed: Session.run(win.current)
+
         Keys.onPressed: event => {
             const hit = Session.indexForKey(event.text);
             if (hit >= 0) {
@@ -44,6 +41,12 @@ OverlayWindow {
                 event.accepted = true;
             }
         }
+
+        opacity: Math.min(1, win.reveal)
+        scale: Theme.popScale + (1 - Theme.popScale) * win.reveal
+
+        anchors.fill: parent
+        focus: true
 
         RowLayout {
             anchors.centerIn: parent
@@ -54,6 +57,7 @@ OverlayWindow {
 
                 Rectangle {
                     id: tile
+
                     required property var modelData
                     required property int index
 
@@ -64,50 +68,17 @@ OverlayWindow {
 
                     // Translate, not `y`: the RowLayout owns y.
                     opacity: 0
+
                     transform: Translate {
                         id: lift
                     }
 
-                    Connections {
-                        target: win
-
-                        function onOpened(): void {
-                            entry.stop();
-                            tile.opacity = 0;
-                            lift.y = Theme.spacing.large;
-                            delay.restart();
-                        }
-                    }
-
-                    Timer {
-                        id: delay
-                        interval: tile.index * Theme.duration.stagger
-                        onTriggered: entry.start()
-                    }
-
-                    ParallelAnimation {
-                        id: entry
-
-                        NumberAnimation {
-                            target: tile
-                            property: "opacity"
-                            to: 1
-                            duration: Theme.duration.expressiveDefaultEffects
-                        }
-                        NumberAnimation {
-                            target: lift
-                            property: "y"
-                            to: 0
-                            duration: Theme.duration.expressiveDefaultSpatial
-                            easing.type: Easing.BezierSpline
-                            easing.bezierCurve: Theme.curve.emphasizedDecel
-                        }
-                    }
                     radius: Theme.rounding.extraLarge
                     color: active ? Theme.accent : Theme.bgTray
                     scale: active ? Theme.session.activeScale : 1
 
                     layer.enabled: tile.active
+
                     layer.effect: MultiEffect {
                         shadowEnabled: true
                         shadowColor: Theme.accent
@@ -120,11 +91,51 @@ OverlayWindow {
                     Behavior on color {
                         FastColor {}
                     }
+
                     Behavior on scale {
                         NumberAnimation {
                             duration: Theme.duration.expressiveFastSpatial
                             easing.type: Easing.BezierSpline
                             easing.bezierCurve: Theme.curve.expressiveDefaultSpatial
+                        }
+                    }
+
+                    Connections {
+                        function onOpened(): void {
+                            entry.stop();
+                            tile.opacity = 0;
+                            lift.y = Theme.spacing.large;
+                            delay.restart();
+                        }
+
+                        target: win
+                    }
+
+                    Timer {
+                        id: delay
+
+                        onTriggered: entry.start()
+
+                        interval: tile.index * Theme.duration.stagger
+                    }
+
+                    ParallelAnimation {
+                        id: entry
+
+                        NumberAnimation {
+                            target: tile
+                            property: "opacity"
+                            to: 1
+                            duration: Theme.duration.expressiveDefaultEffects
+                        }
+
+                        NumberAnimation {
+                            target: lift
+                            property: "y"
+                            to: 0
+                            duration: Theme.duration.expressiveDefaultSpatial
+                            easing.type: Easing.BezierSpline
+                            easing.bezierCurve: Theme.curve.emphasizedDecel
                         }
                     }
 
@@ -157,6 +168,7 @@ OverlayWindow {
                             right: parent.right
                             margins: Theme.spacing.medium
                         }
+
                         text: tile.modelData.key.toUpperCase()
                         color: tile.active ? Theme.accentOn : Theme.dim
                         font.family: Theme.font
@@ -165,13 +177,15 @@ OverlayWindow {
                     }
 
                     MouseArea {
-                        anchors.fill: parent
-                        hoverEnabled: true
                         onPositionChanged: mouse => {
                             if (win.pointerMoved(this, mouse.x, mouse.y))
                                 win.current = tile.index;
                         }
+
                         onClicked: Session.run(tile.index)
+
+                        anchors.fill: parent
+                        hoverEnabled: true
                     }
                 }
             }

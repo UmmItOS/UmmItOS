@@ -11,15 +11,11 @@ import "../bar"
 OverlayWindow {
     id: win
 
-    shown: Scan.open
-    name: "scan"
-    screen: Scan.screen
-    scrim: Theme.shade.normal
-
     // The code the panel describes; Tab, the arrows or a label click move it.
     property int current: 0
     readonly property int count: Scan.codes.length
     readonly property var code: Scan.codes[current] ?? null
+
     // The side holding fewer codes, or the one away from the picked code on a tie.
     readonly property bool panelLeft: {
         const mid = c => c.x + c.w / 2 < width / 2;
@@ -28,6 +24,7 @@ OverlayWindow {
             return left < right;
         return code ? !mid(code) : false;
     }
+
     property bool revealed: false
     // A hidden Wi-Fi password stays hidden in the raw text too.
     readonly property bool hiding: code?.kind === "wifi" && code.password !== "" && !revealed
@@ -93,13 +90,6 @@ OverlayWindow {
         return rows.join("\n");
     }
 
-
-    Binding {
-        target: Scan
-        property: "showing"
-        value: win.visible
-    }
-
     onOpened: {
         current = 0;
         revealed = false;
@@ -113,9 +103,21 @@ OverlayWindow {
         swap.restart();
     }
 
+    shown: Scan.open
+    name: "scan"
+    screen: Scan.screen
+    scrim: Theme.shade.normal
+
+    Binding {
+        target: Scan
+        property: "showing"
+        value: win.visible
+    }
+
     MouseArea {
-        anchors.fill: parent
         onClicked: Scan.open = false
+
+        anchors.fill: parent
     }
 
     component Heading: Text {
@@ -174,11 +176,6 @@ OverlayWindow {
     Item {
         id: stage
 
-        anchors.fill: parent
-        opacity: Math.min(1, win.reveal)
-        scale: Theme.popScale + (1 - Theme.popScale) * win.reveal
-        focus: true
-
         Keys.onEscapePressed: Scan.open = false
         Keys.onTabPressed: win.step(1)
         Keys.onBacktabPressed: win.step(-1)
@@ -186,6 +183,11 @@ OverlayWindow {
         Keys.onLeftPressed: win.step(-1)
         Keys.onReturnPressed: win.actOnCurrent()
         Keys.onEnterPressed: win.actOnCurrent()
+
+        anchors.fill: parent
+        opacity: Math.min(1, win.reveal)
+        scale: Theme.popScale + (1 - Theme.popScale) * win.reveal
+        focus: true
 
         Repeater {
             model: Scan.codes
@@ -236,6 +238,7 @@ OverlayWindow {
                     Behavior on color {
                         FastColor {}
                     }
+
                     Behavior on scale {
                         PressAnim {}
                     }
@@ -269,10 +272,11 @@ OverlayWindow {
                     MouseArea {
                         id: pick
 
+                        onClicked: win.current = found.index
+
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: win.current = found.index
                     }
                 }
             }
@@ -315,6 +319,7 @@ OverlayWindow {
                     fill: parent
                     margins: Theme.spacing.extraLarge
                 }
+
                 spacing: Theme.spacing.large
 
                 RowLayout {
@@ -358,6 +363,7 @@ OverlayWindow {
                             renderType: Text.NativeRendering
                             font.family: Theme.font
                             font.pixelSize: Theme.fontSize.smaller
+
                             font.features: ({
                                     tnum: 1
                                 })
@@ -377,12 +383,13 @@ OverlayWindow {
 
                     ScrollBar.vertical: ScrollBar {
                         policy: ScrollBar.AsNeeded
+                        background: null
+
                         contentItem: Rectangle {
                             implicitWidth: Theme.spacing.extraSmall
                             radius: width / 2
                             color: Theme.dim
                         }
-                        background: null
                     }
 
                     ColumnLayout {
@@ -390,6 +397,7 @@ OverlayWindow {
 
                         width: details.width - Theme.spacing.medium
                         spacing: Theme.spacing.medium
+
                         transform: Translate {
                             id: lift
                         }
@@ -405,6 +413,7 @@ OverlayWindow {
                                 to: 1
                                 duration: Theme.duration.expressiveDefaultEffects
                             }
+
                             NumberAnimation {
                                 target: lift
                                 property: "y"
@@ -446,11 +455,12 @@ OverlayWindow {
                             }
 
                             BarButton {
+                                onClicked: win.revealed = !win.revealed
+
                                 Layout.alignment: Qt.AlignBottom
                                 icon: win.revealed ? "visibility_off" : "visibility"
                                 label: win.revealed ? "Hide password" : "Show password"
                                 baseColor: Theme.dim
-                                onClicked: win.revealed = !win.revealed
                             }
                         }
 
@@ -473,6 +483,7 @@ OverlayWindow {
                                     top: parent.top
                                     margins: Theme.spacing.medium
                                 }
+
                                 text: win.hiding ? win.code.masked : (win.code?.data ?? "")
                                 wrapMode: TextEdit.WrapAnywhere
                                 renderType: TextEdit.NativeRendering
@@ -483,16 +494,19 @@ OverlayWindow {
 
                         Text {
                             Layout.alignment: Qt.AlignRight
+
                             text: {
                                 const data = win.code?.data ?? "";
                                 const chars = Array.from(data).length;
                                 const bytes = win.utf8(data).length;
                                 return chars + (chars === 1 ? " character" : " characters") + (bytes !== chars ? " · " + bytes + " bytes" : "");
                             }
+
                             color: Theme.dim
                             renderType: Text.NativeRendering
                             font.family: Theme.font
                             font.pixelSize: Theme.fontSize.smaller
+
                             font.features: ({
                                     tnum: 1
                                 })
@@ -536,6 +550,7 @@ OverlayWindow {
 
                         Field {
                             label: I18n.t("Orientation")
+
                             value: I18n.t(({
                                     UP: "Upright",
                                     RIGHT: "Turned right",
@@ -585,24 +600,27 @@ OverlayWindow {
                         spacing: Theme.spacing.small
 
                         Action {
+                            onClicked: Scan.copy(win.code.data)
+
                             visible: win.code?.kind !== "text"
                             icon: "content_copy"
                             label: I18n.t("Copy")
-                            onClicked: Scan.copy(win.code.data)
                         }
 
                         Action {
+                            onClicked: Scan.copy(win.code.password)
+
                             visible: win.code?.kind === "wifi" && win.code.password !== ""
                             icon: "key"
                             label: I18n.t("Copy password")
-                            onClicked: Scan.copy(win.code.password)
                         }
 
                         Action {
+                            onClicked: win.actOnCurrent()
+
                             primary: true
                             icon: win.code?.kind === "link" ? "open_in_new" : win.code?.kind === "text" ? "content_copy" : win.glyph(win.code?.kind ?? "")
                             label: I18n.t(win.verb(win.code?.kind ?? ""))
-                            onClicked: win.actOnCurrent()
                         }
                     }
                 }

@@ -68,20 +68,20 @@ Singleton {
             lockLater.restart();
     }
 
-    // After the fade, so the menu is not in the lock's picture.
-    Timer {
-        id: lockLater
-        interval: Theme.duration.expressiveFastSpatial
-        onTriggered: Lock.lock()
-    }
-
     function indexForKey(key: string): int {
         return actions.findIndex(a => a.key === key.toLowerCase());
     }
 
-    IpcHandler {
-        target: "session"
+    // After the fade, so the menu is not in the lock's picture.
+    Timer {
+        id: lockLater
 
+        onTriggered: Lock.lock()
+
+        interval: Theme.duration.expressiveFastSpatial
+    }
+
+    IpcHandler {
         function toggle(): void {
             root.open = !root.open;
         }
@@ -89,5 +89,7 @@ Singleton {
         function close(): void {
             root.open = false;
         }
+
+        target: "session"
     }
 }

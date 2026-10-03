@@ -36,13 +36,6 @@ Singleton {
         return minutes(m);
     }
 
-    function formatBytes(bytes: real): string {
-        const gib = bytes / (1024 * 1024 * 1024);
-        if (gib >= 1)
-            return gib.toFixed(1) + "GiB";
-        return (bytes / (1024 * 1024)).toFixed(0) + "MiB";
-    }
-
     // Nothing polls unless something on screen shows it; turning on samples at once.
     property bool onDashboard: false
     property bool onProfile: false
@@ -50,6 +43,13 @@ Singleton {
 
     property real lastIdle: 0
     property real lastTotal: 0
+
+    function formatBytes(bytes: real): string {
+        const gib = bytes / (1024 * 1024 * 1024);
+        if (gib >= 1)
+            return gib.toFixed(1) + "GiB";
+        return (bytes / (1024 * 1024)).toFixed(0) + "MiB";
+    }
 
     function refresh(): void {
         stat.reload();
@@ -68,16 +68,16 @@ Singleton {
     }
 
     Timer {
+        onTriggered: root.refresh()
+
         running: root.active
         interval: 2000
         repeat: true
-        onTriggered: root.refresh()
     }
 
     FileView {
         id: stat
-        path: "/proc/stat"
-        printErrors: false
+
         onLoaded: {
             // cpu  user nice system idle iowait irq softirq steal
             const f = text().split("\n")[0].trim().split(/\s+/).slice(1).map(Number);
@@ -90,12 +90,14 @@ Singleton {
             root.lastIdle = idle;
             root.lastTotal = total;
         }
+
+        path: "/proc/stat"
+        printErrors: false
     }
 
     FileView {
         id: meminfo
-        path: "/proc/meminfo"
-        printErrors: false
+
         onLoaded: {
             const kv = {};
             for (const line of text().split("\n")) {
@@ -106,29 +108,37 @@ Singleton {
             root.memTotal = kv.MemTotal ?? 1;
             root.memUsed = (kv.MemTotal ?? 0) - (kv.MemAvailable ?? 0);
         }
+
+        path: "/proc/meminfo"
+        printErrors: false
     }
 
     FileView {
         id: uptime
+
+        onLoaded: root.uptimeSeconds = Math.floor(Number(text().split(" ")[0]))
+
         path: "/proc/uptime"
         printErrors: false
-        onLoaded: root.uptimeSeconds = Math.floor(Number(text().split(" ")[0]))
     }
 
     FileView {
-        path: "/etc/os-release"
-        printErrors: false
         onLoaded: {
             const m = text().match(/^PRETTY_NAME="?([^"\n]+)"?/m);
             if (m)
                 root.distro = m[1];
         }
+
+        path: "/etc/os-release"
+        printErrors: false
     }
 
     // hwmon indices shuffle between boots, so resolve the sensors by name.
     Process {
         id: temps
+
         command: ["sh", "-c", `for h in /sys/class/hwmon/hwmon*; do n=$(cat "$h/name" 2>/dev/null); case "$n" in k10temp|coretemp) printf 'cpu %s\\n' "$(cat "$h/temp1_input" 2>/dev/null)";; amdgpu|nouveau) printf 'gpu %s\\n' "$(cat "$h/temp1_input" 2>/dev/null)";; esac; done`]
+
         stdout: StdioCollector {
             onStreamFinished: {
                 let cpu = NaN;
@@ -150,7 +160,9 @@ Singleton {
 
     Process {
         id: storage
+
         command: ["df", "-B1", "--output=used,size", "/"]
+
         stdout: StdioCollector {
             onStreamFinished: {
                 const parts = text.trim().split("\n").pop().trim().split(/\s+/);

@@ -62,19 +62,10 @@ Singleton {
         }
     ]
 
-    onOpenChanged: {
-        card = "";
-        pendingCard = "";
-        asking = false;
-        if (open) {
-            // A reopen must not let the last choice's surface open over the menu.
-            after.stop();
-            next = "";
-            selected = 0;
-            Sounds.play("sao-open");
-        }
-    }
+    property string pendingCard: ""
 
+    // The menu leaves first, so the next surface (and the overview's picture) never shows it.
+    property string next: ""
 
     function show(on: var): void {
         // Only while closed, so an open menu never jumps screens.
@@ -129,17 +120,6 @@ Singleton {
         }
     }
 
-    property string pendingCard: ""
-
-    Timer {
-        id: swap
-        interval: Theme.duration.expressiveFastSpatial
-        onTriggered: if (root.open && root.pendingCard !== "") {
-            root.card = root.pendingCard;
-            root.pendingCard = "";
-        }
-    }
-
     // ○ logs out, × goes back.
     function answer(): void {
         if (choice === 0)
@@ -148,29 +128,10 @@ Singleton {
             asking = false;
     }
 
-    // The menu leaves first, so the next surface (and the overview's picture) never shows it.
-    property string next: ""
-
     function leave(id: string): void {
         next = id;
         open = false;
         after.restart();
-    }
-
-    Timer {
-        id: after
-        interval: Theme.duration.expressiveFastSpatial + Theme.duration.small
-        onTriggered: {
-            if (root.next === "party")
-                Switcher.overview(false);
-            else if (root.next === "items")
-                Launcher.show("apps");
-            else if (root.next === "message")
-                Notifs.panelOpen = true;
-            else if (root.next === "option")
-                Settings.open = true;
-            root.next = "";
-        }
     }
 
     function logout(): void {
@@ -184,12 +145,56 @@ Singleton {
         Quickshell.execDetached(["wl-copy", "--", "/" + name]);
     }
 
+    onOpenChanged: {
+        card = "";
+        pendingCard = "";
+        asking = false;
+        if (open) {
+            // A reopen must not let the last choice's surface open over the menu.
+            after.stop();
+            next = "";
+            selected = 0;
+            Sounds.play("sao-open");
+        }
+    }
+
+    Timer {
+        id: swap
+
+        onTriggered: if (root.open && root.pendingCard !== "") {
+            root.card = root.pendingCard;
+            root.pendingCard = "";
+        }
+
+        interval: Theme.duration.expressiveFastSpatial
+    }
+
+    Timer {
+        id: after
+
+        onTriggered: {
+            if (root.next === "party")
+                Switcher.overview(false);
+            else if (root.next === "items")
+                Launcher.show("apps");
+            else if (root.next === "message")
+                Notifs.panelOpen = true;
+            else if (root.next === "option")
+                Settings.open = true;
+            root.next = "";
+        }
+
+        interval: Theme.duration.expressiveFastSpatial + Theme.duration.small
+    }
+
     Process {
         id: scan
 
-        command: ["sh", Quickshell.shellDir + "/sao/skills.sh"]
         onRunningChanged: root.scanning = running
         onExited: code => root.scanFailed = code !== 0 && root.skills.length === 0
+
+        command: ["sh", Quickshell.shellDir + "/sao/skills.sh"]
+
         stdout: StdioCollector {
             onStreamFinished: root.skills = text.split("\n").filter(l => l !== "").map(l => {
                 const tab = l.indexOf("\t");
@@ -202,8 +207,6 @@ Singleton {
     }
 
     IpcHandler {
-        target: "sao"
-
         function toggle(): void {
             root.toggle();
         }
@@ -211,5 +214,7 @@ Singleton {
         function close(): void {
             root.open = false;
         }
+
+        target: "sao"
     }
 }

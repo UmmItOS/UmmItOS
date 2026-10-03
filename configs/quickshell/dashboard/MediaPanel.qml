@@ -26,16 +26,19 @@ Item {
         Behavior on color {
             FastColor {}
         }
+
         Behavior on scale {
             PressAnim {}
         }
 
         MouseArea {
             id: skipArea
+
+            onClicked: skip.clicked()
+
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
-            onClicked: skip.clicked()
         }
     }
 
@@ -175,9 +178,10 @@ Item {
                 spacing: Theme.spacing.largeIncreased
 
                 SkipButton {
+                    onClicked: root.player.previous()
+
                     text: "skip_previous"
                     enabled: root.player?.canGoPrevious ?? false
-                    onClicked: root.player.previous()
                 }
 
                 Rectangle {
@@ -191,6 +195,7 @@ Item {
                     Behavior on color {
                         FastColor {}
                     }
+
                     Behavior on scale {
                         PressAnim {}
                     }
@@ -216,17 +221,20 @@ Item {
 
                     MouseArea {
                         id: playArea
+
+                        onClicked: root.player.togglePlaying()
+
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: root.player.togglePlaying()
                     }
                 }
 
                 SkipButton {
+                    onClicked: root.player.next()
+
                     text: "skip_next"
                     enabled: root.player?.canGoNext ?? false
-                    onClicked: root.player.next()
                 }
             }
 
@@ -248,11 +256,12 @@ Item {
                 MouseArea {
                     id: seek
 
+                    // Measured against the bar, not the enlarged hit area.
+                    onClicked: event => root.player.position = Math.max(0, Math.min(1, seek.mapToItem(seek.parent, event.x, 0).x / seek.parent.width)) * root.player.length
+
                     anchors.fill: parent
                     anchors.margins: -Theme.spacing.small
                     enabled: root.player?.canSeek ?? false
-                    // Measured against the bar, not the enlarged hit area.
-                    onClicked: event => root.player.position = Math.max(0, Math.min(1, seek.mapToItem(seek.parent, event.x, 0).x / seek.parent.width)) * root.player.length
                 }
             }
 
@@ -267,6 +276,7 @@ Item {
                     color: Theme.dim
                     font.family: Theme.font
                     font.pixelSize: Theme.fontSize.small
+
                     font.features: ({
                             tnum: 1
                         })
@@ -282,6 +292,7 @@ Item {
                     color: Theme.dim
                     font.family: Theme.font
                     font.pixelSize: Theme.fontSize.small
+
                     font.features: ({
                             tnum: 1
                         })
@@ -300,6 +311,7 @@ Item {
 
                     Rectangle {
                         id: chip
+
                         required property MprisPlayer modelData
 
                         readonly property bool current: modelData === root.player
@@ -313,6 +325,7 @@ Item {
 
                         Text {
                             id: chipLabel
+
                             anchors.centerIn: parent
                             width: Math.min(implicitWidth, chip.width - Theme.spacing.large * 2)
                             elide: Text.ElideRight

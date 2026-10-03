@@ -15,6 +15,7 @@ GridView {
 
     delegate: Item {
         id: cell
+
         required property HyprlandWorkspace modelData
 
         width: grid.cellWidth
@@ -35,6 +36,7 @@ GridView {
                     fill: parent
                     margins: Theme.spacing.medium
                 }
+
                 spacing: Theme.spacing.extraSmall
 
                 Text {
@@ -50,10 +52,12 @@ GridView {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     textFormat: Text.PlainText
+
                     text: {
                         const names = cell.modelData?.toplevels.values.map(t => t.title) ?? [];
                         return names.length === 0 ? "empty" : names.join("\n");
                     }
+
                     color: cell.modelData?.urgent ? Theme.fg : cell.modelData?.focused ? Theme.accentOn : Theme.dim
                     font.family: Theme.font
                     font.pixelSize: Theme.fontSize.small
@@ -64,8 +68,9 @@ GridView {
             }
 
             MouseArea {
-                anchors.fill: parent
                 onClicked: cell.modelData?.activate()
+
+                anchors.fill: parent
             }
         }
     }

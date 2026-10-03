@@ -58,8 +58,6 @@ RowLayout {
         return network.security !== undefined && network.security !== WifiSecurityType.Open && network.security !== WifiSecurityType.Unknown;
     }
 
-    spacing: Theme.spacing.small
-
     onPopupOpenChanged: {
         if (popupOpen) {
             scanning = true;
@@ -70,15 +68,19 @@ RowLayout {
         }
     }
 
+    spacing: Theme.spacing.small
+
     Timer {
         id: scanGrace
 
-        interval: Theme.duration.scanGrace
         onTriggered: root.scanning = false
+
+        interval: Theme.duration.scanGrace
     }
 
     MaterialIcon {
         Layout.alignment: Qt.AlignVCenter
+
         text: {
             if (root.plugged)
                 return "lan";
@@ -86,6 +88,7 @@ RowLayout {
                 return "wifi_off";
             return root.active ? root.bars(root.active.signalStrength) : "signal_wifi_0_bar";
         }
+
         color: root.active || root.plugged ? Theme.fg : Theme.dim
     }
 
@@ -94,13 +97,14 @@ RowLayout {
     }
 
     Flyout {
+        onToggled: Networking.wifiEnabled = !Networking.wifiEnabled
+        onCloseRequested: root.popupOpen = false
+
         anchorItem: root
         visible: root.popupOpen
         title: "Wi-Fi"
         busy: root.scanning && root.networks.length > 0
         checked: Networking.wifiEnabled
-        onToggled: Networking.wifiEnabled = !Networking.wifiEnabled
-        onCloseRequested: root.popupOpen = false
 
         // Only while this flyout is open, so another screen's bar cannot stop it.
         Binding {
@@ -115,6 +119,7 @@ RowLayout {
             visible: !Networking.wifiEnabled || !root.wifi || root.networks.length === 0
             searching: root.searching
             icon: root.wifi && Networking.wifiEnabled ? "wifi_find" : "wifi_off"
+
             text: {
                 if (!root.wifi)
                     return I18n.t("No Wi-Fi adapter");
@@ -148,21 +153,6 @@ RowLayout {
                     root.failReason = "";
                 }
 
-                Connections {
-                    target: row.modelData
-                    function onConnectionFailed(reason: int): void {
-                        root.failedFor = row.modelData.name;
-                        root.failReason = root.failText(reason);
-                        // A rejected password asks again; the other failures are not the password.
-                        const secrets = reason === ConnectionFailReason.NoSecrets || reason === ConnectionFailReason.WifiClientDisconnected || reason === ConnectionFailReason.WifiAuthTimeout;
-                        if (secrets && root.secured(row.modelData)) {
-                            root.pskDraft = "";
-                            root.askingFor = row.modelData.name;
-                            psk.forceActiveFocus();
-                        }
-                    }
-                }
-
                 width: list.width
                 active: row.modelData.connected
                 // The expanded row is as tall as what it holds, not a guess.
@@ -176,6 +166,22 @@ RowLayout {
                     }
                 }
 
+                Connections {
+                    function onConnectionFailed(reason: int): void {
+                        root.failedFor = row.modelData.name;
+                        root.failReason = root.failText(reason);
+                        // A rejected password asks again; the other failures are not the password.
+                        const secrets = reason === ConnectionFailReason.NoSecrets || reason === ConnectionFailReason.WifiClientDisconnected || reason === ConnectionFailReason.WifiAuthTimeout;
+                        if (secrets && root.secured(row.modelData)) {
+                            root.pskDraft = "";
+                            root.askingFor = row.modelData.name;
+                            psk.forceActiveFocus();
+                        }
+                    }
+
+                    target: row.modelData
+                }
+
                 ColumnLayout {
                     id: content
 
@@ -186,6 +192,7 @@ RowLayout {
                         leftMargin: Theme.spacing.medium
                         rightMargin: Theme.spacing.medium
                     }
+
                     spacing: Theme.spacing.extraSmall
 
                     RowLayout {
@@ -205,6 +212,7 @@ RowLayout {
                             text: row.modelData.name
                             color: row.ink
                             elide: Text.ElideRight
+
                             font {
                                 family: Theme.font
                                 pixelSize: Theme.fontSize.smaller
@@ -217,6 +225,7 @@ RowLayout {
                             // Says what a click does.
                             text: row.hovered ? I18n.t("Disconnect") : I18n.t("Connected")
                             color: row.ink
+
                             font {
                                 family: Theme.font
                                 pixelSize: Theme.fontSize.small
@@ -230,6 +239,7 @@ RowLayout {
                             textFormat: Text.PlainText
                             text: root.failReason
                             color: Theme.urgent
+
                             font {
                                 family: Theme.font
                                 pixelSize: Theme.fontSize.small
@@ -254,13 +264,14 @@ RowLayout {
                         }
 
                         BarButton {
+                            onClicked: row.modelData.forget()
+
                             visible: !row.busy && row.modelData.known && row.hovered
                             icon: "delete"
                             label: "Forget network"
                             baseColor: row.inkDim
                             hoverColor: row.ink
                             size: Theme.icon.small
-                            onClicked: row.modelData.forget()
                         }
                     }
 
@@ -276,25 +287,11 @@ RowLayout {
                         TextInput {
                             id: psk
 
-                            clip: true
-                            anchors {
-                                fill: parent
-                                leftMargin: Theme.spacing.large
-                                rightMargin: Theme.spacing.large
-                            }
-                            verticalAlignment: TextInput.AlignVCenter
-                            echoMode: TextInput.Password
-                            color: Theme.fg
-                            font {
-                                family: Theme.font
-                                pixelSize: Theme.fontSize.smaller
-                            }
-
-                            text: row.askingPsk ? root.pskDraft : ""
                             onTextChanged: {
                                 if (row.askingPsk)
                                     root.pskDraft = text;
                             }
+
                             // A recreated row takes the focus back.
                             Component.onCompleted: {
                                 if (row.askingPsk)
@@ -307,10 +304,30 @@ RowLayout {
                                 root.askingFor = "";
                                 root.pskDraft = "";
                             }
+
                             Keys.onEscapePressed: {
                                 root.askingFor = "";
                                 root.pskDraft = "";
                             }
+
+                            clip: true
+
+                            anchors {
+                                fill: parent
+                                leftMargin: Theme.spacing.large
+                                rightMargin: Theme.spacing.large
+                            }
+
+                            verticalAlignment: TextInput.AlignVCenter
+                            echoMode: TextInput.Password
+                            color: Theme.fg
+
+                            font {
+                                family: Theme.font
+                                pixelSize: Theme.fontSize.smaller
+                            }
+
+                            text: row.askingPsk ? root.pskDraft : ""
 
                             Text {
                                 anchors.fill: parent
@@ -325,15 +342,6 @@ RowLayout {
                 }
 
                 MouseArea {
-                    // Under the content, so the forget button gets its own click.
-                    z: -1
-                    anchors {
-                        left: parent.left
-                        right: parent.right
-                        top: parent.top
-                    }
-                    height: row.lineHeight
-                    enabled: !row.busy
                     onClicked: {
                         if (row.modelData.connected) {
                             row.modelData.disconnect();
@@ -346,6 +354,18 @@ RowLayout {
                             psk.forceActiveFocus();
                         }
                     }
+
+                    // Under the content, so the forget button gets its own click.
+                    z: -1
+
+                    anchors {
+                        left: parent.left
+                        right: parent.right
+                        top: parent.top
+                    }
+
+                    height: row.lineHeight
+                    enabled: !row.busy
                 }
             }
         }

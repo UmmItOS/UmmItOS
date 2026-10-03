@@ -20,10 +20,11 @@ ColumnLayout {
     spacing: Theme.spacing.small
 
     Connections {
-        target: Dashboard
         function onOpenChanged(): void {
             root.shown = root.thisMonth;
         }
+
+        target: Dashboard
     }
 
     RowLayout {
@@ -34,6 +35,7 @@ ColumnLayout {
             Layout.fillWidth: true
             text: new Date(root.year, root.month, 1).toLocaleString(I18n.locale, I18n.t("MMMM yyyy"))
             color: Theme.fg
+
             font {
                 family: Theme.fontDisplay
                 pixelSize: Theme.fontSize.larger
@@ -43,22 +45,25 @@ ColumnLayout {
 
         // Only there when it would go somewhere.
         BarButton {
+            onClicked: root.shown = root.thisMonth
+
             icon: "today"
             label: "Today"
             visible: root.shown !== root.thisMonth
-            onClicked: root.shown = root.thisMonth
         }
 
         BarButton {
+            onClicked: root.shown--
+
             icon: "chevron_left"
             label: "Previous month"
-            onClicked: root.shown--
         }
 
         BarButton {
+            onClicked: root.shown++
+
             icon: "chevron_right"
             label: "Next month"
-            onClicked: root.shown++
         }
     }
 
@@ -72,6 +77,7 @@ ColumnLayout {
             horizontalAlignment: Text.AlignHCenter
             text: shortName
             color: Theme.dim
+
             font {
                 family: Theme.font
                 pixelSize: Theme.fontSize.small
@@ -115,10 +121,12 @@ ColumnLayout {
                 text: cell.model.day
                 color: cell.isToday ? Theme.accentOn : cell.model.month === grid.month ? Theme.fg : Theme.dim
                 opacity: cell.model.month === grid.month ? 1 : Theme.dashboard.otherMonth
+
                 font {
                     family: Theme.font
                     pixelSize: Theme.fontSize.normal
                     weight: cell.isToday ? Theme.weight.bold : Theme.weight.regular
+
                     features: ({
                             tnum: 1
                         })

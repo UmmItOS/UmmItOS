@@ -7,15 +7,16 @@ import ".."
 OverlayWindow {
     id: win
 
+    onOpened: scope.forceActiveFocus()
+
     shown: Recorder.open
     name: "record"
     scrim: Theme.shade.normal
 
-    onOpened: scope.forceActiveFocus()
-
     MouseArea {
-        anchors.fill: parent
         onClicked: Recorder.cancel()
+
+        anchors.fill: parent
     }
 
     component Choice: Rectangle {
@@ -37,6 +38,7 @@ OverlayWindow {
                 leftMargin: Theme.spacing.medium
                 rightMargin: Theme.spacing.medium
             }
+
             spacing: Theme.spacing.medium
 
             MaterialIcon {
@@ -65,6 +67,7 @@ OverlayWindow {
 
         HoverHandler {
             id: choiceHover
+
             cursorShape: Qt.PointingHandCursor
         }
 
@@ -76,13 +79,9 @@ OverlayWindow {
     FocusScope {
         id: scope
 
-        anchors.fill: parent
-        focus: true
-        opacity: Math.min(1, win.reveal)
-        scale: Theme.popScale + (1 - Theme.popScale) * win.reveal
-
         Keys.onEscapePressed: Recorder.cancel()
         Keys.onReturnPressed: Recorder.start()
+
         Keys.onPressed: event => {
             if (Recorder.counting)
                 return;
@@ -91,6 +90,11 @@ OverlayWindow {
             else if (event.key === Qt.Key_M)
                 Recorder.mic = !Recorder.mic;
         }
+
+        anchors.fill: parent
+        focus: true
+        opacity: Math.min(1, win.reveal)
+        scale: Theme.popScale + (1 - Theme.popScale) * win.reveal
 
         Surface {
             id: card
@@ -116,6 +120,7 @@ OverlayWindow {
                     verticalCenter: parent.verticalCenter
                     margins: Theme.spacing.extraLarge
                 }
+
                 spacing: Theme.spacing.small
                 // Hidden is not enough: its checkboxes would still take clicks during the countdown.
                 enabled: !Recorder.counting
@@ -144,17 +149,19 @@ OverlayWindow {
                 }
 
                 Choice {
+                    onToggled: Recorder.system = !Recorder.system
+
                     label: I18n.t("System sound")
                     hint: "S"
                     checked: Recorder.system
-                    onToggled: Recorder.system = !Recorder.system
                 }
 
                 Choice {
+                    onToggled: Recorder.mic = !Recorder.mic
+
                     label: I18n.t("Microphone")
                     hint: "M"
                     checked: Recorder.mic
-                    onToggled: Recorder.mic = !Recorder.mic
                 }
 
                 RowLayout {
@@ -171,15 +178,17 @@ OverlayWindow {
                     }
 
                     Action {
+                        onClicked: Recorder.cancel()
+
                         label: I18n.t("Cancel")
                         rest: Theme.bgAlt
-                        onClicked: Recorder.cancel()
                     }
 
                     Action {
+                        onClicked: Recorder.start()
+
                         label: I18n.t("Start")
                         primary: true
-                        onClicked: Recorder.start()
                     }
                 }
             }
@@ -199,17 +208,19 @@ OverlayWindow {
                     font.family: Theme.fontDisplay
                     font.pixelSize: Theme.fontSize.hero
                     font.bold: true
+
                     font.features: ({
                             tnum: 1
                         })
 
                     // Each second lands: in large and faint, settling to size.
                     Connections {
-                        target: Recorder
                         function onCountChanged(): void {
                             if (Recorder.counting)
                                 land.restart();
                         }
+
+                        target: Recorder
                     }
 
                     ParallelAnimation {
@@ -224,6 +235,7 @@ OverlayWindow {
                             easing.type: Easing.BezierSpline
                             easing.bezierCurve: Theme.curve.emphasized
                         }
+
                         NumberAnimation {
                             target: number
                             property: "opacity"

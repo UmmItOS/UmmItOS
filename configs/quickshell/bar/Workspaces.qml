@@ -18,6 +18,7 @@ RowLayout {
 
         Rectangle {
             id: pill
+
             required property HyprlandWorkspace modelData
 
             readonly property bool focused: modelData?.focused ?? false
@@ -32,6 +33,18 @@ RowLayout {
             // bgTray vanished against the bar; plain white shouted.
             color: focused ? Theme.accent : modelData?.urgent ? Theme.urgent : Qt.alpha(Theme.accentText, Theme.bar.workspaceIdle)
 
+            // Only once grown: a resizing layer rebuilds its blur every frame.
+            layer.enabled: pill.focused && pill.implicitWidth === pill.targetWidth && pill.implicitHeight === pill.targetHeight
+
+            layer.effect: MultiEffect {
+                shadowEnabled: true
+                shadowColor: Theme.accent
+                shadowBlur: Theme.bar.workspaceGlowBlur
+                shadowOpacity: Theme.bar.workspaceGlow
+                shadowVerticalOffset: 0
+                shadowHorizontalOffset: 0
+            }
+
             Behavior on implicitWidth {
                 NumberAnimation {
                     duration: Theme.duration.expressiveDefaultSpatial
@@ -39,6 +52,7 @@ RowLayout {
                     easing.bezierCurve: Theme.curve.expressiveDefaultSpatial
                 }
             }
+
             Behavior on implicitHeight {
                 NumberAnimation {
                     duration: Theme.duration.expressiveDefaultSpatial
@@ -46,6 +60,7 @@ RowLayout {
                     easing.bezierCurve: Theme.curve.expressiveDefaultSpatial
                 }
             }
+
             Behavior on color {
                 ColorAnimation {
                     duration: Theme.duration.expressiveDefaultEffects
@@ -54,6 +69,7 @@ RowLayout {
 
             Text {
                 id: label
+
                 anchors.centerIn: parent
                 opacity: pill.focused ? 1 : 0
                 textFormat: Text.PlainText
@@ -68,22 +84,12 @@ RowLayout {
                 }
             }
 
-            // Only once grown: a resizing layer rebuilds its blur every frame.
-            layer.enabled: pill.focused && pill.implicitWidth === pill.targetWidth && pill.implicitHeight === pill.targetHeight
-            layer.effect: MultiEffect {
-                shadowEnabled: true
-                shadowColor: Theme.accent
-                shadowBlur: Theme.bar.workspaceGlowBlur
-                shadowOpacity: Theme.bar.workspaceGlow
-                shadowVerticalOffset: 0
-                shadowHorizontalOffset: 0
-            }
-
             MouseArea {
+                onClicked: pill.modelData?.activate()
+
                 anchors.fill: parent
                 anchors.margins: -Theme.hitSlop
                 cursorShape: Qt.PointingHandCursor
-                onClicked: pill.modelData?.activate()
             }
         }
     }

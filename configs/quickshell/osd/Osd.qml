@@ -24,9 +24,25 @@ Singleton {
     readonly property PwNode sink: Pipewire.defaultAudioSink
     readonly property var audio: sink ? sink.audio : null
 
-    PwObjectTracker {
-        objects: [root.sink]
-    }
+    // The input method in use, shown when it switches.
+    property string glyph: ""
+    property string inputName: ""
+    // The methods in fcitx's group, in order, and the one in use.
+    property var inputs: []
+    property int inputIndex: 0
+    property string current: ""
+    // id, name and label of each method, read once per profile change, so a switch shows at once.
+    property var methods: []
+    property real focusedAt: 0
+
+    // sysfs backlight emits no reliable inotify events, so the keys ask for a read.
+    property real brightnessMax: 1
+    property real brightnessRaw: 0
+    // amdgpu_bl1 here, intel_backlight elsewhere.
+    property string backlight: ""
+
+    // A switch on a card already showing; the window pops the glyph and name.
+    signal inputSwitched
 
     function present(newKind: string, newValue: real, newMuted: bool): void {
         if (!primed)
@@ -47,60 +63,6 @@ Singleton {
         icon = iconPath;
         label = name;
         present("app", newValue, newMuted);
-    }
-
-    Timer {
-        id: hide
-        interval: root.kind === "input" ? Theme.duration.imeHide : Theme.duration.osdHide
-        onTriggered: root.shown = false
-    }
-
-    Timer {
-        id: arm
-        running: true
-        interval: Theme.duration.osdArm
-        onTriggered: root.primed = true
-    }
-
-    onSinkChanged: {
-        primed = false;
-        arm.restart();
-    }
-
-    Connections {
-        target: root.audio
-        enabled: root.audio !== null
-
-        function onVolumeChanged() {
-            root.present("volume", root.audio.volume, root.audio.muted);
-        }
-
-        function onMutedChanged() {
-            root.present("volume", root.audio.volume, root.audio.muted);
-        }
-    }
-
-    // The input method in use, shown when it switches.
-    property string glyph: ""
-    property string inputName: ""
-    // The methods in fcitx's group, in order, and the one in use.
-    property var inputs: []
-    property int inputIndex: 0
-    property string current: ""
-    // id, name and label of each method, read once per profile change, so a switch shows at once.
-    property var methods: []
-    property real focusedAt: 0
-
-    // A switch on a card already showing; the window pops the glyph and name.
-    signal inputSwitched
-
-    Connections {
-        target: Hyprland
-
-        function onRawEvent(event: var): void {
-            if (event.name === "activewindowv2")
-                root.focusedAt = Date.now();
-        }
     }
 
     function apply(id: string, show: bool): void {
@@ -134,22 +96,6 @@ Singleton {
         }
     }
 
-    // fcitx signals a switch on key press; the tray model re-reads lazily and would miss a quick switch back.
-    Process {
-        id: watch
-
-        running: true
-        command: ["dbus-monitor", "--session", "type='signal',interface='org.kde.StatusNotifierItem',member='NewToolTip'"]
-        stdout: SplitParser {
-            onRead: line => {
-                if (line.includes("member=NewToolTip"))
-                    root.ask(false);
-            }
-        }
-        onStarted: root.ask(true)
-        onExited: retry.start()
-    }
-
     // Another app's tooltip leaves the method unchanged, so nothing shows.
     function ask(quiet: bool): void {
         exact.quiet = exact.quiet || quiet;
@@ -159,6 +105,72 @@ Singleton {
             exact.running = true;
     }
 
+    onSinkChanged: {
+        primed = false;
+        arm.restart();
+    }
+
+    PwObjectTracker {
+        objects: [root.sink]
+    }
+
+    Timer {
+        id: hide
+
+        onTriggered: root.shown = false
+
+        interval: root.kind === "input" ? Theme.duration.imeHide : Theme.duration.osdHide
+    }
+
+    Timer {
+        id: arm
+
+        onTriggered: root.primed = true
+
+        running: true
+        interval: Theme.duration.osdArm
+    }
+
+    Connections {
+        function onVolumeChanged() {
+            root.present("volume", root.audio.volume, root.audio.muted);
+        }
+
+        function onMutedChanged() {
+            root.present("volume", root.audio.volume, root.audio.muted);
+        }
+
+        target: root.audio
+        enabled: root.audio !== null
+    }
+
+    Connections {
+        function onRawEvent(event: var): void {
+            if (event.name === "activewindowv2")
+                root.focusedAt = Date.now();
+        }
+
+        target: Hyprland
+    }
+
+    // fcitx signals a switch on key press; the tray model re-reads lazily and would miss a quick switch back.
+    Process {
+        id: watch
+
+        onStarted: root.ask(true)
+        onExited: retry.start()
+
+        running: true
+        command: ["dbus-monitor", "--session", "type='signal',interface='org.kde.StatusNotifierItem',member='NewToolTip'"]
+
+        stdout: SplitParser {
+            onRead: line => {
+                if (line.includes("member=NewToolTip"))
+                    root.ask(false);
+            }
+        }
+    }
+
     Process {
         id: exact
 
@@ -166,7 +178,14 @@ Singleton {
         property bool quiet: false
         property bool again: false
 
+        // A switch that came while this read ran.
+        onExited: if (again) {
+            again = false;
+            running = true;
+        }
+
         command: ["fcitx5-remote", "-n"]
+
         stdout: StdioCollector {
             onStreamFinished: {
                 const id = text.trim();
@@ -176,26 +195,21 @@ Singleton {
                 exact.quiet = false;
             }
         }
-        // A switch that came while this read ran.
-        onExited: if (again) {
-            again = false;
-            running = true;
-        }
     }
 
     // fcitx or the session bus restarted.
     Timer {
         id: retry
-        interval: Theme.duration.imeRetry
+
         onTriggered: watch.running = true
+
+        interval: Theme.duration.imeRetry
     }
 
     // The group's methods; fcitx rewrites this file when they change.
     FileView {
-        path: Quickshell.env("HOME") + "/.config/fcitx5/profile"
-        watchChanges: true
-        printErrors: false
         onFileChanged: reload()
+
         onLoaded: {
             const ids = [];
             let item = false;
@@ -208,6 +222,10 @@ Singleton {
             table.command = ["sh", "-c", table.script, "sh", table.layouts].concat(ids);
             table.running = true;
         }
+
+        path: Quickshell.env("HOME") + "/.config/fcitx5/profile"
+        watchChanges: true
+        printErrors: false
     }
 
     // Each method's id, name and short label (速, 倉); a keyboard's name comes from xkb, as fcitx shows it.
@@ -233,38 +251,33 @@ Singleton {
         }
     }
 
-    // sysfs backlight emits no reliable inotify events, so the keys ask for a read.
-    property real brightnessMax: 1
-    property real brightnessRaw: 0
-    // amdgpu_bl1 here, intel_backlight elsewhere.
-    property string backlight: ""
-
     Process {
         running: true
         command: ["sh", "-c", "ls -d /sys/class/backlight/*/ 2>/dev/null | head -1"]
+
         stdout: StdioCollector {
             onStreamFinished: root.backlight = text.trim().replace(/\/$/, "")
         }
     }
 
     IpcHandler {
-        target: "osd"
-
         function brightness(): void {
             brightnessFile.reload();
         }
+
+        target: "osd"
     }
 
     FileView {
+        onLoaded: root.brightnessMax = Math.max(1, Number(text().trim()))
+
         path: root.backlight === "" ? "" : root.backlight + "/max_brightness"
         printErrors: false
-        onLoaded: root.brightnessMax = Math.max(1, Number(text().trim()))
     }
 
     FileView {
         id: brightnessFile
-        path: root.backlight === "" ? "" : root.backlight + "/brightness"
-        printErrors: false
+
         onLoaded: {
             const raw = Number(text().trim());
             if (raw === root.brightnessRaw)
@@ -272,5 +285,8 @@ Singleton {
             root.brightnessRaw = raw;
             root.present("brightness", raw / root.brightnessMax, false);
         }
+
+        path: root.backlight === "" ? "" : root.backlight + "/brightness"
+        printErrors: false
     }
 }

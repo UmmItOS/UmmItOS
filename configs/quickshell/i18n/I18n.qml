@@ -9,6 +9,7 @@ Singleton {
     id: root
 
     property string lang: "en"
+
     readonly property var languages: [
         {
             code: "en",
@@ -23,6 +24,7 @@ Singleton {
             name: "台灣華語"
         }
     ]
+
     // i18n/<lang>.json, keyed by the English text; empty for English.
     property var words: ({})
     // For dates and numbers written by Qt.
@@ -41,21 +43,19 @@ Singleton {
     FileView {
         id: saved
 
-        path: Quickshell.statePath("language.txt")
-        blockLoading: true
-        printErrors: false
-        blockWrites: false
         onLoaded: {
             const code = text().trim();
             if (root.languages.some(l => l.code === code))
                 root.lang = code;
         }
+
+        path: Quickshell.statePath("language.txt")
+        blockLoading: true
+        printErrors: false
+        blockWrites: false
     }
 
     FileView {
-        path: root.lang === "en" ? "" : Qt.resolvedUrl(root.lang + ".json").toString().replace("file://", "")
-        // Loaded before first paint, so the desktop does not flash English at startup.
-        blockLoading: true
         onLoaded: {
             try {
                 root.words = JSON.parse(text());
@@ -64,8 +64,14 @@ Singleton {
                 root.words = {};
             }
         }
+
         onLoadFailed: root.words = {}
+
         onPathChanged: if (path === "")
             root.words = {}
+
+        path: root.lang === "en" ? "" : Qt.resolvedUrl(root.lang + ".json").toString().replace("file://", "")
+        // Loaded before first paint, so the desktop does not flash English at startup.
+        blockLoading: true
     }
 }

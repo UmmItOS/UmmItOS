@@ -13,13 +13,13 @@ Item {
     // Which screen this is, for its picture of the desktop.
     required property string screenName
 
-    function at(fraction: real): real {
-        return -fraction * height;
-    }
-
     // 0 is the desktop, 1 the lock; both ways fade.
     property real haze: 0
     property bool snapping: false
+
+    function at(fraction: real): real {
+        return -fraction * height;
+    }
 
     // Hold on the desktop picture until the blur has drawn once.
     function enter(): void {
@@ -29,12 +29,23 @@ Item {
         begin.restart();
     }
 
+    Component.onCompleted: enter()
+
+    Behavior on haze {
+        enabled: !root.snapping
+
+        NumberAnimation {
+            duration: Lock.unlocking ? Theme.duration.expressiveDefaultSpatial : Theme.duration.extraLarge
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Lock.unlocking ? Theme.curve.emphasizedAccel : Theme.curve.standardDecel
+        }
+    }
+
     Timer {
         id: begin
 
         property int tries: 0
 
-        interval: Theme.duration.frame
         onTriggered: {
             // Two frames once the wallpaper is ready; never more than ~300ms.
             if ((wall.status !== Image.Ready && tries < Theme.lock.maxFrames) || tries < Theme.lock.settleFrames) {
@@ -45,13 +56,11 @@ Item {
             tries = 0;
             root.haze = 1;
         }
+
+        interval: Theme.duration.frame
     }
 
-    Component.onCompleted: enter()
-
     Connections {
-        target: Lock
-
         function onUnlockingChanged(): void {
             if (Lock.unlocking)
                 root.haze = 0;
@@ -64,20 +73,13 @@ Item {
             if (Lock.shown && !Lock.unlocking)
                 root.enter();
         }
-    }
 
-    Behavior on haze {
-        enabled: !root.snapping
-
-        NumberAnimation {
-            duration: Lock.unlocking ? Theme.duration.expressiveDefaultSpatial : Theme.duration.extraLarge
-            easing.type: Easing.BezierSpline
-            easing.bezierCurve: Lock.unlocking ? Theme.curve.emphasizedAccel : Theme.curve.standardDecel
-        }
+        target: Lock
     }
 
     Image {
         id: wall
+
         anchors.fill: parent
         source: Wallpapers.current ? "file://" + Wallpapers.current : ""
         fillMode: Image.PreserveAspectCrop
@@ -137,8 +139,10 @@ Item {
                 right: parent.right
                 margins: parent.width * Theme.lock.margin
             }
+
             spacing: Theme.spacing.small
             layer.enabled: true
+
             layer.effect: Shade {
                 size: Theme.lock.shadow
                 passes: Theme.lock.shadowPasses
@@ -162,6 +166,7 @@ Item {
 
         SystemClock {
             id: clock
+
             precision: SystemClock.Minutes
         }
 
@@ -174,6 +179,7 @@ Item {
             font.pixelSize: Theme.lock.date
             font.weight: Theme.weight.medium
             layer.enabled: true
+
             layer.effect: Shade {
                 size: Theme.lock.shadow
                 passes: Theme.lock.shadowPasses
@@ -189,6 +195,7 @@ Item {
             font.pixelSize: Theme.lock.clock
             font.weight: Font.Light
             layer.enabled: true
+
             layer.effect: Shade {
                 size: Theme.lock.shadowClock
                 passes: Theme.lock.shadowPasses
@@ -206,6 +213,7 @@ Item {
             border.width: Theme.lock.ring
             border.color: Theme.lock.ringInk
             layer.enabled: true
+
             layer.effect: Shade {
                 size: Theme.lock.shadow
                 passes: Theme.lock.shadowPasses
@@ -230,6 +238,7 @@ Item {
             font.pixelSize: Theme.lock.user
             font.weight: Theme.weight.medium
             layer.enabled: true
+
             layer.effect: Shade {
                 size: Theme.lock.shadowText
                 passes: Theme.lock.shadowPasses
@@ -244,6 +253,7 @@ Item {
             font.family: Theme.fontDisplay
             font.pixelSize: Theme.lock.hint
             layer.enabled: true
+
             layer.effect: Shade {
                 size: Theme.lock.shadowText
                 passes: 1
@@ -274,6 +284,7 @@ Item {
                 duration: field.opacity < 0.5 ? Theme.duration.expressiveFastEffects : Theme.duration.extraLarge
             }
         }
+
         Behavior on color {
             FastColor {}
         }
@@ -290,6 +301,7 @@ Item {
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: Theme.curve.standard
             }
+
             NumberAnimation {
                 target: shake
                 property: "x"
@@ -298,6 +310,7 @@ Item {
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: Theme.curve.standard
             }
+
             NumberAnimation {
                 target: shake
                 property: "x"
@@ -306,6 +319,7 @@ Item {
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: Theme.curve.standard
             }
+
             NumberAnimation {
                 target: shake
                 property: "x"
@@ -317,15 +331,24 @@ Item {
         }
 
         Connections {
-            target: Lock
-
             function onWrong(): void {
                 no.restart();
             }
+
+            target: Lock
         }
 
         TextInput {
             id: input
+
+            Component.onCompleted: forceActiveFocus()
+
+            Keys.onReturnPressed: {
+                Lock.submit(text);
+                text = "";
+            }
+
+            Keys.onEscapePressed: text = ""
 
             anchors.fill: parent
             anchors.leftMargin: Theme.spacing.large
@@ -341,14 +364,6 @@ Item {
             enabled: !Lock.checking
             // The dots are the whole display; focus would still draw a caret.
             cursorDelegate: Item {}
-
-            Component.onCompleted: forceActiveFocus()
-
-            Keys.onReturnPressed: {
-                Lock.submit(text);
-                text = "";
-            }
-            Keys.onEscapePressed: text = ""
         }
 
         // Never more dots than fit in the field.
@@ -364,13 +379,13 @@ Item {
                 Rectangle {
                     id: dot
 
+                    Component.onCompleted: scale = 1
+
                     width: Theme.spacing.medium
                     height: width
                     radius: width / 2
                     color: "white"
                     scale: 0
-
-                    Component.onCompleted: scale = 1
 
                     Behavior on scale {
                         SpringAnimation {

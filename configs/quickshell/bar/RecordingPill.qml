@@ -10,22 +10,26 @@ Rectangle {
 
     visible: opacity > 0
     opacity: Recorder.recording ? 1 : 0
-    Behavior on opacity {
-        NumberAnimation {
-            duration: Theme.duration.expressiveDefaultEffects
-        }
-    }
     layer.enabled: opacity < 1
+
     layer.effect: MotionBlur {
         settled: root.opacity
     }
+
     implicitWidth: row.implicitWidth + Theme.spacing.medium * 2
     implicitHeight: Theme.control.field
     radius: Theme.rounding.full
     color: hover.hovered ? Theme.bgTray : Theme.bgAlt
 
+    Behavior on opacity {
+        NumberAnimation {
+            duration: Theme.duration.expressiveDefaultEffects
+        }
+    }
+
     SystemClock {
         id: clock
+
         enabled: Recorder.recording
         precision: SystemClock.Seconds
     }
@@ -52,6 +56,7 @@ Rectangle {
                     to: Theme.pulse.recording
                     duration: Theme.duration.extraLarge
                 }
+
                 NumberAnimation {
                     to: 1
                     duration: Theme.duration.extraLarge
@@ -66,6 +71,7 @@ Rectangle {
             font.family: Theme.font
             font.pixelSize: Theme.fontSize.smaller
             font.weight: Theme.weight.medium
+
             font.features: ({
                     tnum: 1
                 })
@@ -74,6 +80,7 @@ Rectangle {
 
     HoverHandler {
         id: hover
+
         cursorShape: Qt.PointingHandCursor
     }
 

@@ -18,6 +18,9 @@ Singleton {
         return all.find(p => p.isPlaying) ?? all[0] ?? null;
     }
 
+    // MPRIS position does not tick; tick only while shown.
+    property bool watched: false
+
     function timeText(seconds: real): string {
         if (!seconds || seconds < 0)
             return "0:00";
@@ -26,14 +29,12 @@ Singleton {
         return m + ":" + (s < 10 ? "0" : "") + s;
     }
 
-    // MPRIS position does not tick; tick only while shown.
-    property bool watched: false
-
     Timer {
+        onTriggered: root.active.positionChanged()
+
         running: root.watched && (root.active?.isPlaying ?? false)
         interval: 1000
         repeat: true
         triggeredOnStart: true
-        onTriggered: root.active.positionChanged()
     }
 }

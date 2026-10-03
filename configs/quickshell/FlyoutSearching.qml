@@ -23,6 +23,7 @@ Item {
             textFormat: Text.PlainText
             text: root.text
             color: Theme.dim
+
             font {
                 family: Theme.font
                 pixelSize: Theme.fontSize.smaller

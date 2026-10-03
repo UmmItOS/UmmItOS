@@ -13,47 +13,10 @@ Scope {
     // Addresses waiting for the client list to be read.
     property var pending: []
 
-    Connections {
-        target: Hyprland
-
-        function onRawEvent(event: var): void {
-            if (event.name !== "urgent")
-                return;
-            const address = event.data.startsWith("0x") ? event.data : "0x" + event.data;
-            if (!root.pending.includes(address))
-                root.pending = root.pending.concat([address]);
-            clients.running = true;
-        }
-    }
-
     // An event that came while the last read was finishing.
     function readAgain(): void {
         if (root.pending.length > 0)
             clients.running = true;
-    }
-
-    // Straight from Hyprland: Quickshell's class and workspace can be empty, and it has no shown special workspace.
-    Process {
-        id: clients
-
-        command: ["sh", "-c", "printf '[%s,%s]' \"$(hyprctl -j clients)\" \"$(hyprctl -j monitors)\""]
-        onExited: Qt.callLater(root.readAgain)
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const waiting = root.pending;
-                root.pending = [];
-                let list = [];
-                let monitors = [];
-                try {
-                    [list, monitors] = JSON.parse(text);
-                } catch (e) {
-                    return;
-                }
-                const shown = monitors.map(m => m.activeWorkspace?.id).concat(monitors.map(m => m.specialWorkspace?.id)).filter(id => id);
-                for (const address of waiting)
-                    root.tell(list.find(c => c.address === address), shown);
-            }
-        }
     }
 
     // An app that has just sent its own notification (a chat message) needs no second one.
@@ -89,5 +52,44 @@ Scope {
             return;
         Quickshell.execDetached(["sh", "-c", 'a=$(notify-send -a "$1" -i "$2" -h boolean:x-ummitos-chime:true -A focus="$3" -- "$4" "$5") && [ "$a" = focus ] && hyprctl dispatch "hl.dsp.focus({ window = \\"address:$6\\" })"',
             "sh", app, entry?.icon ?? "", I18n.t("Go there"), I18n.t("%1 wants your attention").arg(app), I18n.t("%1 · Workspace %2").replace(/%([12])/g, (_, n) => Notifs.asText(n === "1" ? client.title : client.workspace?.name ?? "?")), client.address]);
+    }
+
+    Connections {
+        function onRawEvent(event: var): void {
+            if (event.name !== "urgent")
+                return;
+            const address = event.data.startsWith("0x") ? event.data : "0x" + event.data;
+            if (!root.pending.includes(address))
+                root.pending = root.pending.concat([address]);
+            clients.running = true;
+        }
+
+        target: Hyprland
+    }
+
+    // Straight from Hyprland: Quickshell's class and workspace can be empty, and it has no shown special workspace.
+    Process {
+        id: clients
+
+        onExited: Qt.callLater(root.readAgain)
+
+        command: ["sh", "-c", "printf '[%s,%s]' \"$(hyprctl -j clients)\" \"$(hyprctl -j monitors)\""]
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const waiting = root.pending;
+                root.pending = [];
+                let list = [];
+                let monitors = [];
+                try {
+                    [list, monitors] = JSON.parse(text);
+                } catch (e) {
+                    return;
+                }
+                const shown = monitors.map(m => m.activeWorkspace?.id).concat(monitors.map(m => m.specialWorkspace?.id)).filter(id => id);
+                for (const address of waiting)
+                    root.tell(list.find(c => c.address === address), shown);
+            }
+        }
     }
 }

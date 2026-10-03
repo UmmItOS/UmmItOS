@@ -15,10 +15,11 @@ MaterialIcon {
     signal clicked
     signal rightClicked
 
+    Accessible.onPressAction: root.clicked()
+
     text: icon
     Accessible.role: Accessible.Button
     Accessible.name: I18n.t(label)
-    Accessible.onPressAction: root.clicked()
     color: mouse.containsMouse ? hoverColor : baseColor
     fill: mouse.containsMouse ? 1 : 0
     scale: mouse.pressed ? Theme.pressScale : 1
@@ -43,11 +44,13 @@ MaterialIcon {
 
     MouseArea {
         id: mouse
+
+        onClicked: event => event.button === Qt.RightButton ? root.rightClicked() : root.clicked()
+
         anchors.fill: parent
         anchors.margins: -Theme.spacing.extraSmall
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         acceptedButtons: root.rightClickable ? Qt.LeftButton | Qt.RightButton : Qt.LeftButton
-        onClicked: event => event.button === Qt.RightButton ? root.rightClicked() : root.clicked()
     }
 }

@@ -69,12 +69,6 @@ Scope {
     NotificationServer {
         id: server
 
-        actionsSupported: true
-        bodySupported: true
-        bodyMarkupSupported: true
-        imageSupported: true
-        keepOnReload: false
-
         // Without tracked = true the notification is dropped at once.
         onNotification: notification => {
             root.chime(notification);
@@ -85,6 +79,12 @@ Scope {
             if (notification.tracked)
                 root.show(notification);
         }
+
+        actionsSupported: true
+        bodySupported: true
+        bodyMarkupSupported: true
+        imageSupported: true
+        keepOnReload: false
     }
 
     PanelWindow {
@@ -94,6 +94,7 @@ Scope {
         // The toast column's edges in screen x when not stepped aside.
         readonly property real columnRight: width - Theme.spacing.medium
         readonly property real columnLeft: columnRight - toastWidth + Theme.spacing.medium * 2
+
         // Only for a dropdown over the column, and never off screen.
         readonly property real clearance: {
             const f = Notifs.flyout;
@@ -105,10 +106,12 @@ Scope {
         }
 
         WlrLayershell.namespace: "ummitos-notifications"
+
         anchors {
             top: true
             right: true
         }
+
         // Do not reserve screen space, and stay out of the way when empty.
         exclusionMode: ExclusionMode.Ignore
         margins.top: Theme.barHeight + Theme.spacing.small
@@ -119,6 +122,7 @@ Scope {
         implicitWidth: screen?.width ?? Theme.fallbackScreen.width
         // Fixed height: shrinking it clipped a toast mid-slide.
         implicitHeight: (screen?.height ?? Theme.fallbackScreen.height) - Theme.barHeight - Theme.spacing.small * 2
+
         // On the list itself; a contentItem region missed it moving.
         mask: Region {
             x: list.x
@@ -127,6 +131,7 @@ Scope {
             // contentHeight lags a card that grows after arrival, so count the cards' own extent too.
             height: Math.min(list.height, Math.max(list.contentHeight, list.contentItem.childrenRect.y + list.contentItem.childrenRect.height - list.contentY))
         }
+
         color: "transparent"
 
         // A ListView, so removals animate instead of snapping.
@@ -140,29 +145,25 @@ Scope {
                 margins: Theme.spacing.medium
                 rightMargin: Theme.spacing.medium + toasts.clearance
             }
+
             width: toasts.toastWidth - Theme.spacing.medium * 2
             spacing: Theme.spacing.small
             interactive: false
 
-            Behavior on anchors.rightMargin {
-                NumberAnimation {
-                    duration: Theme.duration.expressiveDefaultSpatial
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curve.expressiveDefaultSpatial
-                }
-            }
             model: ScriptModel {
                 values: root.cards
             }
 
             add: Transition {
                 id: entrance
+
                 NumberAnimation {
                     property: "opacity"
                     from: 0
                     to: 1
                     duration: Theme.duration.expressiveDefaultEffects
                 }
+
                 NumberAnimation {
                     property: "x"
                     from: Theme.notification.slide
@@ -178,6 +179,7 @@ Scope {
                     to: 0
                     duration: Theme.duration.expressiveFastEffects
                 }
+
                 NumberAnimation {
                     property: "x"
                     to: Theme.notification.slide
@@ -194,12 +196,14 @@ Scope {
                     easing.type: Easing.BezierSpline
                     easing.bezierCurve: Theme.curve.standard
                 }
+
                 // A displaced toast otherwise stays half faded.
                 NumberAnimation {
                     properties: "opacity"
                     to: 1
                     duration: Theme.duration.expressiveFastEffects
                 }
+
                 NumberAnimation {
                     properties: "x"
                     to: 0
@@ -209,13 +213,17 @@ Scope {
                 }
             }
 
+            Behavior on anchors.rightMargin {
+                NumberAnimation {
+                    duration: Theme.duration.expressiveDefaultSpatial
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curve.expressiveDefaultSpatial
+                }
+            }
+
             delegate: Rectangle {
                 id: card
 
-                layer.enabled: opacity < 1
-                layer.effect: MotionBlur {
-                    settled: card.opacity
-                }
                 required property var modelData
                 // Set once a replacement moved the notification to a new toast below this one.
                 property bool detached: modelData?.detached ?? false
@@ -223,6 +231,14 @@ Scope {
                 property var kept: modelData?.kept ?? ({})
                 // Closed but still sliding out: a second click or the timer must not close it again.
                 property bool gone: false
+
+                readonly property bool critical: card.kept.critical ?? false
+                readonly property string appIcon: Notifs.iconFor(card.kept.appIcon ?? "")
+                readonly property string time: card.modelData?.time ?? ""
+                readonly property var defaultAction: card.live?.actions?.find(a => a.identifier === "default") ?? null
+
+                // In ms: -1 is ours to choose, 0 never expires.
+                readonly property real timeout: card.live?.expireTimeout ?? -1
 
                 function close(expire: bool): void {
                     if (card.gone)
@@ -245,12 +261,6 @@ Scope {
                     card.kept = card.modelData.kept = root.snapshot(card.live);
                 }
 
-                // Rebuilt after its notification closed, which dropped only the old delegate.
-                Component.onCompleted: {
-                    if (!card.detached && !card.alive())
-                        root.drop(card.modelData);
-                }
-
                 // A new message, not a progress update, gets its own toast; this one keeps the old text.
                 function changed(): void {
                     if (!card.alive())
@@ -268,34 +278,44 @@ Scope {
                     }
                 }
 
-                // Replaced notifications update the same object in place, one field signal at a time.
-                Connections {
-                    target: card.live
-                    ignoreUnknownSignals: true
-
-                    function onSummaryChanged(): void {
-                        Qt.callLater(card.changed);
-                    }
-                    function onBodyChanged(): void {
-                        Qt.callLater(card.changed);
-                    }
-                    function onImageChanged(): void {
-                        Qt.callLater(card.changed);
-                    }
-                    function onClosed(): void {
-                        card.gone = true;
-                    }
+                // Rebuilt after its notification closed, which dropped only the old delegate.
+                Component.onCompleted: {
+                    if (!card.detached && !card.alive())
+                        root.drop(card.modelData);
                 }
 
-                readonly property bool critical: card.kept.critical ?? false
-                readonly property string appIcon: Notifs.iconFor(card.kept.appIcon ?? "")
-                readonly property string time: card.modelData?.time ?? ""
-                readonly property var defaultAction: card.live?.actions?.find(a => a.identifier === "default") ?? null
+                layer.enabled: opacity < 1
+
+                layer.effect: MotionBlur {
+                    settled: card.opacity
+                }
 
                 width: list.width
                 implicitHeight: body.implicitHeight + Theme.spacing.large * 2
                 radius: Theme.rounding.extraLarge
                 color: Theme.scrim(Theme.panelTint)
+
+                // Replaced notifications update the same object in place, one field signal at a time.
+                Connections {
+                    function onSummaryChanged(): void {
+                        Qt.callLater(card.changed);
+                    }
+
+                    function onBodyChanged(): void {
+                        Qt.callLater(card.changed);
+                    }
+
+                    function onImageChanged(): void {
+                        Qt.callLater(card.changed);
+                    }
+
+                    function onClosed(): void {
+                        card.gone = true;
+                    }
+
+                    target: card.live
+                    ignoreUnknownSignals: true
+                }
 
                 HoverHandler {
                     id: hover
@@ -303,8 +323,6 @@ Scope {
 
                 // Before the body, so the close button, actions and links take their own clicks.
                 MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
                     onClicked: {
                         if (card.gone)
                             return;
@@ -314,26 +332,29 @@ Scope {
                         if (!action || card.live?.resident)
                             card.close(false);
                     }
-                }
 
-                // In ms: -1 is ours to choose, 0 never expires.
-                readonly property real timeout: card.live?.expireTimeout ?? -1
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                }
 
                 // Reading a notification should not race its own timer.
                 Timer {
+                    onTriggered: card.close(true)
+
                     running: !card.gone && !hover.hovered && !Screenshot.holding && (card.detached || card.live !== null && !card.critical && card.timeout !== 0)
                     interval: card.timeout > 0 ? card.timeout : Theme.duration.toast
-                    onTriggered: card.close(true)
                 }
 
                 ColumnLayout {
                     id: body
+
                     anchors {
                         left: parent.left
                         right: parent.right
                         verticalCenter: parent.verticalCenter
                         margins: Theme.spacing.large
                     }
+
                     spacing: Theme.spacing.extraSmall
 
                     RowLayout {
@@ -342,6 +363,7 @@ Scope {
 
                         IconImage {
                             id: icon
+
                             implicitSize: Theme.icon.tiny
                             source: card.appIcon
                             visible: status === Image.Ready
@@ -371,9 +393,11 @@ Scope {
                             text: card.time
                             color: Theme.dim
                             font.family: Theme.font
+
                             font.features: ({
                                 tnum: 1
                             })
+
                             font.pixelSize: Theme.fontSize.small
                         }
 
@@ -387,9 +411,10 @@ Scope {
                             }
 
                             MouseArea {
+                                onClicked: card.close(false)
+
                                 anchors.fill: parent
                                 anchors.margins: -Theme.hitSlop
-                                onClicked: card.close(false)
                             }
                         }
                     }
@@ -407,6 +432,8 @@ Scope {
                     }
 
                     Text {
+                        onLinkActivated: link => Notifs.openLink(link)
+
                         Layout.fillWidth: true
                         text: card.kept.body ?? ""
                         color: Theme.fg
@@ -417,7 +444,6 @@ Scope {
                         maximumLineCount: Theme.notification.lines
                         elide: Text.ElideRight
                         visible: text !== ""
-                        onLinkActivated: link => Notifs.openLink(link)
                     }
 
                     // Album art, screenshot previews, and the like.
@@ -452,6 +478,7 @@ Scope {
 
                             Rectangle {
                                 id: action
+
                                 required property var modelData
 
                                 Layout.fillWidth: true
@@ -472,12 +499,14 @@ Scope {
 
                                 TextMetrics {
                                     id: measure
+
                                     text: label.text
                                     font: label.font
                                 }
 
                                 Text {
                                     id: label
+
                                     anchors.centerIn: parent
                                     width: Math.min(implicitWidth, action.width - Theme.spacing.large * 2)
                                     elide: Text.ElideRight
@@ -489,8 +518,9 @@ Scope {
                                 }
 
                                 MouseArea {
-                                    anchors.fill: parent
                                     onClicked: action.modelData.invoke()
+
+                                    anchors.fill: parent
                                 }
                             }
                         }

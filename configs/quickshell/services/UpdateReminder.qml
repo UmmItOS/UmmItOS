@@ -14,7 +14,9 @@ Scope {
 
     Process {
         id: last
+
         command: ["sh", "-c", "tac /var/log/pacman.log | grep -a -m1 'starting full system upgrade'"]
+
         stdout: StdioCollector {
             onStreamFinished: {
                 // [2026-09-07T23:52:40+0800] → 2026-09-07T23:52:40+08:00
@@ -34,15 +36,17 @@ Scope {
     }
 
     Timer {
+        onTriggered: last.running = true
+
         running: true
         interval: root.firstCheck
-        onTriggered: last.running = true
     }
 
     Timer {
+        onTriggered: last.running = true
+
         running: true
         repeat: true
         interval: root.every
-        onTriggered: last.running = true
     }
 }

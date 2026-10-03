@@ -8,6 +8,9 @@ import ".."
 RowLayout {
     id: root
 
+    // A threshold rather than zero, so the arrows do not flicker on idle chatter.
+    readonly property real busyAt: Theme.bar.busyAt
+
     // One decimal below ten keeps the string length steady.
     function human(bytes: real): string {
         if (bytes >= 1048576) {
@@ -20,9 +23,6 @@ RowLayout {
         }
         return Math.round(bytes) + " B";
     }
-
-    // A threshold rather than zero, so the arrows do not flicker on idle chatter.
-    readonly property real busyAt: Theme.bar.busyAt
 
     spacing: 0
 
@@ -54,6 +54,7 @@ RowLayout {
             color: Theme.fg
             font.family: Theme.font
             font.pixelSize: Theme.fontSize.smaller
+
             font.features: ({
                     tnum: 1
                 })

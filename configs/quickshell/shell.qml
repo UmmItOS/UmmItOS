@@ -31,6 +31,17 @@ ShellRoot {
     // And the sounds, so their links exist to change before anything has played.
     readonly property string soundsDir: Sounds.dir
 
+    // Re-offer tray icons the new host lacks: some apps register only once.
+    Component.onCompleted: Quickshell.execDetached(["sh", "-c", `
+        sleep 1
+        w="org.kde.StatusNotifierWatcher"
+        reg=$(busctl --user get-property $w /StatusNotifierWatcher $w RegisteredStatusNotifierItems)
+        for n in $(busctl --user list --no-legend | awk '{print $1}' | grep '^org.kde.StatusNotifierItem-'); do
+            owner=$(busctl --user status "$n" | sed -n 's/^UniqueName=//p')
+            case "$reg" in *"$n"*|*"\"$owner/"*) continue ;; esac
+            busctl --user call $w /StatusNotifierWatcher $w RegisterStatusNotifierItem s "$n"
+        done`])
+
     // One bar per connected screen. Plugging a monitor in adds one.
     Variants {
         model: Quickshell.screens
@@ -78,7 +89,6 @@ ShellRoot {
 
     DrawWindow {}
 
-
     Widgets {}
 
     LockScreen {}
@@ -91,17 +101,6 @@ ShellRoot {
     BatteryNotifier {
         onPluggedIn: ripple.play()
     }
-
-    // Re-offer tray icons the new host lacks: some apps register only once.
-    Component.onCompleted: Quickshell.execDetached(["sh", "-c", `
-        sleep 1
-        w="org.kde.StatusNotifierWatcher"
-        reg=$(busctl --user get-property $w /StatusNotifierWatcher $w RegisteredStatusNotifierItems)
-        for n in $(busctl --user list --no-legend | awk '{print $1}' | grep '^org.kde.StatusNotifierItem-'); do
-            owner=$(busctl --user status "$n" | sed -n 's/^UniqueName=//p')
-            case "$reg" in *"$n"*|*"\"$owner/"*) continue ;; esac
-            busctl --user call $w /StatusNotifierWatcher $w RegisterStatusNotifierItem s "$n"
-        done`])
 
     // Wi-Fi and Bluetooth coming and going.
     ConnectionNotifier {}

@@ -13,10 +13,12 @@ PanelWindow {
     WlrLayershell.namespace: "hot-corner"
     WlrLayershell.layer: WlrLayer.Top
     exclusionMode: ExclusionMode.Ignore
+
     anchors {
         top: true
         left: true
     }
+
     implicitWidth: Theme.switcher.corner
     implicitHeight: implicitWidth
     color: "transparent"
@@ -26,8 +28,9 @@ PanelWindow {
     }
 
     Timer {
+        onTriggered: Switcher.overview(true)
+
         running: hover.hovered
         interval: Theme.duration.hotCorner
-        onTriggered: Switcher.overview(true)
     }
 }

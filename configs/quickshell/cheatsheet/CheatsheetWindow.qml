@@ -15,15 +15,16 @@ OverlayWindow {
         return n ? I18n.t(n[1] + " %1").arg(n[2]) : I18n.t(text);
     }
 
+    onOpened: scope.forceActiveFocus()
+
     shown: Cheatsheet.open
     name: "cheatsheet"
     scrim: Theme.shade.normal
 
-    onOpened: scope.forceActiveFocus()
-
     MouseArea {
-        anchors.fill: parent
         onClicked: Cheatsheet.open = false
+
+        anchors.fill: parent
     }
 
     // A key, drawn as a key.
@@ -37,6 +38,7 @@ OverlayWindow {
 
         Text {
             id: text
+
             anchors.centerIn: parent
             textFormat: Text.PlainText
             text: parent.label
@@ -50,14 +52,14 @@ OverlayWindow {
     FocusScope {
         id: scope
 
+        Keys.onEscapePressed: Cheatsheet.open = false
+
         anchors.centerIn: parent
         width: Math.min(Theme.cheatsheet.width, parent.width - Theme.spacing.extraLarge * 2)
         height: Math.min(sheet.implicitHeight, parent.height - Theme.spacing.extraLarge * 2)
         focus: true
         opacity: Math.min(1, win.reveal)
         scale: Theme.popScale + (1 - Theme.popScale) * win.reveal
-
-        Keys.onEscapePressed: Cheatsheet.open = false
 
         // Clicks on the sheet stay on the sheet.
         MouseArea {
@@ -72,6 +74,7 @@ OverlayWindow {
                 fill: sheet
                 margins: -ring.thickness
             }
+
             visible: false
             layer.enabled: true
             clip: true
@@ -80,6 +83,7 @@ OverlayWindow {
                 anchors.centerIn: parent
                 width: Math.hypot(parent.width, parent.height)
                 height: width
+
                 gradient: Gradient {
                     orientation: Gradient.Horizontal
 
@@ -87,14 +91,17 @@ OverlayWindow {
                         position: 0
                         color: Theme.ring[0]
                     }
+
                     GradientStop {
                         position: 0.33
                         color: Theme.ring[1]
                     }
+
                     GradientStop {
                         position: 0.66
                         color: Theme.ring[2]
                     }
+
                     GradientStop {
                         position: 1
                         color: Theme.ring[3]
@@ -150,10 +157,12 @@ OverlayWindow {
 
         MultiEffect {
             z: -1
+
             anchors {
                 fill: ringFill
                 margins: -lineShot.pad
             }
+
             source: lineShot
             blurEnabled: true
             blurMax: lineShot.pad
@@ -174,6 +183,7 @@ OverlayWindow {
                     fill: parent
                     margins: ring.thickness
                 }
+
                 radius: sheet.radius
                 color: "white"
             }
@@ -224,6 +234,7 @@ OverlayWindow {
                             easing.bezierCurve: Theme.curve.emphasizedDecel
                         }
                     }
+
                     Behavior on y {
                         NumberAnimation {
                             duration: Theme.duration.expressiveFastSpatial
@@ -231,6 +242,7 @@ OverlayWindow {
                             easing.bezierCurve: Theme.curve.emphasizedDecel
                         }
                     }
+
                     Behavior on opacity {
                         NumberAnimation {
                             duration: Theme.duration.expressiveDefaultEffects
@@ -241,7 +253,6 @@ OverlayWindow {
                     Canvas {
                         id: glow
 
-                        anchors.fill: parent
                         onPaint: {
                             const ctx = getContext("2d");
                             const r = width / 2;
@@ -255,12 +266,14 @@ OverlayWindow {
                             ctx.fillRect(0, 0, width, height);
                         }
 
-                        Connections {
-                            target: Theme
+                        anchors.fill: parent
 
+                        Connections {
                             function onAccentTextChanged(): void {
                                 glow.requestPaint();
                             }
+
+                            target: Theme
                         }
                     }
                 }
@@ -271,6 +284,7 @@ OverlayWindow {
                     fill: parent
                     margins: Theme.spacing.extraLarge
                 }
+
                 contentHeight: body.implicitHeight
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
@@ -351,6 +365,7 @@ OverlayWindow {
 
                                                 Keycap {
                                                     required property string modelData
+
                                                     label: modelData
                                                 }
                                             }

@@ -16,8 +16,6 @@ Singleton {
 
     readonly property var audio: Pipewire.defaultAudioSink?.audio ?? null
 
-    onAudioChanged: clamp()
-
     function setLimit(value: real): void {
         limit = value;
         limitFile.setText(String(value));
@@ -29,22 +27,23 @@ Singleton {
             root.audio.volume = root.limit;
     }
 
+    onAudioChanged: clamp()
+
     PwObjectTracker {
         objects: [Pipewire.defaultAudioSink]
     }
 
     Connections {
-        target: root.audio
         function onVolumeChanged(): void {
             root.clamp();
         }
+
+        target: root.audio
     }
 
     FileView {
         id: limitFile
-        path: Quickshell.statePath("volume-limit.txt")
-        printErrors: false
-        blockWrites: false
+
         onLoaded: {
             const saved = Number(text().trim());
             if (root.limits.includes(saved))
@@ -52,9 +51,14 @@ Singleton {
             root.loaded = true;
             root.clamp();
         }
+
         onLoadFailed: {
             root.loaded = true;
             root.clamp();
         }
+
+        path: Quickshell.statePath("volume-limit.txt")
+        printErrors: false
+        blockWrites: false
     }
 }

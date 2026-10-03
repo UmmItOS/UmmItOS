@@ -110,7 +110,9 @@ Singleton {
 
     Process {
         id: read
+
         command: ["hyprctl", "binds", "-j"]
+
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
@@ -123,8 +125,6 @@ Singleton {
     }
 
     IpcHandler {
-        target: "cheatsheet"
-
         function toggle(): void {
             root.open = !root.open;
         }
@@ -132,5 +132,7 @@ Singleton {
         function close(): void {
             root.open = false;
         }
+
+        target: "cheatsheet"
     }
 }

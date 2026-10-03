@@ -29,9 +29,11 @@ RowLayout {
 
         MouseArea {
             id: entry
+
             required property SystemTrayItem modelData
 
             readonly property string source: modelData.icon
+
             // A theme icon the theme lacks, or a pixmap that never came (…/0).
             readonly property bool missing: {
                 const themed = source.match(/^image:\/\/icon\/([^/].*)$/);
@@ -39,8 +41,19 @@ RowLayout {
                     return Quickshell.iconPath(themed[1], true) === "";
                 return /^image:\/\/qspixmap\/.*\/0$/.test(source);
             }
+
             readonly property string glyph: root.glyphs[modelData.id] ?? ""
             readonly property string fallback: missing && glyph === "" ? root.appIcon(modelData.id) : ""
+
+            property bool menuOpen: false
+
+            onClicked: event => {
+                if (event.button === Qt.RightButton && entry.modelData.hasMenu) {
+                    entry.menuOpen = !entry.menuOpen;
+                } else {
+                    entry.modelData.activate();
+                }
+            }
 
             implicitWidth: Theme.icon.tray
             implicitHeight: Theme.icon.tray
@@ -55,6 +68,7 @@ RowLayout {
 
             IconImage {
                 id: icon
+
                 anchors.fill: parent
                 implicitSize: Theme.icon.tray
                 source: entry.missing ? entry.fallback : entry.source
@@ -69,23 +83,14 @@ RowLayout {
                 size: Theme.icon.small
             }
 
-            property bool menuOpen: false
-
-            onClicked: event => {
-                if (event.button === Qt.RightButton && entry.modelData.hasMenu) {
-                    entry.menuOpen = !entry.menuOpen;
-                } else {
-                    entry.modelData.activate();
-                }
-            }
-
             TrayMenu {
+                onCloseRequested: entry.menuOpen = false
+                onDone: entry.menuOpen = false
+
                 anchorItem: entry
                 menu: entry.modelData.menu
                 title: entry.modelData.tooltipTitle || entry.modelData.title || entry.modelData.id.replace(/_status_icon_\d+$/, "")
                 visible: entry.menuOpen
-                onCloseRequested: entry.menuOpen = false
-                onDone: entry.menuOpen = false
             }
         }
     }

@@ -20,18 +20,25 @@ Singleton {
     property real lastRx: -1
     property real lastTx: -1
 
+    // Reset the baseline on a new interface.
+    onDeviceChanged: {
+        lastRx = -1;
+        lastTx = -1;
+        downRate = 0;
+        upRate = 0;
+    }
+
     Timer {
+        onTriggered: stat.reload()
+
         running: root.device !== "" && !Lock.locked
         interval: 1000
         repeat: true
         triggeredOnStart: true
-        onTriggered: stat.reload()
     }
 
     FileView {
         id: stat
-        path: "/proc/net/dev"
-        printErrors: false
 
         onLoaded: {
             for (const line of text().split("\n")) {
@@ -51,13 +58,8 @@ Singleton {
                 return;
             }
         }
-    }
 
-    // Reset the baseline on a new interface.
-    onDeviceChanged: {
-        lastRx = -1;
-        lastTx = -1;
-        downRate = 0;
-        upRate = 0;
+        path: "/proc/net/dev"
+        printErrors: false
     }
 }

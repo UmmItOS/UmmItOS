@@ -50,10 +50,12 @@ Scope {
         WlrLayershell.namespace: "ummitos-copy-toast"
         WlrLayershell.layer: WlrLayer.Overlay
         exclusionMode: ExclusionMode.Ignore
+
         anchors {
             bottom: true
             right: true
         }
+
         implicitWidth: Theme.toast.width + Theme.windowInset
         implicitHeight: (Theme.control.row * 2 + Theme.spacing.medium) * Theme.toast.max + Theme.windowInset + Theme.spacing.medium
         color: "transparent"
@@ -68,6 +70,7 @@ Scope {
                 rightMargin: Theme.windowInset + Theme.spacing.medium
                 bottomMargin: Theme.windowInset + Theme.spacing.medium
             }
+
             verticalLayoutDirection: ListView.BottomToTop
             spacing: Theme.spacing.medium
             interactive: false
@@ -81,6 +84,7 @@ Scope {
                     easing.type: Easing.BezierSpline
                     easing.bezierCurve: Theme.curve.emphasizedDecel
                 }
+
                 NumberAnimation {
                     property: "opacity"
                     from: 0
@@ -88,6 +92,7 @@ Scope {
                     duration: Theme.duration.expressiveDefaultEffects
                 }
             }
+
             displaced: Transition {
                 NumberAnimation {
                     property: "y"
@@ -95,6 +100,7 @@ Scope {
                     easing.type: Easing.BezierSpline
                     easing.bezierCurve: Theme.curve.standard
                 }
+
                 // Finish an entrance that the push interrupted.
                 NumberAnimation {
                     property: "x"
@@ -103,18 +109,21 @@ Scope {
                     easing.type: Easing.BezierSpline
                     easing.bezierCurve: Theme.curve.emphasizedDecel
                 }
+
                 NumberAnimation {
                     property: "opacity"
                     to: 1
                     duration: Theme.duration.expressiveFastEffects
                 }
             }
+
             remove: Transition {
                 NumberAnimation {
                     property: "opacity"
                     to: 0
                     duration: Theme.duration.normal
                 }
+
                 NumberAnimation {
                     property: "x"
                     to: list.width * Theme.toast.exit
@@ -127,22 +136,25 @@ Scope {
             delegate: Item {
                 id: slot
 
-                layer.enabled: opacity < 1
-                layer.effect: MotionBlur {
-                    settled: slot.opacity
-                }
                 required property int key
                 required property string label
                 required property string icon
+
+                layer.enabled: opacity < 1
+
+                layer.effect: MotionBlur {
+                    settled: slot.opacity
+                }
 
                 width: list.width
                 height: Theme.control.row * 2
 
                 Timer {
+                    onTriggered: root.drop(slot.key)
+
                     // Held while a screenshot is being taken, so the pill can be in it.
                     running: !Screenshot.holding
                     interval: Theme.duration.extraLarge * 2
-                    onTriggered: root.drop(slot.key)
                 }
 
                 Surface {
@@ -182,8 +194,6 @@ Scope {
     }
 
     IpcHandler {
-        target: "copied"
-
         function text(): void {
             root.show("text");
         }
@@ -191,5 +201,7 @@ Scope {
         function image(): void {
             root.show("image");
         }
+
+        target: "copied"
     }
 }

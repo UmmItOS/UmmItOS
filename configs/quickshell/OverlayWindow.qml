@@ -39,6 +39,30 @@ PanelWindow {
         }
     }
 
+    visible: root.reveal > 0
+    contentItem.layer.enabled: root.blurIn && root.reveal < 1
+
+    contentItem.layer.effect: MotionBlur {
+        settled: root.reveal
+    }
+
+    // Closing drops input, so a fading tile cannot fire twice.
+    mask: root.shown ? null : passThrough
+
+    WlrLayershell.namespace: "ummitos-" + root.name
+    WlrLayershell.layer: WlrLayer.Overlay
+    WlrLayershell.keyboardFocus: root.shown ? root.focusMode : WlrKeyboardFocus.None
+    exclusionMode: ExclusionMode.Ignore
+
+    anchors {
+        top: true
+        bottom: true
+        left: true
+        right: true
+    }
+
+    color: Theme.scrim(root.scrim * Math.min(1, root.reveal))
+
     Behavior on reveal {
         id: revealBehavior
 
@@ -47,26 +71,6 @@ PanelWindow {
             opening: revealBehavior.targetValue > 0
         }
     }
-
-    visible: root.reveal > 0
-    contentItem.layer.enabled: root.blurIn && root.reveal < 1
-    contentItem.layer.effect: MotionBlur {
-        settled: root.reveal
-    }
-    // Closing drops input, so a fading tile cannot fire twice.
-    mask: root.shown ? null : passThrough
-
-    WlrLayershell.namespace: "ummitos-" + root.name
-    WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: root.shown ? root.focusMode : WlrKeyboardFocus.None
-    exclusionMode: ExclusionMode.Ignore
-    anchors {
-        top: true
-        bottom: true
-        left: true
-        right: true
-    }
-    color: Theme.scrim(root.scrim * Math.min(1, root.reveal))
 
     Region {
         id: passThrough

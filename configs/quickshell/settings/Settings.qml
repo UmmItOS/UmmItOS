@@ -11,6 +11,7 @@ Singleton {
 
     property bool open: false
     property int page: 0
+
     readonly property var pages: [
         {
             name: "Record",
@@ -48,6 +49,9 @@ Singleton {
 
     // Newest first: {name, path, size, time}.
     property var files: []
+
+    // Waiting for the running gio; sent together once it exits.
+    property var trashQueue: []
 
     function toggle(): void {
         open = !open;
@@ -99,9 +103,6 @@ Singleton {
         Quickshell.execDetached(["sh", "-c", "mkdir -p \"$1\" && xdg-open \"$1\"", "sh", folder]);
     }
 
-    // Waiting for the running gio; sent together once it exits.
-    property var trashQueue: []
-
     // To the Trash, not deleted, so a wrong click can be undone.
     function trash(path: string): void {
         trashQueue = trashQueue.concat([path]);
@@ -124,9 +125,7 @@ Singleton {
 
     FileView {
         id: conf
-        path: root.recordFile
-        printErrors: false
-        blockWrites: false
+
         onLoaded: {
             for (const line of text().split("\n")) {
                 const at = line.indexOf("=");
@@ -143,11 +142,17 @@ Singleton {
                     root.cursor = value !== "0";
             }
         }
+
+        path: root.recordFile
+        printErrors: false
+        blockWrites: false
     }
 
     Process {
         id: list
+
         command: ["find", root.folder, "-maxdepth", "1", "-type", "f", "(", "-name", "*.mp4", "-o", "-name", "*.mkv", "-o", "-name", "*.webm", ")", "-printf", "%T@\\t%s\\t%f\\0"]
+
         stdout: StdioCollector {
             onStreamFinished: root.files = text.split("\0").filter(l => l !== "").map(l => {
                     const [time, size] = l.split("\t");
@@ -164,6 +169,7 @@ Singleton {
 
     Process {
         id: trasher
+
         onExited: code => {
             if (code !== 0)
                 Notifs.say("Settings", I18n.t("Could not move to Trash"), I18n.t("gio trash failed; the recording is still in its folder."));
@@ -174,16 +180,15 @@ Singleton {
 
     // A recording that just finished belongs in the list.
     Connections {
-        target: Recorder
         function onRecordingChanged(): void {
             if (!Recorder.recording && root.open)
                 root.refresh();
         }
+
+        target: Recorder
     }
 
     IpcHandler {
-        target: "settings"
-
         function toggle(): void {
             root.toggle();
         }
@@ -197,5 +202,7 @@ Singleton {
         function close(): void {
             root.open = false;
         }
+
+        target: "settings"
     }
 }

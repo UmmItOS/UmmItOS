@@ -18,13 +18,6 @@ Singleton {
     property string previewPath
     readonly property string current: previewPath !== "" ? previewPath : actual
 
-    // "…/Anime/foo.jpg" -> "foo"
-    function name(path: string): string {
-        const base = path.slice(path.lastIndexOf("/") + 1);
-        const dot = base.lastIndexOf(".");
-        return dot > 0 ? base.slice(0, dot) : base;
-    }
-
     // Only the random pick reveals through a circle; the rest fade.
     property bool reveal: false
 
@@ -35,6 +28,7 @@ Singleton {
     readonly property var inFolder: folder === "" ? [] : list.filter(p => p.startsWith(dir + "/" + folder + "/"))
     // Falls back to everything when the chosen folder is gone or empty, so a pick never does nothing.
     readonly property var pool: inFolder.length > 0 ? inFolder : list
+
     // Every folder holding pictures, a parent before its subfolders: {path, name, depth, count}.
     readonly property var folders: {
         const counts = {};
@@ -70,6 +64,13 @@ Singleton {
     // The first scan waits for both state files, or it picks over the saved wallpaper or folder.
     property int loading: 2
 
+    // "…/Anime/foo.jpg" -> "foo"
+    function name(path: string): string {
+        const base = path.slice(path.lastIndexOf("/") + 1);
+        const dot = base.lastIndexOf(".");
+        return dot > 0 ? base.slice(0, dot) : base;
+    }
+
     function loadedOne(): void {
         if (--loading === 0)
             scan.running = true;
@@ -79,11 +80,6 @@ Singleton {
         folder = path;
         folderFile.setText(path);
         setRandom();
-    }
-
-    onPickerOpenChanged: {
-        if (pickerOpen)
-            scan.running = true;
     }
 
     function setRandom(): void {
@@ -120,10 +116,17 @@ Singleton {
         stateFile.setText(path);
     }
 
+    onPickerOpenChanged: {
+        if (pickerOpen)
+            scan.running = true;
+    }
+
     // Recursive, so the Anime/ and Landscape/ subfolders are included.
     Process {
         id: scan
+
         command: ["find", root.dir, "-type", "f", "-regex", ".*\\.\\(jpg\\|png\\|jpeg\\)"]
+
         stdout: StdioCollector {
             onStreamFinished: {
                 // Only a real change: a new array resets every view on it.
@@ -142,35 +145,39 @@ Singleton {
     // Remembers the wallpaper across restarts.
     FileView {
         id: stateFile
-        path: root.statePath
-        printErrors: false
-        // Never stall the UI thread on Enter to save one line of text.
-        blockWrites: false
+
         onLoaded: {
             const saved = text().trim();
             if (saved)
                 root.actual = saved;
             root.loadedOne();
         }
+
         onLoadFailed: root.loadedOne()
+
+        path: root.statePath
+        printErrors: false
+        // Never stall the UI thread on Enter to save one line of text.
+        blockWrites: false
     }
 
     FileView {
         id: folderFile
-        path: Quickshell.statePath("wallpaper-folder.txt")
-        printErrors: false
-        blockWrites: false
+
         onLoaded: {
             root.folder = text().trim();
             root.loadedOne();
         }
+
         onLoadFailed: root.loadedOne()
+
+        path: Quickshell.statePath("wallpaper-folder.txt")
+        printErrors: false
+        blockWrites: false
     }
 
     // qs -c ummitos ipc call wallpaper next
     IpcHandler {
-        target: "wallpaper"
-
         function next(): void {
             root.setRandom();
         }
@@ -188,5 +195,7 @@ Singleton {
         function toggle(): void {
             root.pickerOpen = !root.pickerOpen;
         }
+
+        target: "wallpaper"
     }
 }

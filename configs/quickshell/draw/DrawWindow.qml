@@ -10,11 +10,6 @@ import ".."
 OverlayWindow {
     id: win
 
-    shown: Draw.open
-    blurIn: false
-    name: "draw"
-    screen: Draw.screen
-
     readonly property var colors: [Theme.urgent, Theme.warn, Theme.good, Theme.accent2, Theme.fg]
     property int ink: 0
     property int size: 1
@@ -84,14 +79,16 @@ OverlayWindow {
         scope.forceActiveFocus();
     }
 
+    shown: Draw.open
+    blurIn: false
+    name: "draw"
+    screen: Draw.screen
+
     FocusScope {
         id: scope
 
-        anchors.fill: parent
-        focus: true
-        opacity: Math.min(1, win.reveal)
-
         Keys.onEscapePressed: Draw.open = false
+
         Keys.onPressed: event => {
             const ctrl = event.modifiers & Qt.ControlModifier;
             if (ctrl && event.key === Qt.Key_Z)
@@ -117,6 +114,10 @@ OverlayWindow {
             event.accepted = true;
         }
 
+        anchors.fill: parent
+        focus: true
+        opacity: Math.min(1, win.reveal)
+
         Item {
             id: view
 
@@ -128,6 +129,7 @@ OverlayWindow {
 
                 width: view.width
                 height: view.height
+
                 transform: [
                     Scale {
                         xScale: win.zoom
@@ -141,6 +143,7 @@ OverlayWindow {
 
                 ScreencopyView {
                     id: frozen
+
                     anchors.fill: parent
                     captureSource: Draw.screen
                     live: false
@@ -176,6 +179,7 @@ OverlayWindow {
 
                     Stroke {
                         required property var modelData
+
                         model: modelData
                     }
                 }
@@ -188,11 +192,6 @@ OverlayWindow {
 
         MouseArea {
             id: area
-
-            anchors.fill: parent
-            acceptedButtons: Qt.LeftButton | Qt.RightButton
-            hoverEnabled: true
-            cursorShape: Qt.BlankCursor
 
             onPressed: mouse => {
                 if (mouse.button === Qt.RightButton) {
@@ -209,6 +208,7 @@ OverlayWindow {
                     points: [p, Qt.point(p.x + 0.01, p.y)]
                 };
             }
+
             onPositionChanged: mouse => {
                 if (win.panning) {
                     win.panBy(mouse.x - win.panFrom.x, mouse.y - win.panFrom.y);
@@ -219,11 +219,13 @@ OverlayWindow {
                     win.current = Object.assign({}, c);
                 }
             }
+
             // Closing mid-press never delivers the release; nothing may stay held.
             onCanceled: {
                 win.panning = false;
                 win.current = null;
             }
+
             onReleased: mouse => {
                 if (mouse.button === Qt.RightButton) {
                     win.panning = false;
@@ -233,6 +235,7 @@ OverlayWindow {
                     win.strokes = win.strokes.concat([win.current]);
                 win.current = null;
             }
+
             // A touchpad can send pixels with no wheel steps at all.
             onWheel: wheel => {
                 const steps = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y / 120 : wheel.pixelDelta.y / Theme.draw.scrollPixels;
@@ -240,9 +243,15 @@ OverlayWindow {
                     win.zoomAt(wheel.x, wheel.y, steps);
             }
 
+            anchors.fill: parent
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            hoverEnabled: true
+            cursorShape: Qt.BlankCursor
+
             PinchHandler {
-                target: null
                 onScaleChanged: delta => win.zoomAt(centroid.position.x, centroid.position.y, Math.log(delta) / Math.log(Theme.draw.zoomStep))
+
+                target: null
             }
         }
 
@@ -284,6 +293,7 @@ OverlayWindow {
 
             TapHandler {
                 id: toolTap
+
                 onTapped: tool.clicked()
             }
         }
@@ -326,15 +336,17 @@ OverlayWindow {
                 spacing: Theme.spacing.extraSmall
 
                 Tool {
+                    onClicked: win.highlighter = false
+
                     icon: "stylus"
                     picked: !win.highlighter
-                    onClicked: win.highlighter = false
                 }
 
                 Tool {
+                    onClicked: win.highlighter = true
+
                     icon: "ink_highlighter"
                     picked: win.highlighter
-                    onClicked: win.highlighter = true
                 }
 
                 Item {
@@ -406,23 +418,27 @@ OverlayWindow {
                 }
 
                 Tool {
-                    icon: "undo"
                     onClicked: win.undo()
+
+                    icon: "undo"
                 }
 
                 Tool {
-                    icon: "delete_sweep"
                     onClicked: win.strokes = []
+
+                    icon: "delete_sweep"
                 }
 
                 Tool {
-                    icon: "content_copy"
                     onClicked: win.copy()
+
+                    icon: "content_copy"
                 }
 
                 Tool {
-                    icon: "zoom_out"
                     onClicked: win.zoomBy(-1)
+
+                    icon: "zoom_out"
                 }
 
                 Text {
@@ -432,6 +448,7 @@ OverlayWindow {
                     color: win.zoom > 1 ? Theme.fg : Theme.dim
                     font.family: Theme.font
                     font.pixelSize: Theme.fontSize.small
+
                     font.features: ({
                             tnum: 1
                         })
@@ -442,13 +459,15 @@ OverlayWindow {
                 }
 
                 Tool {
-                    icon: "zoom_in"
                     onClicked: win.zoomBy(1)
+
+                    icon: "zoom_in"
                 }
 
                 Tool {
-                    icon: "close"
                     onClicked: Draw.open = false
+
+                    icon: "close"
                 }
             }
         }

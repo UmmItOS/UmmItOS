@@ -7,9 +7,6 @@ import ".."
 OverlayWindow {
     id: picker
 
-    shown: Wallpapers.pickerOpen
-    name: "wallpaper-picker"
-
     readonly property int focusedWidth: Theme.picker.cardWidth
     readonly property int focusedHeight: Theme.picker.cardHeight
     readonly property real shrink: Theme.picker.shrink
@@ -21,6 +18,7 @@ OverlayWindow {
     readonly property bool atRoot: folder === Wallpapers.dir
     // The open folder relative to the wallpaper dir; "" at the top.
     readonly property string here: folder.slice(Wallpapers.dir.length + 1)
+
     readonly property var matches: {
         if (filter !== "")
             return Wallpapers.list.filter(p => Wallpapers.name(p).toLowerCase().includes(filter.toLowerCase()));
@@ -42,6 +40,8 @@ OverlayWindow {
             });
         return [...(atRoot ? [] : [".."]), ...[...dirs].sort(byName), ...files.sort(byName)];
     }
+
+    readonly property string focusedPath: matches[list.currentIndex] ?? ""
 
     function isFolder(entry: string): bool {
         return entry.endsWith("/");
@@ -83,18 +83,6 @@ OverlayWindow {
         turn.open(-1);
     }
 
-    readonly property string focusedPath: matches[list.currentIndex] ?? ""
-
-    // The rescan lands after the jump to the current one; land again.
-    Connections {
-        target: Wallpapers
-
-        function onListChanged(): void {
-            if (picker.shown && picker.filter === "")
-                picker.land();
-        }
-    }
-
     // Snap, or the carousel animates through every card between.
     function land(): void {
         const actual = Wallpapers.actual;
@@ -103,25 +91,6 @@ OverlayWindow {
         list.currentIndex = i;
         list.positionViewAtIndex(i, PathView.Center);
     }
-
-    onOpened: {
-        filter = "";
-        search.text = "";
-        land();
-        search.forceActiveFocus();
-    }
-    // On the flag, not on unmapping, so it does not wait for the exit.
-    onShownChanged: {
-        if (!shown) {
-            // A preview still pending would land after the restore and stick.
-            previewDebounce.stop();
-            Wallpapers.clearPreview();
-        }
-    }
-
-    anchors.top: false
-    implicitHeight: Theme.picker.height
-    color: "transparent"
 
     function apply(index: int): void {
         const entry = matches[index] ?? "";
@@ -136,19 +105,55 @@ OverlayWindow {
         }
     }
 
+    onOpened: {
+        filter = "";
+        search.text = "";
+        land();
+        search.forceActiveFocus();
+    }
+
+    // On the flag, not on unmapping, so it does not wait for the exit.
+    onShownChanged: {
+        if (!shown) {
+            // A preview still pending would land after the restore and stick.
+            previewDebounce.stop();
+            Wallpapers.clearPreview();
+        }
+    }
+
+    shown: Wallpapers.pickerOpen
+    name: "wallpaper-picker"
+
+    anchors.top: false
+    implicitHeight: Theme.picker.height
+    color: "transparent"
+
+    // The rescan lands after the jump to the current one; land again.
+    Connections {
+        function onListChanged(): void {
+            if (picker.shown && picker.filter === "")
+                picker.land();
+        }
+
+        target: Wallpapers
+    }
+
     // Enough wash to read type against any wallpaper, no edge, no card.
     Rectangle {
         anchors.fill: parent
         opacity: Math.min(1, picker.reveal)
+
         gradient: Gradient {
             GradientStop {
                 position: 0
                 color: "transparent"
             }
+
             GradientStop {
                 position: Theme.picker.fadeAt
                 color: Theme.scrim(Theme.picker.fadeAlpha)
             }
+
             GradientStop {
                 position: 1
                 color: Theme.scrim(Theme.picker.floorAlpha)
@@ -157,21 +162,22 @@ OverlayWindow {
     }
 
     MouseArea {
-        anchors.fill: parent
         onClicked: Wallpapers.pickerOpen = false
+
+        anchors.fill: parent
     }
 
     FocusScope {
+        Keys.onEscapePressed: Wallpapers.pickerOpen = false
+        Keys.onLeftPressed: list.decrementCurrentIndex()
+        Keys.onRightPressed: list.incrementCurrentIndex()
+        Keys.onReturnPressed: picker.apply(list.currentIndex)
+
         opacity: Math.min(1, picker.reveal)
         scale: Theme.popScale + (1 - Theme.popScale) * picker.reveal
 
         anchors.fill: parent
         focus: true
-
-        Keys.onEscapePressed: Wallpapers.pickerOpen = false
-        Keys.onLeftPressed: list.decrementCurrentIndex()
-        Keys.onRightPressed: list.incrementCurrentIndex()
-        Keys.onReturnPressed: picker.apply(list.currentIndex)
 
         // The name doubles as the search field.
         Column {
@@ -183,6 +189,7 @@ OverlayWindow {
                 leftMargin: Theme.spacing.extraLarge * 2
                 bottomMargin: Theme.spacing.extraLarge
             }
+
             spacing: Theme.spacing.extraSmall
             width: picker.width / 2
 
@@ -201,15 +208,6 @@ OverlayWindow {
             TextInput {
                 id: search
 
-                width: parent.width
-                clip: true
-                visible: text !== ""
-                color: Theme.accentText
-                font.family: Theme.fontDisplay
-                font.pixelSize: Theme.fontSize.extraLarge
-                font.bold: true
-                focus: true
-
                 onTextChanged: {
                     picker.filter = text;
                     list.currentIndex = 0;
@@ -219,6 +217,7 @@ OverlayWindow {
                 Keys.onLeftPressed: list.decrementCurrentIndex()
                 Keys.onRightPressed: list.incrementCurrentIndex()
                 Keys.onReturnPressed: picker.apply(list.currentIndex)
+
                 // With no query to delete, Backspace goes up a folder.
                 Keys.onPressed: event => {
                     if (event.key === Qt.Key_Backspace && text === "" && !picker.atRoot) {
@@ -226,6 +225,15 @@ OverlayWindow {
                         event.accepted = true;
                     }
                 }
+
+                width: parent.width
+                clip: true
+                visible: text !== ""
+                color: Theme.accentText
+                font.family: Theme.fontDisplay
+                font.pixelSize: Theme.fontSize.extraLarge
+                font.bold: true
+                focus: true
             }
 
             Row {
@@ -237,6 +245,7 @@ OverlayWindow {
                     color: Theme.dim
                     font.family: Theme.font
                     font.pixelSize: Theme.fontSize.smaller
+
                     font.features: ({
                             tnum: 1
                         })
@@ -260,6 +269,8 @@ OverlayWindow {
 
                     readonly property bool shown: search.text === "" && !picker.atRoot
 
+                    onClicked: Wallpapers.setFolder(picker.here)
+
                     anchors.verticalCenter: parent.verticalCenter
                     // Stays laid out until the fade ends, so it leaves before the row closes up.
                     visible: opacity > 0
@@ -269,7 +280,7 @@ OverlayWindow {
                     icon: "shuffle"
                     label: Wallpapers.folder === picker.here ? I18n.t("Shuffling from here") : I18n.t("Shuffle from here")
                     enabled: Wallpapers.folder !== picker.here
-                    onClicked: Wallpapers.setFolder(picker.here)
+
                     transform: Scale {
                         origin.x: shuffleHere.width / 2
                         origin.y: shuffleHere.height / 2
@@ -310,12 +321,16 @@ OverlayWindow {
         PathView {
             id: list
 
+            // Debounced so a held arrow key does not decode every image.
+            onCurrentIndexChanged: previewDebounce.restart()
+
             anchors {
                 left: parent.left
                 right: parent.right
                 bottom: meta.top
                 bottomMargin: Theme.spacing.extraLarge
             }
+
             height: picker.focusedHeight + Theme.picker.headroom
             model: picker.matches
             clip: true
@@ -323,14 +338,70 @@ OverlayWindow {
             transform: Rotation {
                 id: page
 
+                property int hinge: 1
+
                 origin.x: page.hinge < 0 ? list.width : 0
                 origin.y: list.height / 2
+
                 axis {
                     x: 0
                     y: 1
                     z: 0
                 }
-                property int hinge: 1
+            }
+
+            // PathView wraps around at both ends; ListView cannot.
+            pathItemCount: Math.max(Theme.picker.minCards, Math.floor(width / (picker.focusedWidth * Theme.picker.cardSpan)))
+            preferredHighlightBegin: 0.5
+            preferredHighlightEnd: 0.5
+            highlightRangeMode: PathView.StrictlyEnforceRange
+            snapMode: PathView.SnapToItem
+            movementDirection: PathView.Shortest
+            highlightMoveDuration: Theme.duration.expressiveDefaultSpatial
+
+            path: Path {
+                startX: 0
+                startY: list.height / 2
+
+                PathAttribute {
+                    name: "itemScale"
+                    value: picker.shrink
+                }
+
+                PathAttribute {
+                    name: "itemLift"
+                    value: 0
+                }
+
+                PathLine {
+                    x: list.width / 2
+                    y: list.height / 2
+                }
+
+                PathAttribute {
+                    name: "itemScale"
+                    value: 1
+                }
+
+                PathAttribute {
+                    name: "itemLift"
+                    value: Theme.picker.focusLift
+                }
+
+                PathLine {
+                    x: list.width
+                    y: list.height / 2
+                }
+
+                PathAttribute {
+                    name: "itemScale"
+                    value: picker.shrink
+                }
+
+                PathAttribute {
+                    name: "itemLift"
+                    value: 0
+                }
             }
 
             ParallelAnimation {
@@ -344,6 +415,7 @@ OverlayWindow {
 
                 NumberAnimation {
                     id: swing
+
                     target: page
                     property: "angle"
                     to: 0
@@ -351,6 +423,7 @@ OverlayWindow {
                     easing.type: Easing.BezierSpline
                     easing.bezierCurve: Theme.curve.emphasizedDecel
                 }
+
                 NumberAnimation {
                     target: list
                     property: "opacity"
@@ -360,68 +433,21 @@ OverlayWindow {
                 }
             }
 
-            // PathView wraps around at both ends; ListView cannot.
-            pathItemCount: Math.max(Theme.picker.minCards, Math.floor(width / (picker.focusedWidth * Theme.picker.cardSpan)))
-            preferredHighlightBegin: 0.5
-            preferredHighlightEnd: 0.5
-            highlightRangeMode: PathView.StrictlyEnforceRange
-            snapMode: PathView.SnapToItem
-            movementDirection: PathView.Shortest
-            highlightMoveDuration: Theme.duration.expressiveDefaultSpatial
-
-            // Debounced so a held arrow key does not decode every image.
-            onCurrentIndexChanged: previewDebounce.restart()
-
             Timer {
                 id: previewDebounce
-                interval: Theme.duration.previewDebounce
+
                 onTriggered: {
                     const path = picker.matches[list.currentIndex];
                     if (path && path !== ".." && !picker.isFolder(path))
                         Wallpapers.preview(path);
                 }
-            }
 
-            path: Path {
-                startX: 0
-                startY: list.height / 2
-
-                PathAttribute {
-                    name: "itemScale"
-                    value: picker.shrink
-                }
-                PathAttribute {
-                    name: "itemLift"
-                    value: 0
-                }
-                PathLine {
-                    x: list.width / 2
-                    y: list.height / 2
-                }
-                PathAttribute {
-                    name: "itemScale"
-                    value: 1
-                }
-                PathAttribute {
-                    name: "itemLift"
-                    value: Theme.picker.focusLift
-                }
-                PathLine {
-                    x: list.width
-                    y: list.height / 2
-                }
-                PathAttribute {
-                    name: "itemScale"
-                    value: picker.shrink
-                }
-                PathAttribute {
-                    name: "itemLift"
-                    value: 0
-                }
+                interval: Theme.duration.previewDebounce
             }
 
             delegate: Item {
                 id: cell
+
                 required property string modelData
                 required property int index
 
@@ -435,10 +461,12 @@ OverlayWindow {
                 height: list.height
 
                 scale: PathView.itemScale ?? picker.shrink
+
                 // Translate, not `y`: PathView overwrites y on every update.
                 transform: Translate {
                     y: cell.PathView.itemLift ?? 0
                 }
+
                 z: focused ? 1 : 0
 
                 ClippingRectangle {
@@ -479,14 +507,14 @@ OverlayWindow {
                     }
 
                     ShaderEffect {
-                        anchors.fill: parent
-                        visible: !cell.isUp
-                        opacity: cell.isFolder ? Theme.picker.folder : 1
-
                         property var source: pictureShot
                         property size size: Qt.size(width, height)
                         property real radius: card.radius
                         property real spread: Theme.cardFeather
+
+                        anchors.fill: parent
+                        visible: !cell.isUp
+                        opacity: cell.isFolder ? Theme.picker.folder : 1
 
                         fragmentShader: "feather.frag.qsb"
                     }
@@ -524,6 +552,7 @@ OverlayWindow {
                             bottom: parent.bottom
                             margins: Theme.spacing.medium
                         }
+
                         visible: cell.confirmed
                         implicitWidth: Theme.picker.dot
                         implicitHeight: Theme.picker.dot
@@ -533,13 +562,15 @@ OverlayWindow {
                 }
 
                 MouseArea {
-                    anchors.fill: parent
-                    hoverEnabled: true
                     onPositionChanged: mouse => {
                         if (picker.pointerMoved(this, mouse.x, mouse.y))
                             list.currentIndex = cell.index;
                     }
+
                     onClicked: picker.apply(cell.index)
+
+                    anchors.fill: parent
+                    hoverEnabled: true
                 }
             }
         }

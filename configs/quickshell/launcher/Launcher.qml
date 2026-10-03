@@ -19,6 +19,9 @@ Singleton {
     property string decodedTextId
     readonly property string cacheDir: Quickshell.cachePath("clipboard")
 
+    // Launch counts by desktop id.
+    property var launches: ({})
+
     function show(newMode: string): void {
         mode = newMode;
         // Empty until the fresh list lands, so Enter cannot copy a stale entry.
@@ -36,9 +39,6 @@ Singleton {
             show(newMode);
     }
 
-    // Launch counts by desktop id.
-    property var launches: ({})
-
     function launch(entry: var): void {
         // Once, even if a second click lands while the grid fades out.
         if (!open)
@@ -49,20 +49,6 @@ Singleton {
         launches = next;
         launchesFile.setText(JSON.stringify(launches));
         entry.execute();
-    }
-
-    FileView {
-        id: launchesFile
-        path: Quickshell.statePath("launches.json")
-        printErrors: false
-        blockWrites: false
-        onLoaded: {
-            try {
-                root.launches = JSON.parse(text());
-            } catch (e) {
-                root.launches = {};
-            }
-        }
     }
 
     // Decodes one image entry into the cache so the preview pane can show it.
@@ -100,10 +86,28 @@ Singleton {
         copyProc.running = true;
     }
 
+    FileView {
+        id: launchesFile
+
+        onLoaded: {
+            try {
+                root.launches = JSON.parse(text());
+            } catch (e) {
+                root.launches = {};
+            }
+        }
+
+        path: Quickshell.statePath("launches.json")
+        printErrors: false
+        blockWrites: false
+    }
+
     // "8595\t[[ binary data ... ]]" -> { id, preview }
     Process {
         id: clipList
+
         command: ["cliphist", "list"]
+
         stdout: StdioCollector {
             onStreamFinished: {
                 root.clipboard = text.split("\n").filter(l => l !== "").map(line => {
@@ -159,8 +163,6 @@ Singleton {
     }
 
     IpcHandler {
-        target: "launcher"
-
         function apps(): void {
             root.toggle("apps");
         }
@@ -172,5 +174,7 @@ Singleton {
         function close(): void {
             root.open = false;
         }
+
+        target: "launcher"
     }
 }
