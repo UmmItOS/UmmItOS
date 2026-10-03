@@ -83,6 +83,7 @@ BarButton {
     }
 
     icon: "palette"
+    label: "Accent colour"
     onClicked: popupOpen = !popupOpen
 
     Flyout {

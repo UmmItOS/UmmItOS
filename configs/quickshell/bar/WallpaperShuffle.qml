@@ -14,6 +14,7 @@ BarButton {
     property bool settled: false
 
     icon: "wallpaper"
+    label: "Random wallpaper · right-click to choose a folder"
     rightClickable: true
     onClicked: Wallpapers.setRandom()
     onRightClicked: popupOpen = !popupOpen

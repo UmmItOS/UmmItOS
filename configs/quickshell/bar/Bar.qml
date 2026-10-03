@@ -69,6 +69,7 @@ PanelWindow {
             BarButton {
                 Layout.alignment: Qt.AlignVCenter
                 icon: "keyboard_double_arrow_right"
+                label: Toolbox.open ? "Hide tools" : "Show tools"
                 // First in the pill, so it stays under the pointer while the tools unfold beside it; turns to point back once open.
                 rotation: Toolbox.open ? 180 : 0
                 onClicked: Toolbox.toggle()
@@ -125,11 +126,13 @@ PanelWindow {
 
                     BarButton {
                         icon: "terminal"
+                        label: "Terminal"
                         onClicked: Quickshell.execDetached(["kitty"])
                     }
 
                     BarButton {
                         icon: "system_update_alt"
+                        label: "Update UmmItOS"
                         onClicked: Quickshell.execDetached(["kitty", "--execute", bar.home + "/script/misc/update.sh"])
                     }
 
@@ -137,17 +140,20 @@ PanelWindow {
 
                     BarButton {
                         icon: "grid_view"
+                        label: "Wallpapers"
                         onClicked: Wallpapers.pickerOpen = !Wallpapers.pickerOpen
                     }
 
                     BarButton {
                         icon: "keyboard"
+                        label: "Keyboard shortcuts"
                         onClicked: Cheatsheet.open = !Cheatsheet.open
                     }
 
                     BarButton {
                         // A second of grim and zbar: the spinner says it heard the click.
                         icon: Scan.scanning ? "" : "qr_code_scanner"
+                        label: "Scan QR codes"
                         onClicked: Scan.start(bar.screen)
 
                         Spinner {
@@ -178,6 +184,7 @@ PanelWindow {
 
             BarButton {
                 icon: Notifs.dnd ? "notifications_off" : Notifs.history.count > 0 ? "notifications_active" : "notifications"
+                label: "Notifications"
                 baseColor: Notifs.dnd ? Theme.dim : Theme.fg
                 onClicked: Notifs.panelOpen = !Notifs.panelOpen
             }
@@ -190,12 +197,14 @@ PanelWindow {
         BarButton {
             Layout.alignment: Qt.AlignVCenter
             icon: "settings"
+            label: "Settings"
             onClicked: Settings.toggle()
         }
 
         BarButton {
             Layout.alignment: Qt.AlignVCenter
             icon: "power_settings_new"
+            label: "Power"
             onClicked: Session.open = !Session.open
         }
     }

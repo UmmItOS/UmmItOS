@@ -456,6 +456,7 @@ OverlayWindow {
                             BarButton {
                                 Layout.alignment: Qt.AlignBottom
                                 icon: win.revealed ? "visibility_off" : "visibility"
+                                label: win.revealed ? "Hide password" : "Show password"
                                 baseColor: Theme.dim
                                 onClicked: win.revealed = !win.revealed
                             }

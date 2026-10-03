@@ -44,17 +44,20 @@ ColumnLayout {
         // Only there when it would go somewhere.
         BarButton {
             icon: "today"
+            label: "Today"
             visible: root.shown !== root.thisMonth
             onClicked: root.shown = root.thisMonth
         }
 
         BarButton {
             icon: "chevron_left"
+            label: "Previous month"
             onClicked: root.shown--
         }
 
         BarButton {
             icon: "chevron_right"
+            label: "Next month"
             onClicked: root.shown++
         }
     }

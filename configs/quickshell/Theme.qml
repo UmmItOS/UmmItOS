@@ -533,6 +533,8 @@ Singleton {
         readonly property int wakeSafety: 6000
         // Gap between siblings entering one after another.
         readonly property int stagger: 40
+        // How long the pointer rests on an icon-only control before its tip shows.
+        readonly property int tipDelay: 600
         // How often the desktop weather is fetched again.
         readonly property int weatherRefresh: 1800000
         // How soon a fetch that failed for want of network is tried again.

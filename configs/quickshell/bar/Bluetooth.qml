@@ -194,6 +194,7 @@ RowLayout {
                     BarButton {
                         visible: !row.busy && row.modelData.paired && row.hovered
                         icon: "delete"
+                        label: "Forget device"
                         baseColor: row.inkDim
                         hoverColor: row.ink
                         size: Theme.icon.small

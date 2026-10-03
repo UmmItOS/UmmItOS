@@ -360,5 +360,22 @@
     "No agent skills found": "搵唔到 agent 技能",
     "Are you sure you want to log out?": "你肯定要登出？",
     "SAO menu": "SAO 選單",
-    "Could not read the skills": "讀唔到技能"
+    "Could not read the skills": "讀唔到技能",
+    "Show tools": "展開工具",
+    "Hide tools": "收起工具",
+    "Terminal": "終端機",
+    "Update UmmItOS": "更新 UmmItOS",
+    "Wallpapers": "牆紙",
+    "Keyboard shortcuts": "快捷鍵",
+    "Scan QR codes": "掃描 QR code",
+    "Power": "電源",
+    "Random wallpaper · right-click to choose a folder": "隨機換牆紙 · 撳右掣揀資料夾",
+    "Today": "今日",
+    "Previous month": "上個月",
+    "Next month": "下個月",
+    "Forget network": "忘記呢個網絡",
+    "Forget device": "忘記呢部裝置",
+    "Hide password": "隱藏密碼",
+    "Show password": "顯示密碼",
+    "Accent colour": "主題色"
 }

@@ -39,3 +39,4 @@ singleton I18n 1.0 i18n/I18n.qml
 singleton Sao 1.0 sao/Sao.qml
 singleton Sounds 1.0 services/Sounds.qml
 singleton Toolbox 1.0 bar/Toolbox.qml
+Tip 1.0 Tip.qml

@@ -9,6 +9,7 @@ BarButton {
     property bool popupOpen: false
 
     icon: Weather.ready ? Weather.icon(Weather.code, Weather.hour) : "add_location_alt"
+    label: "Weather"
     onClicked: popupOpen = !popupOpen
 
     Flyout {
