@@ -50,9 +50,7 @@ ColumnLayout {
                 font.pixelSize: Theme.fontSize.small
 
                 Behavior on color {
-                    ColorAnimation {
-                        duration: Theme.duration.expressiveFastEffects
-                    }
+                    FastColor {}
                 }
             }
         }

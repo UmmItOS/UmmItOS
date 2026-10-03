@@ -237,9 +237,7 @@ RowLayout {
                             }
 
                             Behavior on opacity {
-                                NumberAnimation {
-                                    duration: Theme.duration.expressiveFastEffects
-                                }
+                                FastFade {}
                             }
                         }
 

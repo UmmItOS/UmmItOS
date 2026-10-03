@@ -128,9 +128,7 @@ OverlayWindow {
                     }
 
                     Behavior on opacity {
-                        NumberAnimation {
-                            duration: Theme.duration.expressiveFastEffects
-                        }
+                        FastFade {}
                     }
                 }
 
@@ -143,16 +141,10 @@ OverlayWindow {
                     scale: dndTap.pressed ? Theme.pressScale : 1
 
                     Behavior on color {
-                        ColorAnimation {
-                            duration: Theme.duration.expressiveFastEffects
-                        }
+                        FastColor {}
                     }
                     Behavior on scale {
-                        NumberAnimation {
-                            duration: Theme.duration.expressiveFastEffects
-                            easing.type: Easing.BezierSpline
-                            easing.bezierCurve: Theme.curve.standard
-                        }
+                        PressAnim {}
                     }
 
                     MaterialIcon {
@@ -163,9 +155,7 @@ OverlayWindow {
                         size: Theme.icon.small
 
                         Behavior on color {
-                            ColorAnimation {
-                                duration: Theme.duration.expressiveFastEffects
-                            }
+                            FastColor {}
                         }
                     }
 
@@ -196,16 +186,10 @@ OverlayWindow {
                         disarm.restart()
 
                     Behavior on color {
-                        ColorAnimation {
-                            duration: Theme.duration.expressiveFastEffects
-                        }
+                        FastColor {}
                     }
                     Behavior on scale {
-                        NumberAnimation {
-                            duration: Theme.duration.expressiveFastEffects
-                            easing.type: Easing.BezierSpline
-                            easing.bezierCurve: Theme.curve.standard
-                        }
+                        PressAnim {}
                     }
 
                     Timer {
@@ -424,9 +408,7 @@ OverlayWindow {
                                     size: Theme.icon.small
 
                                     Behavior on color {
-                                        ColorAnimation {
-                                            duration: Theme.duration.expressiveFastEffects
-                                        }
+                                        FastColor {}
                                     }
 
                                     MouseArea {

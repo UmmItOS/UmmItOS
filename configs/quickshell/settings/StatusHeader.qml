@@ -37,9 +37,7 @@ RowLayout {
             fill: 1
 
             Behavior on color {
-                ColorAnimation {
-                    duration: Theme.duration.expressiveFastEffects
-                }
+                FastColor {}
             }
         }
 

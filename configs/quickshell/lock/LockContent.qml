@@ -275,9 +275,7 @@ Item {
             }
         }
         Behavior on color {
-            ColorAnimation {
-                duration: Theme.duration.expressiveFastEffects
-            }
+            FastColor {}
         }
 
         // A wrong password shakes the field, briefly, like a head saying no.

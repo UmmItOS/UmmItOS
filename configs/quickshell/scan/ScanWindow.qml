@@ -215,9 +215,7 @@ OverlayWindow {
                     opacity: found.picked ? Theme.scan.tintPeak : Theme.scan.tint
 
                     Behavior on opacity {
-                        NumberAnimation {
-                            duration: Theme.duration.expressiveFastEffects
-                        }
+                        FastFade {}
                     }
                 }
 
@@ -236,16 +234,10 @@ OverlayWindow {
                     scale: pick.pressed ? Theme.pressScale : 1
 
                     Behavior on color {
-                        ColorAnimation {
-                            duration: Theme.duration.expressiveFastEffects
-                        }
+                        FastColor {}
                     }
                     Behavior on scale {
-                        NumberAnimation {
-                            duration: Theme.duration.expressiveFastEffects
-                            easing.type: Easing.BezierSpline
-                            easing.bezierCurve: Theme.curve.standard
-                        }
+                        PressAnim {}
                     }
 
                     RowLayout {

@@ -118,9 +118,7 @@ OverlayWindow {
                     }
 
                     Behavior on color {
-                        ColorAnimation {
-                            duration: Theme.duration.expressiveFastEffects
-                        }
+                        FastColor {}
                     }
                     Behavior on scale {
                         NumberAnimation {

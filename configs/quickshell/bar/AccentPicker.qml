@@ -51,9 +51,7 @@ BarButton {
         scale: tap.pressed ? Theme.pressScale : 1
 
         Behavior on color {
-            ColorAnimation {
-                duration: Theme.duration.expressiveFastEffects
-            }
+            FastColor {}
         }
         Behavior on scale {
             NumberAnimation {

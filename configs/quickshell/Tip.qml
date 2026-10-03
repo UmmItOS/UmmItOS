@@ -56,9 +56,7 @@ PopupWindow {
         }
 
         Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.duration.expressiveFastEffects
-            }
+            FastFade {}
         }
         Behavior on scale {
             NumberAnimation {

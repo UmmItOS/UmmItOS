@@ -170,9 +170,7 @@ OverlayWindow {
                     opacity: cell.active ? 1 : 0
 
                     Behavior on opacity {
-                        NumberAnimation {
-                            duration: Theme.duration.expressiveFastEffects
-                        }
+                        FastFade {}
                     }
 
                     layer.enabled: cell.active

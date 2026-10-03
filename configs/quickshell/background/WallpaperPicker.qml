@@ -286,9 +286,7 @@ OverlayWindow {
                     }
 
                     Behavior on opacity {
-                        NumberAnimation {
-                            duration: Theme.duration.expressiveFastEffects
-                        }
+                        FastFade {}
                     }
                 }
 
@@ -303,9 +301,7 @@ OverlayWindow {
                     font.letterSpacing: Theme.tracking.wide
 
                     Behavior on opacity {
-                        NumberAnimation {
-                            duration: Theme.duration.expressiveFastEffects
-                        }
+                        FastFade {}
                     }
                 }
             }

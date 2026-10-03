@@ -24,16 +24,10 @@ Item {
         scale: skipArea.pressed ? Theme.pressScale : 1
 
         Behavior on color {
-            ColorAnimation {
-                duration: Theme.duration.expressiveFastEffects
-            }
+            FastColor {}
         }
         Behavior on scale {
-            NumberAnimation {
-                duration: Theme.duration.expressiveFastEffects
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curve.standard
-            }
+            PressAnim {}
         }
 
         MouseArea {
@@ -195,16 +189,10 @@ Item {
                     scale: playArea.pressed ? Theme.pressScale : 1
 
                     Behavior on color {
-                        ColorAnimation {
-                            duration: Theme.duration.expressiveFastEffects
-                        }
+                        FastColor {}
                     }
                     Behavior on scale {
-                        NumberAnimation {
-                            duration: Theme.duration.expressiveFastEffects
-                            easing.type: Easing.BezierSpline
-                            easing.bezierCurve: Theme.curve.standard
-                        }
+                        PressAnim {}
                     }
 
                     Rectangle {
@@ -214,9 +202,7 @@ Item {
                         opacity: playArea.containsMouse ? 1 : 0
 
                         Behavior on opacity {
-                            NumberAnimation {
-                                duration: Theme.duration.expressiveFastEffects
-                            }
+                            FastFade {}
                         }
                     }
 

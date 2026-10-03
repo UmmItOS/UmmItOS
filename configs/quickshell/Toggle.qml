@@ -16,9 +16,7 @@ Rectangle {
     color: root.checked ? Theme.accent : Theme.bgTray
 
     Behavior on color {
-        ColorAnimation {
-            duration: Theme.duration.expressiveFastEffects
-        }
+        FastColor {}
     }
 
     Rectangle {
@@ -30,9 +28,7 @@ Rectangle {
         color: root.checked ? Theme.accentOn : Theme.fg
 
         Behavior on color {
-            ColorAnimation {
-                duration: Theme.duration.expressiveFastEffects
-            }
+            FastColor {}
         }
 
         Behavior on x {
@@ -47,11 +43,7 @@ Rectangle {
     scale: press.pressed ? Theme.pressScale : 1
 
     Behavior on scale {
-        NumberAnimation {
-            duration: Theme.duration.expressiveFastEffects
-            easing.type: Easing.BezierSpline
-            easing.bezierCurve: Theme.curve.standard
-        }
+        PressAnim {}
     }
 
     MouseArea {

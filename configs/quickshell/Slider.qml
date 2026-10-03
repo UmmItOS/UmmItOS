@@ -44,11 +44,7 @@ Item {
         scale: drag.pressed ? (root.knobSize + Theme.spacing.hair * 2) / root.knobSize : 1
 
         Behavior on scale {
-            NumberAnimation {
-                duration: Theme.duration.expressiveFastEffects
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Theme.curve.standard
-            }
+            PressAnim {}
         }
     }
 

@@ -167,9 +167,7 @@ OverlayWindow {
                             color: active ? Theme.bgTray : "transparent"
 
                             Behavior on color {
-                                ColorAnimation {
-                                    duration: Theme.duration.expressiveFastEffects
-                                }
+                                FastColor {}
                             }
 
                             RowLayout {

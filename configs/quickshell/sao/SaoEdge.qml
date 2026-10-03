@@ -30,9 +30,7 @@ PanelWindow {
         opacity: pull.pressed || pull.containsMouse ? 1 : 0
 
         Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.duration.expressiveFastEffects
-            }
+            FastFade {}
         }
     }
 

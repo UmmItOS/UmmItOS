@@ -383,9 +383,7 @@ Scope {
                             size: Theme.icon.small
 
                             Behavior on color {
-                                ColorAnimation {
-                                    duration: Theme.duration.expressiveFastEffects
-                                }
+                                FastColor {}
                             }
 
                             MouseArea {
@@ -465,9 +463,7 @@ Scope {
                                 color: actionHover.hovered ? Theme.accentText : Theme.bgTray
 
                                 Behavior on color {
-                                    ColorAnimation {
-                                        duration: Theme.duration.expressiveFastEffects
-                                    }
+                                    FastColor {}
                                 }
 
                                 HoverHandler {

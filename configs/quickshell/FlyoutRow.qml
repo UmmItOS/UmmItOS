@@ -15,9 +15,7 @@ Rectangle {
     color: root.active ? Theme.accent : root.hovered ? Theme.bgTray : "transparent"
 
     Behavior on color {
-        ColorAnimation {
-            duration: Theme.duration.expressiveFastEffects
-        }
+        FastColor {}
     }
 
     HoverHandler {

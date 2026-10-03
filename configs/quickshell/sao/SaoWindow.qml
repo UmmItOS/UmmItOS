@@ -188,16 +188,10 @@ OverlayWindow {
                         scale: tap.pressed ? Theme.pressScale : 1
 
                         Behavior on color {
-                            ColorAnimation {
-                                duration: Theme.duration.expressiveFastEffects
-                            }
+                            FastColor {}
                         }
                         Behavior on scale {
-                            NumberAnimation {
-                                duration: Theme.duration.expressiveFastEffects
-                                easing.type: Easing.BezierSpline
-                                easing.bezierCurve: Theme.curve.standard
-                            }
+                            PressAnim {}
                         }
 
                         MaterialIcon {
@@ -208,9 +202,7 @@ OverlayWindow {
                             fill: 1
 
                             Behavior on color {
-                                ColorAnimation {
-                                    duration: Theme.duration.expressiveFastEffects
-                                }
+                                FastColor {}
                             }
                         }
                     }
@@ -525,16 +517,10 @@ OverlayWindow {
                             scale: skillTap.pressed ? Theme.pressScale : 1
 
                             Behavior on color {
-                                ColorAnimation {
-                                    duration: Theme.duration.expressiveFastEffects
-                                }
+                                FastColor {}
                             }
                             Behavior on scale {
-                                NumberAnimation {
-                                    duration: Theme.duration.expressiveFastEffects
-                                    easing.type: Easing.BezierSpline
-                                    easing.bezierCurve: Theme.curve.standard
-                                }
+                                PressAnim {}
                             }
 
                             Column {
@@ -840,9 +826,7 @@ OverlayWindow {
                 }
 
                 Behavior on color {
-                    ColorAnimation {
-                        duration: Theme.duration.expressiveFastEffects
-                    }
+                    FastColor {}
                 }
             }
         }
@@ -869,9 +853,7 @@ OverlayWindow {
             opacity: choice.focused ? 1 : 0
 
             Behavior on opacity {
-                NumberAnimation {
-                    duration: Theme.duration.expressiveFastEffects
-                }
+                FastFade {}
             }
         }
 
@@ -884,11 +866,7 @@ OverlayWindow {
             scale: choiceTap.pressed ? Theme.pressScale : 1
 
             Behavior on scale {
-                NumberAnimation {
-                    duration: Theme.duration.expressiveFastEffects
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curve.standard
-                }
+                PressAnim {}
             }
         }
 

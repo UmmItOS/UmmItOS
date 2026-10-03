@@ -253,9 +253,7 @@ PanelWindow {
                         color: index < win.filled ? (Osd.muted ? Theme.dim : Theme.accentText) : Theme.bgTray
 
                         Behavior on color {
-                            ColorAnimation {
-                                duration: Theme.duration.expressiveFastEffects
-                            }
+                            FastColor {}
                         }
                     }
                 }

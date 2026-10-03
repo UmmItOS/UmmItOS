@@ -64,9 +64,7 @@ RowLayout {
                 font.bold: true
 
                 Behavior on opacity {
-                    NumberAnimation {
-                        duration: Theme.duration.expressiveFastEffects
-                    }
+                    FastFade {}
                 }
             }
 

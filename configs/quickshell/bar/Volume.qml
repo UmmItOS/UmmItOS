@@ -120,19 +120,13 @@ RowLayout {
                 color: root.muted ? Theme.accent : Theme.bgTray
 
                 Behavior on color {
-                    ColorAnimation {
-                        duration: Theme.duration.expressiveFastEffects
-                    }
+                    FastColor {}
                 }
 
                 scale: muteMouse.pressed ? Theme.pressScale : 1
 
                 Behavior on scale {
-                    NumberAnimation {
-                        duration: Theme.duration.expressiveFastEffects
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: Theme.curve.standard
-                    }
+                    PressAnim {}
                 }
 
                 MaterialIcon {
@@ -142,9 +136,7 @@ RowLayout {
                     fill: root.muted || muteMouse.containsMouse ? 1 : 0
 
                     Behavior on color {
-                        ColorAnimation {
-                            duration: Theme.duration.expressiveFastEffects
-                        }
+                        FastColor {}
                     }
                 }
 
@@ -239,9 +231,7 @@ RowLayout {
                 color: deviceHover.hovered || device.current ? Theme.bgTray : "transparent"
 
                 Behavior on color {
-                    ColorAnimation {
-                        duration: Theme.duration.expressiveFastEffects
-                    }
+                    FastColor {}
                 }
 
                 HoverHandler {
@@ -330,11 +320,7 @@ RowLayout {
                     scale: streamMouse.pressed ? Theme.pressScale : 1
 
                     Behavior on scale {
-                        NumberAnimation {
-                            duration: Theme.duration.expressiveFastEffects
-                            easing.type: Easing.BezierSpline
-                            easing.bezierCurve: Theme.curve.standard
-                        }
+                        PressAnim {}
                     }
 
                     IconImage {

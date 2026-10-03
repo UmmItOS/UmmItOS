@@ -27,9 +27,7 @@ GridView {
             color: cell.modelData?.urgent ? Theme.urgent : cell.modelData?.focused ? Theme.accent : Theme.glass
 
             Behavior on color {
-                ColorAnimation {
-                    duration: Theme.duration.expressiveFastEffects
-                }
+                FastColor {}
             }
 
             ColumnLayout {

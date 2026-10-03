@@ -13,6 +13,9 @@ Spinner 1.0 Spinner.qml
 Toggle 1.0 Toggle.qml
 Flyout 1.0 Flyout.qml
 Slider 1.0 Slider.qml
+FastColor 1.0 FastColor.qml
+FastFade 1.0 FastFade.qml
+PressAnim 1.0 PressAnim.qml
 Segmented 1.0 Segmented.qml
 SlideList 1.0 SlideList.qml
 singleton Players 1.0 services/Players.qml

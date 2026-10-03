@@ -86,16 +86,10 @@ Item {
                     }
 
                     Behavior on scale {
-                        NumberAnimation {
-                            duration: Theme.duration.expressiveFastEffects
-                            easing.type: Easing.BezierSpline
-                            easing.bezierCurve: Theme.curve.standard
-                        }
+                        PressAnim {}
                     }
                     Behavior on color {
-                        ColorAnimation {
-                            duration: Theme.duration.expressiveFastEffects
-                        }
+                        FastColor {}
                     }
                 }
 
