@@ -4,8 +4,9 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Networking
 import QtQuick
+import ".."
 
-// One sampler however many bars; the first sample is only a baseline.
+// One sampler however many bars, idle under the lock; the first sample is only a baseline.
 Singleton {
     id: root
 
@@ -20,7 +21,7 @@ Singleton {
     property real lastTx: -1
 
     Timer {
-        running: root.device !== ""
+        running: root.device !== "" && !Lock.locked
         interval: 1000
         repeat: true
         triggeredOnStart: true
