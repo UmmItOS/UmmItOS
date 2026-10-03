@@ -122,6 +122,7 @@ Scope {
         implicitWidth: screen?.width ?? Theme.fallbackScreen.width
         // Fixed height: shrinking it clipped a toast mid-slide.
         implicitHeight: (screen?.height ?? Theme.fallbackScreen.height) - Theme.barHeight - Theme.spacing.small * 2
+        color: "transparent"
 
         // On the list itself; a contentItem region missed it moving.
         mask: Region {
@@ -131,8 +132,6 @@ Scope {
             // contentHeight lags a card that grows after arrival, so count the cards' own extent too.
             height: Math.min(list.height, Math.max(list.contentHeight, list.contentItem.childrenRect.y + list.contentItem.childrenRect.height - list.contentY))
         }
-
-        color: "transparent"
 
         // A ListView, so removals animate instead of snapping.
         ListView {
@@ -152,73 +151,6 @@ Scope {
 
             model: ScriptModel {
                 values: root.cards
-            }
-
-            add: Transition {
-                id: entrance
-
-                NumberAnimation {
-                    property: "opacity"
-                    from: 0
-                    to: 1
-                    duration: Theme.duration.expressiveDefaultEffects
-                }
-
-                NumberAnimation {
-                    property: "x"
-                    from: Theme.notification.slide
-                    duration: Theme.duration.expressiveDefaultSpatial
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curve.emphasizedDecel
-                }
-            }
-
-            remove: Transition {
-                NumberAnimation {
-                    property: "opacity"
-                    to: 0
-                    duration: Theme.duration.expressiveFastEffects
-                }
-
-                NumberAnimation {
-                    property: "x"
-                    to: Theme.notification.slide
-                    duration: Theme.duration.expressiveFastSpatial
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curve.emphasizedAccel
-                }
-            }
-
-            displaced: Transition {
-                NumberAnimation {
-                    property: "y"
-                    duration: Theme.duration.expressiveFastSpatial
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curve.standard
-                }
-
-                // A displaced toast otherwise stays half faded.
-                NumberAnimation {
-                    properties: "opacity"
-                    to: 1
-                    duration: Theme.duration.expressiveFastEffects
-                }
-
-                NumberAnimation {
-                    properties: "x"
-                    to: 0
-                    duration: Theme.duration.expressiveFastSpatial
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curve.emphasizedDecel
-                }
-            }
-
-            Behavior on anchors.rightMargin {
-                NumberAnimation {
-                    duration: Theme.duration.expressiveDefaultSpatial
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curve.expressiveDefaultSpatial
-                }
             }
 
             delegate: Rectangle {
@@ -284,16 +216,16 @@ Scope {
                         root.drop(card.modelData);
                 }
 
+                width: list.width
+                implicitHeight: body.implicitHeight + Theme.spacing.large * 2
+                radius: Theme.rounding.extraLarge
+                color: Theme.scrim(Theme.panelTint)
+
                 layer.enabled: opacity < 1
 
                 layer.effect: MotionBlur {
                     settled: card.opacity
                 }
-
-                width: list.width
-                implicitHeight: body.implicitHeight + Theme.spacing.large * 2
-                radius: Theme.rounding.extraLarge
-                color: Theme.scrim(Theme.panelTint)
 
                 // Replaced notifications update the same object in place, one field signal at a time.
                 Connections {
@@ -525,6 +457,73 @@ Scope {
                             }
                         }
                     }
+                }
+            }
+
+            add: Transition {
+                id: entrance
+
+                NumberAnimation {
+                    property: "opacity"
+                    from: 0
+                    to: 1
+                    duration: Theme.duration.expressiveDefaultEffects
+                }
+
+                NumberAnimation {
+                    property: "x"
+                    from: Theme.notification.slide
+                    duration: Theme.duration.expressiveDefaultSpatial
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curve.emphasizedDecel
+                }
+            }
+
+            remove: Transition {
+                NumberAnimation {
+                    property: "opacity"
+                    to: 0
+                    duration: Theme.duration.expressiveFastEffects
+                }
+
+                NumberAnimation {
+                    property: "x"
+                    to: Theme.notification.slide
+                    duration: Theme.duration.expressiveFastSpatial
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curve.emphasizedAccel
+                }
+            }
+
+            displaced: Transition {
+                NumberAnimation {
+                    property: "y"
+                    duration: Theme.duration.expressiveFastSpatial
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curve.standard
+                }
+
+                // A displaced toast otherwise stays half faded.
+                NumberAnimation {
+                    properties: "opacity"
+                    to: 1
+                    duration: Theme.duration.expressiveFastEffects
+                }
+
+                NumberAnimation {
+                    properties: "x"
+                    to: 0
+                    duration: Theme.duration.expressiveFastSpatial
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curve.emphasizedDecel
+                }
+            }
+
+            Behavior on anchors.rightMargin {
+                NumberAnimation {
+                    duration: Theme.duration.expressiveDefaultSpatial
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curve.expressiveDefaultSpatial
                 }
             }
         }

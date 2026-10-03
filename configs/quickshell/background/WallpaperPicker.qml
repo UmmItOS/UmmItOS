@@ -404,47 +404,6 @@ OverlayWindow {
                 }
             }
 
-            ParallelAnimation {
-                id: turn
-
-                function open(direction: int): void {
-                    page.hinge = direction;
-                    swing.from = direction * Theme.picker.swing;
-                    restart();
-                }
-
-                NumberAnimation {
-                    id: swing
-
-                    target: page
-                    property: "angle"
-                    to: 0
-                    duration: Theme.duration.expressiveDefaultSpatial
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curve.emphasizedDecel
-                }
-
-                NumberAnimation {
-                    target: list
-                    property: "opacity"
-                    from: 0
-                    to: 1
-                    duration: Theme.duration.expressiveDefaultEffects
-                }
-            }
-
-            Timer {
-                id: previewDebounce
-
-                onTriggered: {
-                    const path = picker.matches[list.currentIndex];
-                    if (path && path !== ".." && !picker.isFolder(path))
-                        Wallpapers.preview(path);
-                }
-
-                interval: Theme.duration.previewDebounce
-            }
-
             delegate: Item {
                 id: cell
 
@@ -572,6 +531,47 @@ OverlayWindow {
                     anchors.fill: parent
                     hoverEnabled: true
                 }
+            }
+
+            ParallelAnimation {
+                id: turn
+
+                function open(direction: int): void {
+                    page.hinge = direction;
+                    swing.from = direction * Theme.picker.swing;
+                    restart();
+                }
+
+                NumberAnimation {
+                    id: swing
+
+                    target: page
+                    property: "angle"
+                    to: 0
+                    duration: Theme.duration.expressiveDefaultSpatial
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curve.emphasizedDecel
+                }
+
+                NumberAnimation {
+                    target: list
+                    property: "opacity"
+                    from: 0
+                    to: 1
+                    duration: Theme.duration.expressiveDefaultEffects
+                }
+            }
+
+            Timer {
+                id: previewDebounce
+
+                onTriggered: {
+                    const path = picker.matches[list.currentIndex];
+                    if (path && path !== ".." && !picker.isFolder(path))
+                        Wallpapers.preview(path);
+                }
+
+                interval: Theme.duration.previewDebounce
             }
         }
     }

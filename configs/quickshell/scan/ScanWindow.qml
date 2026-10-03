@@ -108,18 +108,6 @@ OverlayWindow {
     screen: Scan.screen
     scrim: Theme.shade.normal
 
-    Binding {
-        target: Scan
-        property: "showing"
-        value: win.visible
-    }
-
-    MouseArea {
-        onClicked: Scan.open = false
-
-        anchors.fill: parent
-    }
-
     component Heading: Text {
         Layout.fillWidth: true
         Layout.topMargin: Theme.spacing.medium
@@ -170,6 +158,18 @@ OverlayWindow {
         Value {
             text: field.value
         }
+    }
+
+    Binding {
+        target: Scan
+        property: "showing"
+        value: win.visible
+    }
+
+    MouseArea {
+        onClicked: Scan.open = false
+
+        anchors.fill: parent
     }
 
     // Keys live here, above the codes and the panel, so a click into the text keeps them working.

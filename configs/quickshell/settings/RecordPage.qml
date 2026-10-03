@@ -279,15 +279,6 @@ ColumnLayout {
         boundsBehavior: Flickable.StopAtBounds
         model: Settings.files
 
-        Text {
-            anchors.centerIn: parent
-            visible: files.count === 0
-            text: I18n.t("No recordings yet")
-            color: Theme.dim
-            font.family: Theme.font
-            font.pixelSize: Theme.fontSize.smaller
-        }
-
         delegate: FlyoutRow {
             id: file
 
@@ -374,6 +365,15 @@ ColumnLayout {
                 onTapped: if (!binHover.hovered)
                     Settings.openFile(file.modelData.path)
             }
+        }
+
+        Text {
+            anchors.centerIn: parent
+            visible: files.count === 0
+            text: I18n.t("No recordings yet")
+            color: Theme.dim
+            font.family: Theme.font
+            font.pixelSize: Theme.fontSize.smaller
         }
     }
 }

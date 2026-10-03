@@ -118,33 +118,6 @@ BarButton {
                 values: root.used
             }
 
-            add: Transition {
-                NumberAnimation {
-                    property: "opacity"
-                    from: 0
-                    to: 1
-                    duration: Theme.duration.expressiveDefaultEffects
-                }
-            }
-
-            move: Transition {
-                NumberAnimation {
-                    property: "x"
-                    duration: Theme.duration.expressiveDefaultSpatial
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curve.emphasizedDecel
-                }
-            }
-
-            displaced: Transition {
-                NumberAnimation {
-                    property: "x"
-                    duration: Theme.duration.expressiveDefaultSpatial
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curve.emphasizedDecel
-                }
-            }
-
             delegate: Column {
                 id: entry
 
@@ -175,6 +148,33 @@ BarButton {
                                 tnum: 1
                             })
                     }
+                }
+            }
+
+            add: Transition {
+                NumberAnimation {
+                    property: "opacity"
+                    from: 0
+                    to: 1
+                    duration: Theme.duration.expressiveDefaultEffects
+                }
+            }
+
+            move: Transition {
+                NumberAnimation {
+                    property: "x"
+                    duration: Theme.duration.expressiveDefaultSpatial
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curve.emphasizedDecel
+                }
+            }
+
+            displaced: Transition {
+                NumberAnimation {
+                    property: "x"
+                    duration: Theme.duration.expressiveDefaultSpatial
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curve.emphasizedDecel
                 }
             }
         }

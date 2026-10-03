@@ -38,15 +38,14 @@ OverlayWindow {
         id: panel
 
         anchors.horizontalCenter: parent.horizontalCenter
-        opacity: Math.min(1, win.reveal)
-        scale: Theme.popScale + (1 - Theme.popScale) * win.reveal
-
         anchors.top: parent.top
         anchors.topMargin: Theme.barHeight + Theme.spacing.small
         width: Math.min(Theme.dashboard.width, parent.width - Theme.spacing.extraLarge * 2)
         height: Math.min(Theme.dashboard.height, parent.height - anchors.topMargin - Theme.spacing.extraLarge)
         radius: Theme.rounding.extraExtraLarge
         color: "transparent"
+        opacity: Math.min(1, win.reveal)
+        scale: Theme.popScale + (1 - Theme.popScale) * win.reveal
 
         Surface {
             anchors.fill: parent

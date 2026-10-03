@@ -44,6 +44,130 @@ OverlayWindow {
     name: "sao"
     screen: Sao.screen
 
+    // A labelled bar in the anime's HP style: the fill scales, it is never resized.
+    component Gauge: Column {
+        id: gauge
+
+        property string title
+        property real ratio
+        property color tint
+        property string readout
+        // Off until the first sample, so the bar does not sweep down from an empty default.
+        property bool ready: true
+
+        width: parent.width
+        spacing: Theme.spacing.extraSmall
+
+        Row {
+            width: parent.width
+
+            Text {
+                width: parent.width / 2
+                textFormat: Text.PlainText
+                text: gauge.title
+                color: Theme.sao.inkDeep
+                font.family: rationale.name
+                font.pixelSize: Theme.fontSize.larger
+                font.letterSpacing: Theme.tracking.wider
+            }
+
+            Text {
+                width: parent.width / 2
+                horizontalAlignment: Text.AlignRight
+                textFormat: Text.PlainText
+                text: gauge.readout
+                color: Theme.sao.inkDeep
+                font.family: win.family(text)
+                font.pixelSize: Theme.fontSize.larger
+            }
+        }
+
+        Rectangle {
+            width: parent.width
+            height: Theme.sao.bar
+            radius: height / 2
+            color: Theme.sao.inkDeep
+
+            Rectangle {
+                width: parent.width
+                height: parent.height
+                radius: height / 2
+                color: gauge.tint
+
+                transform: Scale {
+                    xScale: gauge.ready ? Math.max(0, Math.min(1, gauge.ratio)) : 0
+
+                    Behavior on xScale {
+                        enabled: gauge.ready
+
+                        NumberAnimation {
+                            duration: Theme.duration.expressiveDefaultSpatial
+                            easing.type: Easing.BezierSpline
+                            easing.bezierCurve: Theme.curve.emphasizedDecel
+                        }
+                    }
+                }
+
+                Behavior on color {
+                    FastColor {}
+                }
+            }
+        }
+    }
+
+    // The dialog's round ○ / × buttons; the focused one wears a ring in its colour.
+    component Choice: Item {
+        id: choice
+
+        property color tint
+        property bool focused: false
+        signal chosen
+        signal hovered
+
+        width: Theme.sao.choice + (Theme.sao.choiceRing + Theme.sao.ring) * 2
+        height: width
+
+        Rectangle {
+            anchors.fill: parent
+            radius: width / 2
+            color: "transparent"
+            border.width: Theme.sao.ring
+            border.color: choice.tint
+            opacity: choice.focused ? 1 : 0
+
+            Behavior on opacity {
+                FastFade {}
+            }
+        }
+
+        Rectangle {
+            anchors.centerIn: parent
+            width: Theme.sao.choice
+            height: Theme.sao.choice
+            radius: width / 2
+            color: choice.tint
+            scale: choiceTap.pressed ? Theme.pressScale : 1
+
+            Behavior on scale {
+                PressAnim {}
+            }
+        }
+
+        // Movement, not entry: the dialog flips in under a resting pointer, which must not move the focus to ○.
+        HoverHandler {
+            onPointChanged: if (win.pointerMoved(choice, point.position.x, point.position.y))
+                choice.hovered()
+
+            cursorShape: Qt.PointingHandCursor
+        }
+
+        TapHandler {
+            id: choiceTap
+
+            onTapped: choice.chosen()
+        }
+    }
+
     FontLoader {
         id: rationale
 
@@ -798,130 +922,6 @@ OverlayWindow {
                     }
                 }
             }
-        }
-    }
-
-    // A labelled bar in the anime's HP style: the fill scales, it is never resized.
-    component Gauge: Column {
-        id: gauge
-
-        property string title
-        property real ratio
-        property color tint
-        property string readout
-        // Off until the first sample, so the bar does not sweep down from an empty default.
-        property bool ready: true
-
-        width: parent.width
-        spacing: Theme.spacing.extraSmall
-
-        Row {
-            width: parent.width
-
-            Text {
-                width: parent.width / 2
-                textFormat: Text.PlainText
-                text: gauge.title
-                color: Theme.sao.inkDeep
-                font.family: rationale.name
-                font.pixelSize: Theme.fontSize.larger
-                font.letterSpacing: Theme.tracking.wider
-            }
-
-            Text {
-                width: parent.width / 2
-                horizontalAlignment: Text.AlignRight
-                textFormat: Text.PlainText
-                text: gauge.readout
-                color: Theme.sao.inkDeep
-                font.family: win.family(text)
-                font.pixelSize: Theme.fontSize.larger
-            }
-        }
-
-        Rectangle {
-            width: parent.width
-            height: Theme.sao.bar
-            radius: height / 2
-            color: Theme.sao.inkDeep
-
-            Rectangle {
-                width: parent.width
-                height: parent.height
-                radius: height / 2
-                color: gauge.tint
-
-                transform: Scale {
-                    xScale: gauge.ready ? Math.max(0, Math.min(1, gauge.ratio)) : 0
-
-                    Behavior on xScale {
-                        enabled: gauge.ready
-
-                        NumberAnimation {
-                            duration: Theme.duration.expressiveDefaultSpatial
-                            easing.type: Easing.BezierSpline
-                            easing.bezierCurve: Theme.curve.emphasizedDecel
-                        }
-                    }
-                }
-
-                Behavior on color {
-                    FastColor {}
-                }
-            }
-        }
-    }
-
-    // The dialog's round ○ / × buttons; the focused one wears a ring in its colour.
-    component Choice: Item {
-        id: choice
-
-        property color tint
-        property bool focused: false
-        signal chosen
-        signal hovered
-
-        width: Theme.sao.choice + (Theme.sao.choiceRing + Theme.sao.ring) * 2
-        height: width
-
-        Rectangle {
-            anchors.fill: parent
-            radius: width / 2
-            color: "transparent"
-            border.width: Theme.sao.ring
-            border.color: choice.tint
-            opacity: choice.focused ? 1 : 0
-
-            Behavior on opacity {
-                FastFade {}
-            }
-        }
-
-        Rectangle {
-            anchors.centerIn: parent
-            width: Theme.sao.choice
-            height: Theme.sao.choice
-            radius: width / 2
-            color: choice.tint
-            scale: choiceTap.pressed ? Theme.pressScale : 1
-
-            Behavior on scale {
-                PressAnim {}
-            }
-        }
-
-        // Movement, not entry: the dialog flips in under a resting pointer, which must not move the focus to ○.
-        HoverHandler {
-            onPointChanged: if (win.pointerMoved(choice, point.position.x, point.position.y))
-                choice.hovered()
-
-            cursorShape: Qt.PointingHandCursor
-        }
-
-        TapHandler {
-            id: choiceTap
-
-            onTapped: choice.chosen()
         }
     }
 }

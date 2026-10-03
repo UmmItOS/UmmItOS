@@ -156,27 +156,6 @@ ColumnLayout {
             values: page.missing
         }
 
-        ColumnLayout {
-            anchors.centerIn: parent
-            visible: page.result === "ok"
-            spacing: Theme.spacing.small
-
-            MaterialIcon {
-                Layout.alignment: Qt.AlignHCenter
-                text: "verified"
-                color: Theme.dim
-                size: Theme.icon.extraLarge
-            }
-
-            Text {
-                Layout.alignment: Qt.AlignHCenter
-                text: I18n.t("Nothing to install")
-                color: Theme.dim
-                font.family: Theme.font
-                font.pixelSize: Theme.fontSize.smaller
-            }
-        }
-
         delegate: FlyoutRow {
             id: row
 
@@ -229,6 +208,27 @@ ColumnLayout {
                 id: press
 
                 onTapped: page.installAll([row.modelData])
+            }
+        }
+
+        ColumnLayout {
+            anchors.centerIn: parent
+            visible: page.result === "ok"
+            spacing: Theme.spacing.small
+
+            MaterialIcon {
+                Layout.alignment: Qt.AlignHCenter
+                text: "verified"
+                color: Theme.dim
+                size: Theme.icon.extraLarge
+            }
+
+            Text {
+                Layout.alignment: Qt.AlignHCenter
+                text: I18n.t("Nothing to install")
+                color: Theme.dim
+                font.family: Theme.font
+                font.pixelSize: Theme.fontSize.smaller
             }
         }
     }

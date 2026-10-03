@@ -26,7 +26,7 @@ Scope {
             label: image ? "Image copied" : "Text copied",
             icon: image ? "image" : "content_copy"
         });
-            if (pills.count > Theme.toast.max)
+        if (pills.count > Theme.toast.max)
             pills.remove(Theme.toast.max, pills.count - Theme.toast.max);
     }
 
@@ -75,6 +75,64 @@ Scope {
             spacing: Theme.spacing.medium
             interactive: false
             model: pills
+
+            delegate: Item {
+                id: slot
+
+                required property int key
+                required property string label
+                required property string icon
+
+                width: list.width
+                height: Theme.control.row * 2
+
+                layer.enabled: opacity < 1
+
+                layer.effect: MotionBlur {
+                    settled: slot.opacity
+                }
+
+                Timer {
+                    onTriggered: root.drop(slot.key)
+
+                    // Held while a screenshot is being taken, so the pill can be in it.
+                    running: !Screenshot.holding
+                    interval: Theme.duration.extraLarge * 2
+                }
+
+                Surface {
+                    anchors.right: parent.right
+                    width: row.implicitWidth + Theme.spacing.extraLarge * 3
+                    height: parent.height
+                    radius: Theme.rounding.full
+                    tone: Theme.bgTray
+
+                    Row {
+                        id: row
+
+                        anchors.centerIn: parent
+                        spacing: Theme.spacing.medium
+
+                        MaterialIcon {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: slot.icon
+                            color: Theme.accentText
+                            fill: 1
+                            size: Theme.icon.extraLarge
+                        }
+
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            textFormat: Text.PlainText
+                            text: I18n.t(slot.label)
+                            color: Theme.fg
+                            font.family: Theme.font
+                            font.pixelSize: Theme.fontSize.extraLarge
+                            font.weight: Theme.weight.medium
+                        }
+                    }
+                }
+            }
 
             add: Transition {
                 NumberAnimation {
@@ -130,64 +188,6 @@ Scope {
                     duration: Theme.duration.normal
                     easing.type: Easing.BezierSpline
                     easing.bezierCurve: Theme.curve.emphasizedAccel
-                }
-            }
-
-            delegate: Item {
-                id: slot
-
-                required property int key
-                required property string label
-                required property string icon
-
-                layer.enabled: opacity < 1
-
-                layer.effect: MotionBlur {
-                    settled: slot.opacity
-                }
-
-                width: list.width
-                height: Theme.control.row * 2
-
-                Timer {
-                    onTriggered: root.drop(slot.key)
-
-                    // Held while a screenshot is being taken, so the pill can be in it.
-                    running: !Screenshot.holding
-                    interval: Theme.duration.extraLarge * 2
-                }
-
-                Surface {
-                    anchors.right: parent.right
-                    width: row.implicitWidth + Theme.spacing.extraLarge * 3
-                    height: parent.height
-                    radius: Theme.rounding.full
-                    tone: Theme.bgTray
-
-                    Row {
-                        id: row
-
-                        anchors.centerIn: parent
-                        spacing: Theme.spacing.medium
-
-                        MaterialIcon {
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: slot.icon
-                            color: Theme.accentText
-                            fill: 1
-                            size: Theme.icon.extraLarge
-                        }
-
-                        Text {
-                            anchors.verticalCenter: parent.verticalCenter
-                            textFormat: Text.PlainText
-                            text: I18n.t(slot.label)
-                            color: Theme.fg
-                            font.family: Theme.font
-                            font.pixelSize: Theme.fontSize.extraLarge
-                            font.weight: Theme.weight.medium
-                        }
-                    }
                 }
             }
         }

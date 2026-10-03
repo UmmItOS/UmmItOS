@@ -13,12 +13,6 @@ OverlayWindow {
     name: "record"
     scrim: Theme.shade.normal
 
-    MouseArea {
-        onClicked: Recorder.cancel()
-
-        anchors.fill: parent
-    }
-
     component Choice: Rectangle {
         id: choice
 
@@ -74,6 +68,12 @@ OverlayWindow {
         TapHandler {
             onTapped: choice.toggled()
         }
+    }
+
+    MouseArea {
+        onClicked: Recorder.cancel()
+
+        anchors.fill: parent
     }
 
     FocusScope {

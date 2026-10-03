@@ -219,6 +219,34 @@ OverlayWindow {
     name: "screenshot"
     screen: Screenshot.screen ?? Quickshell.screens[0]
 
+    // A corner that trails its target on a spring.
+    component Corner: QtObject {
+        required property real tx
+        required property real ty
+        property real x: tx
+        property real y: ty
+
+        Behavior on x {
+            // A region's corners are the pointer, no spring.
+            enabled: !win.snap && win.mode === "window"
+
+            SpringAnimation {
+                spring: Theme.spring.stiffness
+                damping: Theme.spring.damping
+            }
+        }
+
+        Behavior on y {
+            // A region's corners are the pointer, no spring.
+            enabled: !win.snap && win.mode === "window"
+
+            SpringAnimation {
+                spring: Theme.spring.stiffness
+                damping: Theme.spring.damping
+            }
+        }
+    }
+
     NumberAnimation {
         id: hazeIn
 
@@ -291,34 +319,6 @@ OverlayWindow {
                     cutFallback.restart();
                 } else
                     Screenshot.region(win.pendingGeometry);
-            }
-        }
-    }
-
-    // A corner that trails its target on a spring.
-    component Corner: QtObject {
-        required property real tx
-        required property real ty
-        property real x: tx
-        property real y: ty
-
-        Behavior on x {
-            // A region's corners are the pointer, no spring.
-            enabled: !win.snap && win.mode === "window"
-
-            SpringAnimation {
-                spring: Theme.spring.stiffness
-                damping: Theme.spring.damping
-            }
-        }
-
-        Behavior on y {
-            // A region's corners are the pointer, no spring.
-            enabled: !win.snap && win.mode === "window"
-
-            SpringAnimation {
-                spring: Theme.spring.stiffness
-                damping: Theme.spring.damping
             }
         }
     }
@@ -447,12 +447,12 @@ OverlayWindow {
 
             // Filled, not stroked, so it can taper.
             component Thread: ShapePath {
-                // Offsets the wave so the four do not move in step.
                 id: thread
 
                 required property real sx
                 required property real sy
                 required property QtObject corner
+                // Offsets the wave so the four do not move in step.
                 property real seed: 0
 
                 readonly property real ax: win.anchorOf(sx, corner.x)

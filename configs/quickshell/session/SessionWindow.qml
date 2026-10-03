@@ -65,17 +65,15 @@ OverlayWindow {
 
                     implicitWidth: Theme.session.tile
                     implicitHeight: Theme.session.tile
-
-                    // Translate, not `y`: the RowLayout owns y.
-                    opacity: 0
-
-                    transform: Translate {
-                        id: lift
-                    }
-
                     radius: Theme.rounding.extraLarge
                     color: active ? Theme.accent : Theme.bgTray
                     scale: active ? Theme.session.activeScale : 1
+                    opacity: 0
+
+                    // Translate, not `y`: the RowLayout owns y.
+                    transform: Translate {
+                        id: lift
+                    }
 
                     layer.enabled: tile.active
 

@@ -11,7 +11,7 @@ Go through this before a feature, fix or change to the shell is committed. The r
   - reloads (lost IPC, reset singletons), sleep and wake, more than one monitor
   - anything that could leave the screen blocked or a state stuck
   - every item in "Traps found the hard way" in CLAUDE.md
-- [ ] **Every object body keeps the QML order** (children recursively): `id`; properties and aliases, then signals; functions, then signal and lifecycle handlers; the item's own geometry and styling; states, transitions and `Behavior`s; child elements last. Logic never sits between children, and nothing but children sits at the bottom.
+- [ ] **Every object body keeps the QML order** (children recursively): `id`; properties and aliases, then signals; functions, then signal and lifecycle handlers; the item's own geometry and styling; states, transitions and `Behavior`s; `delegate:` and inline `component` declarations after the item's own styling; child elements last. Logic never sits between children, and nothing but children sits at the bottom.
 - [ ] **Text goes through `I18n.t()`,** with the key added to every language file.
 - [ ] **Comments are one short line,** and only for a why the code cannot show: a trap, a workaround, a reason for a number. No history, no restating the code.
 - [ ] **Scripts pass `shellcheck`.**

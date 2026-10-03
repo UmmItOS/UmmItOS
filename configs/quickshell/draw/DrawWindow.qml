@@ -118,6 +118,37 @@ OverlayWindow {
         focus: true
         opacity: Math.min(1, win.reveal)
 
+        component Tool: Rectangle {
+            id: tool
+
+            property string icon
+            property bool picked
+            signal clicked
+
+            implicitWidth: Theme.control.field
+            implicitHeight: Theme.control.field
+            radius: Theme.rounding.full
+            color: tool.picked ? Theme.accent : toolHover.hovered ? Theme.bgTray : "transparent"
+            scale: toolTap.pressed ? Theme.popScale : 1
+
+            MaterialIcon {
+                anchors.centerIn: parent
+                text: tool.icon
+                color: tool.picked ? Theme.accentOn : Theme.fg
+                size: Theme.icon.small
+            }
+
+            HoverHandler {
+                id: toolHover
+            }
+
+            TapHandler {
+                id: toolTap
+
+                onTapped: tool.clicked()
+            }
+        }
+
         Item {
             id: view
 
@@ -141,14 +172,6 @@ OverlayWindow {
                     }
                 ]
 
-                ScreencopyView {
-                    id: frozen
-
-                    anchors.fill: parent
-                    captureSource: Draw.screen
-                    live: false
-                }
-
                 component Stroke: Shape {
                     id: stroke
 
@@ -170,6 +193,14 @@ OverlayWindow {
                             path: stroke.model?.points ?? []
                         }
                     }
+                }
+
+                ScreencopyView {
+                    id: frozen
+
+                    anchors.fill: parent
+                    captureSource: Draw.screen
+                    live: false
                 }
 
                 Repeater {
@@ -265,37 +296,6 @@ OverlayWindow {
             color: win.colors[win.ink]
             opacity: win.highlighter ? Theme.draw.highlightAlpha : 1
             visible: area.containsMouse && !win.panning && !bar.hovered
-        }
-
-        component Tool: Rectangle {
-            id: tool
-
-            property string icon
-            property bool picked
-            signal clicked
-
-            implicitWidth: Theme.control.field
-            implicitHeight: Theme.control.field
-            radius: Theme.rounding.full
-            color: tool.picked ? Theme.accent : toolHover.hovered ? Theme.bgTray : "transparent"
-            scale: toolTap.pressed ? Theme.popScale : 1
-
-            MaterialIcon {
-                anchors.centerIn: parent
-                text: tool.icon
-                color: tool.picked ? Theme.accentOn : Theme.fg
-                size: Theme.icon.small
-            }
-
-            HoverHandler {
-                id: toolHover
-            }
-
-            TapHandler {
-                id: toolTap
-
-                onTapped: tool.clicked()
-            }
         }
 
         // Tools, bottom centre; it steps back while a stroke is being drawn.

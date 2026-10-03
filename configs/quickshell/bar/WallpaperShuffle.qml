@@ -115,32 +115,6 @@ BarButton {
                 values: list.rows
             }
 
-            add: Transition {
-                NumberAnimation {
-                    property: "opacity"
-                    from: 0
-                    to: 1
-                    duration: Theme.duration.expressiveDefaultEffects
-                }
-            }
-
-            remove: Transition {
-                NumberAnimation {
-                    property: "opacity"
-                    to: 0
-                    duration: Theme.duration.expressiveFastEffects
-                }
-            }
-
-            displaced: Transition {
-                NumberAnimation {
-                    property: "y"
-                    duration: Theme.duration.expressiveFastSpatial
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Theme.curve.standard
-                }
-            }
-
             // One accent pill that slides to the chosen folder.
             highlight: Rectangle {
                 width: list.width
@@ -220,6 +194,32 @@ BarButton {
                     id: press
 
                     onTapped: Wallpapers.setFolder(row.modelData.path)
+                }
+            }
+
+            add: Transition {
+                NumberAnimation {
+                    property: "opacity"
+                    from: 0
+                    to: 1
+                    duration: Theme.duration.expressiveDefaultEffects
+                }
+            }
+
+            remove: Transition {
+                NumberAnimation {
+                    property: "opacity"
+                    to: 0
+                    duration: Theme.duration.expressiveFastEffects
+                }
+            }
+
+            displaced: Transition {
+                NumberAnimation {
+                    property: "y"
+                    duration: Theme.duration.expressiveFastSpatial
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curve.standard
                 }
             }
         }

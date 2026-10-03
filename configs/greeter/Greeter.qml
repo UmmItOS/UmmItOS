@@ -45,6 +45,48 @@ Item {
         no.restart();
     }
 
+    component Shade: MultiEffect {
+        required property int size
+        required property int passes
+
+        shadowEnabled: true
+        shadowColor: "black"
+        shadowHorizontalOffset: 0
+        shadowVerticalOffset: 0
+        blurMax: Theme.lock.shadowBlurMax
+        shadowBlur: Math.min(1, size * passes / Theme.lock.shadowBlurMax)
+        shadowOpacity: passes > 1 ? 1 : Theme.lock.shadowOpacity
+        shadowScale: Theme.lock.shadowScale
+    }
+
+    component Power: Rectangle {
+        id: power
+
+        property string icon
+        property var command
+
+        implicitWidth: Theme.control.button
+        implicitHeight: Theme.control.button
+        radius: width / 2
+        color: powerHover.hovered ? Theme.lock.glassStrong : Theme.lock.glass
+
+        MaterialIcon {
+            anchors.centerIn: parent
+            text: power.icon
+            color: "white"
+        }
+
+        HoverHandler {
+            id: powerHover
+
+            cursorShape: Qt.PointingHandCursor
+        }
+
+        TapHandler {
+            onTapped: Quickshell.execDetached(power.command)
+        }
+    }
+
     FileView {
         onLoaded: root.user = text().trim()
 
@@ -129,20 +171,6 @@ Item {
         anchors.fill: parent
         color: wall.status === Image.Ready ? "black" : Theme.bg
         opacity: wall.status === Image.Ready ? Theme.lock.veil : 1
-    }
-
-    component Shade: MultiEffect {
-        required property int size
-        required property int passes
-
-        shadowEnabled: true
-        shadowColor: "black"
-        shadowHorizontalOffset: 0
-        shadowVerticalOffset: 0
-        blurMax: Theme.lock.shadowBlurMax
-        shadowBlur: Math.min(1, size * passes / Theme.lock.shadowBlurMax)
-        shadowOpacity: passes > 1 ? 1 : Theme.lock.shadowOpacity
-        shadowScale: Theme.lock.shadowScale
     }
 
     SystemClock {
@@ -382,34 +410,6 @@ Item {
                     }
                 }
             }
-        }
-    }
-
-    component Power: Rectangle {
-        id: power
-
-        property string icon
-        property var command
-
-        implicitWidth: Theme.control.button
-        implicitHeight: Theme.control.button
-        radius: width / 2
-        color: powerHover.hovered ? Theme.lock.glassStrong : Theme.lock.glass
-
-        MaterialIcon {
-            anchors.centerIn: parent
-            text: power.icon
-            color: "white"
-        }
-
-        HoverHandler {
-            id: powerHover
-
-            cursorShape: Qt.PointingHandCursor
-        }
-
-        TapHandler {
-            onTapped: Quickshell.execDetached(power.command)
         }
     }
 

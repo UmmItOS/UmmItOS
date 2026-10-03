@@ -358,17 +358,17 @@ OverlayWindow {
                     // Collapsed groups show their newest card only.
                     readonly property bool shownInGroup: (Notifs.expanded[card.model.appName ?? ""] ?? false) || card.ListView.previousSection !== card.ListView.section
 
-                    layer.enabled: opacity < 1
-
-                    layer.effect: MotionBlur {
-                        settled: card.opacity
-                    }
-
                     width: ListView.view.width
                     // Height snaps: animating it re-blurred the window every frame.
                     implicitHeight: shownInGroup ? surface.implicitHeight + Theme.spacing.small : 0
                     visible: shownInGroup
                     opacity: shownInGroup ? 1 : 0
+
+                    layer.enabled: opacity < 1
+
+                    layer.effect: MotionBlur {
+                        settled: card.opacity
+                    }
 
                     Behavior on opacity {
                         NumberAnimation {

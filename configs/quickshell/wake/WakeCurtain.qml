@@ -22,6 +22,19 @@ Item {
 
     visible: dark > 0
 
+    component Glow: MultiEffect {
+        anchors.fill: pill
+        source: pill
+        autoPaddingEnabled: true
+        blurEnabled: true
+        visible: Wake.draw > 0 && Wake.open < 0.5
+
+        transform: Scale {
+            origin.x: root.width / 2
+            xScale: Wake.draw
+        }
+    }
+
     // The haze: the picture blurred, taken in by the shader, which dims it.
     Item {
         id: blurred
@@ -82,19 +95,6 @@ Item {
         color: Theme.accent2
         visible: false
         layer.enabled: true
-    }
-
-    component Glow: MultiEffect {
-        anchors.fill: pill
-        source: pill
-        autoPaddingEnabled: true
-        blurEnabled: true
-        visible: Wake.draw > 0 && Wake.open < 0.5
-
-        transform: Scale {
-            origin.x: root.width / 2
-            xScale: Wake.draw
-        }
     }
 
     // A wide soft halo…

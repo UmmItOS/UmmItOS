@@ -21,12 +21,6 @@ OverlayWindow {
     name: "cheatsheet"
     scrim: Theme.shade.normal
 
-    MouseArea {
-        onClicked: Cheatsheet.open = false
-
-        anchors.fill: parent
-    }
-
     // A key, drawn as a key.
     component Keycap: Rectangle {
         required property string label
@@ -47,6 +41,12 @@ OverlayWindow {
             font.pixelSize: Theme.fontSize.smaller
             font.weight: Theme.weight.medium
         }
+    }
+
+    MouseArea {
+        onClicked: Cheatsheet.open = false
+
+        anchors.fill: parent
     }
 
     FocusScope {

@@ -26,12 +26,6 @@ PanelWindow {
     implicitHeight: Theme.barHeight
     color: Theme.bg
 
-    SystemClock {
-        id: clock
-
-        precision: SystemClock.Seconds
-    }
-
     component Cluster: Rectangle {
         default property alias content: inner.data
 
@@ -52,6 +46,12 @@ PanelWindow {
             anchors.centerIn: parent
             spacing: Theme.spacing.large
         }
+    }
+
+    SystemClock {
+        id: clock
+
+        precision: SystemClock.Seconds
     }
 
     RowLayout {

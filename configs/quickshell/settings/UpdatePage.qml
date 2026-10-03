@@ -339,27 +339,6 @@ ColumnLayout {
             values: page.pending
         }
 
-        ColumnLayout {
-            anchors.centerIn: parent
-            visible: page.result === "idle" || page.result === "ok"
-            spacing: Theme.spacing.small
-
-            MaterialIcon {
-                Layout.alignment: Qt.AlignHCenter
-                text: page.result === "idle" ? "manage_search" : "task_alt"
-                color: Theme.dim
-                size: Theme.icon.extraLarge
-            }
-
-            Text {
-                Layout.alignment: Qt.AlignHCenter
-                text: page.result === "idle" ? I18n.t("Press Check to see what an update would bring") : page.stale ? I18n.t("Nothing new, but a full upgrade is still worth running") : I18n.t("Nothing to update")
-                color: Theme.dim
-                font.family: Theme.font
-                font.pixelSize: Theme.fontSize.smaller
-            }
-        }
-
         delegate: FlyoutRow {
             id: row
 
@@ -427,6 +406,27 @@ ColumnLayout {
                 id: press
 
                 onTapped: Quickshell.execDetached(["xdg-open", row.aur ? "https://aur.archlinux.org/packages/" + encodeURIComponent(row.parts[1]) : "https://archlinux.org/packages/?q=" + encodeURIComponent(row.parts[1])])
+            }
+        }
+
+        ColumnLayout {
+            anchors.centerIn: parent
+            visible: page.result === "idle" || page.result === "ok"
+            spacing: Theme.spacing.small
+
+            MaterialIcon {
+                Layout.alignment: Qt.AlignHCenter
+                text: page.result === "idle" ? "manage_search" : "task_alt"
+                color: Theme.dim
+                size: Theme.icon.extraLarge
+            }
+
+            Text {
+                Layout.alignment: Qt.AlignHCenter
+                text: page.result === "idle" ? I18n.t("Press Check to see what an update would bring") : page.stale ? I18n.t("Nothing new, but a full upgrade is still worth running") : I18n.t("Nothing to update")
+                color: Theme.dim
+                font.family: Theme.font
+                font.pixelSize: Theme.fontSize.smaller
             }
         }
     }
