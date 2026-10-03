@@ -103,7 +103,7 @@ OverlayWindow {
                             easing.bezierCurve: Theme.curve.emphasizedDecel
                         }
                     }
-                    radius: Theme.rounding.extraLargeIncreased
+                    radius: Theme.rounding.extraLarge
                     color: active ? Theme.accent : Theme.bgTray
                     scale: active ? Theme.session.activeScale : 1
 

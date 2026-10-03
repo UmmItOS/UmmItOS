@@ -30,7 +30,7 @@ RowLayout {
             Layout.alignment: Qt.AlignVCenter
             radius: height / 2
             // bgTray vanished against the bar; plain white shouted.
-            color: focused ? Theme.accent : modelData?.urgent ? Theme.urgent : Qt.rgba(Theme.accentText.r, Theme.accentText.g, Theme.accentText.b, Theme.bar.workspaceIdle)
+            color: focused ? Theme.accent : modelData?.urgent ? Theme.urgent : Qt.alpha(Theme.accentText, Theme.bar.workspaceIdle)
 
             Behavior on implicitWidth {
                 NumberAnimation {

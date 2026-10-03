@@ -147,11 +147,11 @@ OverlayWindow {
             }
             GradientStop {
                 position: Theme.picker.fadeAt
-                color: Qt.rgba(Theme.bg.r, Theme.bg.g, Theme.bg.b, Theme.picker.fadeAlpha)
+                color: Theme.scrim(Theme.picker.fadeAlpha)
             }
             GradientStop {
                 position: 1
-                color: Qt.rgba(Theme.bg.r, Theme.bg.g, Theme.bg.b, Theme.picker.floorAlpha)
+                color: Theme.scrim(Theme.picker.floorAlpha)
             }
         }
     }
@@ -318,7 +318,7 @@ OverlayWindow {
                 left: parent.left
                 right: parent.right
                 bottom: meta.top
-                bottomMargin: Theme.spacing.extraLargeIncreased
+                bottomMargin: Theme.spacing.extraLarge
             }
             height: picker.focusedHeight + Theme.picker.headroom
             model: picker.matches

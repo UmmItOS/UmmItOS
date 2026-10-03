@@ -188,7 +188,7 @@ OverlayWindow {
 
                 ColumnLayout {
                     anchors.centerIn: parent
-                    width: parent.width - Theme.spacing.extraLargeIncreased
+                    width: parent.width - Theme.spacing.extraLarge
                     spacing: Theme.spacing.medium
 
                     IconImage {

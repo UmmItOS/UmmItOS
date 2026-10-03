@@ -56,7 +56,7 @@ Item {
 
     RowLayout {
         anchors.fill: parent
-        spacing: Theme.spacing.extraLargeIncreased
+        spacing: Theme.spacing.extraLarge
         visible: root.player
 
         Item {

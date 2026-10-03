@@ -23,7 +23,7 @@ ColumnLayout {
                 fill: parent
                 margins: Theme.padding.extraLarge
             }
-            spacing: Theme.spacing.extraLargeIncreased
+            spacing: Theme.spacing.extraLarge
 
             Gauge {
                 Layout.alignment: Qt.AlignCenter
@@ -66,7 +66,7 @@ ColumnLayout {
                 fill: parent
                 margins: Theme.padding.large
             }
-            spacing: Theme.spacing.extraLargeIncreased
+            spacing: Theme.spacing.extraLarge
 
             Item {
                 Layout.fillWidth: true

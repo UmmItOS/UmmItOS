@@ -89,7 +89,6 @@ Singleton {
         readonly property int large: 16
         readonly property int largeIncreased: 20
         readonly property int extraLarge: 32
-        readonly property int extraLargeIncreased: 32
         readonly property int extraExtraLarge: 48
         readonly property int full: 1000
     }
@@ -103,7 +102,6 @@ Singleton {
         readonly property int large: 16
         readonly property int largeIncreased: 20
         readonly property int extraLarge: 32
-        readonly property int extraLargeIncreased: 32
     }
 
     readonly property QtObject padding: QtObject {

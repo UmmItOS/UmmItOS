@@ -77,8 +77,8 @@ OverlayWindow {
             Rectangle {
                 Layout.preferredWidth: Theme.clipboard.index
                 Layout.fillHeight: true
-                topLeftRadius: Theme.rounding.extraLargeIncreased
-                bottomLeftRadius: Theme.rounding.extraLargeIncreased
+                topLeftRadius: Theme.rounding.extraLarge
+                bottomLeftRadius: Theme.rounding.extraLarge
                 gradient: Gradient {
                     GradientStop {
                         position: 0
@@ -218,8 +218,8 @@ OverlayWindow {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                topRightRadius: Theme.rounding.extraLargeIncreased
-                bottomRightRadius: Theme.rounding.extraLargeIncreased
+                topRightRadius: Theme.rounding.extraLarge
+                bottomRightRadius: Theme.rounding.extraLarge
                 color: Theme.bgAlt
 
                 Text {
