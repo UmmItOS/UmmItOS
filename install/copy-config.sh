@@ -13,6 +13,17 @@ source "$PARENT_DIR/lib/display-utils.sh"
 config_dir="$HOME/.config"
 
 # Function to safely copy configuration with existence check
+# A directory's contents merge into dest; a file is copied over it.
+copy_any() {
+    local src="$1" dest="$2"
+    if [[ -d "$src" ]]; then
+        mkdir -p "$dest"
+        cp -rv "$src/." "$dest"
+    else
+        cp -rv "$src" "$dest"
+    fi
+}
+
 safe_copy() {
     local src="$1"
     local dest="$2"
@@ -29,12 +40,7 @@ safe_copy() {
         echo "${COLOR_YELLOW}:: $name already exists at $dest${COLOR_RESET}"
         if prompt_yna ":: Do you want to overwrite existing $name configuration?"; then
             echo "${COLOR_GREEN}:: [$current/$total] Overwriting $name configuration...${COLOR_RESET}"
-            if [[ -d "$src" ]]; then
-                mkdir -p "$dest"
-                cp -rv "$src/." "$dest"
-            else
-                cp -rv "$src" "$dest"
-            fi
+            copy_any "$src" "$dest"
             pause_and_continue
         else
             echo "${COLOR_YELLOW}:: [$current/$total] Skipping $name configuration copy.${COLOR_RESET}"
@@ -42,12 +48,7 @@ safe_copy() {
         fi
     else
         echo "${COLOR_GREEN}:: [$current/$total] Copying $name configuration...${COLOR_RESET}"
-        if [[ -d "$src" ]]; then
-            mkdir -p "$dest"
-            cp -rv "$src/." "$dest"
-        else
-            cp -rv "$src" "$dest"
-        fi
+        copy_any "$src" "$dest"
     fi
 }
 

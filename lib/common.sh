@@ -161,50 +161,39 @@ retire_old_notifier() {
     fi
 }
 
-enable_bluetooth() {
-    if ! command_exists bluetoothctl; then
-        return 0
+# Asks, then enables a systemd unit at boot. Args: unit (without .service), label.
+enable_service() {
+    local unit="$1" label="$2"
+    if prompt_yna ":: Enable $label at boot?"; then
+        if sudo systemctl enable --now "$unit.service"; then
+            echo "${COLOR_GREEN}:: $label enabled.${COLOR_RESET}"
+        else
+            echo "${COLOR_DARK_RED}:: Failed to enable $label.${COLOR_RESET}"
+            echo "${COLOR_YELLOW}:: You can enable it later with 'sudo systemctl enable --now $unit'${COLOR_RESET}"
+        fi
+    else
+        echo "${COLOR_YELLOW}:: Skipping $label. Enable it later with 'sudo systemctl enable --now $unit'${COLOR_RESET}"
     fi
+}
 
+enable_bluetooth() {
+    command_exists bluetoothctl || return 0
     if systemctl is-enabled bluetooth.service &> /dev/null; then
         echo "${COLOR_GREEN}:: Bluetooth is already enabled.${COLOR_RESET}"
         return 0
     fi
-
-    if prompt_yna ":: Enable Bluetooth at boot?"; then
-        if sudo systemctl enable --now bluetooth.service; then
-            echo "${COLOR_GREEN}:: Bluetooth enabled.${COLOR_RESET}"
-        else
-            echo "${COLOR_DARK_RED}:: Failed to enable Bluetooth.${COLOR_RESET}"
-            echo "${COLOR_YELLOW}:: You can enable it later with 'sudo systemctl enable --now bluetooth'${COLOR_RESET}"
-        fi
-    else
-        echo "${COLOR_YELLOW}:: Skipping Bluetooth. Enable it later with 'sudo systemctl enable --now bluetooth'${COLOR_RESET}"
-    fi
+    enable_service bluetooth Bluetooth
 }
 
 # The shell's Wi-Fi menu talks to NetworkManager, so it must be the running network service.
 enable_networkmanager() {
-    if ! command_exists NetworkManager; then
-        return 0
-    fi
-
+    command_exists NetworkManager || return 0
     if systemctl is-enabled NetworkManager.service &> /dev/null; then
         echo "${COLOR_GREEN}:: NetworkManager is already enabled.${COLOR_RESET}"
         return 0
     fi
-
     echo "${COLOR_YELLOW}:: The Wi-Fi menu needs NetworkManager. If you set up iwd or systemd-networkd, disable it first.${COLOR_RESET}"
-    if prompt_yna ":: Enable NetworkManager at boot?"; then
-        if sudo systemctl enable --now NetworkManager.service; then
-            echo "${COLOR_GREEN}:: NetworkManager enabled.${COLOR_RESET}"
-        else
-            echo "${COLOR_DARK_RED}:: Failed to enable NetworkManager.${COLOR_RESET}"
-            echo "${COLOR_YELLOW}:: You can enable it later with 'sudo systemctl enable --now NetworkManager'${COLOR_RESET}"
-        fi
-    else
-        echo "${COLOR_YELLOW}:: Skipping NetworkManager. Enable it later with 'sudo systemctl enable --now NetworkManager'${COLOR_RESET}"
-    fi
+    enable_service NetworkManager NetworkManager
 }
 
 # The 32-bit graphics packages live in multilib, which a fresh Arch leaves off. Returns 1 if it stays off.
