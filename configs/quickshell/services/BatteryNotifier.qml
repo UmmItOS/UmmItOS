@@ -23,11 +23,6 @@ Scope {
     // For the charging ripple.
     signal pluggedIn
 
-    function notify(urgency: string, summary: string, body: string): void {
-        // No -i: a missing theme icon renders as a checkerboard.
-        Quickshell.execDetached(["notify-send", "-a", "Battery", "-u", urgency, summary, body]);
-    }
-
     function percent(): int {
         return Math.round(root.level * 100);
     }
@@ -45,10 +40,10 @@ Scope {
 
         if (pct <= root.criticalThreshold && root.warned > root.criticalThreshold) {
             root.warned = root.criticalThreshold;
-            root.notify("critical", I18n.t("Battery critically low"), I18n.t("%1% left. Plug in now.").arg(pct));
+            Notifs.say("Battery", I18n.t("Battery critically low"), I18n.t("%1% left. Plug in now.").arg(pct), "critical");
         } else if (pct <= root.lowThreshold && root.warned > root.lowThreshold) {
             root.warned = root.lowThreshold;
-            root.notify("normal", I18n.t("Battery low"), I18n.t("%1% left.").arg(pct));
+            Notifs.say("Battery", I18n.t("Battery low"), I18n.t("%1% left.").arg(pct), "normal");
         }
     }
 
@@ -68,7 +63,7 @@ Scope {
 
             // Not the brief "fully charged" some drivers report on plug-in.
             if (state === UPowerDeviceState.FullyCharged && root.percent() >= 99)
-                root.notify("low", I18n.t("Battery full"), I18n.t("Charged. You can unplug."));
+                Notifs.say("Battery", I18n.t("Battery full"), I18n.t("Charged. You can unplug."), "low");
         }
     }
 
@@ -82,9 +77,9 @@ Scope {
                 return;
             if (!UPower.onBattery) {
                 root.pluggedIn();
-                root.notify("low", I18n.t("Charging"), I18n.t("%1%").arg(root.percent()));
+                Notifs.say("Battery", I18n.t("Charging"), I18n.t("%1%").arg(root.percent()), "low");
             } else {
-                root.notify("low", I18n.t("On battery"), I18n.t("%1%").arg(root.percent()));
+                Notifs.say("Battery", I18n.t("On battery"), I18n.t("%1%").arg(root.percent()), "low");
             }
         }
     }

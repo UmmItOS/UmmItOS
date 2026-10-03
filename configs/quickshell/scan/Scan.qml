@@ -165,7 +165,7 @@ Singleton {
         if (!text.includes("<barcodes")) {
             scanning = false;
             forget();
-            Quickshell.execDetached(["notify-send", "-a", "QR scanner", I18n.t("Scan failed"), I18n.t("Could not photograph or read the screen.")]);
+            Notifs.say("QR scanner", I18n.t("Scan failed"), I18n.t("Could not photograph or read the screen."));
             return;
         }
         const width = Number(text.split("\n")[0].split(" ")[0]);
@@ -212,7 +212,7 @@ Singleton {
             open = true;
         } else {
             forget();
-            Quickshell.execDetached(["notify-send", "-a", "QR scanner", I18n.t("No QR code on screen")]);
+            Notifs.say("QR scanner", I18n.t("No QR code on screen"));
         }
     }
 

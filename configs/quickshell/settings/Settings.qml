@@ -166,7 +166,7 @@ Singleton {
         id: trasher
         onExited: code => {
             if (code !== 0)
-                Quickshell.execDetached(["notify-send", "-a", "Settings", I18n.t("Could not move to Trash"), I18n.t("gio trash failed; the recording is still in its folder.")]);
+                Notifs.say("Settings", I18n.t("Could not move to Trash"), I18n.t("gio trash failed; the recording is still in its folder."));
             root.refresh();
             Qt.callLater(root.runTrash);
         }

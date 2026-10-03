@@ -130,9 +130,9 @@ ColumnLayout {
         onExited: code => {
             page.pulling = false;
             if (code !== 0)
-                Quickshell.execDetached(["notify-send", "-a", "Settings", "--", I18n.t("Could not update UmmItOS"), Notifs.asText(pullError.text.trim()) || I18n.t("git pull stopped; see the UmmItOS folder.")]);
+                Notifs.say("Settings", I18n.t("Could not update UmmItOS"), pullError.text.trim() || I18n.t("git pull stopped; see the UmmItOS folder."));
             else
-                Quickshell.execDetached(["notify-send", "-a", "Settings", I18n.t("UmmItOS updated"), I18n.t("If the shell does not reload, restart it: qs kill -c ummitos && qs -c ummitos -d. Hyprland config and ~/script are copies: copy their changes by hand.")]);
+                Notifs.say("Settings", I18n.t("UmmItOS updated"), I18n.t("If the shell does not reload, restart it: qs kill -c ummitos && qs -c ummitos -d. Hyprland config and ~/script are copies: copy their changes by hand."));
             page.look(false);
         }
     }

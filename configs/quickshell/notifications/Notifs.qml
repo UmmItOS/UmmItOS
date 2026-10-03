@@ -87,6 +87,11 @@ Singleton {
         return (text ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;");
     }
 
+    // A notice from the shell itself; the text is shown as written, never as markup.
+    function say(app: string, summary: string, body = "", urgency = "normal"): void {
+        Quickshell.execDetached(["notify-send", "-a", app, "-u", urgency, "--", summary].concat(body ? [asText(body)] : []));
+    }
+
     // Only web links: a body can carry file:// or any scheme with a handler.
     function openLink(link: string): void {
         if (/^https?:\/\//i.test(link))
