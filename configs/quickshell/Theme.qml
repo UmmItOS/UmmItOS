@@ -7,6 +7,26 @@ import QtQuick
 Singleton {
     id: root
 
+    // The desktop's "animations" switch (GNOME's key, which GTK apps follow too); false means reduce motion.
+    property bool reduceMotion: false
+
+    Process {
+        running: true
+        command: ["gsettings", "get", "org.gnome.desktop.interface", "enable-animations"]
+        stdout: StdioCollector {
+            onStreamFinished: root.reduceMotion = text.trim() === "false"
+        }
+    }
+
+    // The program itself, not a pipeline, so a reload cannot orphan it.
+    Process {
+        running: true
+        command: ["gsettings", "monitor", "org.gnome.desktop.interface", "enable-animations"]
+        stdout: SplitParser {
+            onRead: line => root.reduceMotion = line.trim().endsWith("false")
+        }
+    }
+
     readonly property color bg: Qt.rgba(20 / 255, 20 / 255, 35 / 255, 0.72)
     readonly property color bgAlt: Qt.rgba(30 / 255, 25 / 255, 45 / 255, 0.82)
     // One step brighter than bgAlt, for a tray sitting on top of a panel.
@@ -139,7 +159,8 @@ Singleton {
     // A countdown number lands from this size.
     readonly property real landScale: 1.6
     // How out of focus a surface is when it starts to arrive (MotionBlur).
-    readonly property int motionBlur: 40
+    // None when the system asks for less motion: things fade in sharp.
+    readonly property int motionBlur: reduceMotion ? 0 : 40
     // Pointer travel under this is jitter, not a move.
     readonly property int pointerSlop: 2
     // How far a small target's click area reaches past what it draws.
@@ -519,8 +540,9 @@ Singleton {
         readonly property int small: 200
         readonly property int normal: 400
         readonly property int extraLarge: 1000
-        readonly property int expressiveFastSpatial: 350
-        readonly property int expressiveDefaultSpatial: 500
+        // Slides, scales and zooms; instant when the system asks for less motion, so only fades remain.
+        readonly property int expressiveFastSpatial: root.reduceMotion ? 0 : 350
+        readonly property int expressiveDefaultSpatial: root.reduceMotion ? 0 : 500
         readonly property int expressiveFastEffects: 150
         readonly property int expressiveDefaultEffects: 200
         readonly property int expressiveSlowEffects: 300
