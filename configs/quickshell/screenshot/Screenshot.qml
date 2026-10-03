@@ -6,7 +6,7 @@ import Quickshell.Io
 import QtQuick
 import ".."
 
-// Captures once the overlay is gone, so it is not in the shot.
+// Shots are cut from a frame frozen before the overlay maps: its keyboard grab closes bar flyouts and app menus.
 Singleton {
     id: root
 
@@ -34,16 +34,16 @@ Singleton {
     }
 
     // From Print until the picture is taken, notices hold still: picking a region takes longer than a notice lasts.
-    readonly property bool holding: open || leaving || settle.running || shotMargin.running
+    readonly property bool holding: freeze.running || open || leaving || shotMargin.running
 
-    // grim runs detached after the overlay leaves; this covers it.
+    // The capture runs detached; this covers it.
     Timer {
         id: shotMargin
         interval: Theme.duration.extraLarge
     }
 
     function start(newMode: string): void {
-        if (leaving)
+        if (leaving || freeze.running)
             return;
         mode = newMode;
         screen = Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0];
@@ -53,7 +53,16 @@ Singleton {
             clients.running = true;
             makeDir.running = true;
         }
-        open = true;
+        freeze.command = ["grim", "-t", "ppm", "-o", screen?.name ?? "", frozen];
+        freeze.running = true;
+    }
+
+    readonly property string frozen: Quickshell.env("XDG_RUNTIME_DIR") + "/ummitos-shot.ppm"
+
+    // ppm, since PNG encoding is slow enough to read as lag before the overlay.
+    Process {
+        id: freeze
+        onExited: root.open = true
     }
 
     readonly property string dir: Quickshell.env("HYPRSHOT_DIR") || Quickshell.env("HOME") + "/Pictures/Screenshots"
@@ -61,37 +70,32 @@ Singleton {
     // When the last shot went to the clipboard, so its copy pill stays quiet.
     property real delivered: 0
 
-    // grim geometry ("x,y wxh"), held while the overlay leaves.
-    property string pendingGeometry: ""
-
+    // geometry is global logical "x,y wxh"; the frozen frame is in device pixels, hence the fx scaling.
     function region(geometry: string): void {
-        pendingGeometry = geometry;
         open = false;
-        settle.restart();
+        const g = geometry.match(/^(-?\d+),(-?\d+) (\d+)x(\d+)$/);
+        const s = screen;
+        if (!g || !s)
+            return;
+        const px = (v, side, total) => `%[fx:round(${side}*${v}/${total})]`;
+        take(["magick", frozen, "-crop", `${px(g[3], "w", s.width)}x${px(g[4], "h", s.height)}+${px(g[1] - s.x, "w", s.width)}+${px(g[2] - s.y, "h", s.height)}`, "+repage"]);
     }
 
     // Print: the focused screen at once; nothing on it needs picking, so no overlay to wait through.
     function screenNow(): void {
         if (open || leaving)
             return;
-        take(["-o", Hyprland.focusedMonitor?.name ?? Quickshell.screens[0]?.name ?? ""]);
-    }
-
-    // Long enough for the exit animation, so the overlay is not captured.
-    Timer {
-        id: settle
-        interval: Theme.duration.expressiveFastSpatial + Theme.duration.small
-        onTriggered: root.take(["-g", root.pendingGeometry])
+        take(["grim", "-o", Hyprland.focusedMonitor?.name ?? Quickshell.screens[0]?.name ?? ""]);
     }
 
     function newFile(): string {
         return root.dir + "/Screenshot_" + Qt.formatDateTime(new Date(), "yyyy-MM-dd_HH-mm-ss") + ".png";
     }
 
-    // Runs grim when given its arguments, then copies and announces the file; detached, so a quick second shot is not dropped.
-    function deliver(file: string, grimArgs: var): void {
+    // Runs the capture command when given one, then copies and announces the file; detached, so a quick second shot is not dropped.
+    function deliver(file: string, command: var): void {
         delivered = Date.now();
-        Quickshell.execDetached(["sh", "-c", 'd="$1" f="$2" ok="$3" bad="$4" why="$5"; shift 5; if [ $# -gt 0 ]; then { mkdir -p "$d" && grim "$@" "$f"; } || { notify-send -a Screenshot -u critical "$bad" "$why"; exit 1; }; fi; wl-copy --type image/png < "$f"; notify-send -a Screenshot -h string:image-path:"$f" "$ok" "$(basename "$f")"', "sh", root.dir, file, I18n.t("Screenshot saved"), I18n.t("Screenshot failed"), I18n.t("Could not save to %1").arg(root.dir), ...grimArgs]);
+        Quickshell.execDetached(["sh", "-c", 'd="$1" f="$2" ok="$3" bad="$4" why="$5"; shift 5; if [ $# -gt 0 ]; then { mkdir -p "$d" && "$@" "$f"; } || { notify-send -a Screenshot -u critical "$bad" "$why"; exit 1; }; fi; wl-copy --type image/png < "$f"; notify-send -a Screenshot -h string:image-path:"$f" "$ok" "$(basename "$f")"', "sh", root.dir, file, I18n.t("Screenshot saved"), I18n.t("Screenshot failed"), I18n.t("Could not save to %1").arg(root.dir), ...command]);
     }
 
     // A window shot is saved by the shell itself (keeps transparency).
