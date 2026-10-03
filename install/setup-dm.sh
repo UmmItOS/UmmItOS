@@ -46,7 +46,7 @@ install_greeter() {
     fi
 
     if [[ -f /etc/greetd/config.toml ]]; then
-        sudo cp /etc/greetd/config.toml "/etc/greetd/config.toml.bak.$(date +%Y%m%d-%H%M%S)"
+        backup_file /etc/greetd/config.toml sudo
     fi
     sudo tee /etc/greetd/config.toml > /dev/null <<EOF
 [terminal]

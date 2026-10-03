@@ -1,25 +1,10 @@
 #!/usr/bin/env bash
 # Opened in kitty by the settings panel's Packages page with the packages it found missing.
 
-# ANSI color codes
-COLOR_LIGHT_BLUE='\e[94m'
-COLOR_GREEN='\e[32m'
-COLOR_DARK_RED='\e[31m'
-COLOR_GREY='\e[90m'
-COLOR_RESET='\e[0m'
+# shellcheck source=script/misc/_ui.sh
+source "$(dirname "$0")/_ui.sh"
 
 log="$HOME/script/misc/install-packages.log"
-
-# Function to print systemd-style status messages
-print_status() {
-    local status="$1"
-    local message="$2"
-    if [[ "${status}" == "SUCCESS" ]]; then
-        echo -e "[ ${COLOR_GREEN}SUCCESS${COLOR_RESET} ] ${message}"
-    else
-        echo -e "[ ${COLOR_DARK_RED}FAILED${COLOR_RESET} ] ${message}"
-    fi
-}
 
 # Banner for installing packages
 echo -e "${COLOR_LIGHT_BLUE}"

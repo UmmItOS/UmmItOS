@@ -6,11 +6,8 @@
 # This script prompts the user to clear the clipboard history.
 # ----------------------------------------------------------
 
-# ANSI color codes
-COLOR_LIGHT_BLUE='\e[94m'
-COLOR_GREEN='\e[32m'
-COLOR_DARK_RED='\e[31m'
-COLOR_RESET='\e[0m'
+# shellcheck source=script/misc/_ui.sh
+source "$(dirname "$0")/_ui.sh"
 
 # Banner for clipboard Cleaner
 ascii_art="\

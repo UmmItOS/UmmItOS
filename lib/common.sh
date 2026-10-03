@@ -113,13 +113,13 @@ prompt_with_default() {
     echo "$user_input"
 }
 
-# Function to backup a file with timestamp
+# Function to backup a file with timestamp; pass "sudo" as the second argument for a root-owned file
 backup_file() {
     local file="$1"
     if [[ -f "$file" ]]; then
         local backup_name
         backup_name="${file}.bak.$(date +%Y%m%d-%H%M%S)"
-        cp "$file" "$backup_name"
+        ${2:+sudo} cp "$file" "$backup_name"
         echo "${COLOR_GREY}Backed up original file to ${backup_name}...${COLOR_RESET}"
         return 0
     else
@@ -207,9 +207,7 @@ ensure_multilib() {
         return 1
     fi
 
-    local backup
-    backup="/etc/pacman.conf.bak.$(date +%Y%m%d-%H%M%S)"
-    sudo cp /etc/pacman.conf "$backup" && echo "${COLOR_GREY}Backed up /etc/pacman.conf to ${backup}${COLOR_RESET}"
+    backup_file /etc/pacman.conf sudo
     # Uncomment the stock section, or add one where there is none (trimmed images).
     if grep -q '^#\[multilib\]$' /etc/pacman.conf; then
         sudo sed -i '/^#\[multilib\]$/{N;s/^#\[multilib\]\n#Include/[multilib]\nInclude/}' /etc/pacman.conf
