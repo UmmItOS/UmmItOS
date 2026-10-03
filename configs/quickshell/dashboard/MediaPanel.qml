@@ -320,7 +320,7 @@ Item {
 
                         Layout.fillWidth: true
                         Layout.maximumWidth: implicitWidth
-                        implicitWidth: chipLabel.implicitWidth + Theme.padding.large * 2
+                        implicitWidth: chipLabel.implicitWidth + Theme.spacing.large * 2
                         implicitHeight: Theme.dashboard.chip
                         radius: Theme.rounding.full
                         color: current ? Theme.accent : Theme.bgAlt
@@ -328,7 +328,7 @@ Item {
                         Text {
                             id: chipLabel
                             anchors.centerIn: parent
-                            width: Math.min(implicitWidth, chip.width - Theme.padding.large * 2)
+                            width: Math.min(implicitWidth, chip.width - Theme.spacing.large * 2)
                             elide: Text.ElideRight
                             textFormat: Text.PlainText
                             text: chip.modelData.identity

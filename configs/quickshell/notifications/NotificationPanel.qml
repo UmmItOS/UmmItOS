@@ -19,13 +19,13 @@ OverlayWindow {
     margins.top: Theme.barHeight
     implicitWidth: Theme.notification.width
     // Add back the margins, or the panel clips them.
-    implicitHeight: Math.min(shell.implicitHeight + (Theme.padding.large + inset) * 2, maxHeight)
+    implicitHeight: Math.min(shell.implicitHeight + (Theme.spacing.large + inset) * 2, maxHeight)
     color: "transparent"
 
     readonly property int inset: Theme.spacing.small
     readonly property int maxHeight: (screen?.height ?? Theme.fallbackScreen.height) - Theme.barHeight - inset * 2
     // What the list may take once the header has had its share.
-    readonly property int listRoom: maxHeight - inset * 2 - Theme.padding.large * 2 - header.implicitHeight - Theme.spacing.medium
+    readonly property int listRoom: maxHeight - inset * 2 - Theme.spacing.large * 2 - header.implicitHeight - Theme.spacing.medium
 
     // Same dismissal as the bar's flyouts: a click outside closes it.
     HyprlandFocusGrab {
@@ -68,7 +68,7 @@ OverlayWindow {
             id: shell
             anchors {
                 fill: parent
-                margins: Theme.padding.large
+                margins: Theme.spacing.large
             }
             spacing: Theme.spacing.medium
 
@@ -359,7 +359,7 @@ OverlayWindow {
                         id: surface
 
                         width: parent.width
-                        implicitHeight: body.implicitHeight + Theme.padding.large * 2
+                        implicitHeight: body.implicitHeight + Theme.spacing.large * 2
                         radius: Theme.rounding.extraLarge
                         tone: Theme.scrim(Theme.shade.card)
 
@@ -369,7 +369,7 @@ OverlayWindow {
                                 left: parent.left
                                 right: parent.right
                                 verticalCenter: parent.verticalCenter
-                                margins: Theme.padding.large
+                                margins: Theme.spacing.large
                             }
                             spacing: Theme.spacing.extraSmall
 

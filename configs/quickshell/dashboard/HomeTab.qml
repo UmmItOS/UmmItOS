@@ -57,7 +57,7 @@ ColumnLayout {
 
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    topPadding: Theme.padding.large
+                    topPadding: Theme.spacing.large
                     text: clock.date.toLocaleString(I18n.locale, I18n.t("dddd, d MMMM"))
                     color: Theme.dim
                     font.family: Theme.font
@@ -70,7 +70,7 @@ ColumnLayout {
         // The month the date sits in, a card of its own.
         Rectangle {
             Layout.fillHeight: true
-            implicitWidth: calendar.implicitWidth + Theme.padding.large * 2
+            implicitWidth: calendar.implicitWidth + Theme.spacing.large * 2
             radius: Theme.rounding.extraLarge
             color: Theme.glass
 
@@ -92,7 +92,7 @@ ColumnLayout {
             MediaPanel {
                 anchors {
                     fill: parent
-                    margins: Theme.padding.large
+                    margins: Theme.spacing.large
                 }
             }
         }

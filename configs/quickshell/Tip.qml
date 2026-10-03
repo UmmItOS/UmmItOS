@@ -18,8 +18,8 @@ PopupWindow {
         margins.top: Theme.spacing.small
     }
 
-    implicitWidth: label.implicitWidth + Theme.padding.medium * 2 + Theme.windowInset
-    implicitHeight: label.implicitHeight + Theme.padding.small * 2 + Theme.windowInset
+    implicitWidth: label.implicitWidth + Theme.spacing.medium * 2 + Theme.windowInset
+    implicitHeight: label.implicitHeight + Theme.spacing.small * 2 + Theme.windowInset
     color: "transparent"
     visible: showing || sheet.opacity > 0
     // Never takes the pointer, so it cannot cover what it describes or flicker under the cursor.
@@ -44,8 +44,8 @@ PopupWindow {
         id: sheet
 
         anchors.centerIn: parent
-        width: label.implicitWidth + Theme.padding.medium * 2
-        height: label.implicitHeight + Theme.padding.small * 2
+        width: label.implicitWidth + Theme.spacing.medium * 2
+        height: label.implicitHeight + Theme.spacing.small * 2
         radius: Theme.rounding.full
         color: Theme.bgTray
         opacity: root.showing ? 1 : 0

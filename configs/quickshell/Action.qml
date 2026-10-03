@@ -14,7 +14,7 @@ Rectangle {
 
     signal clicked
 
-    implicitWidth: row.implicitWidth + Theme.padding.large * 2
+    implicitWidth: row.implicitWidth + Theme.spacing.large * 2
     implicitHeight: Theme.control.field
     radius: Theme.rounding.full
     color: !action.enabled ? Theme.glass : action.primary ? (hover.hovered ? Theme.accentText : Theme.accent) : (hover.hovered ? Theme.bgTray : action.rest)

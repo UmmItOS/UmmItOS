@@ -226,10 +226,10 @@ OverlayWindow {
 
                     readonly property real below: wash.y + wash.height + Theme.spacing.small
 
-                    x: Math.max(Theme.padding.large, Math.min(wash.x + wash.width / 2 - width / 2, win.width - width - Theme.padding.large))
+                    x: Math.max(Theme.spacing.large, Math.min(wash.x + wash.width / 2 - width / 2, win.width - width - Theme.spacing.large))
                     // Below the code, above it when the screen ends first.
-                    y: below + height > win.height - Theme.padding.large ? Math.max(Theme.padding.large, wash.y - height - Theme.spacing.small) : below
-                    width: Math.min(Theme.scan.card, row.implicitWidth + Theme.padding.large * 2)
+                    y: below + height > win.height - Theme.spacing.large ? Math.max(Theme.spacing.large, wash.y - height - Theme.spacing.small) : below
+                    width: Math.min(Theme.scan.card, row.implicitWidth + Theme.spacing.large * 2)
                     height: Theme.control.field
                     radius: Theme.rounding.full
                     color: found.picked ? Theme.accent : pick.containsMouse ? Theme.bgTray : Theme.bgAlt
@@ -252,7 +252,7 @@ OverlayWindow {
                         id: row
 
                         anchors.centerIn: parent
-                        width: Math.min(implicitWidth, label.width - Theme.padding.large * 2)
+                        width: Math.min(implicitWidth, label.width - Theme.spacing.large * 2)
                         spacing: Theme.spacing.small
 
                         MaterialIcon {
@@ -289,14 +289,14 @@ OverlayWindow {
         Surface {
             id: panel
 
-            readonly property real room: parent.height - Theme.barHeight - Theme.spacing.small - Theme.padding.large
+            readonly property real room: parent.height - Theme.barHeight - Theme.spacing.small - Theme.spacing.large
 
             y: Theme.barHeight + Theme.spacing.small
-            x: win.panelLeft ? Theme.padding.large : win.width - width - Theme.padding.large
+            x: win.panelLeft ? Theme.spacing.large : win.width - width - Theme.spacing.large
             z: 1
             width: Theme.scan.panel
             // As tall as its content, up to the screen; then the details scroll.
-            height: Math.min(room, head.implicitHeight + sections.implicitHeight + foot.implicitHeight + Theme.spacing.large * 2 + Theme.padding.extraLarge * 2)
+            height: Math.min(room, head.implicitHeight + sections.implicitHeight + foot.implicitHeight + Theme.spacing.large * 2 + Theme.spacing.extraLarge * 2)
             radius: Theme.rounding.extraLarge
             tone: Theme.scrim(Theme.panelTint)
             lift: Theme.lift.panel
@@ -321,7 +321,7 @@ OverlayWindow {
             ColumnLayout {
                 anchors {
                     fill: parent
-                    margins: Theme.padding.extraLarge
+                    margins: Theme.spacing.extraLarge
                 }
                 spacing: Theme.spacing.large
 
@@ -468,7 +468,7 @@ OverlayWindow {
 
                         Rectangle {
                             Layout.fillWidth: true
-                            implicitHeight: content.implicitHeight + Theme.padding.medium * 2
+                            implicitHeight: content.implicitHeight + Theme.spacing.medium * 2
                             radius: Theme.rounding.medium
                             color: Theme.glass
 
@@ -479,7 +479,7 @@ OverlayWindow {
                                     left: parent.left
                                     right: parent.right
                                     top: parent.top
-                                    margins: Theme.padding.medium
+                                    margins: Theme.spacing.medium
                                 }
                                 text: win.hiding ? win.code.masked : (win.code?.data ?? "")
                                 wrapMode: TextEdit.WrapAnywhere

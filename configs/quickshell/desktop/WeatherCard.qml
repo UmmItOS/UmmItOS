@@ -9,7 +9,7 @@ Rectangle {
     id: card
 
     implicitWidth: Theme.widgetWidth
-    implicitHeight: body.implicitHeight + Theme.padding.large * 2
+    implicitHeight: body.implicitHeight + Theme.spacing.large * 2
     radius: Theme.rounding.extraLarge
     color: Theme.scrim(Theme.panelTint)
 
@@ -32,7 +32,7 @@ Rectangle {
             left: parent.left
             right: parent.right
             top: parent.top
-            margins: Theme.padding.large
+            margins: Theme.spacing.large
         }
         spacing: Theme.spacing.extraSmall
 

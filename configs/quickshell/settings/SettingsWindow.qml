@@ -98,8 +98,8 @@ OverlayWindow {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
         anchors.topMargin: Theme.barHeight + Theme.spacing.small
-        width: Math.min(Theme.settings.width, parent.width - Theme.padding.extraLarge * 2)
-        height: Math.min(Theme.settings.height, parent.height - anchors.topMargin - Theme.padding.extraLarge)
+        width: Math.min(Theme.settings.width, parent.width - Theme.spacing.extraLarge * 2)
+        height: Math.min(Theme.settings.height, parent.height - anchors.topMargin - Theme.spacing.extraLarge)
         opacity: Math.min(1, win.reveal)
         scale: Theme.popScale + (1 - Theme.popScale) * win.reveal
         transformOrigin: Item.Top
@@ -122,7 +122,7 @@ OverlayWindow {
         RowLayout {
             anchors {
                 fill: parent
-                margins: Theme.padding.extraLarge
+                margins: Theme.spacing.extraLarge
             }
             spacing: Theme.spacing.extraLarge
 
@@ -200,8 +200,8 @@ OverlayWindow {
                                 RowLayout {
                                     anchors {
                                         fill: parent
-                                        leftMargin: Theme.padding.medium
-                                        rightMargin: Theme.padding.medium
+                                        leftMargin: Theme.spacing.medium
+                                        rightMargin: Theme.spacing.medium
                                     }
                                     spacing: Theme.spacing.medium
 

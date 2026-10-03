@@ -221,7 +221,7 @@ ColumnLayout {
         }
 
         Layout.fillWidth: true
-        implicitHeight: cardRow.implicitHeight + Theme.padding.large * 2
+        implicitHeight: cardRow.implicitHeight + Theme.spacing.large * 2
         radius: Theme.rounding.large
         color: Theme.glass
         visible: page.source !== null
@@ -238,7 +238,7 @@ ColumnLayout {
 
             anchors {
                 fill: parent
-                margins: Theme.padding.large
+                margins: Theme.spacing.large
             }
             spacing: Theme.spacing.medium
 
@@ -365,8 +365,8 @@ ColumnLayout {
             RowLayout {
                 anchors {
                     fill: parent
-                    leftMargin: Theme.padding.medium
-                    rightMargin: Theme.padding.medium
+                    leftMargin: Theme.spacing.medium
+                    rightMargin: Theme.spacing.medium
                 }
                 spacing: Theme.spacing.medium
 

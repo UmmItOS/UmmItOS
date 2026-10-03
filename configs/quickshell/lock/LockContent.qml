@@ -330,8 +330,8 @@ Item {
             id: input
 
             anchors.fill: parent
-            anchors.leftMargin: Theme.padding.large
-            anchors.rightMargin: Theme.padding.large
+            anchors.leftMargin: Theme.spacing.large
+            anchors.rightMargin: Theme.spacing.large
             focus: true
             echoMode: TextInput.Password
             horizontalAlignment: TextInput.AlignHCenter
@@ -355,7 +355,7 @@ Item {
 
         // Never more dots than fit in the field.
         Row {
-            readonly property int fits: Math.max(1, Math.floor((field.width - Theme.padding.large * 2 + spacing) / (Theme.spacing.medium + spacing)))
+            readonly property int fits: Math.max(1, Math.floor((field.width - Theme.spacing.large * 2 + spacing) / (Theme.spacing.medium + spacing)))
 
             anchors.centerIn: parent
             spacing: Theme.spacing.small

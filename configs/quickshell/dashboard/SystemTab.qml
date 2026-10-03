@@ -12,7 +12,7 @@ ColumnLayout {
     Rectangle {
         Layout.fillWidth: true
         Layout.fillHeight: true
-        Layout.minimumHeight: gauges.implicitHeight + Theme.padding.extraLarge * 2
+        Layout.minimumHeight: gauges.implicitHeight + Theme.spacing.extraLarge * 2
         radius: Theme.rounding.extraLarge
         color: Theme.glass
 
@@ -21,7 +21,7 @@ ColumnLayout {
 
             anchors {
                 fill: parent
-                margins: Theme.padding.extraLarge
+                margins: Theme.spacing.extraLarge
             }
             spacing: Theme.spacing.extraLarge
 
@@ -64,7 +64,7 @@ ColumnLayout {
         RowLayout {
             anchors {
                 fill: parent
-                margins: Theme.padding.large
+                margins: Theme.spacing.large
             }
             spacing: Theme.spacing.extraLarge
 

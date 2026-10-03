@@ -159,7 +159,7 @@ PanelWindow {
                 id: inputName
 
                 anchors.horizontalCenter: parent.horizontalCenter
-                width: Math.min(implicitWidth, card.width - Theme.padding.extraLarge * 2)
+                width: Math.min(implicitWidth, card.width - Theme.spacing.extraLarge * 2)
                 visible: win.input
                 horizontalAlignment: Text.AlignHCenter
                 elide: Text.ElideRight
@@ -263,7 +263,7 @@ PanelWindow {
 
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
-                width: card.width - Theme.padding.extraLarge * 2
+                width: card.width - Theme.spacing.extraLarge * 2
                 horizontalAlignment: Text.AlignHCenter
                 visible: win.app && Osd.label !== ""
                 textFormat: Text.PlainText

@@ -92,8 +92,8 @@ Scope {
 
         readonly property int toastWidth: Theme.notification.width
         // The toast column's edges in screen x when not stepped aside.
-        readonly property real columnRight: width - Theme.padding.medium
-        readonly property real columnLeft: columnRight - toastWidth + Theme.padding.medium * 2
+        readonly property real columnRight: width - Theme.spacing.medium
+        readonly property real columnLeft: columnRight - toastWidth + Theme.spacing.medium * 2
         // Only for a dropdown over the column, and never off screen.
         readonly property real clearance: {
             const f = Notifs.flyout;
@@ -101,7 +101,7 @@ Scope {
             if (!f || Notifs.flyoutScreen !== (screen?.name ?? "") || Notifs.flyoutRight <= columnLeft)
                 return 0;
             const needed = columnRight - Notifs.flyoutLeft + Theme.spacing.small;
-            return Math.max(0, Math.min(needed, columnLeft - Theme.padding.medium));
+            return Math.max(0, Math.min(needed, columnLeft - Theme.spacing.medium));
         }
 
         WlrLayershell.namespace: "ummitos-notifications"
@@ -137,10 +137,10 @@ Scope {
                 top: parent.top
                 bottom: parent.bottom
                 right: parent.right
-                margins: Theme.padding.medium
-                rightMargin: Theme.padding.medium + toasts.clearance
+                margins: Theme.spacing.medium
+                rightMargin: Theme.spacing.medium + toasts.clearance
             }
-            width: toasts.toastWidth - Theme.padding.medium * 2
+            width: toasts.toastWidth - Theme.spacing.medium * 2
             spacing: Theme.spacing.small
             interactive: false
 
@@ -293,7 +293,7 @@ Scope {
                 readonly property var defaultAction: card.live?.actions?.find(a => a.identifier === "default") ?? null
 
                 width: list.width
-                implicitHeight: body.implicitHeight + Theme.padding.large * 2
+                implicitHeight: body.implicitHeight + Theme.spacing.large * 2
                 radius: Theme.rounding.extraLarge
                 color: Theme.scrim(Theme.panelTint)
 
@@ -332,7 +332,7 @@ Scope {
                         left: parent.left
                         right: parent.right
                         verticalCenter: parent.verticalCenter
-                        margins: Theme.padding.large
+                        margins: Theme.spacing.large
                     }
                     spacing: Theme.spacing.extraSmall
 
@@ -459,7 +459,7 @@ Scope {
                                 Layout.fillWidth: true
                                 Layout.maximumWidth: implicitWidth
                                 // Measured apart from the label, which is squeezed to this width.
-                                implicitWidth: Math.ceil(measure.advanceWidth) + Theme.padding.large * 2
+                                implicitWidth: Math.ceil(measure.advanceWidth) + Theme.spacing.large * 2
                                 implicitHeight: Theme.control.field
                                 radius: Theme.rounding.full
                                 color: actionHover.hovered ? Theme.accentText : Theme.bgTray
@@ -483,7 +483,7 @@ Scope {
                                 Text {
                                     id: label
                                     anchors.centerIn: parent
-                                    width: Math.min(implicitWidth, action.width - Theme.padding.large * 2)
+                                    width: Math.min(implicitWidth, action.width - Theme.spacing.large * 2)
                                     elide: Text.ElideRight
                                     textFormat: Text.PlainText
                                     text: action.modelData.text

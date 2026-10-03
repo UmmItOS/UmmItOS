@@ -157,7 +157,7 @@ OverlayWindow {
                         anchors {
                             top: parent.top
                             right: parent.right
-                            margins: Theme.padding.medium
+                            margins: Theme.spacing.medium
                         }
                         text: tile.modelData.key.toUpperCase()
                         color: tile.active ? Theme.accentOn : Theme.dim

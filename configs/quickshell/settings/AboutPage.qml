@@ -72,7 +72,7 @@ ColumnLayout {
 
     Rectangle {
         Layout.fillWidth: true
-        implicitHeight: grid.implicitHeight + Theme.padding.large * 2
+        implicitHeight: grid.implicitHeight + Theme.spacing.large * 2
         radius: Theme.rounding.large
         color: Theme.glass
 
@@ -81,7 +81,7 @@ ColumnLayout {
 
             anchors {
                 fill: parent
-                margins: Theme.padding.large
+                margins: Theme.spacing.large
             }
             columns: 2
             columnSpacing: Theme.spacing.extraLarge

@@ -111,8 +111,8 @@ RowLayout {
                 RowLayout {
                     anchors {
                         fill: parent
-                        leftMargin: Theme.padding.medium
-                        rightMargin: Theme.padding.medium
+                        leftMargin: Theme.spacing.medium
+                        rightMargin: Theme.spacing.medium
                     }
                     spacing: Theme.spacing.medium
 

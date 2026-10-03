@@ -19,7 +19,7 @@ Rectangle {
     layer.effect: MotionBlur {
         settled: root.opacity
     }
-    implicitWidth: row.implicitWidth + Theme.padding.medium * 2
+    implicitWidth: row.implicitWidth + Theme.spacing.medium * 2
     implicitHeight: Theme.control.field
     radius: Theme.rounding.full
     color: hover.hovered ? Theme.bgTray : Theme.bgAlt

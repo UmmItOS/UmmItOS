@@ -183,8 +183,8 @@ RowLayout {
                         left: parent.left
                         right: parent.right
                         top: parent.top
-                        leftMargin: Theme.padding.medium
-                        rightMargin: Theme.padding.medium
+                        leftMargin: Theme.spacing.medium
+                        rightMargin: Theme.spacing.medium
                     }
                     spacing: Theme.spacing.extraSmall
 
@@ -269,7 +269,7 @@ RowLayout {
                     // Only asked for when the network is new and secured.
                     Rectangle {
                         Layout.fillWidth: true
-                        Layout.bottomMargin: Theme.padding.medium
+                        Layout.bottomMargin: Theme.spacing.medium
                         implicitHeight: Theme.control.field
                         radius: Theme.rounding.full
                         color: Theme.bgAlt
@@ -281,8 +281,8 @@ RowLayout {
                             clip: true
                             anchors {
                                 fill: parent
-                                leftMargin: Theme.padding.large
-                                rightMargin: Theme.padding.large
+                                leftMargin: Theme.spacing.large
+                                rightMargin: Theme.spacing.large
                             }
                             verticalAlignment: TextInput.AlignVCenter
                             echoMode: TextInput.Password

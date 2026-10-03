@@ -34,8 +34,8 @@ OverlayWindow {
         RowLayout {
             anchors {
                 fill: parent
-                leftMargin: Theme.padding.medium
-                rightMargin: Theme.padding.medium
+                leftMargin: Theme.spacing.medium
+                rightMargin: Theme.spacing.medium
             }
             spacing: Theme.spacing.medium
 
@@ -97,7 +97,7 @@ OverlayWindow {
 
             anchors.centerIn: parent
             width: Theme.control.dialog
-            height: form.implicitHeight + Theme.padding.extraLarge * 2
+            height: form.implicitHeight + Theme.spacing.extraLarge * 2
             radius: Theme.rounding.extraLarge
             tone: Theme.bg
             lift: Theme.lift.panel
@@ -114,7 +114,7 @@ OverlayWindow {
                     left: parent.left
                     right: parent.right
                     verticalCenter: parent.verticalCenter
-                    margins: Theme.padding.extraLarge
+                    margins: Theme.spacing.extraLarge
                 }
                 spacing: Theme.spacing.small
                 // Hidden is not enough: its checkboxes would still take clicks during the countdown.

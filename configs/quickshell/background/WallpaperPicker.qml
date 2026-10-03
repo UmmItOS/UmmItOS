@@ -180,8 +180,8 @@ OverlayWindow {
             anchors {
                 left: parent.left
                 bottom: parent.bottom
-                leftMargin: Theme.padding.extraLarge * 2
-                bottomMargin: Theme.padding.extraLarge
+                leftMargin: Theme.spacing.extraLarge * 2
+                bottomMargin: Theme.spacing.extraLarge
             }
             spacing: Theme.spacing.extraSmall
             width: picker.width / 2
@@ -510,7 +510,7 @@ OverlayWindow {
 
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
-                            width: picker.focusedWidth - Theme.padding.large * 2
+                            width: picker.focusedWidth - Theme.spacing.large * 2
                             horizontalAlignment: Text.AlignHCenter
                             elide: Text.ElideRight
                             textFormat: Text.PlainText
@@ -526,7 +526,7 @@ OverlayWindow {
                         anchors {
                             left: parent.left
                             bottom: parent.bottom
-                            margins: Theme.padding.medium
+                            margins: Theme.spacing.medium
                         }
                         visible: cell.confirmed
                         implicitWidth: Theme.picker.dot

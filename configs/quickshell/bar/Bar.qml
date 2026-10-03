@@ -31,7 +31,7 @@ PanelWindow {
     component Cluster: Rectangle {
         default property alias content: inner.data
 
-        implicitWidth: inner.implicitWidth + Theme.padding.large * 2
+        implicitWidth: inner.implicitWidth + Theme.spacing.large * 2
         implicitHeight: Theme.bar.cluster
         radius: Theme.rounding.full
         color: "transparent"
@@ -51,8 +51,8 @@ PanelWindow {
 
     RowLayout {
         anchors.fill: parent
-        anchors.leftMargin: Theme.padding.large
-        anchors.rightMargin: Theme.padding.large
+        anchors.leftMargin: Theme.spacing.large
+        anchors.rightMargin: Theme.spacing.large
         spacing: Theme.spacing.large
 
         Workspaces {

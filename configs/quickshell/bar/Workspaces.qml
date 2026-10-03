@@ -22,7 +22,7 @@ RowLayout {
 
             readonly property bool focused: modelData?.focused ?? false
 
-            readonly property real targetWidth: focused ? Math.max(Theme.bar.workspaceMin, label.implicitWidth + Theme.padding.large) : Theme.bar.workspaceDot
+            readonly property real targetWidth: focused ? Math.max(Theme.bar.workspaceMin, label.implicitWidth + Theme.spacing.large) : Theme.bar.workspaceDot
             readonly property real targetHeight: focused ? Theme.bar.workspace : Theme.bar.workspaceDot
 
             implicitWidth: targetWidth

@@ -251,8 +251,8 @@ RowLayout {
                 RowLayout {
                     anchors {
                         fill: parent
-                        leftMargin: Theme.padding.medium
-                        rightMargin: Theme.padding.medium
+                        leftMargin: Theme.spacing.medium
+                        rightMargin: Theme.spacing.medium
                     }
                     spacing: Theme.spacing.medium
 
@@ -314,8 +314,8 @@ RowLayout {
                 readonly property real level: stream.modelData.audio?.volume ?? 0
 
                 Layout.fillWidth: true
-                Layout.leftMargin: Theme.padding.medium
-                Layout.rightMargin: Theme.padding.medium
+                Layout.leftMargin: Theme.spacing.medium
+                Layout.rightMargin: Theme.spacing.medium
                 spacing: Theme.spacing.medium
 
                 // Recoloured to the shell; only the silhouette identifies it.

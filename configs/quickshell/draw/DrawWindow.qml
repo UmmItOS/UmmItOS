@@ -297,8 +297,8 @@ OverlayWindow {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom
             anchors.bottomMargin: Theme.windowInset
-            width: tools.implicitWidth + Theme.padding.medium * 2
-            height: tools.implicitHeight + Theme.padding.small * 2
+            width: tools.implicitWidth + Theme.spacing.medium * 2
+            height: tools.implicitHeight + Theme.spacing.small * 2
             radius: Theme.rounding.full
             tone: Theme.bg
             lift: Theme.lift.panel

@@ -30,7 +30,7 @@ OverlayWindow {
     component Keycap: Rectangle {
         required property string label
 
-        implicitWidth: Math.max(implicitHeight, text.implicitWidth + Theme.padding.small * 2)
+        implicitWidth: Math.max(implicitHeight, text.implicitWidth + Theme.spacing.small * 2)
         implicitHeight: text.implicitHeight + Theme.spacing.extraSmall * 2
         radius: Theme.rounding.extraSmall
         color: Theme.bgTray
@@ -51,8 +51,8 @@ OverlayWindow {
         id: scope
 
         anchors.centerIn: parent
-        width: Math.min(Theme.cheatsheet.width, parent.width - Theme.padding.extraLarge * 2)
-        height: Math.min(sheet.implicitHeight, parent.height - Theme.padding.extraLarge * 2)
+        width: Math.min(Theme.cheatsheet.width, parent.width - Theme.spacing.extraLarge * 2)
+        height: Math.min(sheet.implicitHeight, parent.height - Theme.spacing.extraLarge * 2)
         focus: true
         opacity: Math.min(1, win.reveal)
         scale: Theme.popScale + (1 - Theme.popScale) * win.reveal
@@ -191,7 +191,7 @@ OverlayWindow {
             id: sheet
 
             anchors.fill: parent
-            implicitHeight: body.implicitHeight + Theme.padding.extraLarge * 2
+            implicitHeight: body.implicitHeight + Theme.spacing.extraLarge * 2
             radius: Theme.rounding.extraLarge
             tone: Theme.bg
             lift: Theme.lift.sheet
@@ -269,7 +269,7 @@ OverlayWindow {
             Flickable {
                 anchors {
                     fill: parent
-                    margins: Theme.padding.extraLarge
+                    margins: Theme.spacing.extraLarge
                 }
                 contentHeight: body.implicitHeight
                 clip: true

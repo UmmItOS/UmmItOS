@@ -104,13 +104,6 @@ Singleton {
         readonly property int extraLarge: 32
     }
 
-    readonly property QtObject padding: QtObject {
-        readonly property int small: 8
-        readonly property int medium: 12
-        readonly property int large: 16
-        readonly property int extraLarge: 32
-    }
-
     readonly property QtObject fontSize: QtObject {
         readonly property int small: 12
         readonly property int smaller: 13

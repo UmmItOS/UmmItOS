@@ -147,7 +147,7 @@ Scope {
 
                 Surface {
                     anchors.right: parent.right
-                    width: row.implicitWidth + Theme.padding.extraLarge * 3
+                    width: row.implicitWidth + Theme.spacing.extraLarge * 3
                     height: parent.height
                     radius: Theme.rounding.full
                     tone: Theme.bgTray

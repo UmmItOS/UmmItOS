@@ -121,8 +121,8 @@ OverlayWindow {
             opacity: 1 - win.zoom
             anchors.top: parent.top
             anchors.right: parent.right
-            anchors.margins: Theme.padding.extraLarge
-            implicitWidth: pinRow.implicitWidth + Theme.padding.large * 2
+            anchors.margins: Theme.spacing.extraLarge
+            implicitWidth: pinRow.implicitWidth + Theme.spacing.large * 2
             implicitHeight: Theme.control.pill
             radius: Theme.rounding.full
             tone: Switcher.pinned ? Theme.accent : Theme.bgTray
@@ -213,8 +213,8 @@ OverlayWindow {
                 readonly property int columns: count <= Theme.switcher.columns ? count : count <= Theme.switcher.wideAfter ? Theme.switcher.columns : Theme.switcher.maxColumns
                 readonly property int rows: Math.ceil(count / columns)
 
-                readonly property int roomWide: (win.width - Theme.padding.extraLarge * 4) / columns - spacing
-                readonly property int roomTall: (win.height - caption.implicitHeight - Theme.spacing.extraLarge * 3 - Theme.padding.extraLarge * 2) / rows - spacing
+                readonly property int roomWide: (win.width - Theme.spacing.extraLarge * 4) / columns - spacing
+                readonly property int roomTall: (win.height - caption.implicitHeight - Theme.spacing.extraLarge * 3 - Theme.spacing.extraLarge * 2) / rows - spacing
                 readonly property int cellWidth: Math.min(Theme.switcher.cellMax, roomWide, roomTall / Theme.switcher.aspect)
                 readonly property int cellHeight: cellWidth * Theme.switcher.aspect
 
@@ -296,8 +296,8 @@ OverlayWindow {
                                     // An unrendered workspace returns its last frame; a compositor limit.
                                     ClippingRectangle {
                                         anchors.fill: parent
-                                        anchors.margins: Theme.padding.small
-                                        radius: card.radius - Theme.padding.small
+                                        anchors.margins: Theme.spacing.small
+                                        radius: card.radius - Theme.spacing.small
                                         color: Theme.scrim(Theme.shade.light)
 
                                         Grid {
@@ -357,8 +357,8 @@ OverlayWindow {
                                         anchors.right: parent.right
                                         anchors.margins: Theme.spacing.medium
                                         visible: card.windows.length > 1
-                                        width: Math.max(height, countText.implicitWidth + Theme.padding.medium * 2)
-                                        height: countText.implicitHeight + Theme.padding.small
+                                        width: Math.max(height, countText.implicitWidth + Theme.spacing.medium * 2)
+                                        height: countText.implicitHeight + Theme.spacing.small
                                         radius: Theme.rounding.full
                                         tone: Theme.bgTray
 

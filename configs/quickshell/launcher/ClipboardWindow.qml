@@ -93,7 +93,7 @@ OverlayWindow {
                 ColumnLayout {
                     anchors {
                         fill: parent
-                        margins: Theme.padding.large
+                        margins: Theme.spacing.large
                     }
                     spacing: Theme.spacing.medium
 
@@ -114,8 +114,8 @@ OverlayWindow {
 
                             anchors {
                                 fill: parent
-                                leftMargin: Theme.padding.large
-                                rightMargin: Theme.padding.large
+                                leftMargin: Theme.spacing.large
+                                rightMargin: Theme.spacing.large
                             }
                             verticalAlignment: TextInput.AlignVCenter
                             color: Theme.fg
@@ -175,8 +175,8 @@ OverlayWindow {
                             RowLayout {
                                 anchors {
                                     fill: parent
-                                    leftMargin: Theme.padding.medium
-                                    rightMargin: Theme.padding.medium
+                                    leftMargin: Theme.spacing.medium
+                                    rightMargin: Theme.spacing.medium
                                 }
                                 spacing: Theme.spacing.medium
 
@@ -235,7 +235,7 @@ OverlayWindow {
                 ClippingRectangle {
                     anchors {
                         fill: parent
-                        margins: Theme.padding.extraLarge
+                        margins: Theme.spacing.extraLarge
                     }
                     visible: win.focusedEntry?.image ?? false
                     radius: Theme.rounding.large
@@ -255,7 +255,7 @@ OverlayWindow {
                 Flickable {
                     anchors {
                         fill: parent
-                        margins: Theme.padding.extraLarge
+                        margins: Theme.spacing.extraLarge
                     }
                     visible: (win.focusedEntry !== null) && !(win.focusedEntry?.image ?? false)
                     contentHeight: fullText.implicitHeight
@@ -281,7 +281,7 @@ OverlayWindow {
                     anchors {
                         right: parent.right
                         bottom: parent.bottom
-                        margins: Theme.padding.large
+                        margins: Theme.spacing.large
                     }
                     visible: win.focusedEntry !== null
                     text: I18n.t("Enter to copy")

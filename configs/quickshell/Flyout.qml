@@ -29,7 +29,7 @@ PopupWindow {
     }
 
     implicitWidth: Theme.control.flyout
-    implicitHeight: root.hug ? Math.min(column.implicitHeight + Theme.padding.large * 2, root.maxHeight) : Theme.control.flyoutHeight
+    implicitHeight: root.hug ? Math.min(column.implicitHeight + Theme.spacing.large * 2, root.maxHeight) : Theme.control.flyoutHeight
     // Never taller than the screen; long content scrolls inside.
     readonly property real maxHeight: (root.screen?.height ?? Theme.fallbackScreen.height) - Theme.barHeight - Theme.spacing.small * 2
     color: "transparent"
@@ -102,7 +102,7 @@ PopupWindow {
 
             anchors {
                 fill: parent
-                margins: Theme.padding.large
+                margins: Theme.spacing.large
             }
             spacing: Theme.spacing.medium
 

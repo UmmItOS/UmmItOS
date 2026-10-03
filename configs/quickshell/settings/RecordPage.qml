@@ -164,8 +164,8 @@ ColumnLayout {
 
                 anchors {
                     fill: parent
-                    leftMargin: Theme.padding.large
-                    rightMargin: Theme.padding.large
+                    leftMargin: Theme.spacing.large
+                    rightMargin: Theme.spacing.large
                 }
                 verticalAlignment: TextInput.AlignVCenter
                 text: Settings.tilde(Settings.folder)
@@ -291,8 +291,8 @@ ColumnLayout {
             RowLayout {
                 anchors {
                     fill: parent
-                    leftMargin: Theme.padding.medium
-                    rightMargin: Theme.padding.small
+                    leftMargin: Theme.spacing.medium
+                    rightMargin: Theme.spacing.small
                 }
                 spacing: Theme.spacing.medium
 

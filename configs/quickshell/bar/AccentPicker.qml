@@ -202,8 +202,8 @@ BarButton {
             RowLayout {
                 anchors {
                     fill: parent
-                    leftMargin: Theme.padding.large
-                    rightMargin: Theme.padding.medium
+                    leftMargin: Theme.spacing.large
+                    rightMargin: Theme.spacing.medium
                 }
                 spacing: Theme.spacing.small
 

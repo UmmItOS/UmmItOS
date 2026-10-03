@@ -35,7 +35,7 @@ GridView {
             ColumnLayout {
                 anchors {
                     fill: parent
-                    margins: Theme.padding.medium
+                    margins: Theme.spacing.medium
                 }
                 spacing: Theme.spacing.extraSmall
 

@@ -513,10 +513,10 @@ OverlayWindow {
         Rectangle {
             visible: (win.dragging || win.mode === "window") && win.selW > 0
             opacity: 1 - win.release
-            x: Math.min(Math.max(bl.x, Theme.padding.large), parent.width - width - Theme.padding.large)
-            y: Math.min(bl.y + Theme.spacing.medium, parent.height - height - Theme.padding.large)
-            implicitWidth: sizeText.implicitWidth + Theme.padding.medium * 2
-            implicitHeight: sizeText.implicitHeight + Theme.padding.small
+            x: Math.min(Math.max(bl.x, Theme.spacing.large), parent.width - width - Theme.spacing.large)
+            y: Math.min(bl.y + Theme.spacing.medium, parent.height - height - Theme.spacing.large)
+            implicitWidth: sizeText.implicitWidth + Theme.spacing.medium * 2
+            implicitHeight: sizeText.implicitHeight + Theme.spacing.small
             radius: height / 2
             color: Theme.bgTray
 
@@ -538,7 +538,7 @@ OverlayWindow {
             anchors {
                 bottom: parent.bottom
                 horizontalCenter: parent.horizontalCenter
-                bottomMargin: Theme.padding.extraLarge
+                bottomMargin: Theme.spacing.extraLarge
             }
             visible: !win.dragging
             text: win.mode === "window" ? I18n.t("Point at a window  ·  Click or Enter to take it  ·  Esc to cancel") : I18n.t("Drag to select  ·  Click or Enter for the whole screen  ·  Esc to cancel")
@@ -614,7 +614,7 @@ OverlayWindow {
     ClippingRectangle {
         id: cutter
 
-        x: -width - Theme.padding.extraLarge
+        x: -width - Theme.spacing.extraLarge
         width: win.cutting?.w ?? 1
         height: win.cutting?.h ?? 1
         visible: win.cutting !== null

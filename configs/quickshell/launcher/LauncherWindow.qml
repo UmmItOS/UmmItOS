@@ -76,9 +76,9 @@ OverlayWindow {
                 top: parent.top
                 left: parent.left
                 right: parent.right
-                topMargin: Theme.padding.extraLarge * 2
-                leftMargin: Theme.padding.extraLarge * 3
-                rightMargin: Theme.padding.extraLarge * 3
+                topMargin: Theme.spacing.extraLarge * 2
+                leftMargin: Theme.spacing.extraLarge * 3
+                rightMargin: Theme.spacing.extraLarge * 3
             }
             spacing: Theme.spacing.small
 
@@ -134,10 +134,10 @@ OverlayWindow {
                 left: parent.left
                 right: parent.right
                 bottom: parent.bottom
-                topMargin: Theme.padding.extraLarge * 2
-                leftMargin: Theme.padding.extraLarge * 3 - Theme.spacing.medium
-                rightMargin: Theme.padding.extraLarge * 3 - Theme.spacing.medium
-                bottomMargin: Theme.padding.extraLarge
+                topMargin: Theme.spacing.extraLarge * 2
+                leftMargin: Theme.spacing.extraLarge * 3 - Theme.spacing.medium
+                rightMargin: Theme.spacing.extraLarge * 3 - Theme.spacing.medium
+                bottomMargin: Theme.spacing.extraLarge
             }
             clip: true
             cellWidth: Math.floor(width / Math.max(Theme.launcher.minColumns, Math.floor(width / Theme.launcher.cellMin)))

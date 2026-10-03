@@ -42,8 +42,8 @@ OverlayWindow {
 
         anchors.top: parent.top
         anchors.topMargin: Theme.barHeight + Theme.spacing.small
-        width: Math.min(Theme.dashboard.width, parent.width - Theme.padding.extraLarge * 2)
-        height: Math.min(Theme.dashboard.height, parent.height - anchors.topMargin - Theme.padding.extraLarge)
+        width: Math.min(Theme.dashboard.width, parent.width - Theme.spacing.extraLarge * 2)
+        height: Math.min(Theme.dashboard.height, parent.height - anchors.topMargin - Theme.spacing.extraLarge)
         radius: Theme.rounding.extraExtraLarge
         color: "transparent"
 
@@ -62,7 +62,7 @@ OverlayWindow {
         ColumnLayout {
             anchors {
                 fill: parent
-                margins: Theme.padding.extraLarge
+                margins: Theme.spacing.extraLarge
             }
             spacing: 0
 
@@ -161,7 +161,7 @@ OverlayWindow {
 
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                Layout.topMargin: Theme.padding.large
+                Layout.topMargin: Theme.spacing.large
                 currentIndex: Dashboard.tab
 
                 onCurrentIndexChanged: {

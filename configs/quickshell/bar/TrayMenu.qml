@@ -56,8 +56,8 @@ Flyout {
                 RowLayout {
                     anchors {
                         fill: parent
-                        leftMargin: Theme.padding.medium
-                        rightMargin: Theme.padding.medium
+                        leftMargin: Theme.spacing.medium
+                        rightMargin: Theme.spacing.medium
                     }
                     spacing: Theme.spacing.medium
 
@@ -94,7 +94,7 @@ Flyout {
                     // A divider, not a border: the gap between two groups of rows.
                     Rectangle {
                         anchors.centerIn: parent
-                        width: parent.width - Theme.padding.medium * 2
+                        width: parent.width - Theme.spacing.medium * 2
                         height: Theme.hairline
                         color: Theme.bgTray
                         visible: item.modelData.isSeparator
@@ -108,8 +108,8 @@ Flyout {
                         RowLayout {
                             anchors {
                                 fill: parent
-                                leftMargin: Theme.padding.medium
-                                rightMargin: Theme.padding.medium
+                                leftMargin: Theme.spacing.medium
+                                rightMargin: Theme.spacing.medium
                             }
                             spacing: Theme.spacing.medium
 

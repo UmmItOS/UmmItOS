@@ -302,8 +302,8 @@ OverlayWindow {
 
             Text {
                 anchors.verticalCenter: parent.verticalCenter
-                x: Theme.padding.large
-                width: parent.width - Theme.padding.large - Theme.sao.ribbonTip
+                x: Theme.spacing.large
+                width: parent.width - Theme.spacing.large - Theme.sao.ribbonTip
                 elide: Text.ElideRight
                 textFormat: Text.PlainText
                 text: I18n.t(Sao.items[Sao.selected]?.label ?? "")
@@ -365,7 +365,7 @@ OverlayWindow {
                 x: Theme.sao.shadowBlur
                 y: Theme.sao.shadowBlur
                 width: Theme.sao.panel
-                height: win.shownCard === "skills" ? Theme.sao.panelMax : profile.implicitHeight + Theme.padding.extraLarge * 2
+                height: win.shownCard === "skills" ? Theme.sao.panelMax : profile.implicitHeight + Theme.spacing.extraLarge * 2
                 radius: Theme.rounding.extraSmall
                 color: Theme.sao.paper
 
@@ -381,7 +381,7 @@ OverlayWindow {
                         left: parent.left
                         right: parent.right
                         top: parent.top
-                        margins: Theme.padding.extraLarge
+                        margins: Theme.spacing.extraLarge
                     }
                     visible: win.shownCard === "profile"
                     spacing: Theme.spacing.large
@@ -422,8 +422,8 @@ OverlayWindow {
 
                             // The level on an orange chip: orange text on paper is under 2:1.
                             Rectangle {
-                                width: level.implicitWidth + Theme.padding.medium * 2
-                                height: level.implicitHeight + Theme.padding.small
+                                width: level.implicitWidth + Theme.spacing.medium * 2
+                                height: level.implicitHeight + Theme.spacing.small
                                 radius: height / 2
                                 color: Theme.sao.orange
 
@@ -463,7 +463,7 @@ OverlayWindow {
                 // Skills: the agent skills Claude Code has here; a click copies its command.
                 Item {
                     anchors.fill: parent
-                    anchors.margins: Theme.padding.extraLarge
+                    anchors.margins: Theme.spacing.extraLarge
                     visible: win.shownCard === "skills"
 
                     Text {
@@ -519,7 +519,7 @@ OverlayWindow {
                             property bool copied: false
 
                             width: skillList.width
-                            height: skillText.implicitHeight + Theme.padding.medium * 2
+                            height: skillText.implicitHeight + Theme.spacing.medium * 2
                             radius: Theme.rounding.extraSmall
                             color: skill.copied ? Theme.sao.orange : skillHover.hovered ? Theme.sao.paperDeep : "transparent"
                             scale: skillTap.pressed ? Theme.pressScale : 1
@@ -544,8 +544,8 @@ OverlayWindow {
                                     left: parent.left
                                     right: parent.right
                                     verticalCenter: parent.verticalCenter
-                                    leftMargin: Theme.padding.medium
-                                    rightMargin: Theme.padding.medium
+                                    leftMargin: Theme.spacing.medium
+                                    rightMargin: Theme.spacing.medium
                                 }
 
                                 Text {
@@ -679,8 +679,8 @@ OverlayWindow {
 
                     Text {
                         width: parent.width
-                        topPadding: Theme.padding.large
-                        bottomPadding: Theme.padding.large
+                        topPadding: Theme.spacing.large
+                        bottomPadding: Theme.spacing.large
                         horizontalAlignment: Text.AlignHCenter
                         textFormat: Text.PlainText
                         text: I18n.t("Logout")
@@ -692,7 +692,7 @@ OverlayWindow {
 
                     Rectangle {
                         width: parent.width
-                        height: question.implicitHeight + Theme.padding.extraLarge * 2
+                        height: question.implicitHeight + Theme.spacing.extraLarge * 2
                         color: Theme.sao.paperDeep
 
                         // The anime's inset shadow along the top and bottom of the well.
@@ -722,7 +722,7 @@ OverlayWindow {
                             id: question
 
                             anchors.centerIn: parent
-                            width: parent.width - Theme.padding.extraLarge * 2
+                            width: parent.width - Theme.spacing.extraLarge * 2
                             horizontalAlignment: Text.AlignHCenter
                             wrapMode: Text.Wrap
                             textFormat: Text.PlainText
@@ -735,8 +735,8 @@ OverlayWindow {
 
                     Row {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        topPadding: Theme.padding.large
-                        bottomPadding: Theme.padding.large
+                        topPadding: Theme.spacing.large
+                        bottomPadding: Theme.spacing.large
                         spacing: Theme.sao.choiceGap
 
                         Choice {
