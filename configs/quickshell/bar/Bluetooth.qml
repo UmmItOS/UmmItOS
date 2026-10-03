@@ -1,6 +1,5 @@
 pragma ComponentBehavior: Bound
 
-import Quickshell
 import QtQuick
 import QtQuick.Layouts
 import Quickshell.Bluetooth as Bluez
@@ -91,37 +90,13 @@ RowLayout {
             }
         }
 
-        ListView {
+        FlyoutList {
             id: list
 
-            Layout.fillWidth: true
-            Layout.fillHeight: true
             visible: root.on && root.devices.length > 0
-            clip: true
-            spacing: Theme.spacing.extraSmall
-            boundsBehavior: Flickable.StopAtBounds
-
-            // Rows moving to the top (the connected one) otherwise scroll it out of view.
-            property bool atTop: true
-            onMovementEnded: atTop = atYBeginning
-            onVisibleChanged: atTop = true
-            Connections {
-                target: root
-                function onDevicesChanged(): void {
-                    if (list.atTop)
-                        Qt.callLater(list.positionViewAtBeginning);
-                }
-            }
-            // ScriptModel diffs, so surviving rows are kept, not rebuilt.
-            model: ScriptModel {
-                values: root.devices
-            }
-            // Discovery takes seconds; until then only paired devices show.
-            footer: FlyoutSearching {
-                width: list.width
-                searching: root.searching
-                text: I18n.t("Looking for devices")
-            }
+            values: root.devices
+            searching: root.searching
+            searchText: I18n.t("Looking for devices")
 
             delegate: FlyoutRow {
                 id: row

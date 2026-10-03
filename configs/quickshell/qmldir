@@ -21,6 +21,7 @@ MotionBlur 1.0 MotionBlur.qml
 OverlayWindow 1.0 OverlayWindow.qml
 singleton Net 1.0 services/Net.qml
 FlyoutEmpty 1.0 FlyoutEmpty.qml
+FlyoutList 1.0 FlyoutList.qml
 FlyoutRow 1.0 FlyoutRow.qml
 FlyoutSearching 1.0 FlyoutSearching.qml
 singleton Cava 1.0 services/Cava.qml

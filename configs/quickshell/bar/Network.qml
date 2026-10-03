@@ -1,6 +1,5 @@
 pragma ComponentBehavior: Bound
 
-import Quickshell
 import QtQuick
 import QtQuick.Layouts
 import Quickshell.Networking
@@ -125,37 +124,13 @@ RowLayout {
             }
         }
 
-        ListView {
+        FlyoutList {
             id: list
 
-            Layout.fillWidth: true
-            Layout.fillHeight: true
             visible: Networking.wifiEnabled && root.wifi && root.networks.length > 0
-            clip: true
-            spacing: Theme.spacing.extraSmall
-            boundsBehavior: Flickable.StopAtBounds
-
-            // Rows moving to the top (the connected one) otherwise scroll it out of view.
-            property bool atTop: true
-            onMovementEnded: atTop = atYBeginning
-            onVisibleChanged: atTop = true
-            Connections {
-                target: root
-                function onNetworksChanged(): void {
-                    if (list.atTop)
-                        Qt.callLater(list.positionViewAtBeginning);
-                }
-            }
-            // ScriptModel diffs, so surviving rows are kept, not rebuilt.
-            model: ScriptModel {
-                values: root.networks
-            }
-            // The first scan takes seconds; until then only known networks show.
-            footer: FlyoutSearching {
-                width: list.width
-                searching: root.searching
-                text: I18n.t("Searching for networks")
-            }
+            values: root.networks
+            searching: root.searching
+            searchText: I18n.t("Searching for networks")
 
             delegate: FlyoutRow {
                 id: row
