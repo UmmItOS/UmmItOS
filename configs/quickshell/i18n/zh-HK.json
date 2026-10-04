@@ -377,5 +377,22 @@
     "Forget device": "忘記呢部裝置",
     "Hide password": "隱藏密碼",
     "Show password": "顯示密碼",
-    "Accent colour": "主題色"
+    "Accent colour": "主題色",
+    "Privacy": "私隱",
+    "Choose what the desktop remembers after you copy.": "選擇桌面喺你複製之後會記住啲乜。",
+    "Save clipboard history": "儲存剪貼簿記錄",
+    "Turning this off clears the saved history and current clipboard. Passwords marked sensitive are never saved.": "關閉會清除已儲存嘅記錄同目前剪貼簿。標記為敏感嘅密碼永遠唔會儲存。",
+    "Clear automatically": "自動清除",
+    "Copied items stay until you clear them.": "複製嘅項目會保留到你手動清除。",
+    "Clear the history after the last copied item.": "最後一次複製之後清除記錄。",
+    "Never": "永不",
+    "5 min": "5 分鐘",
+    "15 min": "15 分鐘",
+    "1 hour": "1 小時",
+    "History saved before this update may contain sensitive items. Clear it once.": "今次更新之前儲存嘅記錄可能包含敏感內容，請清除一次。",
+    "Wayland does not reveal which app copied an item, so per-app exclusions are unavailable.": "Wayland 唔會透露邊個應用程式複製咗項目，所以無法按應用程式排除。",
+    "Clear clipboard now": "即刻清除剪貼簿",
+    "Could not apply clipboard privacy settings": "無法套用剪貼簿私隱設定",
+    "The clipboard helper exited with an error.": "剪貼簿輔助程式發生錯誤。",
+    "Clipboard history is off": "剪貼簿記錄已關閉"
 }

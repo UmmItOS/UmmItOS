@@ -235,7 +235,7 @@ OverlayWindow {
                 Text {
                     anchors.centerIn: parent
                     visible: !win.focusedEntry
-                    text: win.filter === "" ? I18n.t("Clipboard is empty") : I18n.t("No match")
+                    text: !Launcher.clipboardHistory ? I18n.t("Clipboard history is off") : win.filter === "" ? I18n.t("Clipboard is empty") : I18n.t("No match")
                     color: Theme.dim
                     font.family: Theme.font
                     font.pixelSize: Theme.fontSize.larger

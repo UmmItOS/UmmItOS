@@ -266,6 +266,8 @@ OverlayWindow {
 
                 UpdatePage {}
 
+                PrivacyPage {}
+
                 LanguagePage {}
 
                 AboutPage {}

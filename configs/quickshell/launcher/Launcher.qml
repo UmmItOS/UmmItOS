@@ -10,6 +10,7 @@ Singleton {
     // "apps" or "clipboard"
     property string mode: "apps"
     property bool open: false
+    property bool clipboardHistory: true
     property list<var> clipboard: []
 
     // Set only once decoded, so the Image never reads a half-written file.
@@ -27,7 +28,9 @@ Singleton {
         // Empty until the fresh list lands, so Enter cannot copy a stale entry.
         if (newMode === "clipboard") {
             clipboard = [];
-            clipList.running = true;
+            clearDecode();
+            if (clipboardHistory)
+                clipList.running = true;
         }
         open = true;
     }
@@ -53,7 +56,7 @@ Singleton {
 
     // Decodes one image entry into the cache so the preview pane can show it.
     function decode(id: string): void {
-        if (decodingId === id)
+        if (!clipboardHistory || decodingId === id)
             return;
         decodingId = id;
         decodedPath = "";
@@ -65,6 +68,8 @@ Singleton {
     }
 
     function decodeText(id: string): void {
+        if (!clipboardHistory)
+            return;
         clearDecode();
         textProc.running = false;
         // The id rides in the output, so a killed run's late text cannot land on the wrong entry.
@@ -74,12 +79,21 @@ Singleton {
 
     function clearDecode(): void {
         decodeProc.running = false;
+        textProc.running = false;
         decodingId = "";
         decodedPath = "";
+        decodedText = "";
+        decodedTextId = "";
+    }
+
+    function forgetClipboard(): void {
+        clipList.running = false;
+        clipboard = [];
+        clearDecode();
     }
 
     function copy(id: string): void {
-        if (!open)
+        if (!open || !clipboardHistory)
             return;
         open = false;
         copyProc.command = ["sh", "-c", 'cliphist decode "$1" | wl-copy', "sh", id];
@@ -110,6 +124,11 @@ Singleton {
 
         stdout: StdioCollector {
             onStreamFinished: {
+                if (!root.clipboardHistory) {
+                    root.clipboard = [];
+                    root.clearDecode();
+                    return;
+                }
                 root.clipboard = text.split("\n").filter(l => l !== "").map(line => {
                     const tab = line.indexOf("\t");
                     const preview = line.slice(tab + 1);

@@ -5,7 +5,7 @@ import Quickshell.Io
 import QtQuick
 import ".."
 
-// The settings panel, and the recording options script/misc/screen-record.sh reads.
+// The settings panel, plus options read by desktop helper scripts.
 Singleton {
     id: root
 
@@ -26,6 +26,10 @@ Singleton {
             icon: "system_update_alt"
         },
         {
+            name: "Privacy",
+            icon: "privacy_tip"
+        },
+        {
             name: "Language",
             icon: "translate"
         },
@@ -38,6 +42,7 @@ Singleton {
     readonly property string home: Quickshell.env("HOME")
     // Plain key=value lines, so the script can read them without the shell.
     readonly property string recordFile: (Quickshell.env("XDG_CONFIG_HOME") || home + "/.config") + "/ummitos/recording.conf"
+    readonly property string privacyFile: (Quickshell.env("XDG_CONFIG_HOME") || home + "/.config") + "/ummitos/privacy.conf"
 
     property string folder: home + "/Videos/Recordings"
     // wl-screenrec's -b: bytes per second, "5 MB" is 40 Mbps.
@@ -46,6 +51,11 @@ Singleton {
     property int fps: 60
     property string codec: "auto"
     property bool cursor: true
+
+    property bool clipboardHistory: true
+    property int clipboardClearMinutes: 0
+    property int clipboardClearRevision: 0
+    property var clipboardPolicyPending: null
 
     // Newest first: {name, path, size, time}.
     property var files: []
@@ -71,6 +81,39 @@ Singleton {
             return false;
         set("folder", p);
         return true;
+    }
+
+    function setClipboard(key: string, value: var): void {
+        root[key] = value;
+        Launcher.clipboardHistory = clipboardHistory;
+        privacyConf.setText(["history=" + (clipboardHistory ? 1 : 0), "clear_minutes=" + clipboardClearMinutes].join("\n") + "\n");
+        if (key === "clipboardHistory" && !clipboardHistory) {
+            clipboardClearRevision++;
+            Launcher.forgetClipboard();
+            runClipboardPolicy("clear", "");
+        }
+        else if (key === "clipboardClearMinutes")
+            runClipboardPolicy(clipboardClearMinutes > 0 ? "schedule" : "cancel", String(clipboardClearMinutes));
+    }
+
+    function clearClipboard(): void {
+        clipboardClearRevision++;
+        Launcher.forgetClipboard();
+        runClipboardPolicy("clear", "");
+    }
+
+    function runClipboardPolicy(action: string, value: string): void {
+        clipboardPolicyPending = { action: action, value: value };
+        startClipboardPolicy();
+    }
+
+    function startClipboardPolicy(): void {
+        if (clipboardPolicy.running || clipboardPolicyPending === null)
+            return;
+        const next = clipboardPolicyPending;
+        clipboardPolicyPending = null;
+        clipboardPolicy.command = ["sh", "-c", 'd=$(readlink -f "$1"); for s in "$d/../../script/cliphist/clipboard-expiry.sh" "$HOME/script/cliphist/clipboard-expiry.sh"; do [ -x "$s" ] && exec "$s" "$2" "$3"; done; exit 127', "sh", Quickshell.shellDir, next.action, next.value];
+        clipboardPolicy.running = true;
     }
 
     // Home as ~, only as a whole path segment.
@@ -148,6 +191,26 @@ Singleton {
         blockWrites: false
     }
 
+    FileView {
+        id: privacyConf
+
+        onLoaded: {
+            for (const line of text().split("\n")) {
+                const at = line.indexOf("=");
+                const key = line.slice(0, at), value = line.slice(at + 1);
+                if (key === "history")
+                    root.clipboardHistory = value !== "0";
+                else if (key === "clear_minutes")
+                    root.clipboardClearMinutes = Number(value) || 0;
+            }
+            Launcher.clipboardHistory = root.clipboardHistory;
+        }
+
+        path: root.privacyFile
+        printErrors: false
+        blockWrites: true
+    }
+
     Process {
         id: list
 
@@ -178,6 +241,22 @@ Singleton {
         }
     }
 
+    Process {
+        id: clipboardPolicy
+
+        onExited: code => {
+            if (code !== 0)
+                Notifs.say("Settings", I18n.t("Could not apply clipboard privacy settings"), I18n.t("The clipboard helper exited with an error."));
+            Qt.callLater(root.startClipboardPolicy);
+        }
+    }
+
+    // Restore or immediately enforce an expiry after a shell/user-manager restart.
+    Process {
+        running: true
+        command: ["sh", "-c", 'd=$(readlink -f "$1"); for s in "$d/../../script/cliphist/clipboard-expiry.sh" "$HOME/script/cliphist/clipboard-expiry.sh"; do [ -x "$s" ] && exec "$s" enforce; done; exit 127', "sh", Quickshell.shellDir]
+    }
+
     // A recording that just finished belongs in the list.
     Connections {
         function onRecordingChanged(): void {
@@ -193,7 +272,7 @@ Singleton {
             root.toggle();
         }
 
-        // 0 Record, 1 Packages, 2 Update, 3 Language, 4 About.
+        // 0 Record, 1 Packages, 2 Update, 3 Privacy, 4 Language, 5 About.
         function page(index: int): void {
             root.page = Math.max(0, Math.min(index, root.pages.length - 1));
             root.open = true;
