@@ -68,6 +68,10 @@ PanelWindow {
             Layout.alignment: Qt.AlignVCenter
         }
 
+        FileWatch {
+            Layout.alignment: Qt.AlignVCenter
+        }
+
         Cluster {
             Layout.alignment: Qt.AlignVCenter
 

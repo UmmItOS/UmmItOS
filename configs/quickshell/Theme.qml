@@ -246,6 +246,8 @@ Singleton {
     }
 
     readonly property QtObject bar: QtObject {
+        // The latest-file-change label, before it elides.
+        readonly property int fileWatch: 220
         // The pill round a group of bar items.
         readonly property int cluster: 32
         readonly property int accentColumns: 4

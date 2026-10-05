@@ -57,3 +57,4 @@ extra/libpulse
 extra/playerctl
 extra/pacman-contrib
 extra/fzf
+extra/inotify-tools
