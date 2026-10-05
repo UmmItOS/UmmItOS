@@ -68,10 +68,6 @@ PanelWindow {
             Layout.alignment: Qt.AlignVCenter
         }
 
-        FileWatch {
-            Layout.alignment: Qt.AlignVCenter
-        }
-
         Cluster {
             Layout.alignment: Qt.AlignVCenter
 
@@ -184,6 +180,11 @@ PanelWindow {
                     WeatherPicker {}
                 }
             }
+        }
+
+        // Last in the row, so its coming and going moves nothing else.
+        FileWatch {
+            Layout.alignment: Qt.AlignVCenter
         }
 
         Item {

@@ -16,6 +16,8 @@ Text {
     font.family: Theme.font
     font.pixelSize: Theme.fontSize.smaller
     opacity: quiet.running ? 1 : 0
+    // Out of the layout once faded, so a quiet bar keeps no empty gap.
+    visible: opacity > 0
     width: Math.min(implicitWidth, Theme.bar.fileWatch)
 
     Behavior on opacity {
