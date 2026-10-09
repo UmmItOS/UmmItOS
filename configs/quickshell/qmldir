@@ -21,6 +21,7 @@ SlideList 1.0 SlideList.qml
 singleton Players 1.0 services/Players.qml
 Reveal 1.0 Reveal.qml
 Action 1.0 Action.qml
+ConfirmButton 1.0 ConfirmButton.qml
 MotionBlur 1.0 MotionBlur.qml
 OverlayWindow 1.0 OverlayWindow.qml
 singleton Net 1.0 services/Net.qml

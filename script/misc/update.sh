@@ -18,15 +18,6 @@ execute_command() {
     fi
 }
 
-run_history() {
-    # Execute history script first
-    execute_command "Clipboard clean-up offered :)" bash "$HOME/script/misc/clear-clipboard.sh"
-}
-
-# Run history script
-run_history
-
-
 update_paru() {
     echo -e "[${COLOR_GREEN} RUNNING ${COLOR_RESET}] Full system upgrade via paru"
     execute_command "Processed full system upgrade via paru" paru

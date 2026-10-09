@@ -65,7 +65,12 @@ case "${1:-}" in
     clear)
         cancel_unit
         rm -f -- "$state_file"
-        cliphist wipe && wl-copy --clear
+        if cliphist wipe && wl-copy --clear; then
+            notify-send -a Clipboard -- "Clipboard cleared" "History and the current clipboard are empty." 2> /dev/null || true
+        else
+            notify-send -a Clipboard -u critical -- "Could not clear the clipboard" "cliphist or wl-copy failed." 2> /dev/null || true
+            exit 1
+        fi
         ;;
     *)
         echo "Usage: $0 {schedule MINUTES|enforce|expire DEADLINE|cancel|clear}" >&2

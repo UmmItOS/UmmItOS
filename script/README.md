@@ -11,7 +11,6 @@ hypridle call out to.
 | `hypr/hyprpicker/hyprpicker.sh` | Alt+P |
 | `misc/first-run.sh` | `autostart.lua`, once per user |
 | `misc/update.sh` | the bar's update button |
-| `misc/clear-clipboard.sh` | `update.sh`, offers to wipe the cliphist history |
 | `misc/screen-record.sh` | Super+Shift+R, through the shell's recording dialog |
 | `misc/mic-check.sh` | `screen-record.sh` and the shell after each wake; fails when the mic is stuck |
 

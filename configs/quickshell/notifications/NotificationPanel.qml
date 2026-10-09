@@ -191,36 +191,13 @@ OverlayWindow {
                 }
 
                 // Two steps: the first click arms it, the second clears.
-                Rectangle {
+                ConfirmButton {
                     id: clear
 
-                    property bool armed: false
+                    onConfirmed: Notifs.clear()
 
-                    onArmedChanged: if (armed)
-                        disarm.restart()
-
-                    implicitWidth: Theme.control.button
-                    implicitHeight: Theme.control.button
-                    radius: width / 2
-                    color: clear.armed || clearHover.hovered ? Theme.urgent : Theme.bgTray
-                    scale: clearTap.pressed ? Theme.pressScale : 1
                     visible: Notifs.history.count > 0
-
-                    Behavior on color {
-                        FastColor {}
-                    }
-
-                    Behavior on scale {
-                        PressAnim {}
-                    }
-
-                    Timer {
-                        id: disarm
-
-                        onTriggered: clear.armed = false
-
-                        interval: Theme.duration.confirmHold
-                    }
+                    label: I18n.t("Clear all")
 
                     Connections {
                         function onOpened(): void {
@@ -228,32 +205,6 @@ OverlayWindow {
                         }
 
                         target: win
-                    }
-
-                    MaterialIcon {
-                        anchors.centerIn: parent
-                        text: "delete_sweep"
-                        color: Theme.fg
-                        size: Theme.icon.small
-                    }
-
-                    HoverHandler {
-                        id: clearHover
-
-                        onHoveredChanged: if (!hovered)
-                            clear.armed = false
-
-                        cursorShape: Qt.PointingHandCursor
-                    }
-
-                    TapHandler {
-                        id: clearTap
-
-                        onTapped: {
-                            if (clear.armed)
-                                Notifs.clear();
-                            clear.armed = !clear.armed;
-                        }
                     }
                 }
             }

@@ -394,5 +394,6 @@
     "Clear clipboard now": "立即清除剪貼簿",
     "Could not apply clipboard privacy settings": "無法套用剪貼簿隱私權設定",
     "The clipboard helper exited with an error.": "剪貼簿輔助程式發生錯誤。",
-    "Clipboard history is off": "剪貼簿歷史記錄已關閉"
+    "Clipboard history is off": "剪貼簿歷史記錄已關閉",
+    "Clear all": "全部清除"
 }

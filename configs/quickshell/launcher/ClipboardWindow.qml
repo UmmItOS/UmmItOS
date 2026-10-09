@@ -23,6 +23,7 @@ OverlayWindow {
     }
 
     onOpened: {
+        wipe.armed = false;
         filter = "";
         search.text = "";
         list.currentIndex = 0;
@@ -246,6 +247,7 @@ OverlayWindow {
                     anchors {
                         fill: parent
                         margins: Theme.spacing.extraLarge
+                        topMargin: Theme.spacing.extraLarge + Theme.control.button
                     }
 
                     visible: win.focusedEntry?.image ?? false
@@ -267,6 +269,7 @@ OverlayWindow {
                     anchors {
                         fill: parent
                         margins: Theme.spacing.extraLarge
+                        topMargin: Theme.spacing.extraLarge + Theme.control.button
                     }
 
                     visible: (win.focusedEntry !== null) && !(win.focusedEntry?.image ?? false)
@@ -287,6 +290,23 @@ OverlayWindow {
                         wrapMode: Text.Wrap
                         lineHeight: Theme.clipboard.lineHeight
                     }
+                }
+
+                // Two steps, like the notification panel's.
+                ConfirmButton {
+                    id: wipe
+
+                    onConfirmed: Settings.clearClipboard()
+
+                    anchors {
+                        top: parent.top
+                        right: parent.right
+                        margins: Theme.spacing.large
+                    }
+
+                    visible: Launcher.clipboardHistory && Launcher.clipboard.length > 0
+                    label: I18n.t("Clear clipboard now")
+                    hint: I18n.t("Clear all?")
                 }
 
                 // Enter is the action; say so once instead of drawing a button.
