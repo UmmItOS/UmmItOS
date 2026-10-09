@@ -395,4 +395,14 @@
     "The clipboard helper exited with an error.": "剪貼簿輔助程式發生錯誤。",
     "Clipboard history is off": "剪貼簿記錄已關閉",
     "Clear all": "全部清除"
+,
+    "Bar": "工具列",
+    "Choose what the status bar shows.": "揀狀態列顯示啲乜。",
+    "Latest file change": "最新檔案變動",
+    "Shows the newest change in a folder, beside the bar's tools.": "喺工具列旁邊顯示某個資料夾最新嘅變動。",
+    "Folder to watch": "監察嘅資料夾",
+    "Use a full path, like ~/Projects": "請用完整路徑，例如 ~/Projects",
+    "That folder does not exist": "搵唔到呢個資料夾",
+    "Type a folder, then Enter. Empty watches the shell's own folder.": "輸入資料夾，然後撳 Enter。留空就監察 shell 自己嘅資料夾。",
+    "The shell's own folder": "Shell 自己嘅資料夾"
 }

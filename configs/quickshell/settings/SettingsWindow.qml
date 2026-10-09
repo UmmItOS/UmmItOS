@@ -268,6 +268,8 @@ OverlayWindow {
 
                 PrivacyPage {}
 
+                BarPage {}
+
                 LanguagePage {}
 
                 AboutPage {}

@@ -30,6 +30,10 @@ Singleton {
             icon: "privacy_tip"
         },
         {
+            name: "Bar",
+            icon: "toolbar"
+        },
+        {
             name: "Language",
             icon: "translate"
         },
@@ -51,6 +55,14 @@ Singleton {
     property int fps: 60
     property string codec: "auto"
     property bool cursor: true
+
+    readonly property string barFile: (Quickshell.env("XDG_CONFIG_HOME") || home + "/.config") + "/ummitos/bar.conf"
+
+    // Empty watches the shell's own folder.
+    property string watchFolder: ""
+    property bool watchShow: true
+    property bool watchMissing: false
+    property string watchPending: ""
 
     property bool clipboardHistory: true
     property int clipboardClearMinutes: 0
@@ -79,6 +91,27 @@ Singleton {
         if (!p.startsWith("/"))
             return false;
         set("folder", p);
+        return true;
+    }
+
+    function setBar(key: string, value: var): void {
+        root[key] = value;
+        barConf.setText(["watch=" + watchFolder, "show=" + (watchShow ? 1 : 0)].join("\n") + "\n");
+    }
+
+    // False when it is not a full path; a folder that is missing is reported once the check ends.
+    function setWatch(path: string): bool {
+        const p = path.trim().replace(/^~(?=\/|$)/, home).replace(/\/+$/, "");
+        if (p === "") {
+            watchMissing = false;
+            setBar("watchFolder", "");
+            return true;
+        }
+        if (!p.startsWith("/"))
+            return false;
+        watchPending = p;
+        watchCheck.command = ["test", "-d", p];
+        watchCheck.running = true;
         return true;
     }
 
@@ -186,6 +219,35 @@ Singleton {
         path: root.recordFile
         printErrors: false
         blockWrites: false
+    }
+
+    FileView {
+        id: barConf
+
+        onLoaded: {
+            for (const line of text().split("\n")) {
+                const at = line.indexOf("=");
+                const key = line.slice(0, at), value = line.slice(at + 1);
+                if (key === "watch")
+                    root.watchFolder = value;
+                else if (key === "show")
+                    root.watchShow = value !== "0";
+            }
+        }
+
+        path: root.barFile
+        printErrors: false
+        blockWrites: true
+    }
+
+    Process {
+        id: watchCheck
+
+        onExited: code => {
+            root.watchMissing = code !== 0;
+            if (code === 0)
+                root.setBar("watchFolder", root.watchPending);
+        }
     }
 
     FileView {
