@@ -286,13 +286,14 @@ OverlayWindow {
             id: panel
 
             readonly property real room: parent.height - Theme.barHeight - Theme.spacing.small - Theme.spacing.large
+            readonly property real pictureHeight: Math.max(Theme.scan.picture, room * Theme.scan.pictureShare)
 
             y: Theme.barHeight + Theme.spacing.small
             x: win.panelLeft ? Theme.spacing.large : win.width - width - Theme.spacing.large
             z: 1
             width: Theme.scan.panel
-            // As tall as its content, up to the screen; then the details scroll.
-            height: Math.min(room, head.implicitHeight + sections.implicitHeight + foot.implicitHeight + Theme.spacing.large * 2 + Theme.spacing.extraLarge * 2)
+            // The screen's height; the details scroll when they are longer.
+            height: room
             radius: Theme.rounding.extraLarge
             tone: Theme.scrim(Theme.panelTint)
             lift: Theme.lift.panel
@@ -516,15 +517,15 @@ OverlayWindow {
                         ClippingRectangle {
                             Layout.alignment: Qt.AlignHCenter
                             implicitWidth: picture.width
-                            implicitHeight: Theme.scan.picture
+                            implicitHeight: panel.pictureHeight
                             radius: Theme.rounding.medium
                             color: "transparent"
 
                             Image {
                                 id: picture
 
-                                width: Math.min(sections.width, Theme.scan.picture * (win.code ? win.code.pixels.width / Math.max(1, win.code.pixels.height) : 1))
-                                height: Theme.scan.picture
+                                width: Math.min(sections.width, panel.pictureHeight * (win.code ? win.code.pixels.width / Math.max(1, win.code.pixels.height) : 1))
+                                height: panel.pictureHeight
                                 source: win.code ? Scan.picture : ""
                                 sourceClipRect: win.code?.pixels ?? Qt.rect(0, 0, 0, 0)
                                 fillMode: Image.PreserveAspectFit

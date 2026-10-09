@@ -198,8 +198,9 @@ Singleton {
         readonly property int card: 340
         // The detail panel beside the codes.
         readonly property int panel: 500
-        // The code's own picture in the panel.
+        // The code's own picture in the panel: at least this tall, else this share of the panel's height.
         readonly property int picture: 168
+        readonly property real pictureShare: 0.2
         // Past this many bytes the hex dump stops and says how many are left.
         readonly property int hexBytes: 512
         readonly property int hexColumns: 8
