@@ -26,20 +26,40 @@ banner=(
 	'╚═╝┴  └─┘┴└─┴ ┴─┴┘└─┘  ╚═╝ ┴ └─┘ ┴ └─┘┴ ┴'
 )
 
-# What this system can update; anything missing is simply not offered.
 labels=()
 descs=()
 steps=()
 picked=()
 
-update_paru() { paru; }
+yes=0
+
+update_paru() {
+	local opts=()
+	((yes)) && opts+=(--noconfirm)
+	paru "${opts[@]}"
+}
+
+update_repos() {
+	local opts=()
+	((yes)) && opts+=(--noconfirm)
+	paru -Syu --repo "${opts[@]}"
+}
+
 update_omz() { "$HOME/.oh-my-zsh/tools/upgrade.sh"; }
-update_flatpak() { flatpak update; }
+
+update_flatpak() {
+	local opts=()
+	((yes)) && opts+=(-y)
+	flatpak update "${opts[@]}"
+}
 
 if command -v paru &> /dev/null; then
 	labels+=('paru')
-	descs+=('Full system upgrade: repos and AUR')
+	descs+=('Full upgrade: repos and AUR')
 	steps+=(update_paru)
+	labels+=('paru (repos)')
+	descs+=('Official repos only, AUR left alone')
+	steps+=(update_repos)
 fi
 if [[ -f $HOME/.oh-my-zsh/tools/upgrade.sh ]]; then
 	labels+=('oh-my-zsh')
@@ -55,8 +75,6 @@ for i in "${!steps[@]}"; do
 	picked[i]=1
 done
 
-# Screen handling. The menus live on the alternate screen; the steps run on
-# the normal one, because paru and flatpak ask questions.
 on_screen=0
 cols=80
 width=60
@@ -90,13 +108,11 @@ measure() {
 	margin "$cols" "$width" lead
 }
 
-# margin OUTER INNER VAR: the spaces that centre INNER within OUTER.
 margin() {
 	local m=$((($1 - $2) / 2))
 	printf -v "$3" '%*s' "$((m > 0 ? m : 0))" ''
 }
 
-# repeat CHAR COUNT VAR
 repeat() {
 	local s
 	printf -v s '%*s' "$2" ''
@@ -107,7 +123,6 @@ emit() {
 	out+="$lead$1$reset"$'\n'
 }
 
-# A row inside a box; $1 is exactly the inner width wide.
 row() {
 	emit "$fg_accent│$reset$1$fg_accent│"
 }
@@ -149,7 +164,6 @@ flush() {
 	printf '%s' "$out"
 }
 
-# Sets key to up, down, space, enter, all, quit or resize.
 read_key() {
 	local rest status
 	IFS= read -rsn1 key
@@ -178,13 +192,13 @@ read_key() {
 	esac
 }
 
-# The checklist. Returns 0 to run what is ticked, 1 to quit.
 cursor=0
 note=
 
 draw_select() {
 	local i inner labw=0 descw box name desc
 	local sel=$bg_sel$bold$fg_accent
+	local last=${#steps[@]}
 	measure
 	inner=$((width - 2))
 	for i in "${!labels[@]}"; do
@@ -211,6 +225,19 @@ draw_select() {
 		fi
 	done
 	blank_row
+	if ((yes)); then
+		box="${fg_warn}[✔]"
+	else
+		box="${fg_mute}[ ]"
+	fi
+	printf -v name '%-*s' "$labw" 'No confirm'
+	printf -v desc '%-*.*s' "$descw" "$descw" 'No prompts: --noconfirm, -y'
+	if ((cursor == last)); then
+		row "$sel ❯ $box$fg_accent $name  $fg_text$desc "
+	else
+		row "   $box$reset $fg_text$name  $fg_mute$desc "
+	fi
+	blank_row
 	bottom
 	emit ''
 	if [[ -n $note ]]; then
@@ -223,7 +250,7 @@ draw_select() {
 }
 
 select_steps() {
-	local i any count=${#steps[@]}
+	local i any count=$((${#steps[@]} + 1))
 	note=
 	while true; do
 		draw_select
@@ -232,7 +259,13 @@ select_steps() {
 		case $key in
 			up) ((cursor = (cursor + count - 1) % count)) ;;
 			down) ((cursor = (cursor + 1) % count)) ;;
-			space) ((picked[cursor] = !picked[cursor])) ;;
+			space)
+				if ((cursor == count - 1)); then
+					((yes = !yes))
+				else
+					((picked[cursor] = !picked[cursor]))
+				fi
+				;;
 			all)
 				any=0
 				for i in "${!steps[@]}"; do
@@ -253,7 +286,6 @@ select_steps() {
 	done
 }
 
-# Runs what is ticked on the normal screen, one step at a time.
 res_label=()
 res_ok=()
 res_secs=()
@@ -316,7 +348,6 @@ run_steps() {
 	read -rsn1
 }
 
-# The results, and what to do next. Sets action.
 choices=('Reboot now' 'Run again' 'Change the selection' 'Open a shell' 'Exit')
 choice=4
 action=
