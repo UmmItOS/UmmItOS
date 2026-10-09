@@ -178,6 +178,8 @@ PanelWindow {
                     AccentPicker {}
 
                     WeatherPicker {}
+
+                    FileHistory {}
                 }
             }
         }

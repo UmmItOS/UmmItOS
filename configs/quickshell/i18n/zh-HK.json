@@ -405,4 +405,11 @@
     "That folder does not exist": "搵唔到呢個資料夾",
     "Type a folder, then Enter. Empty watches the shell's own folder.": "輸入資料夾，然後撳 Enter。留空就監察 shell 自己嘅資料夾。",
     "The shell's own folder": "Shell 自己嘅資料夾"
+,
+    "File changes": "檔案變動",
+    "No changes yet": "暫時未有變動",
+    "just now": "啱啱",
+    "%1 min ago": "%1 分鐘前",
+    "%1 h ago": "%1 小時前",
+    "%1 d ago": "%1 日前"
 }
