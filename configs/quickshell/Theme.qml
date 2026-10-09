@@ -249,6 +249,11 @@ Singleton {
     }
 
     readonly property QtObject bar: QtObject {
+        // The little cover with audio bars beside the clock: the cover, the gap to the bars, how far they reach, and how many per half.
+        readonly property int mediaArt: 24
+        readonly property int mediaGap: 2
+        readonly property int mediaReach: 6
+        readonly property int mediaBars: 8
         // The latest-file-change label, before it elides.
         readonly property int fileWatch: 220
         // The pill round a group of bar items.

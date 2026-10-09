@@ -232,6 +232,13 @@ PanelWindow {
         }
     }
 
+    // The same on the other side of the clock.
+    MediaMini {
+        anchors.right: clockColumn.left
+        anchors.rightMargin: Theme.spacing.large
+        anchors.verticalCenter: parent.verticalCenter
+    }
+
     // Beside the clock, so it never moves the centre or the clusters.
     RecordingPill {
         anchors.left: clockColumn.right

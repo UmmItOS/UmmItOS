@@ -20,6 +20,8 @@ Singleton {
 
     // MPRIS position does not tick; tick only while shown.
     property bool watched: false
+    // Bar discs showing the audio bars, one per screen.
+    property int barViewers: 0
 
     function timeText(seconds: real): string {
         if (!seconds || seconds < 0)

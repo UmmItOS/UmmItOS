@@ -11,7 +11,7 @@ Singleton {
     readonly property int bars: 24
     property list<real> levels: []
 
-    readonly property bool running: Players.watched && (Players.active?.isPlaying ?? false)
+    readonly property bool running: (Players.watched || Players.barViewers > 0) && (Players.active?.isPlaying ?? false)
 
     // Own config, not the user's; noise_reduction 20 follows the beat.
     readonly property string config: `[general]
