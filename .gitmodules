@@ -1,3 +1,6 @@
 [submodule ".wallpaper"]
 	path = .wallpaper
 	url = https://github.com/UmmItOS/wallpaper.git
+[submodule "configs/quickshell/resources"]
+	path = configs/quickshell/resources
+	url = https://github.com/UmmItOS/resources.git

@@ -197,7 +197,7 @@ For things that need input you cannot give from a terminal, mark every temporary
 - Arch Linux only. `install.sh` and `install-menu.sh` gate on `/etc/arch-release`.
 - Use `paru` in new install code, never `pacman` directly; the one exception is installing `git` and `base-devel` before paru exists (`check_paru` in `lib/common.sh` and `setup.sh`). NVIDIA is unsupported, and GPU packages are AMD-only.
 - Never run or assume root. `install-menu.sh` rejects EUID 0; `install.sh` does not check, but it isn't meant to run as root either.
-- Wallpapers are a git submodule (`.wallpaper`). Clone with `--recursive`, or run `git submodule update --init`.
+- Wallpapers (`.wallpaper`) and the brand images (`configs/quickshell/resources`, `UmmItOS/resources`, the About page's icon) are git submodules. Clone with `--recursive`, or run `git submodule update --init`.
 - Installer scripts run from the repo root and use relative paths (`./install/...`).
 - The helpers in `script/` write `.log` files, so read those rather than relying on notifications alone.
 - Conventional Commits are required, for example `fix(battery-display): disable test mode in battery display script`. PRs need the "Tested on my system" checkbox ticked.

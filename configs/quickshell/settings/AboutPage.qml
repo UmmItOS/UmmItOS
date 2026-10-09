@@ -41,7 +41,7 @@ ColumnLayout {
 
             Image {
                 anchors.fill: parent
-                source: Qt.resolvedUrl("../lock/avatar.webp")
+                source: Qt.resolvedUrl("../resources/UmmItOS-Icon.jpg")
                 fillMode: Image.PreserveAspectCrop
                 sourceSize.width: width * 2
                 sourceSize.height: height * 2
