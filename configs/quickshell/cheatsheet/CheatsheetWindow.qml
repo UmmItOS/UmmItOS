@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 
+import Quickshell.Io
 import Quickshell.Widgets
 import QtQuick
 import QtQuick.Effects
@@ -9,13 +10,20 @@ import ".."
 OverlayWindow {
     id: win
 
+    // Where the cursor was when the sheet opened, for the light until it moves (window coordinates; -1 is unknown).
+    property point seed: Qt.point(-1, -1)
+
     // A bind's description in the chosen language; numbered ones ("1–10" once merged) share one template.
     function said(text: string): string {
         const n = text.match(/^(.*workspace) ([\d–-]+)$/);
         return n ? I18n.t(n[1] + " %1").arg(n[2]) : I18n.t(text);
     }
 
-    onOpened: scope.forceActiveFocus()
+    onOpened: {
+        scope.forceActiveFocus();
+        win.seed = Qt.point(-1, -1);
+        cursor.running = true;
+    }
 
     shown: Cheatsheet.open
     name: "cheatsheet"
@@ -40,6 +48,20 @@ OverlayWindow {
             font.family: Theme.font
             font.pixelSize: Theme.fontSize.smaller
             font.weight: Theme.weight.medium
+        }
+    }
+
+    // Hyprland's cursor position is in layout coordinates: take this screen's origin off.
+    Process {
+        id: cursor
+
+        command: ["hyprctl", "cursorpos"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const [x, y] = text.trim().split(",").map(Number);
+                if (!isNaN(x) && !isNaN(y))
+                    win.seed = Qt.point(x - (win.screen?.x ?? 0), y - (win.screen?.y ?? 0));
+            }
         }
     }
 
@@ -115,6 +137,22 @@ OverlayWindow {
                     duration: Theme.duration.ringTurn
                     loops: Animation.Infinite
                 }
+            }
+        }
+
+        // The ring's source is hidden, so its turning draws no frames of its own: this near-invisible pulse asks for them.
+        Rectangle {
+            width: 1
+            height: 1
+            color: "white"
+            opacity: 0.01
+
+            NumberAnimation on opacity {
+                running: win.visible
+                from: 0.01
+                to: 0.02
+                duration: Theme.duration.ringTurn
+                loops: Animation.Infinite
             }
         }
 
@@ -223,9 +261,12 @@ OverlayWindow {
 
                     width: spot.size
                     height: spot.size
-                    x: pointer.point.position.x - spot.size / 2
-                    y: pointer.point.position.y - spot.size / 2
-                    opacity: pointer.hovered ? 1 : 0
+                    readonly property point at: pointer.hovered ? pointer.point.position : sheet.mapFromItem(win.contentItem, win.seed.x, win.seed.y)
+                    readonly property bool lit: pointer.hovered || (win.seed.x >= 0 && at.x >= 0 && at.y >= 0 && at.x <= sheet.width && at.y <= sheet.height)
+
+                    x: at.x - spot.size / 2
+                    y: at.y - spot.size / 2
+                    opacity: lit ? 1 : 0
 
                     Behavior on x {
                         NumberAnimation {
