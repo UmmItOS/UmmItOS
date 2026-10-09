@@ -25,8 +25,10 @@ if ! command -v hyprpicker &> /dev/null; then
     exit 1
 fi
 
-# Run hyprpicker and capture the output
+# The notice below has its own sound, so the copy stays quiet.
+qs -c ummitos ipc call copied mute &> /dev/null
 color=$(hyprpicker --autocopy)
+(sleep 1; qs -c ummitos ipc call copied unmute &> /dev/null) &
 
 # Check if a color was selected
 if [[ -z "$color" ]]; then

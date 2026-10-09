@@ -12,14 +12,17 @@ Scope {
     id: root
 
     property int serial: 0
+    property bool muted: false
 
     function show(kind: string): void {
         const image = kind === "image";
-        // Text and images have their own sounds, so the two are never confused.
-        if (!image)
-            Sounds.play("text-copied");
-        else if (Date.now() - Screenshot.delivered > Theme.duration.shotCopy)
-            Sounds.play("image-copied");
+        // A copy that has its own sound (the colour picker's notice) stays quiet here.
+        if (!root.muted) {
+            if (!image)
+                Sounds.play("text-copied");
+            else if (Date.now() - Screenshot.delivered > Theme.duration.shotCopy)
+                Sounds.play("image-copied");
+        }
         // Newest at index 0, which the bottom-to-top list draws lowest.
         pills.insert(0, {
             key: ++serial,
@@ -35,6 +38,15 @@ Scope {
             if (pills.get(i).key === key)
                 return pills.remove(i);
         }
+    }
+
+    // Safety: a script that dies before unmuting must not silence copies for good.
+    Timer {
+        id: safety
+
+        onTriggered: root.muted = false
+
+        interval: Theme.duration.pickMute
     }
 
     ListModel {
@@ -200,6 +212,16 @@ Scope {
 
         function image(): void {
             root.show("image");
+        }
+
+        function mute(): void {
+            root.muted = true;
+            safety.restart();
+        }
+
+        function unmute(): void {
+            safety.stop();
+            root.muted = false;
         }
 
         target: "copied"
