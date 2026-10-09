@@ -16,3 +16,9 @@ print_status() {
         echo -e "[ ${COLOR_DARK_RED}FAILED${COLOR_RESET} ] ${message}"
     fi
 }
+
+# A notice through the shell (it adds the sound). Args: app, summary, body, urgency.
+say() {
+    command -v notify-send &> /dev/null || return 0
+    notify-send -a "$1" -u "${4:-normal}" -- "$2" "${3:-}"
+}

@@ -25,10 +25,14 @@ while true; do
     
     case "$choice" in
         y)
-            cliphist wipe
             # The live clipboard is not in the history: without this the last copy still pastes.
-            wl-copy --clear
-            echo -e "[${COLOR_GREEN} SUCCESS ${COLOR_RESET}] Clipboard history has been cleared :)\n"
+            if cliphist wipe && wl-copy --clear; then
+                echo -e "[${COLOR_GREEN} SUCCESS ${COLOR_RESET}] Clipboard history has been cleared :)\n"
+                say Clipboard "Clipboard cleared" "History and the current clipboard are empty."
+            else
+                echo -e "[${COLOR_DARK_RED} FAILED ${COLOR_RESET}] Clipboard history could not be cleared\n"
+                say Clipboard "Could not clear the clipboard" "cliphist or wl-copy failed." critical
+            fi
             break
             ;;
         n)

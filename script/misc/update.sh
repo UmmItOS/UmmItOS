@@ -4,6 +4,7 @@
 source "$(dirname "$0")/_ui.sh"
 
 # Function to execute commands and check for errors
+failed=0
 execute_command() {
     local description="$1"
     shift
@@ -12,6 +13,7 @@ execute_command() {
         return 0
     else
         print_status "FAILED" "${description}"
+        failed=1
         return 1
     fi
 }
@@ -57,6 +59,7 @@ fi
 run_updates() {
     local start_time end_time total_duration updater
     start_time=$(date +%s)
+    failed=0
 
     if [[ $update_choice == 0 ]]; then
         for updater in "${updaters[@]}"; do "$updater"; done
@@ -67,8 +70,14 @@ run_updates() {
     end_time=$(date +%s)
     total_duration=$((end_time - start_time))
 
+    if (( failed )); then
+        echo -e "[${COLOR_DARK_RED} FAILED ${COLOR_RESET}] A step of the upgrade did not finish; see the output above.\nTotal duration: ${COLOR_GREEN}${total_duration}${COLOR_RESET} seconds"
+        say Update "Update did not finish" "A step failed after ${total_duration} seconds; see the terminal." critical
+        echo "<ERROR> $(date +"%Y-%m-%d %H:%M:%S"): System upgrade had a failed step. Total duration: ${total_duration} seconds" >> ~/script/misc/update.log
+        return
+    fi
     echo -e "[${COLOR_GREEN} SUCCESS ${COLOR_RESET}] System upgrade completed successfully.\nTotal duration: ${COLOR_GREEN}${total_duration}${COLOR_RESET} seconds"
-    notify-send -a "Update" "System updated" "Finished in ${total_duration} seconds."
+    say Update "System updated" "Finished in ${total_duration} seconds."
     echo "<NOTICE> $(date +"%Y-%m-%d %H:%M:%S"): System upgrade completed successfully. Total duration: ${total_duration} seconds" >> ~/script/misc/update.log
 }
 
@@ -129,7 +138,7 @@ while true; do
                 echo -e "${COLOR_RESET}"
                 case $reboot_choice in
                     [Yy]* )
-                        notify-send -a "Update" -u critical "Rebooting" "The system will reboot in 5 seconds."
+                        say Update "Rebooting" "The system will reboot in 5 seconds." critical
                         sleep 5
                         systemctl reboot
                         break;;

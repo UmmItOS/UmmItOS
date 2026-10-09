@@ -54,6 +54,8 @@ case "${1:-}" in
         [[ "$current" = "$expected" ]] || exit 0
         if cliphist wipe; then
             rm -f -- "$state_file"
+            wl-copy --clear
+            notify-send -a Clipboard -- "Clipboard cleared" "Copied items expired and were removed." 2> /dev/null || true
         fi
         ;;
     cancel)

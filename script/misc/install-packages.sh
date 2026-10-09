@@ -41,6 +41,11 @@ total_duration=$(( $(date +%s) - start_time ))
 
 echo ""
 print_status "$result" "$message"
+if [[ $result == SUCCESS ]]; then
+    say Packages "Packages installed" "Installed ${#} missing package(s) in ${total_duration} seconds."
+else
+    say Packages "Package install did not finish" "Cancelled or failed; see the terminal." critical
+fi
 echo -e "Total duration: ${COLOR_GREEN}${total_duration}${COLOR_RESET} seconds"
 echo "<NOTICE> $(date +"%Y-%m-%d %H:%M:%S"): ${result}: $* (${total_duration} seconds)" >> "$log"
 
