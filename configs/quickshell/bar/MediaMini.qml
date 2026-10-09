@@ -87,20 +87,10 @@ Item {
         radius: width / 2
         color: Theme.bgAlt
 
-        Image {
-            anchors.fill: parent
-            source: root.player?.trackArtUrl ?? ""
-            fillMode: Image.PreserveAspectCrop
-            asynchronous: true
-            sourceSize.width: root.art * 2
-            sourceSize.height: root.art * 2
-        }
-
         MaterialIcon {
             anchors.centerIn: parent
-            visible: !root.player?.trackArtUrl
             text: "music_note"
-            color: Theme.dim
+            color: Theme.fg
             size: Theme.icon.small
         }
     }
