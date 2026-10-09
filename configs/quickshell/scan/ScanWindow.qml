@@ -221,6 +221,24 @@ OverlayWindow {
                     }
                 }
 
+                // The code itself, cut from the scan's picture: sharp through the blur.
+                ClippingRectangle {
+                    x: found.modelData.x
+                    y: found.modelData.y
+                    width: found.modelData.w
+                    height: found.modelData.h
+                    radius: Theme.rounding.medium
+                    color: "transparent"
+
+                    Image {
+                        anchors.fill: parent
+                        source: Scan.picture
+                        sourceClipRect: found.modelData.pixels
+                        fillMode: Image.Stretch
+                        asynchronous: true
+                    }
+                }
+
                 Rectangle {
                     id: label
 
