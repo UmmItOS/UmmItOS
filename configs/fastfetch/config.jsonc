@@ -1,103 +1,151 @@
 {
+    "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+    "logo": {
+        "color": {
+            "1": "38;2;167;139;250",
+            "2": "38;2;103;232;249"
+        }
+    },
     "display": {
-        "separator": " "
+        "separator": "  "
     },
     "modules": [
         {
-            "type": "custom",
-            "format": "┌────────────────────────────────────────────────────────────┐",
-            "outputColor": "green"
-        },
-        {
             "type": "title",
-            "keyWidth": 10,
-            "format": "                         I use Arch BTW",
-            "outputColor": "green"
+            "key": "󰣇 ",
+            "keyColor": "38;2;167;139;250",
+            "format": "{#38;2;167;139;250}{user-name}{#}{#38;2;148;148;170} @ {#}{#38;2;103;232;249}{host-name}{#}"
         },
         {
             "type": "custom",
-            "format": "└────────────────────────────────────────────────────────────┘",
-            "outputColor": "green"
+            "format": "{#38;2;148;148;170}UmmItOS · I use Arch BTW"
+        },
+        "break",
+        {
+            "type": "custom",
+            "format": "{#38;2;167;139;250}╭─ System"
         },
         {
             "type": "os",
-            "key": "╭─ ",
-            "keyColor": "green"
+            "key": "│  󰣇  OS        ",
+            "keyColor": "38;2;167;139;250",
+            "format": "{name} {arch}"
         },
         {
             "type": "kernel",
-            "key": "├─ ",
-            "format": "{1} {2}",
-            "keyColor": "green"
+            "key": "│  󰌽  Kernel    ",
+            "keyColor": "38;2;167;139;250",
+            "format": "{release}"
+        },
+        {
+            "type": "uptime",
+            "key": "│  󰅐  Uptime    ",
+            "keyColor": "38;2;167;139;250"
         },
         {
             "type": "packages",
-            "key": "├─󰏖 ",
-            "keyColor": "green"
+            "key": "│  󰏖  Packages  ",
+            "keyColor": "38;2;167;139;250"
         },
-
         {
             "type": "shell",
-            "key": "╰─ ",
-            "keyColor": "green"
+            "key": "│  󰆍  Shell     ",
+            "keyColor": "38;2;167;139;250"
         },
-
         "break",
         {
+            "type": "custom",
+            "format": "{#38;2;103;232;249}╭─ Desktop"
+        },
+        {
             "type": "wm",
-            "key": "╭─ ",
-            "keyColor": "yellow"
+            "key": "│  󰖲  WM        ",
+            "keyColor": "38;2;103;232;249",
+            "format": "{pretty-name} {version} ({protocol-name})"
+        },
+        {
+            "type": "command",
+            "key": "│  󰩋  Shell UI  ",
+            "keyColor": "38;2;103;232;249",
+            "text": "qs --version | cut -d' ' -f1,2"
         },
         {
             "type": "terminal",
-            "key": "├─ ",
-            "keyColor": "yellow"
+            "key": "│  󰒉  Terminal  ",
+            "keyColor": "38;2;103;232;249"
         },
         {
             "type": "terminalfont",
-            "key": "├─ ",
-            "keyColor": "yellow"
+            "key": "│  󰛖  Font      ",
+            "keyColor": "38;2;103;232;249"
+        },
+        {
+            "type": "display",
+            "key": "│  󰍹  Display   ",
+            "keyColor": "38;2;103;232;249",
+            "format": "{width}x{height} @ {refresh-rate} Hz"
         },
         {
             "type": "lm",
-            "key": "╰─󰧨 ",
-            "keyColor": "yellow"
+            "key": "│  󰨟  Login     ",
+            "keyColor": "38;2;103;232;249"
         },
-
-
-
         "break",
-
+        {
+            "type": "custom",
+            "format": "{#38;2;134;239;172}╭─ Hardware"
+        },
         {
             "type": "cpu",
-            "key": "╭─󰻠",
-            "keyColor": "blue"
+            "key": "│  󰻠  CPU       ",
+            "keyColor": "38;2;134;239;172",
+            "format": "{name} @ {freq-max}"
         },
         {
             "type": "gpu",
-            "key": "├─󰍛",
-            "keyColor": "blue"
+            "key": "│  󰢮  GPU       ",
+            "keyColor": "38;2;134;239;172",
+            "format": "{name} [{type}]"
         },
-
         {
-            "type": "uptime",
-            "key": "╰─󰅐",
-            "keyColor": "blue"
+            "type": "memory",
+            "key": "│  󰍛  Memory    ",
+            "keyColor": "38;2;134;239;172"
         },
-
-        "break",
-        
         {
-            "type": "media",
-            "key": "󰝚  Playing",
-            "keyColor": "blue"
+            "type": "disk",
+            "key": "│  󰋊  Disk      ",
+            "keyColor": "38;2;134;239;172",
+            "folders": "/",
+            "format": "{size-used} / {size-total} ({size-percentage})"
         },
-
+        {
+            "type": "battery",
+            "key": "│  󰁹  Battery   ",
+            "keyColor": "38;2;134;239;172"
+        },
         "break",
-
         {
             "type": "custom",
-            "format": "               {#33}   {#34}   {#33}   {#34}   {#33}   {#34}   {#35}   {#34}  "
+            "format": "{#38;2;253;224;71}╭─ Now"
+        },
+        {
+            "type": "localip",
+            "key": "│  󰩟  Network   ",
+            "keyColor": "38;2;253;224;71",
+            "format": "{ifname} {ipv4}"
+        },
+        {
+            "type": "media",
+            "key": "│  󰝚  Playing   ",
+            "keyColor": "38;2;253;224;71",
+            "format": "{artist} - {title}"
+        },
+        "break",
+        {
+            "type": "colors",
+            "symbol": "circle",
+            "paddingLeft": 2
         }
     ]
 }
