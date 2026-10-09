@@ -296,7 +296,11 @@ OverlayWindow {
                 ConfirmButton {
                     id: wipe
 
-                    onConfirmed: Settings.clearClipboard()
+                    // Closes too: the notice sits under this overlay.
+                    onConfirmed: {
+                        Settings.clearClipboard();
+                        Launcher.open = false;
+                    }
 
                     anchors {
                         top: parent.top
