@@ -107,6 +107,8 @@ Singleton {
     readonly property real pressScale: 0.92
     // Where an opening surface grows from, as a fraction of its full size.
     readonly property real popScale: 0.94
+    // A control that cannot be used right now.
+    readonly property real disabledOpacity: 0.4
     // A countdown number lands from this size.
     readonly property real landScale: 1.6
     // How out of focus a surface is when it starts to arrive (MotionBlur).

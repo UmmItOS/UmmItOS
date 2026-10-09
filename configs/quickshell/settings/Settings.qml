@@ -54,7 +54,6 @@ Singleton {
 
     property bool clipboardHistory: true
     property int clipboardClearMinutes: 0
-    property int clipboardClearRevision: 0
     property var clipboardPolicyPending: null
 
     // Newest first: {name, path, size, time}.
@@ -88,7 +87,6 @@ Singleton {
         Launcher.clipboardHistory = clipboardHistory;
         privacyConf.setText(["history=" + (clipboardHistory ? 1 : 0), "clear_minutes=" + clipboardClearMinutes].join("\n") + "\n");
         if (key === "clipboardHistory" && !clipboardHistory) {
-            clipboardClearRevision++;
             Launcher.forgetClipboard();
             runClipboardPolicy("clear", "");
         }
@@ -97,7 +95,6 @@ Singleton {
     }
 
     function clearClipboard(): void {
-        clipboardClearRevision++;
         Launcher.forgetClipboard();
         runClipboardPolicy("clear", "");
     }

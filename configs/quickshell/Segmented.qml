@@ -21,6 +21,11 @@ Item {
         Qt.callLater(() => settled = true)
 
     implicitHeight: Theme.control.field
+    opacity: root.enabled ? 1 : Theme.disabledOpacity
+
+    Behavior on opacity {
+        FastFade {}
+    }
 
     Rectangle {
         anchors.fill: parent

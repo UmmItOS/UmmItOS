@@ -389,7 +389,6 @@
     "5 min": "5 分鐘",
     "15 min": "15 分鐘",
     "1 hour": "1 小時",
-    "History saved before this update may contain sensitive items. Clear it once.": "此更新前儲存的記錄可能包含敏感內容，請清除一次。",
     "Wayland does not reveal which app copied an item, so per-app exclusions are unavailable.": "Wayland 不會透露是哪個應用程式複製了項目，因此無法依應用程式排除。",
     "Clear clipboard now": "立即清除剪貼簿",
     "Could not apply clipboard privacy settings": "無法套用剪貼簿隱私權設定",

@@ -89,7 +89,7 @@ ColumnLayout {
 
     Setting {
         title: I18n.t("Clear automatically")
-        hint: Settings.clipboardClearMinutes === 0 ? I18n.t("Copied items stay until you clear them.") : I18n.t("Clear the history after the last copied item.")
+        hint: !Settings.clipboardHistory ? I18n.t("Clipboard history is off") : Settings.clipboardClearMinutes === 0 ? I18n.t("Copied items stay until you clear them.") : I18n.t("Clear the history after the last copied item.")
 
         Segmented {
             onPicked: value => Settings.setClipboard("clipboardClearMinutes", value)
@@ -134,23 +134,13 @@ ColumnLayout {
 
                 Text {
                     Layout.fillWidth: true
-                    text: I18n.t("History saved before this update may contain sensitive items. Clear it once.")
+                    text: I18n.t("Wayland does not reveal which app copied an item, so per-app exclusions are unavailable.")
                     textFormat: Text.PlainText
                     wrapMode: Text.Wrap
                     color: Theme.fg
                     font.family: Theme.font
                     font.pixelSize: Theme.fontSize.small
                     font.weight: Theme.weight.medium
-                }
-
-                Text {
-                    Layout.fillWidth: true
-                    text: I18n.t("Wayland does not reveal which app copied an item, so per-app exclusions are unavailable.")
-                    textFormat: Text.PlainText
-                    wrapMode: Text.Wrap
-                    color: Theme.dim
-                    font.family: Theme.font
-                    font.pixelSize: Theme.fontSize.small
                 }
             }
         }
