@@ -31,35 +31,36 @@ descs=()
 steps=()
 picked=()
 
-yes=0
-
-update_paru() {
-	local opts=()
-	((yes)) && opts+=(--noconfirm)
-	paru "${opts[@]}"
-}
+yes=()
+assume=0
 
 update_repos() {
 	local opts=()
-	((yes)) && opts+=(--noconfirm)
+	((assume)) && opts+=(--noconfirm)
 	paru -Syu --repo "${opts[@]}"
+}
+
+update_aur() {
+	local opts=()
+	((assume)) && opts+=(--noconfirm)
+	paru -Sua "${opts[@]}"
 }
 
 update_omz() { "$HOME/.oh-my-zsh/tools/upgrade.sh"; }
 
 update_flatpak() {
 	local opts=()
-	((yes)) && opts+=(-y)
+	((assume)) && opts+=(-y)
 	flatpak update "${opts[@]}"
 }
 
 if command -v paru &> /dev/null; then
-	labels+=('paru')
-	descs+=('Full upgrade: repos and AUR')
-	steps+=(update_paru)
-	labels+=('paru (repos)')
-	descs+=('Official repos only, AUR left alone')
+	labels+=('pacman')
+	descs+=('Official repos only')
 	steps+=(update_repos)
+	labels+=('AUR')
+	descs+=('AUR packages only')
+	steps+=(update_aur)
 fi
 if [[ -f $HOME/.oh-my-zsh/tools/upgrade.sh ]]; then
 	labels+=('oh-my-zsh')
@@ -73,6 +74,7 @@ if command -v flatpak &> /dev/null; then
 fi
 for i in "${!steps[@]}"; do
 	picked[i]=1
+	yes[i]=0
 done
 
 on_screen=0
@@ -187,6 +189,7 @@ read_key() {
 		' ') key=space ;;
 		'') key=enter ;;
 		a | A) key=all ;;
+		y | Y) key=yes ;;
 		q | Q | n | N) key=quit ;;
 		*) key=other ;;
 	esac
@@ -198,13 +201,13 @@ note=
 draw_select() {
 	local i inner labw=0 descw box name desc
 	local sel=$bg_sel$bold$fg_accent
-	local last=${#steps[@]}
+	local tag
 	measure
 	inner=$((width - 2))
 	for i in "${!labels[@]}"; do
 		((${#labels[i]} > labw)) && labw=${#labels[i]}
 	done
-	descw=$((inner - 10 - labw))
+	descw=$((inner - 19 - labw))
 	draw_banner
 	emit "${fg_text}${bold}What should be updated?"
 	emit ''
@@ -218,25 +221,15 @@ draw_select() {
 		else
 			box="${fg_mute}[ ]"
 		fi
+		tag='         '
+		((yes[i])) && tag='auto-yes '
+		tag=$fg_warn$tag
 		if ((i == cursor)); then
-			row "$sel ❯ $box$fg_accent $name  $fg_text$desc "
+			row "$sel ❯ $box$fg_accent $name  $fg_text$desc$tag"
 		else
-			row "   $box$reset $fg_text$name  $fg_mute$desc "
+			row "   $box$reset $fg_text$name  $fg_mute$desc$tag"
 		fi
 	done
-	blank_row
-	if ((yes)); then
-		box="${fg_warn}[✔]"
-	else
-		box="${fg_mute}[ ]"
-	fi
-	printf -v name '%-*s' "$labw" 'No confirm'
-	printf -v desc '%-*.*s' "$descw" "$descw" 'No prompts: --noconfirm, -y'
-	if ((cursor == last)); then
-		row "$sel ❯ $box$fg_accent $name  $fg_text$desc "
-	else
-		row "   $box$reset $fg_text$name  $fg_mute$desc "
-	fi
 	blank_row
 	bottom
 	emit ''
@@ -245,12 +238,12 @@ draw_select() {
 	else
 		emit ''
 	fi
-	hint '↑/↓ move · space tick · a all/none · enter run · q quit'
+	hint '↑/↓ move · space tick · y auto-yes · a all/none · enter run'
 	flush
 }
 
 select_steps() {
-	local i any count=$((${#steps[@]} + 1))
+	local i any count=${#steps[@]}
 	note=
 	while true; do
 		draw_select
@@ -259,11 +252,12 @@ select_steps() {
 		case $key in
 			up) ((cursor = (cursor + count - 1) % count)) ;;
 			down) ((cursor = (cursor + 1) % count)) ;;
-			space)
-				if ((cursor == count - 1)); then
-					((yes = !yes))
+			space) ((picked[cursor] = !picked[cursor])) ;;
+			yes)
+				if [[ ${steps[cursor]} == update_omz ]]; then
+					note='oh-my-zsh has nothing to confirm.'
 				else
-					((picked[cursor] = !picked[cursor]))
+					((yes[cursor] = !yes[cursor]))
 				fi
 				;;
 			all)
@@ -317,6 +311,7 @@ run_steps() {
 		printf '%s%s%s\n' "$fg_accent" "${labels[i]}" "$reset"
 		printf '%s%s%s\n\n' "$fg_mute" "$rule" "$reset"
 		step_start=$SECONDS
+		assume=${yes[i]}
 		"${steps[i]}"
 		rc=$?
 		res_label+=("${labels[i]}")
