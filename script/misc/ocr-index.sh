@@ -41,7 +41,7 @@ index_one() {
 	rm -f -- "$tmp"
 }
 
-# Off in Settings > Wipe: read nothing, and leave no table behind.
+# Off in Settings > Anti-forensics: read nothing, and leave no table behind.
 if grep -qx 'ocr=0' "${XDG_CONFIG_HOME:-$HOME/.config}/ummitos/privacy.conf" \
 	2> /dev/null; then
 	exit 0

@@ -137,7 +137,7 @@ Super+F (`Gallery` singleton, `screenshot/GalleryWindow.qml`) shows every pictur
 
 ### Wipe
 
-Settings → Wipe (`settings/WipePage.qml`) lists what the desktop remembers, per kind, with the file paths and sizes found live (`script/misc/wipe-traces.sh --list`), and overwrites then deletes the ticked ones (`shred -n N -z -u`). The shell forgets the in-memory copies first (`FileChanges.forget()`, `Launcher.forgetLaunches()`, `forgetClipboard()`), or it would write them back. A new kind of stored trace is a new `wipe_<name>` function in the script plus a card in the page. The page says plainly that copy-on-write file systems (btrfs) and SSDs can keep old copies; **never run the script without `--list` to test it against the real home folder**: it deletes for good.
+Settings → Anti-forensics (`settings/WipePage.qml`) lists what the desktop remembers, per kind, with the file paths and sizes found live (`script/misc/wipe-traces.sh --list`), and overwrites then deletes the ticked ones (`shred -n N -z -u`). The shell forgets the in-memory copies first (`FileChanges.forget()`, `Launcher.forgetLaunches()`, `forgetClipboard()`), or it would write them back. A new kind of stored trace is a new `wipe_<name>` function in the script plus a card in the page. The page says plainly that copy-on-write file systems (btrfs) and SSDs can keep old copies; **never run the script without `--list` to test it against the real home folder**: it deletes for good.
 
 ### Switcher and overview
 

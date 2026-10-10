@@ -432,8 +432,6 @@
     "Reading text from screenshots: %1 of %2": "讀取截圖文字：%1 / %2",
     "Type to search · Enter to copy or open · Esc to close": "輸入搜尋 · Enter 複製或開啟 · Esc 關閉"
 ,
-    "Wipe": "徹底清除",
-    "Wipe traces": "徹底清除痕跡",
     "Overwrites, then deletes, what the desktop remembers, so it cannot be read back from the files.": "先覆寫再刪除桌面記住的資料，讓檔案中無法再讀回。",
     "Search text in screenshots": "搜尋截圖內的文字",
     "Reads the text inside each new screenshot so the gallery can search it. Off reads nothing more.": "讀取每張新截圖中的文字，相簿才能搜尋。關閉後不再讀取。",
@@ -467,4 +465,6 @@
     "The wiper stopped with an error.": "清除程式發生錯誤而停止。",
     "Traces wiped": "痕跡已徹底清除",
     "Could not wipe the traces": "無法徹底清除痕跡"
+,
+    "Anti-forensics": "反鑑識"
 }

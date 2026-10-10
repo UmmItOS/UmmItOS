@@ -82,7 +82,7 @@ ColumnLayout {
         spacing: 0
 
         Text {
-            text: I18n.t("Wipe traces")
+            text: I18n.t("Anti-forensics")
             color: Theme.fg
             font.family: Theme.fontDisplay
             font.pixelSize: Theme.fontSize.larger

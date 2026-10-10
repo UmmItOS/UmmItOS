@@ -30,7 +30,7 @@ Singleton {
             icon: "privacy_tip"
         },
         {
-            name: "Wipe",
+            name: "Anti-forensics",
             icon: "mop"
         },
         {
