@@ -81,6 +81,8 @@ ShellRoot {
 
     ScreenshotWindow {}
 
+    GalleryWindow {}
+
     RecordWindow {}
 
     SettingsWindow {}

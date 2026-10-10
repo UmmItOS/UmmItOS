@@ -270,6 +270,8 @@ OverlayWindow {
 
                 BarPage {}
 
+                ScreenshotsPage {}
+
                 LanguagePage {}
 
                 AboutPage {}

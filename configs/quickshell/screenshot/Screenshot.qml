@@ -25,7 +25,7 @@ Singleton {
 
     readonly property string frozen: Quickshell.env("XDG_RUNTIME_DIR") + "/ummitos-shot.ppm"
 
-    readonly property string dir: Quickshell.env("HYPRSHOT_DIR") || Quickshell.env("HOME") + "/Pictures/Screenshots"
+    readonly property string dir: Settings.shotDir
 
     // When the last shot went to the clipboard, so its copy pill stays quiet.
     property real delivered: 0

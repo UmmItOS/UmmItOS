@@ -34,6 +34,10 @@ Singleton {
             icon: "toolbar"
         },
         {
+            name: "Screenshots",
+            icon: "screenshot_region"
+        },
+        {
             name: "Language",
             icon: "translate"
         },
@@ -57,6 +61,12 @@ Singleton {
     property bool cursor: true
 
     readonly property string barFile: (Quickshell.env("XDG_CONFIG_HOME") || home + "/.config") + "/ummitos/bar.conf"
+
+    readonly property string shotFile: (Quickshell.env("XDG_CONFIG_HOME") || home + "/.config") + "/ummitos/screenshot.conf"
+
+    // Empty is the default: HYPRSHOT_DIR, else ~/Pictures/Screenshots.
+    property string shotFolder: ""
+    readonly property string shotDir: shotFolder !== "" ? shotFolder : Quickshell.env("HYPRSHOT_DIR") || home + "/Pictures/Screenshots"
 
     // Empty watches the shell's own folder.
     property string watchFolder: ""
@@ -91,6 +101,16 @@ Singleton {
         if (!p.startsWith("/"))
             return false;
         set("folder", p);
+        return true;
+    }
+
+    // False when it is not a full path, so the field can say so; empty goes back to the default.
+    function setShotFolder(path: string): bool {
+        const p = path.trim().replace(/^~(?=\/|$)/, home).replace(/\/+$/, "");
+        if (p !== "" && !p.startsWith("/"))
+            return false;
+        shotFolder = p;
+        shotConf.setText("folder=" + p + "\n");
         return true;
     }
 
@@ -219,6 +239,21 @@ Singleton {
         path: root.recordFile
         printErrors: false
         blockWrites: false
+    }
+
+    FileView {
+        id: shotConf
+
+        onLoaded: {
+            for (const line of text().split("\n")) {
+                if (line.startsWith("folder="))
+                    root.shotFolder = line.slice(7);
+            }
+        }
+
+        path: root.shotFile
+        printErrors: false
+        blockWrites: true
     }
 
     FileView {

@@ -336,6 +336,20 @@ Singleton {
         readonly property real activeScale: 1.04
     }
 
+    readonly property QtObject gallery: QtObject {
+        // A thumbnail's width at least; the grid widens them to fill the row.
+        readonly property int cellMin: 340
+        readonly property int minColumns: 3
+        // Height over width of a thumbnail.
+        readonly property real ratio: 0.5625
+        // The name and time under it.
+        readonly property int label: 52
+        // The newest this many are listed.
+        readonly property int max: 80
+        readonly property real glow: 0.5
+        readonly property real activeScale: 1.03
+    }
+
     readonly property QtObject clipboard: QtObject {
         readonly property int width: 980
         readonly property int height: 600

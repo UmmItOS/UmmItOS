@@ -412,4 +412,14 @@
     "%1 min ago": "%1 分鐘前",
     "%1 h ago": "%1 小時前",
     "%1 d ago": "%1 天前"
+,
+    "Screenshots": "螢幕截圖",
+    "Screenshot gallery": "螢幕截圖相簿",
+    "Where screenshots are saved, and what Super+F shows.": "螢幕截圖的儲存位置，也是 Super+F 顯示的資料夾。",
+    "Type a folder, then Enter. Empty uses the default.": "輸入資料夾後按 Enter。留空則使用預設值。",
+    "Open gallery": "開啟相簿",
+    "No screenshots yet": "目前還沒有截圖",
+    "Enter to copy · Esc to close": "按 Enter 複製 · Esc 關閉",
+    "%1 screenshots in %2": "%2 中有 %1 張截圖",
+    "Use a full path, like ~/Pictures": "請使用完整路徑，例如 ~/Pictures"
 }

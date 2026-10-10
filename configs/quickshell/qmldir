@@ -32,6 +32,7 @@ FlyoutSearching 1.0 FlyoutSearching.qml
 singleton Cava 1.0 services/Cava.qml
 singleton Cheatsheet 1.0 cheatsheet/Cheatsheet.qml
 singleton Screenshot 1.0 screenshot/Screenshot.qml
+singleton Gallery 1.0 screenshot/Gallery.qml
 singleton Lock 1.0 lock/Lock.qml
 singleton Wake 1.0 wake/Wake.qml
 singleton Audio 1.0 services/Audio.qml
