@@ -46,7 +46,7 @@ Singleton {
                             name: path.slice(path.lastIndexOf("/") + 1),
                             time: Number(l.slice(0, tab)) * 1000
                         };
-                    }).sort((a, b) => b.time - a.time).slice(0, Theme.gallery.max);
+                    }).sort((a, b) => b.time - a.time);
                 root.loading = false;
             }
         }

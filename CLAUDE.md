@@ -133,7 +133,7 @@ grep -A5 'name: "workspaces"' /usr/lib/qt6/qml/Quickshell/Hyprland/_Ipc/*.qmltyp
 
 ### Screenshot gallery
 
-Super+F (`Gallery` singleton, `screenshot/GalleryWindow.qml`) shows the newest `Theme.gallery.max` pictures of the screenshot folder as a full-screen grid; Enter or a click copies the picked one to the clipboard again and closes. The folder is Settings → Screenshots (`Settings.shotDir`, saved in `~/.config/ummitos/screenshot.conf`), which `Screenshot.dir` follows; empty means `HYPRSHOT_DIR`, else `~/Pictures/Screenshots`. Thumbnails decode at the cell's width, not full size.
+Super+F (`Gallery` singleton, `screenshot/GalleryWindow.qml`) shows every picture of the screenshot folder, newest first, as a full-screen grid whose cards fly in from scattered spots (PageUp, PageDown, Home and End jump); Enter or a click copies the picked one to the clipboard again and closes. The folder is Settings → Screenshots (`Settings.shotDir`, saved in `~/.config/ummitos/screenshot.conf`), which `Screenshot.dir` follows; empty means `HYPRSHOT_DIR`, else `~/Pictures/Screenshots`. Thumbnails decode at the cell's width, not full size.
 
 ### Switcher and overview
 

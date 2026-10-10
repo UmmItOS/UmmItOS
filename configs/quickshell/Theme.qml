@@ -344,8 +344,11 @@ Singleton {
         readonly property real ratio: 0.5625
         // The name and time under it.
         readonly property int label: 52
-        // The newest this many are listed.
-        readonly property int max: 80
+        // The cards fly in from scattered spots: a pause per card, how far they start (a share of the grid), the most they tilt, and how long a card created after opening still joins in.
+        readonly property int stagger: 22
+        readonly property real scatter: 0.9
+        readonly property int tilt: 40
+        readonly property int arrival: 1600
         readonly property real glow: 0.5
         readonly property real activeScale: 1.03
     }

@@ -15,14 +15,33 @@ OverlayWindow {
             Gallery.copy(shot.path);
     }
 
+    // The pseudo-random 0..1 of a card and a salt: the same card always starts in the same place.
+    function rnd(index: int, salt: real): real {
+        const v = Math.sin(index * 12.9898 + salt * 78.233) * 43758.5453;
+        return v - Math.floor(v);
+    }
+
+    // Cards made while the sheet arrives fly in; ones made by scrolling later just appear.
+    property bool arriving: false
+
     onOpened: {
         grid.currentIndex = 0;
+        arriving = true;
+        arrival.restart();
         scope.forceActiveFocus();
     }
 
     shown: Gallery.open
     name: "gallery"
     scrim: Theme.shade.heavy
+
+    Timer {
+        id: arrival
+
+        onTriggered: win.arriving = false
+
+        interval: Theme.gallery.arrival
+    }
 
     MouseArea {
         onClicked: Gallery.open = false
@@ -40,6 +59,21 @@ OverlayWindow {
         Keys.onDownPressed: grid.moveCurrentIndexDown()
         Keys.onReturnPressed: win.accept()
         Keys.onEnterPressed: win.accept()
+        Keys.onPressed: event => {
+            const page = Math.max(1, Math.floor(grid.height / grid.cellHeight)) * Math.floor(grid.width / grid.cellWidth);
+            const last = Gallery.shots.length - 1;
+            if (event.key === Qt.Key_PageDown)
+                grid.currentIndex = Math.min(last, grid.currentIndex + page);
+            else if (event.key === Qt.Key_PageUp)
+                grid.currentIndex = Math.max(0, grid.currentIndex - page);
+            else if (event.key === Qt.Key_Home)
+                grid.currentIndex = 0;
+            else if (event.key === Qt.Key_End)
+                grid.currentIndex = Math.max(0, last);
+            else
+                return;
+            event.accepted = true;
+        }
 
         anchors.fill: parent
         opacity: Math.min(1, win.reveal)
@@ -113,10 +147,52 @@ OverlayWindow {
                 required property int index
 
                 readonly property bool active: GridView.isCurrentItem
+                // 1 where it started, scattered; 0 in its place.
+                property real arrive: win.arriving ? 1 : 0
 
                 width: grid.cellWidth
                 height: grid.cellHeight
                 scale: cell.active ? Theme.gallery.activeScale : 1
+                opacity: 1 - cell.arrive
+                layer.enabled: cell.arrive > 0
+
+                layer.effect: MotionBlur {
+                    settled: 1 - cell.arrive
+                }
+
+                transform: [
+                    Translate {
+                        x: (win.rnd(cell.index, 1) - 0.5) * grid.width * Theme.gallery.scatter * cell.arrive
+                        y: (win.rnd(cell.index, 2) - 0.5) * grid.height * Theme.gallery.scatter * cell.arrive
+                    },
+                    Rotation {
+                        origin.x: cell.width / 2
+                        origin.y: cell.height / 2
+                        angle: (win.rnd(cell.index, 3) - 0.5) * 2 * Theme.gallery.tilt * cell.arrive
+                    }
+                ]
+
+                Component.onCompleted: {
+                    if (cell.arrive > 0)
+                        landing.start();
+                }
+
+                SequentialAnimation {
+                    id: landing
+
+                    PauseAnimation {
+                        duration: Theme.reduceMotion ? 0 : Math.min(cell.index, 40) * Theme.gallery.stagger
+                    }
+
+                    NumberAnimation {
+                        target: cell
+                        property: "arrive"
+                        to: 0
+                        duration: Theme.duration.expressiveDefaultSpatial * 2
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curve.expressiveDefaultSpatial
+                    }
+                }
 
                 Behavior on scale {
                     NumberAnimation {
