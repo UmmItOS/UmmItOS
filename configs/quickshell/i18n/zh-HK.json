@@ -426,4 +426,9 @@
     "Enter to copy or open · Backspace to go up · Esc to close": "撳 Enter 複製或開啟 · Backspace 返回上一層 · Esc 關閉"
 ,
     "Loading screenshots": "載入緊截圖"
+,
+    "Search the text inside screenshots": "喺截圖入面搵文字",
+    "%1 matches for %2": "「%2」有 %1 個相符",
+    "Reading text from screenshots: %1 of %2": "讀取截圖文字：%1 / %2",
+    "Type to search · Enter to copy or open · Esc to close": "打字搜尋 · Enter 複製或開啟 · Esc 關閉"
 }

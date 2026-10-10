@@ -70,7 +70,7 @@ Singleton {
     // Runs the capture command when given one, then copies and announces the file; detached, so a quick second shot is not dropped.
     function deliver(file: string, command: var): void {
         delivered = Date.now();
-        Quickshell.execDetached(["sh", "-c", 'd="$1" f="$2" ok="$3" bad="$4" why="$5"; shift 5; if [ $# -gt 0 ]; then { mkdir -p "$d" && "$@" "$f"; } || { notify-send -a Screenshot -u critical "$bad" "$why"; exit 1; }; fi; wl-copy --type image/png < "$f"; notify-send -a Screenshot -h string:image-path:"$f" "$ok" "$(basename "$f")"', "sh", root.dir, file, I18n.t("Screenshot saved"), I18n.t("Screenshot failed"), I18n.t("Could not save to %1").arg(root.dir), ...command]);
+        Quickshell.execDetached(["sh", "-c", 'd="$1" f="$2" ok="$3" bad="$4" why="$5"; shift 5; if [ $# -gt 0 ]; then { mkdir -p "$d" && "$@" "$f"; } || { notify-send -a Screenshot -u critical "$bad" "$why"; exit 1; }; fi; wl-copy --type image/png < "$f"; notify-send -a Screenshot -h string:image-path:"$f" "$ok" "$(basename "$f")"; ocr="$HOME/script/misc/ocr-index.sh"; [ -x "$ocr" ] && "$ocr" "$f" > /dev/null 2>&1', "sh", root.dir, file, I18n.t("Screenshot saved"), I18n.t("Screenshot failed"), I18n.t("Could not save to %1").arg(root.dir), ...command]);
     }
 
     // A window shot is saved by the shell itself (keeps transparency).

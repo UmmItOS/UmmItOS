@@ -22,6 +22,16 @@ Singleton {
 
     property string pending: ""
 
+    // Text typed in the search field; a picture matches when its read text contains it.
+    property string query: ""
+    // Whether the shown cards should fly in: a folder does, search results do not.
+    property bool flyIn: true
+    // How many pictures have their text read, out of how many there are.
+    property int indexed: 0
+    property int total: 0
+
+    readonly property string db: (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state") + "/ummitos/ocr.db"
+
     function toggle(): void {
         if (open) {
             open = false;
@@ -29,8 +39,30 @@ Singleton {
         }
         folder = Screenshot.dir;
         came = "";
+        query = "";
+        flyIn = true;
         load();
         open = true;
+        // Reads the text of any picture not yet read; it is a no-op while one run is going.
+        Quickshell.execDetached(["sh", "-c", 'd=$(readlink -f "$1"); for s in "$d/../../script/misc/ocr-index.sh" "$HOME/script/misc/ocr-index.sh"; do [ -x "$s" ] && exec nice -n 19 "$s"; done', "sh", Quickshell.shellDir]);
+        progress.restart();
+        count.running = true;
+    }
+
+    function setQuery(text: string): void {
+        query = text.trim();
+        if (query === "") {
+            flyIn = true;
+            load();
+            return;
+        }
+        flyIn = false;
+        shots = [];
+        loading = true;
+        const like = query.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_").replace(/'/g, "''");
+        find.running = false;
+        find.command = ["sqlite3", "-cmd", ".timeout 5000", "-separator", "\t", db, "SELECT path, mtime FROM shots WHERE text LIKE '%" + like + "%' ESCAPE '\\' ORDER BY mtime DESC LIMIT 2000"];
+        find.running = true;
     }
 
     function load(): void {
@@ -45,6 +77,7 @@ Singleton {
     function go(path: string, from: string): void {
         if (leaving)
             return;
+        flyIn = true;
         pending = path;
         came = from;
         leaving = true;
@@ -76,6 +109,51 @@ Singleton {
         }
 
         interval: Theme.duration.expressiveFastSpatial
+    }
+
+    // Pictures whose read text holds the query, from anywhere in the folder.
+    Process {
+        id: find
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                root.shots = text.split("\n").filter(l => l !== "").map(l => {
+                        const [path, stamp] = l.split("\t");
+                        return {
+                            kind: "file",
+                            path: path,
+                            name: path.slice(path.lastIndexOf("/") + 1),
+                            time: Number(stamp) * 1000
+                        };
+                    });
+                root.loading = false;
+                root.leaving = false;
+            }
+        }
+    }
+
+    // Progress of reading the pictures' text, while the gallery is open and it is unfinished.
+    Process {
+        id: count
+
+        command: ["sh", "-c", 'sqlite3 -cmd ".timeout 5000" "$2" "SELECT count(*) FROM shots" 2>/dev/null || echo 0; find "$1" -type f \\( -iname "*.png" -o -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.webp" \\) | wc -l', "sh", Screenshot.dir, root.db]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const [done, all] = text.trim().split("\n").map(Number);
+                root.indexed = done || 0;
+                root.total = all || 0;
+            }
+        }
+    }
+
+    Timer {
+        id: progress
+
+        onTriggered: count.running = true
+
+        interval: Theme.duration.toast / 2
+        running: root.open && root.indexed < root.total
+        repeat: true
     }
 
     Process {

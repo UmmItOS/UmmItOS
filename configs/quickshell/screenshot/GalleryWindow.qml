@@ -33,11 +33,14 @@ OverlayWindow {
     readonly property var shots: Gallery.shots
     readonly property int pictures: shots.filter(s => s.kind === "file").length
 
+    readonly property bool searching: Gallery.query !== ""
+
     onOpened: {
         grid.currentIndex = 0;
         arriving = true;
         arrival.restart();
-        scope.forceActiveFocus();
+        search.text = "";
+        search.forceActiveFocus();
     }
 
     shown: Gallery.open
@@ -51,11 +54,22 @@ OverlayWindow {
                 return;
             const at = Gallery.shots.findIndex(s => s.path === Gallery.came);
             grid.currentIndex = at >= 0 ? at : 0;
-            win.arriving = true;
+            win.arriving = Gallery.flyIn;
             arrival.restart();
         }
 
         target: Gallery
+    }
+
+    Timer {
+        id: debounce
+
+        onTriggered: {
+            if (search.text.trim() !== Gallery.query)
+                Gallery.setQuery(search.text);
+        }
+
+        interval: Theme.duration.decodeDebounce
     }
 
     Timer {
@@ -75,14 +89,6 @@ OverlayWindow {
     FocusScope {
         id: scope
 
-        Keys.onEscapePressed: Gallery.open = false
-        Keys.onBackPressed: Gallery.up()
-        Keys.onLeftPressed: grid.moveCurrentIndexLeft()
-        Keys.onRightPressed: grid.moveCurrentIndexRight()
-        Keys.onUpPressed: grid.moveCurrentIndexUp()
-        Keys.onDownPressed: grid.moveCurrentIndexDown()
-        Keys.onReturnPressed: win.accept()
-        Keys.onEnterPressed: win.accept()
         Keys.onPressed: event => {
             const page = Math.max(1, Math.floor(grid.height / grid.cellHeight)) * Math.floor(grid.width / grid.cellWidth);
             const last = Gallery.shots.length - 1;
@@ -94,8 +100,6 @@ OverlayWindow {
                 grid.currentIndex = 0;
             else if (event.key === Qt.Key_End)
                 grid.currentIndex = Math.max(0, last);
-            else if (event.key === Qt.Key_Backspace)
-                Gallery.up();
             else
                 return;
             event.accepted = true;
@@ -131,7 +135,7 @@ OverlayWindow {
             Text {
                 Layout.fillWidth: true
                 textFormat: Text.PlainText
-                text: I18n.t("%1 screenshots in %2").arg(win.pictures).arg(Settings.tilde(Gallery.folder))
+                text: win.searching ? I18n.t("%1 matches for %2").arg(win.pictures).arg(Gallery.query) : I18n.t("%1 screenshots in %2").arg(win.pictures).arg(Settings.tilde(Gallery.folder))
                 color: Theme.dim
                 elide: Text.ElideMiddle
                 font.family: Theme.font
@@ -139,6 +143,115 @@ OverlayWindow {
                 font.weight: Theme.weight.medium
                 font.letterSpacing: Theme.tracking.wide
                 opacity: Gallery.loading ? 0 : 1
+            }
+
+            // Type to search the text inside the pictures.
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.topMargin: Theme.spacing.medium
+                implicitHeight: Theme.control.pill
+                radius: Theme.rounding.full
+                color: Theme.bgTray
+
+                MaterialIcon {
+                    id: lens
+
+                    anchors {
+                        left: parent.left
+                        leftMargin: Theme.spacing.large
+                        verticalCenter: parent.verticalCenter
+                    }
+
+                    text: "search"
+                    color: Theme.dim
+                    size: Theme.icon.small
+                }
+
+                TextInput {
+                    id: search
+
+                    Keys.onEscapePressed: {
+                        if (text !== "")
+                            text = "";
+                        else
+                            Gallery.open = false;
+                    }
+
+                    Keys.onLeftPressed: grid.moveCurrentIndexLeft()
+                    Keys.onRightPressed: grid.moveCurrentIndexRight()
+                    Keys.onUpPressed: grid.moveCurrentIndexUp()
+                    Keys.onDownPressed: grid.moveCurrentIndexDown()
+                    Keys.onReturnPressed: win.accept()
+                    Keys.onEnterPressed: win.accept()
+                    Keys.onPressed: event => {
+                        if (event.key === Qt.Key_Backspace && text === "") {
+                            Gallery.up();
+                            event.accepted = true;
+                        }
+                    }
+
+                    onTextChanged: debounce.restart()
+
+                    anchors {
+                        left: lens.right
+                        right: parent.right
+                        leftMargin: Theme.spacing.medium
+                        rightMargin: Theme.spacing.large
+                        verticalCenter: parent.verticalCenter
+                    }
+
+                    color: Theme.fg
+                    selectByMouse: true
+                    clip: true
+                    focus: true
+                    font.family: Theme.font
+                    font.pixelSize: Theme.fontSize.normal
+
+                    Text {
+                        anchors.fill: parent
+                        verticalAlignment: Text.AlignVCenter
+                        visible: search.text === ""
+                        text: I18n.t("Search the text inside screenshots")
+                        color: Theme.dim
+                        font: search.font
+                    }
+                }
+            }
+
+            // How far the reading of every picture's text has got.
+            Item {
+                id: reading
+
+                readonly property real done: Gallery.total > 0 ? Gallery.indexed / Gallery.total : 1
+
+                Layout.fillWidth: true
+                implicitHeight: readingText.implicitHeight
+                opacity: done < 1 ? 1 : 0
+                visible: opacity > 0
+                layer.enabled: opacity < 1
+
+                layer.effect: MotionBlur {
+                    settled: reading.opacity
+                }
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: Theme.duration.expressiveDefaultEffects
+                    }
+                }
+
+                Text {
+                    id: readingText
+
+                    textFormat: Text.PlainText
+                    text: I18n.t("Reading text from screenshots: %1 of %2").arg(Gallery.indexed).arg(Gallery.total)
+                    color: Theme.dim
+                    font.family: Theme.font
+                    font.pixelSize: Theme.fontSize.small
+                    font.features: ({
+                            tnum: 1
+                        })
+                }
             }
         }
 
@@ -408,7 +521,7 @@ OverlayWindow {
             anchors.fill: grid
             visible: !Gallery.loading && !Gallery.leaving && Gallery.shots.length === 0
             icon: "screenshot_region"
-            text: I18n.t("No screenshots yet")
+            text: win.searching ? I18n.t("No match") : I18n.t("No screenshots yet")
         }
 
         Text {
@@ -420,7 +533,7 @@ OverlayWindow {
                 bottomMargin: Theme.spacing.extraLarge
             }
 
-            text: I18n.t("Enter to copy or open · Backspace to go up · Esc to close")
+            text: I18n.t("Type to search · Enter to copy or open · Esc to close")
             color: Theme.dim
             font.family: Theme.font
             font.pixelSize: Theme.fontSize.smaller
