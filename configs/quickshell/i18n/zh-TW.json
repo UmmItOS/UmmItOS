@@ -422,4 +422,8 @@
     "Enter to copy · Esc to close": "按 Enter 複製 · Esc 關閉",
     "%1 screenshots in %2": "%2 中有 %1 張截圖",
     "Use a full path, like ~/Pictures": "請使用完整路徑，例如 ~/Pictures"
+,
+    "Enter to copy or open · Backspace to go up · Esc to close": "按 Enter 複製或開啟 · Backspace 回上一層 · Esc 關閉"
+,
+    "Loading screenshots": "載入截圖中"
 }

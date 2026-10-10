@@ -351,6 +351,8 @@ Singleton {
         readonly property int arrival: 1600
         readonly property real glow: 0.5
         readonly property real activeScale: 1.03
+        // How big the grid grows while it leaves for the folder you opened.
+        readonly property real enterScale: 1.12
     }
 
     readonly property QtObject clipboard: QtObject {

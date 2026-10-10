@@ -9,10 +9,17 @@ import ".."
 OverlayWindow {
     id: win
 
+    // A picture is copied again; a folder is entered; the up card goes back.
     function accept(): void {
         const shot = Gallery.shots[grid.currentIndex];
-        if (shot)
+        if (!shot || Gallery.leaving)
+            return;
+        if (shot.kind === "file")
             Gallery.copy(shot.path);
+        else if (shot.kind === "dir")
+            Gallery.enter(shot.path);
+        else
+            Gallery.up();
     }
 
     // The pseudo-random 0..1 of a card and a salt: the same card always starts in the same place.
@@ -23,6 +30,8 @@ OverlayWindow {
 
     // Cards made while the sheet arrives fly in; ones made by scrolling later just appear.
     property bool arriving: false
+    readonly property var shots: Gallery.shots
+    readonly property int pictures: shots.filter(s => s.kind === "file").length
 
     onOpened: {
         grid.currentIndex = 0;
@@ -34,6 +43,20 @@ OverlayWindow {
     shown: Gallery.open
     name: "gallery"
     scrim: Theme.shade.heavy
+
+    // A new folder's cards arrive like the first ones, and the folder just left is picked.
+    Connections {
+        function onShotsChanged(): void {
+            if (!Gallery.open || Gallery.loading)
+                return;
+            const at = Gallery.shots.findIndex(s => s.path === Gallery.came);
+            grid.currentIndex = at >= 0 ? at : 0;
+            win.arriving = true;
+            arrival.restart();
+        }
+
+        target: Gallery
+    }
 
     Timer {
         id: arrival
@@ -53,6 +76,7 @@ OverlayWindow {
         id: scope
 
         Keys.onEscapePressed: Gallery.open = false
+        Keys.onBackPressed: Gallery.up()
         Keys.onLeftPressed: grid.moveCurrentIndexLeft()
         Keys.onRightPressed: grid.moveCurrentIndexRight()
         Keys.onUpPressed: grid.moveCurrentIndexUp()
@@ -70,6 +94,8 @@ OverlayWindow {
                 grid.currentIndex = 0;
             else if (event.key === Qt.Key_End)
                 grid.currentIndex = Math.max(0, last);
+            else if (event.key === Qt.Key_Backspace)
+                Gallery.up();
             else
                 return;
             event.accepted = true;
@@ -105,7 +131,7 @@ OverlayWindow {
             Text {
                 Layout.fillWidth: true
                 textFormat: Text.PlainText
-                text: I18n.t("%1 screenshots in %2").arg(Gallery.shots.length).arg(Settings.tilde(Screenshot.dir))
+                text: I18n.t("%1 screenshots in %2").arg(win.pictures).arg(Settings.tilde(Gallery.folder))
                 color: Theme.dim
                 elide: Text.ElideMiddle
                 font.family: Theme.font
@@ -131,6 +157,10 @@ OverlayWindow {
             }
 
             clip: true
+            opacity: Gallery.leaving ? 0 : 1
+            // The cards rush toward you as the folder opens.
+            scale: Gallery.leaving ? Theme.gallery.enterScale : 1
+            transformOrigin: Item.Center
             cellWidth: Math.floor(width / Math.max(Theme.gallery.minColumns, Math.floor(width / Theme.gallery.cellMin)))
             cellHeight: Math.round(cellWidth * Theme.gallery.ratio) + Theme.gallery.label
             model: Gallery.shots
@@ -140,6 +170,18 @@ OverlayWindow {
             preferredHighlightBegin: cellHeight
             preferredHighlightEnd: height - cellHeight * 2
 
+            Behavior on opacity {
+                FastFade {}
+            }
+
+            Behavior on scale {
+                NumberAnimation {
+                    duration: Theme.duration.expressiveFastSpatial
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Gallery.leaving ? Theme.curve.emphasizedAccel : Theme.curve.emphasizedDecel
+                }
+            }
+
             delegate: Item {
                 id: cell
 
@@ -147,6 +189,7 @@ OverlayWindow {
                 required property int index
 
                 readonly property bool active: GridView.isCurrentItem
+                readonly property bool isFile: modelData.kind === "file"
                 // 1 where it started, scattered; 0 in its place.
                 property real arrive: win.arriving ? 1 : 0
 
@@ -242,17 +285,41 @@ OverlayWindow {
                         radius: Theme.rounding.large
                         color: Theme.bgAlt
 
+                        MaterialIcon {
+                            anchors.centerIn: parent
+                            visible: !cell.isFile
+                            text: cell.modelData.kind === "up" ? "arrow_upward" : "folder"
+                            color: cell.active ? Theme.accentText : Theme.dim
+                            size: Theme.icon.huge
+                            fill: 1
+
+                            Behavior on color {
+                                FastColor {}
+                            }
+                        }
+
+                        // Sharpens out of a blur as it decodes.
                         Image {
+                            id: thumb
+
                             anchors.fill: parent
-                            source: "file://" + cell.modelData.path
+                            visible: cell.isFile
+                            source: cell.isFile ? "file://" + cell.modelData.path : ""
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: true
                             cache: false
                             sourceSize.width: grid.cellWidth * 2
                             opacity: status === Image.Ready ? 1 : 0
+                            layer.enabled: opacity < 1
+
+                            layer.effect: MotionBlur {
+                                settled: thumb.opacity
+                            }
 
                             Behavior on opacity {
-                                FastFade {}
+                                NumberAnimation {
+                                    duration: Theme.duration.expressiveDefaultEffects
+                                }
                             }
                         }
                     }
@@ -264,7 +331,7 @@ OverlayWindow {
                         Text {
                             Layout.fillWidth: true
                             textFormat: Text.PlainText
-                            text: cell.modelData.name
+                            text: cell.modelData.kind === "up" ? I18n.t("Back") : cell.modelData.name
                             color: cell.active ? Theme.fg : Theme.dim
                             elide: Text.ElideMiddle
                             font.family: Theme.font
@@ -273,6 +340,7 @@ OverlayWindow {
                         }
 
                         Text {
+                            visible: cell.isFile
                             textFormat: Text.PlainText
                             text: Qt.formatDateTime(new Date(cell.modelData.time), I18n.t("d MMM, HH:mm"))
                             color: Theme.dim
@@ -300,9 +368,45 @@ OverlayWindow {
             }
         }
 
+        // While the folder is read: a spinner that sharpens in and blurs out.
+        Column {
+            id: loader
+
+            anchors.centerIn: grid
+            spacing: Theme.spacing.medium
+            opacity: Gallery.loading || Gallery.leaving ? 1 : 0
+            visible: opacity > 0
+            layer.enabled: opacity < 1
+
+            layer.effect: MotionBlur {
+                settled: loader.opacity
+            }
+
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: Theme.duration.expressiveDefaultEffects
+                }
+            }
+
+            Spinner {
+                anchors.horizontalCenter: parent.horizontalCenter
+                size: Theme.icon.huge
+            }
+
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: I18n.t("Loading screenshots")
+                color: Theme.dim
+                font.family: Theme.font
+                font.pixelSize: Theme.fontSize.smaller
+                font.weight: Theme.weight.medium
+                font.letterSpacing: Theme.tracking.wide
+            }
+        }
+
         FlyoutEmpty {
             anchors.fill: grid
-            visible: !Gallery.loading && Gallery.shots.length === 0
+            visible: !Gallery.loading && !Gallery.leaving && Gallery.shots.length === 0
             icon: "screenshot_region"
             text: I18n.t("No screenshots yet")
         }
@@ -316,7 +420,7 @@ OverlayWindow {
                 bottomMargin: Theme.spacing.extraLarge
             }
 
-            text: I18n.t("Enter to copy · Esc to close")
+            text: I18n.t("Enter to copy or open · Backspace to go up · Esc to close")
             color: Theme.dim
             font.family: Theme.font
             font.pixelSize: Theme.fontSize.smaller
