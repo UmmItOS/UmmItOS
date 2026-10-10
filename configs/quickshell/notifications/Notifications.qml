@@ -384,8 +384,9 @@ Scope {
                         implicitWidth: Theme.control.thumbWidth
                         implicitHeight: Theme.control.thumbHeight
                         radius: Theme.rounding.medium
-                        color: "transparent"
-                        visible: preview.status === Image.Ready
+                        color: Theme.bgTray
+                        // The slot is kept while the picture loads: a card that grew late left the one below on top of it.
+                        visible: (card.kept.image ?? "") !== "" && preview.status !== Image.Error
 
                         Image {
                             id: preview
@@ -396,6 +397,11 @@ Scope {
                             asynchronous: true
                             sourceSize.width: Theme.control.thumbWidth * 2
                             sourceSize.height: Theme.control.thumbHeight * 2
+                            opacity: status === Image.Ready ? 1 : 0
+
+                            Behavior on opacity {
+                                FastFade {}
+                            }
                         }
                     }
 
