@@ -92,6 +92,11 @@ Singleton {
         clearDecode();
     }
 
+    // Drops the launch counts from memory, ahead of a wipe of their file.
+    function forgetLaunches(): void {
+        launches = ({});
+    }
+
     function copy(id: string): void {
         if (!open || !clipboardHistory)
             return;

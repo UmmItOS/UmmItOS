@@ -58,7 +58,7 @@ Scope {
         // The screenshot tool has its own shutter, like an app with its own sound.
         if (app === "screenshot")
             sound = "screenshot";
-        else if (["color picker", "screen recording", "update", "wi-fi", "bluetooth", "clipboard", "packages"].includes(app))
+        else if (["color picker", "screen recording", "update", "wi-fi", "bluetooth", "clipboard", "packages", "privacy"].includes(app))
             sound = "notice";
         else if (!ownSound && !charging)
             sound = "notification";

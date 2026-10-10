@@ -44,7 +44,8 @@ Singleton {
         load();
         open = true;
         // Reads the text of any picture not yet read; it is a no-op while one run is going.
-        Quickshell.execDetached(["sh", "-c", 'd=$(readlink -f "$1"); for s in "$d/../../script/misc/ocr-index.sh" "$HOME/script/misc/ocr-index.sh"; do [ -x "$s" ] && exec nice -n 19 "$s"; done', "sh", Quickshell.shellDir]);
+        if (Settings.ocrEnabled)
+            Quickshell.execDetached(["sh", "-c", 'd=$(readlink -f "$1"); for s in "$d/../../script/misc/ocr-index.sh" "$HOME/script/misc/ocr-index.sh"; do [ -x "$s" ] && exec nice -n 19 "$s"; done', "sh", Quickshell.shellDir]);
         progress.restart();
         count.running = true;
     }

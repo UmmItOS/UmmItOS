@@ -41,6 +41,12 @@ index_one() {
 	rm -f -- "$tmp"
 }
 
+# Off in Settings > Wipe: read nothing, and leave no table behind.
+if grep -qx 'ocr=0' "${XDG_CONFIG_HOME:-$HOME/.config}/ummitos/privacy.conf" \
+	2> /dev/null; then
+	exit 0
+fi
+
 mkdir -p "$state"
 sql 'PRAGMA journal_mode = WAL;' > /dev/null
 sql 'CREATE TABLE IF NOT EXISTS shots

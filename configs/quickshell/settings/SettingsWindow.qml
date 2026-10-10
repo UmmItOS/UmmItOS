@@ -268,6 +268,8 @@ OverlayWindow {
 
                 PrivacyPage {}
 
+                WipePage {}
+
                 BarPage {}
 
                 ScreenshotsPage {}

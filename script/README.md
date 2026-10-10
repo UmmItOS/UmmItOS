@@ -14,6 +14,7 @@ hypridle call out to.
 | `misc/update.sh` | the bar's update button, Super+Shift+Return, the update reminder: a terminal menu to tick pacman, AUR, oh-my-zsh and flatpak (only what is installed), with an auto-yes toggle per row |
 | `misc/install-packages.sh` | the Settings → Packages page, with the packages it found missing |
 | `misc/ocr-index.sh` | the screenshot gallery on open, and each new screenshot: reads the text inside pictures into a SQLite table the gallery searches |
+| `misc/wipe-traces.sh` | Settings > Wipe: `--list` shows every file it would remove, then it overwrites each with `shred` (several passes, then zeros) and deletes it |
 | `misc/launch.sh` | every `run()` in `shortcuts.lua`: names the missing program in a notice |
 | `misc/screen-record.sh` | Super+Shift+R, through the shell's recording dialog |
 | `misc/mic-check.sh` | `screen-record.sh` and the shell after each wake; fails when the mic is stuck |

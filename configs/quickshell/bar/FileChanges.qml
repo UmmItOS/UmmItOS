@@ -18,6 +18,12 @@ Singleton {
     readonly property var last: entries.length > 0 ? entries[0] : null
     readonly property bool recent: quiet.running
 
+    // Drops the list from memory and the pending write, ahead of a wipe of its file.
+    function forget(): void {
+        save.stop();
+        entries = [];
+    }
+
     function record(glyph: string, path: string, time: real, live: bool): void {
         const list = entries.slice();
         const top = list[0];

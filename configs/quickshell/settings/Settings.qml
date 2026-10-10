@@ -30,6 +30,10 @@ Singleton {
             icon: "privacy_tip"
         },
         {
+            name: "Wipe",
+            icon: "mop"
+        },
+        {
             name: "Bar",
             icon: "toolbar"
         },
@@ -73,6 +77,15 @@ Singleton {
     property bool watchShow: true
     property bool watchMissing: false
     property string watchPending: ""
+
+    // Whether the gallery's search reads the text inside new screenshots.
+    property bool ocrEnabled: true
+
+    // What the wiper would remove, by name: {ocr: [{path, bytes}], ...}, and the file system they sit on.
+    property var traces: ({})
+    property string traceFs: ""
+    property bool wiping: false
+    property string wipeResult: ""
 
     property bool clipboardHistory: true
     property int clipboardClearMinutes: 0
@@ -135,10 +148,52 @@ Singleton {
         return true;
     }
 
+    function writePrivacy(): void {
+        privacyConf.setText(["history=" + (clipboardHistory ? 1 : 0), "clear_minutes=" + clipboardClearMinutes, "ocr=" + (ocrEnabled ? 1 : 0)].join("\n") + "\n");
+    }
+
+    function setOcr(on: bool): void {
+        ocrEnabled = on;
+        writePrivacy();
+    }
+
+    // The wiper script: the repo's copy when the shell runs from it, else the installed one.
+    function wiperCommand(args: var): var {
+        return ["sh", "-c", 'd=$(readlink -f "$1"); shift; for s in "$d/../../script/misc/wipe-traces.sh" "$HOME/script/misc/wipe-traces.sh"; do [ -x "$s" ] && exec "$s" "$@"; done; exit 127', "sh", Quickshell.shellDir].concat(args);
+    }
+
+    function scanTraces(): void {
+        if (traceScan.running || wiping)
+            return;
+        traceScan.command = wiperCommand(["--list", "ocr", "clipboard", "changes", "launches", "place", "temp"]);
+        traceScan.running = true;
+    }
+
+    // Forgets what the shell holds in memory first, so nothing writes it back after the shred.
+    function wipe(names: var, passes: int): void {
+        if (wiping || names.length === 0)
+            return;
+        wiping = true;
+        wipeResult = "";
+        if (names.includes("changes"))
+            FileChanges.forget();
+        if (names.includes("launches"))
+            Launcher.forgetLaunches();
+        if (names.includes("clipboard"))
+            Launcher.forgetClipboard();
+        if (names.includes("place"))
+            Weather.setLocation("");
+        if (names.includes("ocr"))
+            Gallery.indexed = 0;
+        wiper.counts = ({});
+        wiper.command = wiperCommand(["--passes", String(passes)].concat(names));
+        wiper.running = true;
+    }
+
     function setClipboard(key: string, value: var): void {
         root[key] = value;
         Launcher.clipboardHistory = clipboardHistory;
-        privacyConf.setText(["history=" + (clipboardHistory ? 1 : 0), "clear_minutes=" + clipboardClearMinutes].join("\n") + "\n");
+        writePrivacy();
         if (key === "clipboardHistory" && !clipboardHistory) {
             Launcher.forgetClipboard();
             runClipboardPolicy("clear", "");
@@ -241,6 +296,57 @@ Singleton {
         blockWrites: false
     }
 
+    Process {
+        id: traceScan
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const found = {};
+                let fs = "";
+                for (const line of text.split("\n")) {
+                    const [kind, a, b, c] = line.split("\t");
+                    if (kind === "fs")
+                        fs = a;
+                    else if (kind === "file") {
+                        found[a] = (found[a] ?? []).concat([
+                            {
+                                path: b,
+                                bytes: Number(c)
+                            }
+                        ]);
+                    }
+                }
+                root.traces = found;
+                root.traceFs = fs;
+            }
+        }
+    }
+
+    Process {
+        id: wiper
+
+        property var counts: ({})
+
+        stdout: SplitParser {
+            onRead: line => {
+                const [kind, name, n] = line.split("\t");
+                if (kind === "wiped") {
+                    const next = Object.assign({}, wiper.counts);
+                    next[name] = Number(n);
+                    wiper.counts = next;
+                }
+            }
+        }
+
+        onExited: code => {
+            root.wiping = false;
+            const total = Object.values(counts).reduce((sum, n) => sum + n, 0);
+            root.wipeResult = code === 0 ? I18n.t("%1 files overwritten and removed.").arg(total) : I18n.t("The wiper stopped with an error.");
+            Notifs.say("Privacy", code === 0 ? I18n.t("Traces wiped") : I18n.t("Could not wipe the traces"), root.wipeResult, code === 0 ? "normal" : "critical");
+            root.scanTraces();
+        }
+    }
+
     FileView {
         id: shotConf
 
@@ -296,6 +402,8 @@ Singleton {
                     root.clipboardHistory = value !== "0";
                 else if (key === "clear_minutes")
                     root.clipboardClearMinutes = Number(value) || 0;
+                else if (key === "ocr")
+                    root.ocrEnabled = value !== "0";
             }
             Launcher.clipboardHistory = root.clipboardHistory;
         }
