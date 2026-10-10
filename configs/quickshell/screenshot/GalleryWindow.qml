@@ -161,7 +161,7 @@ OverlayWindow {
             // The cards rush toward you as the folder opens.
             scale: Gallery.leaving ? Theme.gallery.enterScale : 1
             transformOrigin: Item.Center
-            cellWidth: Math.floor(width / Math.max(Theme.gallery.minColumns, Math.floor(width / Theme.gallery.cellMin)))
+            cellWidth: Math.floor(width / Math.min(Theme.gallery.maxColumns, Math.max(Theme.gallery.minColumns, Math.floor(width / Theme.gallery.cellMin))))
             cellHeight: Math.round(cellWidth * Theme.gallery.ratio) + Theme.gallery.label
             model: Gallery.shots
             currentIndex: 0

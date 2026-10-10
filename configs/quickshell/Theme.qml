@@ -340,6 +340,8 @@ Singleton {
         // A thumbnail's width at least; the grid widens them to fill the row.
         readonly property int cellMin: 340
         readonly property int minColumns: 3
+        // No more than this many to a row, so the pictures stay big on a wide screen.
+        readonly property int maxColumns: 4
         // Height over width of a thumbnail.
         readonly property real ratio: 0.5625
         // The name and time under it.
