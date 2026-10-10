@@ -136,7 +136,10 @@ OverlayWindow {
             spacing: Theme.spacing.extraLarge
 
             ColumnLayout {
+                // Pinned: a page with long lines used to squeeze the sidebar until a tab's name spilled out of its pill.
                 Layout.preferredWidth: Theme.settings.sidebar
+                Layout.minimumWidth: Theme.settings.sidebar
+                Layout.maximumWidth: Theme.settings.sidebar
                 Layout.fillHeight: true
                 spacing: Theme.spacing.extraSmall
 
@@ -247,7 +250,10 @@ OverlayWindow {
             StackLayout {
                 id: stack
 
+                // The pages fill what the sidebar leaves; none sets the window's width.
                 Layout.fillWidth: true
+                Layout.preferredWidth: 0
+                Layout.minimumWidth: 0
                 Layout.fillHeight: true
 
                 transform: Translate {

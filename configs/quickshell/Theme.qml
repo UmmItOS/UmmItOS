@@ -211,9 +211,9 @@ Singleton {
 
     // The settings panel (settings/).
     readonly property QtObject settings: QtObject {
-        readonly property int width: 880
+        readonly property int width: 940
         readonly property int height: 600
-        readonly property int sidebar: 200
+        readonly property int sidebar: 190
         // A setting's control column, so every chooser lines up.
         readonly property int choice: 320
         // How far a page travels as it leaves and the next one arrives.
