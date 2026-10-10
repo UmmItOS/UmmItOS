@@ -258,6 +258,27 @@ OverlayWindow {
         GridView {
             id: grid
 
+            // Where a mouse-wheel glide is headed, and how many notches came in quick succession.
+            property real aim: 0
+            property real lastWheel: 0
+            property int streak: 0
+
+            // A notch glides the grid a fraction of a row, further when notches follow each other fast.
+            function nudge(delta: real): void {
+                const now = Date.now();
+                streak = now - lastWheel < Theme.gallery.wheelBurst ? Math.min(streak + 1, Theme.gallery.wheelMaxStreak) : 0;
+                lastWheel = now;
+                const step = delta / 120 * cellHeight * Theme.gallery.wheelStep * (1 + streak * Theme.gallery.wheelAccel);
+                const low = originY - cellHeight * Theme.gallery.stretch;
+                const high = originY + Math.max(0, contentHeight - height) + cellHeight * Theme.gallery.stretch;
+                aim = Math.max(low, Math.min(high, (glide.running ? aim : contentY) - step));
+                glide.stop();
+                glide.from = contentY;
+                glide.to = aim;
+                glide.start();
+                settle.restart();
+            }
+
             anchors {
                 top: head.bottom
                 left: parent.left
@@ -270,6 +291,17 @@ OverlayWindow {
             }
 
             clip: true
+            // Drag past an end and it gives, then springs back, like the rest of the system.
+            boundsBehavior: Flickable.DragAndOvershootBounds
+            flickDeceleration: Theme.gallery.deceleration
+            maximumFlickVelocity: Theme.gallery.maxVelocity
+            layer.enabled: true
+
+            layer.effect: MultiEffect {
+                maskEnabled: true
+                maskSource: edgeMask
+            }
+
             opacity: Gallery.leaving ? 0 : 1
             // The cards rush toward you as the folder opens.
             scale: Gallery.leaving ? Theme.gallery.enterScale : 1
@@ -479,6 +511,120 @@ OverlayWindow {
                     cursorShape: Qt.PointingHandCursor
                 }
             }
+
+            // The mouse wheel glides; a touchpad keeps the Flickable's own momentum.
+            WheelHandler {
+                onWheel: event => grid.nudge(event.angleDelta.y)
+
+                acceptedDevices: PointerDevice.Mouse
+            }
+
+            NumberAnimation {
+                id: glide
+
+                target: grid
+                property: "contentY"
+                duration: Theme.duration.expressiveDefaultSpatial
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Theme.curve.emphasizedDecel
+            }
+
+            // A touch or key takes over from a glide.
+            onMovementStarted: glide.stop()
+
+            // Once the glide ends past an end, ease back to it.
+            Timer {
+                id: settle
+
+                onTriggered: grid.returnToBounds()
+
+                interval: Theme.duration.expressiveDefaultSpatial + Theme.duration.small
+            }
+
+            Connections {
+                function onContentYChanged(): void {
+                    lingering.restart();
+                }
+
+                target: grid
+            }
+        }
+
+        // The scroll edge: cards fade out under the header and above the hint, only on the side with more.
+        Item {
+            id: edgeMask
+
+            readonly property real fade: Theme.spacing.extraLarge * 2 / Math.max(1, height)
+            property real topShow: grid.contentY > grid.originY + 2 ? 1 : 0
+            property real bottomShow: grid.contentY < grid.originY + grid.contentHeight - grid.height - 2 ? 1 : 0
+
+            width: grid.width
+            height: grid.height
+            visible: false
+            layer.enabled: true
+
+            Behavior on topShow {
+                FastFade {}
+            }
+
+            Behavior on bottomShow {
+                FastFade {}
+            }
+
+            Rectangle {
+                anchors.fill: parent
+
+                gradient: Gradient {
+                    GradientStop {
+                        position: 0
+                        color: Qt.rgba(1, 1, 1, 1 - edgeMask.topShow)
+                    }
+
+                    GradientStop {
+                        position: edgeMask.fade
+                        color: "white"
+                    }
+
+                    GradientStop {
+                        position: 1 - edgeMask.fade
+                        color: "white"
+                    }
+
+                    GradientStop {
+                        position: 1
+                        color: Qt.rgba(1, 1, 1, 1 - edgeMask.bottomShow)
+                    }
+                }
+            }
+        }
+
+        // The scroll indicator: a thin translucent thumb that shows while scrolling and fades after.
+        Rectangle {
+            id: indicator
+
+            readonly property real ratio: Math.min(1, grid.visibleArea.heightRatio)
+            readonly property real track: grid.height - height
+
+            x: grid.x + grid.width - width - Theme.spacing.extraSmall
+            y: grid.y + (ratio < 1 ? Math.max(0, Math.min(1, grid.visibleArea.yPosition / (1 - ratio))) * track : 0)
+            width: Theme.spacing.extraSmall
+            height: Math.max(Theme.spacing.extraLarge, ratio * grid.height)
+            radius: width / 2
+            color: Theme.dim
+            opacity: ratio < 1 && (grid.moving || glide.running || lingering.running) ? 1 : 0
+            visible: opacity > 0
+
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: Theme.duration.expressiveDefaultEffects
+                }
+            }
+        }
+
+        Timer {
+            id: lingering
+
+            interval: Theme.gallery.linger
         }
 
         // While the folder is read: a spinner that sharpens in and blurs out.

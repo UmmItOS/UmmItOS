@@ -353,6 +353,18 @@ Singleton {
         readonly property int arrival: 1600
         readonly property real glow: 0.5
         readonly property real activeScale: 1.03
+        // The mouse wheel: a share of a row per notch, notches within this many ms count as one burst, each extra one adds a share, up to a streak limit.
+        readonly property real wheelStep: 0.5
+        readonly property int wheelBurst: 140
+        readonly property real wheelAccel: 0.6
+        readonly property int wheelMaxStreak: 5
+        // How far past an end a glide may go, in rows, before it springs back.
+        readonly property real stretch: 0.25
+        // A flick runs long over thousands of cards: slower to stop, faster to start.
+        readonly property int deceleration: 2200
+        readonly property int maxVelocity: 6000
+        // The scroll indicator stays this long after the last movement.
+        readonly property int linger: 900
         // How big the grid grows while it leaves for the folder you opened.
         readonly property real enterScale: 1.12
     }
