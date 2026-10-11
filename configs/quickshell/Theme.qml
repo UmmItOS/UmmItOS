@@ -662,6 +662,9 @@ Singleton {
         readonly property int curve: 140
         readonly property int line: 2
         readonly property int row: 36
+        // The share bar and the fill under the curve, in the accent.
+        readonly property real barAlpha: 0.28
+        readonly property real fillAlpha: 0.15
     }
 
     // The SAO menu (sao/): Sword Art Online's own palette and sizes, apart from the shell's look on purpose.

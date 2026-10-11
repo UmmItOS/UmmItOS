@@ -104,7 +104,18 @@ OverlayWindow {
                             ctx.lineTo(x, y);
                     });
                     ctx.stroke();
+                    // A soft fill under the line, fading to nothing at the bottom.
+                    ctx.lineTo(width, height);
+                    ctx.lineTo(0, height);
+                    ctx.closePath();
+                    const fade = ctx.createLinearGradient(0, 0, 0, height);
+                    fade.addColorStop(0, Qt.alpha(Theme.accentText, Theme.power.fillAlpha));
+                    fade.addColorStop(1, Qt.alpha(Theme.accentText, 0));
+                    ctx.fillStyle = fade;
+                    ctx.fill();
                 }
+                onWidthChanged: requestPaint()
+                onHeightChanged: requestPaint()
 
                 Connections {
                     target: Power
@@ -151,22 +162,38 @@ OverlayWindow {
                             Layout.fillWidth: true
                             implicitHeight: Theme.power.row
 
-                            // The bar behind each row is its share, scaled, never resized.
                             Rectangle {
                                 anchors.fill: parent
                                 radius: Theme.rounding.extraSmall
                                 color: Theme.bgTray
-                                transformOrigin: Item.Left
+                            }
+
+                            // The share, in the accent like the curve; scaled, never resized, and it slides on a range change.
+                            Rectangle {
+                                anchors.fill: parent
+                                radius: Theme.rounding.extraSmall
+                                color: Qt.alpha(Theme.accentText, Theme.power.barAlpha)
                                 transform: Scale {
                                     xScale: (row.modelData?.wh ?? 0) / win.topWh
+
+                                    Behavior on xScale {
+                                        enabled: win.visible
+
+                                        NumberAnimation {
+                                            duration: Theme.duration.expressiveDefaultSpatial
+                                            easing.type: Easing.BezierSpline
+                                            easing.bezierCurve: Theme.curve.emphasizedDecel
+                                        }
+                                    }
                                 }
                             }
 
                             Text {
                                 anchors.left: parent.left
                                 anchors.leftMargin: Theme.spacing.medium
+                                anchors.right: value.left
+                                anchors.rightMargin: Theme.spacing.medium
                                 anchors.verticalCenter: parent.verticalCenter
-                                width: parent.width * 0.6
                                 elide: Text.ElideRight
                                 textFormat: Text.PlainText
                                 text: row.modelData.app
@@ -176,15 +203,17 @@ OverlayWindow {
                             }
 
                             Text {
+                                id: value
+
                                 anchors.right: parent.right
                                 anchors.rightMargin: Theme.spacing.medium
                                 anchors.verticalCenter: parent.verticalCenter
                                 textFormat: Text.PlainText
                                 // Plugged-in minutes are estimated from the battery's own fit, and say so.
-                                text: (row.modelData.wh > 0 ? I18n.t("%1% · %2 Wh").arg((row.modelData.wh / win.full * 100).toFixed(1)).arg(row.modelData.wh.toFixed(2)) : I18n.t("%1 s CPU").arg(row.modelData.cpu)) + (row.modelData.est ? " ~" : "")
-                                color: Theme.dim
+                                text: (row.modelData?.wh ?? 0) > 0 ? I18n.t(row.modelData.est ? "~%1% · %2 Wh" : "%1% · %2 Wh").arg((row.modelData.wh / win.full * 100).toFixed(1)).arg(row.modelData.wh.toFixed(2)) : I18n.t("%1 s CPU").arg(row.modelData?.cpu ?? 0)
+                                color: Theme.fg
                                 font.family: Theme.font
-                                font.pixelSize: Theme.fontSize.smaller
+                                font.pixelSize: Theme.fontSize.normal
                                 font.features: ({
                                         tnum: 1
                                     })
@@ -195,13 +224,14 @@ OverlayWindow {
                     Text {
                         visible: Power.apps.length === 0
                         textFormat: Text.PlainText
-                        text: I18n.t("Nothing logged in this range")
+                        text: Power.loading ? I18n.t("Reading…") : I18n.t("Nothing logged in this range")
                         color: Theme.dim
                         font.family: Theme.font
                         font.pixelSize: Theme.fontSize.normal
                     }
 
                     Text {
+                        visible: Power.apps.some(a => a.est && a.wh > 0)
                         textFormat: Text.PlainText
                         text: I18n.t("~ estimated while plugged in, from your battery minutes")
                         color: Theme.dim
@@ -222,15 +252,15 @@ OverlayWindow {
 
                     Fact {
                         label: I18n.t("On battery")
-                        value: win.minutes(Power.why.batt_min ?? 0) + (Power.why.batt_w ? I18n.t(" · %1 W avg").arg(Power.why.batt_w) : "")
+                        value: Power.why.batt_min ? (Power.why.batt_w ? I18n.t("%1 · %2 W avg").arg(win.minutes(Power.why.batt_min)).arg(Power.why.batt_w) : win.minutes(Power.why.batt_min)) : "—"
                     }
                     Fact {
                         label: I18n.t("Used on battery")
-                        value: I18n.t("%1 Wh").arg(Power.why.batt_wh ?? 0)
+                        value: Power.why.batt_wh ? I18n.t("%1 Wh").arg(Power.why.batt_wh) : "—"
                     }
                     Fact {
                         label: I18n.t("Asleep")
-                        value: I18n.t("%1 Wh in %2").arg(Power.sleep.wh ?? 0).arg(win.minutes((Power.sleep.secs ?? 0) / 60))
+                        value: Power.sleep.n ? I18n.t("%1 Wh in %2").arg(Power.sleep.wh).arg(win.minutes(Power.sleep.secs / 60)) : "—"
                     }
                     Fact {
                         label: I18n.t("Brightness")
@@ -242,11 +272,11 @@ OverlayWindow {
                     }
                     Fact {
                         label: I18n.t("Wi-Fi on")
-                        value: win.minutes(Power.why.wifi_min ?? 0)
+                        value: Power.why.wifi_min ? win.minutes(Power.why.wifi_min) : "—"
                     }
                     Fact {
                         label: I18n.t("Bluetooth on")
-                        value: win.minutes(Power.why.bt_min ?? 0)
+                        value: Power.why.bt_min ? win.minutes(Power.why.bt_min) : "—"
                     }
                     Fact {
                         label: I18n.t("Power profile")
@@ -257,13 +287,13 @@ OverlayWindow {
         }
     }
 
+    // Like the cheat sheet's group titles.
     component Heading: Text {
         textFormat: Text.PlainText
-        color: Theme.dim
-        font.family: Theme.font
-        font.pixelSize: Theme.fontSize.small
-        font.weight: Theme.weight.medium
-        font.letterSpacing: Theme.tracking.wider
+        color: Theme.accentText
+        font.family: Theme.fontDisplay
+        font.pixelSize: Theme.fontSize.large
+        font.weight: Theme.weight.bold
     }
 
     component Fact: RowLayout {

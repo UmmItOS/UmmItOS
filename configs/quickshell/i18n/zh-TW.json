@@ -477,7 +477,6 @@
     "Nothing logged in this range": "此範圍沒有紀錄",
     "~ estimated while plugged in, from your battery minutes": "~ 插電時的數值是依你用電池時的紀錄估算",
     "Why": "原因",
-    " · %1 W avg": " · 平均 %1 W",
     "Used on battery": "電池用了",
     "%1 Wh": "%1 Wh",
     "Asleep": "睡眠中",
@@ -489,5 +488,7 @@
     "Bluetooth on": "藍牙開啟",
     "Power profile": "電源模式",
     "%1 h %2 min": "%1 小時 %2 分",
-    "%1 min": "%1 分"
+    "%1 min": "%1 分",
+    "~%1% · %2 Wh": "~%1% · %2 Wh",
+    "%1 · %2 W avg": "%1 · 平均 %2 W"
 }
