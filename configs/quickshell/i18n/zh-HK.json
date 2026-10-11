@@ -529,4 +529,9 @@
     "Scripts": "Scripts",
     "Hyprland": "Hyprland",
     "Config": "設定"
+,
+    "Tools": "工具",
+    "Input": "輸入法",
+    "Dotfiles": "設定檔",
+    "Autostart": "開機啟動"
 }

@@ -181,6 +181,73 @@ check_system() {
 	done
 }
 
+# The commands the shell and its scripts call; one missing breaks one feature.
+check_tools() {
+	local cmd missing=()
+	for cmd in qs hyprctl grim wl-copy wl-paste cliphist cava tesseract sqlite3 notify-send pw-play jq magick zbarimg wlrctl hypridle; do
+		command -v "$cmd" &> /dev/null || missing+=("$cmd")
+	done
+	if ((${#missing[@]} == 0)); then
+		say ok Tools 'Commands' 'Every command the shell calls is installed'
+	else
+		say warn Tools "${#missing[@]} missing" "${missing[*]}: the feature using each will not work"
+	fi
+}
+
+# The input method: running, the UmmItOS popup theme chosen, a language beside English.
+check_input() {
+	local conf=$home_cfg/fcitx5/conf/classicui.conf theme
+	if ! command -v fcitx5 &> /dev/null; then
+		say fail Input 'fcitx5 not installed' 'paru -S fcitx5'
+		return
+	fi
+	if pgrep -x fcitx5 &> /dev/null; then
+		say ok Input 'fcitx5' 'Running'
+	else
+		say fail Input 'fcitx5' 'Not running: start it with fcitx5 -d'
+	fi
+	theme=$(grep -m1 '^Theme=' "$conf" 2> /dev/null | cut -d= -f2)
+	if [[ $theme == ummitos ]]; then
+		say ok Input 'Popup theme' 'The UmmItOS theme is chosen'
+	else
+		say warn Input 'Popup theme' "Theme is '${theme:-unset}', not ummitos: link configs/fcitx5/themes/ummitos into ~/.local/share/fcitx5/themes and set Theme= in classicui.conf"
+	fi
+	if [[ -e $HOME/.local/share/fcitx5/themes/ummitos/theme.conf ]]; then
+		say ok Input 'Theme files' 'Found in ~/.local/share/fcitx5/themes'
+	else
+		say warn Input 'Theme files' 'Missing from ~/.local/share/fcitx5/themes'
+	fi
+	if [[ $(grep -c '^Name=' "$home_cfg/fcitx5/profile" 2> /dev/null) -ge 3 ]]; then
+		say ok Input 'Input methods' 'A second input method is set up'
+	else
+		say warn Input 'Input methods' 'Only the keyboard: add Chinese in fcitx5-configtool'
+	fi
+}
+
+# Things the repo ships and you may have changed: only differences are reported, never overwritten.
+check_dotfiles() {
+	local pair src dst
+	for pair in configs/kitty/kitty.conf:kitty/kitty.conf configs/fastfetch/config.jsonc:fastfetch/config.jsonc configs/starship.toml:starship.toml configs/hypr/hyprland/permissions.lua:hypr/hyprland/permissions.lua configs/hypr/hyprland/autostart.lua:hypr/hyprland/autostart.lua; do
+		src=$repo/${pair%%:*}
+		dst=$home_cfg/${pair#*:}
+		if [[ ! -e $dst ]]; then
+			say warn Dotfiles "${pair#*:}" 'Missing from ~/.config'
+		elif cmp -s "$src" "$dst"; then
+			say ok Dotfiles "${pair#*:}" 'Same as the repo'
+		else
+			say warn Dotfiles "${pair#*:}" 'Differs from the repo: yours may be on purpose; diff it to see'
+		fi
+	done
+	local entry
+	for entry in 'qs -c ummitos' 'wl-paste --watch' fcitx5 hypridle; do
+		if grep -qF "$entry" "$home_cfg/hypr/hyprland/autostart.lua" 2> /dev/null; then
+			say ok Autostart "$entry" 'Started at login'
+		else
+			say warn Autostart "$entry" 'Not in your autostart.lua'
+		fi
+	done
+}
+
 if [[ $1 == --fix ]]; then
 	find_repo || exit 1
 	if [[ $2 == scripts ]]; then
@@ -205,5 +272,8 @@ check_shell
 check_scripts
 check_hypr
 check_packages
+check_tools
+check_input
+check_dotfiles
 check_system
 printf 'done\t%d\t%d\t%d\n' "$ok" "$warn" "$fail"
