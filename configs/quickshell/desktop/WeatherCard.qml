@@ -14,7 +14,7 @@ Rectangle {
     color: Theme.scrim(Theme.panelTint)
 
     // Its window maps when the forecast arrives, so this runs on each appearance.
-    opacity: Weather.ready ? 1 : 0
+    opacity: Weather.ready && Settings.weatherShow ? 1 : 0
     layer.enabled: opacity < 1
 
     layer.effect: MotionBlur {

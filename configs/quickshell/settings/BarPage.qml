@@ -104,6 +104,19 @@ ColumnLayout {
         }
     }
 
+    SettingRow {
+        title: I18n.t("Weather card")
+        hint: I18n.t("Shows the weather on the desktop, under the windows.")
+
+        Toggle {
+            onToggled: Settings.setWeatherCard(!Settings.weatherShow)
+
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            checked: Settings.weatherShow
+        }
+    }
+
     Item {
         Layout.fillHeight: true
     }

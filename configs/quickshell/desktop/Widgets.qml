@@ -11,7 +11,8 @@ Variants {
         required property var modelData
 
         screen: modelData
-        visible: Weather.ready
+        // Stays mapped while the card fades out.
+        visible: Weather.ready && (Settings.weatherShow || card.opacity > 0)
         WlrLayershell.namespace: "ummitos-widgets"
         WlrLayershell.layer: WlrLayer.Bottom
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None

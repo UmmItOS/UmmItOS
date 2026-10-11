@@ -70,8 +70,9 @@ Singleton {
 
     readonly property string desktopFile: (Quickshell.env("XDG_CONFIG_HOME") || home + "/.config") + "/ummitos/desktop.conf"
 
-    // The joke reminder in the corner of the screen.
+    // The joke reminder in the corner of the screen, and the weather card on the desktop.
     property bool activateShow: true
+    property bool weatherShow: true
 
     // Empty is the default: HYPRSHOT_DIR, else ~/Pictures/Screenshots.
     property string shotFolder: ""
@@ -122,9 +123,18 @@ Singleton {
         return true;
     }
 
+    function writeDesktop(): void {
+        desktopConf.setText("activate=" + (activateShow ? 1 : 0) + "\nweather=" + (weatherShow ? 1 : 0) + "\n");
+    }
+
     function setActivate(on: bool): void {
         activateShow = on;
-        desktopConf.setText("activate=" + (on ? 1 : 0) + "\n");
+        writeDesktop();
+    }
+
+    function setWeatherCard(on: bool): void {
+        weatherShow = on;
+        writeDesktop();
     }
 
     // False when it is not a full path, so the field can say so; empty goes back to the default.
@@ -364,6 +374,8 @@ Singleton {
             for (const line of text().split("\n")) {
                 if (line.startsWith("activate="))
                     root.activateShow = line.slice(9) !== "0";
+                else if (line.startsWith("weather="))
+                    root.weatherShow = line.slice(8) !== "0";
             }
         }
 
