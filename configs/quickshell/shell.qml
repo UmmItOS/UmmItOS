@@ -9,6 +9,7 @@ import "cheatsheet"
 import "record"
 import "dashboard"
 import "desktop"
+import "doctor"
 import "draw"
 import "bar"
 import "launcher"
@@ -85,6 +86,8 @@ ShellRoot {
     ScreenshotWindow {}
 
     GalleryWindow {}
+
+    DoctorWindow {}
 
     RecordWindow {}
 

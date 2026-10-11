@@ -387,6 +387,14 @@ Singleton {
         readonly property real glow: 0.6
     }
 
+    readonly property QtObject doctor: QtObject {
+        readonly property int width: 1000
+        readonly property int height: 640
+        // The columns of a line: the group (":: Shell") and the check's name.
+        readonly property int group: 120
+        readonly property int title: 200
+    }
+
     readonly property QtObject cheatsheet: QtObject {
         readonly property int width: 1400
         readonly property int ring: 3
@@ -569,6 +577,8 @@ Singleton {
         readonly property int confirmHold: 3000
         // A toast that set no timeout of its own.
         readonly property int toast: 6000
+        // How long after start the quiet health check runs.
+        readonly property int doctorStart: 20000
         // After start, how long the first microphone reading is the state we began in, not news.
         readonly property int micSettle: 4000
         // An image copied this soon after a screenshot is that screenshot, which has its shutter already.

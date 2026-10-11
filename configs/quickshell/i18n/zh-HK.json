@@ -515,4 +515,18 @@
     "%1 connected": "%1 已連接"
 ,
     "Microphone on": "麥克風已開啟"
+,
+    "Health check": "健康檢查",
+    "Checking…": "檢查緊…",
+    "All good": "一切正常",
+    "%1 ok · %2 to look at · %3 failed": "%1 正常 · %2 要留意 · %3 失敗",
+    "Does this machine run what the repo holds: the shell, the scripts, the keybinds and the packages.": "呢部機係咪行緊 repo 入面嘅嘢：shell、script、快速鍵同套件。",
+    "Enter checks again · Esc closes": "撳 Enter 再檢查 · Esc 關閉",
+    "Update ~/script": "更新 ~/script",
+    "%1 things need attention": "有 %1 樣嘢要處理",
+    "Open the health check with Super+H.": "按 Super+H 開啟健康檢查。",
+    "Repository": "Repository",
+    "Scripts": "Scripts",
+    "Hyprland": "Hyprland",
+    "Config": "設定"
 }

@@ -15,6 +15,7 @@ hypridle call out to.
 | `misc/install-packages.sh` | the Settings → Packages page, with the packages it found missing |
 | `misc/ocr-index.sh` | the screenshot gallery on open, and each new screenshot: reads the text inside pictures into a SQLite table the gallery searches |
 | `misc/wipe-traces.sh` | Settings > Anti-forensics: `--list` shows every file it would remove, then it overwrites each with `shred` (several passes, then zeros) and deletes it |
+| `misc/doctor.sh` | the health check (Super+H, `doctor` IPC): one line per check of whether this machine runs what the repo holds; `--fix scripts` copies the repo's scripts to `~/script` |
 | `misc/launch.sh` | every `run()` in `shortcuts.lua`: names the missing program in a notice |
 | `misc/screen-record.sh` | Super+Shift+R, through the shell's recording dialog |
 | `misc/mic-check.sh` | `screen-record.sh` and the shell after each wake; fails when the mic is stuck |
