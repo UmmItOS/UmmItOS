@@ -57,21 +57,21 @@ Variants {
             }
 
             Text {
-                anchors.right: parent.right
                 textFormat: Text.PlainText
                 text: I18n.t("Activate Linux")
                 color: Theme.fg
                 font.family: Theme.font
-                font.pixelSize: Theme.fontSize.large
+                font.pixelSize: Theme.fontSize.extraLarge
+                font.weight: Theme.weight.light
             }
 
             Text {
-                anchors.right: parent.right
                 textFormat: Text.PlainText
                 text: I18n.t("Go to Settings to activate Linux.")
                 color: Theme.fg
                 font.family: Theme.font
-                font.pixelSize: Theme.fontSize.normal
+                font.pixelSize: Theme.fontSize.large
+                font.weight: Theme.weight.light
             }
         }
     }

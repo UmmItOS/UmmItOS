@@ -86,6 +86,7 @@ Singleton {
     }
 
     readonly property QtObject weight: QtObject {
+        readonly property int light: 300
         readonly property int regular: 400
         readonly property int medium: 500
         readonly property int bold: 700
