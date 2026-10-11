@@ -569,6 +569,8 @@ Singleton {
         readonly property int confirmHold: 3000
         // A toast that set no timeout of its own.
         readonly property int toast: 6000
+        // After start, how long the first microphone reading is the state we began in, not news.
+        readonly property int micSettle: 4000
         // An image copied this soon after a screenshot is that screenshot, which has its shutter already.
         readonly property int shotCopy: 3000
         // The longest a colour pick may take before its copy is heard again.

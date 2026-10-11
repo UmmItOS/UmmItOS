@@ -248,11 +248,20 @@ PanelWindow {
         anchors.verticalCenter: parent.verticalCenter
     }
 
-    // Beside the clock, so it never moves the centre or the clusters.
-    RecordingPill {
+    // Beside the microphone, so none of it moves the centre or the clusters.
+    Row {
         anchors.left: mic.right
         anchors.leftMargin: Theme.spacing.large
         anchors.verticalCenter: parent.verticalCenter
+        spacing: Theme.spacing.large
+
+        MicNote {
+            anchors.verticalCenter: parent.verticalCenter
+        }
+
+        RecordingPill {
+            anchors.verticalCenter: parent.verticalCenter
+        }
     }
 
     // On the screen's centre line, not between spacers, so it never drifts.

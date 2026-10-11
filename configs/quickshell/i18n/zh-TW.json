@@ -510,4 +510,9 @@
     "Keeps the microphone open so the bar can draw its level. Off draws it only while an app records.": "保持麥克風開啟，狀態列才能畫出音量。關閉後僅在有程式錄音時繪製。"
 ,
     "No microphone": "沒有麥克風"
+,
+    "Microphone disconnected": "麥克風已中斷連線",
+    "%1 connected": "%1 已連接"
+,
+    "Microphone on": "麥克風已開啟"
 }
