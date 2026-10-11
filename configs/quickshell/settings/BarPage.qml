@@ -105,6 +105,19 @@ ColumnLayout {
     }
 
     SettingRow {
+        title: I18n.t("Show the microphone level")
+        hint: I18n.t("Keeps the microphone open so the bar can draw its level. Off draws it only while an app records.")
+
+        Toggle {
+            onToggled: Settings.setMicListen(!Settings.micListen)
+
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            checked: Settings.micListen
+        }
+    }
+
+    SettingRow {
         title: I18n.t("Weather card")
         hint: I18n.t("Shows the weather on the desktop, under the windows.")
 

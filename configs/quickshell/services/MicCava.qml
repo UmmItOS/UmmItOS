@@ -1,11 +1,13 @@
 pragma Singleton
+pragma ComponentBehavior: Bound
 
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Pipewire
 import QtQuick
+import ".."
 
-// The microphone's level, drawn beside the clock. It only listens while another app is already recording from the mic and a disc is on screen: the shell never opens the mic by itself.
+// The microphone's level, drawn beside the clock. With Settings > Bar > "Show the microphone level" off it listens only while another app is already recording; on, it keeps the mic open for the bars.
 Singleton {
     id: root
 
@@ -16,10 +18,11 @@ Singleton {
 
     // WirePlumber may name no default source; then the first input device is it.
     readonly property var source: Pipewire.defaultAudioSource ?? Pipewire.nodes.values.find(n => !n.isStream && !n.isSink && n.name.includes("input")) ?? null
+    readonly property bool present: source !== null
     readonly property bool muted: source?.audio?.muted ?? false
     // Another app records from a microphone (our own cava stream does not count).
     readonly property bool inUse: Pipewire.nodes.values.some(n => n.isStream && !n.isSink && n.name !== "cava")
-    readonly property bool running: viewers > 0 && inUse && !muted && (source?.name ?? "") !== ""
+    readonly property bool running: viewers > 0 && (Settings.micListen || inUse) && !muted && present
 
     readonly property string config: `[general]
 bars = ${bars}

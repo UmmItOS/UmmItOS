@@ -29,9 +29,14 @@ Item {
     implicitWidth: art + (Theme.bar.mediaGap + Theme.bar.mediaReach) * 2
     implicitHeight: implicitWidth
     scale: tap.pressed ? Theme.pressScale : 1
+    opacity: MicCava.present ? 1 : Theme.disabledOpacity
+
+    Behavior on opacity {
+        FastFade {}
+    }
 
     Accessible.role: Accessible.Button
-    Accessible.name: I18n.t(MicCava.muted ? "Microphone muted" : "Microphone")
+    Accessible.name: I18n.t(!MicCava.present ? "No microphone" : MicCava.muted ? "Microphone muted" : "Microphone")
 
     Behavior on scale {
         PressAnim {}
@@ -77,8 +82,9 @@ Item {
 
         MaterialIcon {
             anchors.centerIn: parent
-            text: MicCava.muted ? "mic_off" : "mic"
-            color: MicCava.muted ? Theme.urgent : MicCava.inUse ? Theme.fg : Theme.dim
+            // No microphone: a different glyph, dimmed; muted: struck through and red.
+            text: !MicCava.present ? "mic_external_off" : MicCava.muted ? "mic_off" : "mic"
+            color: !MicCava.present ? Theme.dim : MicCava.muted ? Theme.urgent : Theme.fg
             size: Theme.icon.small
 
             Behavior on color {
@@ -89,7 +95,7 @@ Item {
 
     Tip {
         anchorItem: root
-        text: MicCava.muted ? I18n.t("Microphone muted") : MicCava.inUse ? I18n.t("Microphone in use") : I18n.t("Microphone")
+        text: !MicCava.present ? I18n.t("No microphone") : MicCava.muted ? I18n.t("Microphone muted") : MicCava.inUse ? I18n.t("Microphone in use") : I18n.t("Microphone")
         wanted: hover.hovered && !tap.pressed
     }
 
@@ -102,6 +108,7 @@ Item {
     TapHandler {
         id: tap
 
-        onTapped: MicCava.toggleMute()
+        onTapped: if (MicCava.present)
+            MicCava.toggleMute()
     }
 }

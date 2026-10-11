@@ -73,6 +73,8 @@ Singleton {
     // The joke reminder in the corner of the screen, and the weather card on the desktop.
     property bool activateShow: true
     property bool weatherShow: true
+    // Keeps the microphone open so the bar's mic disc can show its level.
+    property bool micListen: true
 
     // Empty is the default: HYPRSHOT_DIR, else ~/Pictures/Screenshots.
     property string shotFolder: ""
@@ -124,11 +126,16 @@ Singleton {
     }
 
     function writeDesktop(): void {
-        desktopConf.setText("activate=" + (activateShow ? 1 : 0) + "\nweather=" + (weatherShow ? 1 : 0) + "\n");
+        desktopConf.setText("activate=" + (activateShow ? 1 : 0) + "\nweather=" + (weatherShow ? 1 : 0) + "\nmic=" + (micListen ? 1 : 0) + "\n");
     }
 
     function setActivate(on: bool): void {
         activateShow = on;
+        writeDesktop();
+    }
+
+    function setMicListen(on: bool): void {
+        micListen = on;
         writeDesktop();
     }
 
@@ -376,6 +383,8 @@ Singleton {
                     root.activateShow = line.slice(9) !== "0";
                 else if (line.startsWith("weather="))
                     root.weatherShow = line.slice(8) !== "0";
+                else if (line.startsWith("mic="))
+                    root.micListen = line.slice(4) !== "0";
             }
         }
 
