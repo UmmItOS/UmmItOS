@@ -115,4 +115,13 @@ RowLayout {
             }
         }
     }
+
+    // Opens the battery screen: what used the battery and why.
+    TapHandler {
+        onTapped: Power.toggle()
+    }
+
+    HoverHandler {
+        cursorShape: Qt.PointingHandCursor
+    }
 }

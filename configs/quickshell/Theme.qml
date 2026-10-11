@@ -655,6 +655,15 @@ Singleton {
         readonly property int settleFrames: 2
     }
 
+    // The battery screen (power/).
+    readonly property QtObject power: QtObject {
+        readonly property int width: 1100
+        readonly property int range: 420
+        readonly property int curve: 140
+        readonly property int line: 2
+        readonly property int row: 36
+    }
+
     // The SAO menu (sao/): Sword Art Online's own palette and sizes, apart from the shell's look on purpose.
     readonly property QtObject sao: QtObject {
         readonly property color paper: "#cfd0c5"

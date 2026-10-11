@@ -22,6 +22,7 @@ import "session"
 import "settings"
 import "switcher"
 import "sao"
+import "power"
 import "toast"
 import "wake"
 
@@ -70,6 +71,8 @@ ShellRoot {
     }
 
     SaoWindow {}
+
+    PowerWindow {}
 
     Variants {
         model: Quickshell.screens
