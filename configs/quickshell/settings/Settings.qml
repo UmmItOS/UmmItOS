@@ -68,6 +68,11 @@ Singleton {
 
     readonly property string shotFile: (Quickshell.env("XDG_CONFIG_HOME") || home + "/.config") + "/ummitos/screenshot.conf"
 
+    readonly property string desktopFile: (Quickshell.env("XDG_CONFIG_HOME") || home + "/.config") + "/ummitos/desktop.conf"
+
+    // The joke reminder in the corner of the screen.
+    property bool activateShow: true
+
     // Empty is the default: HYPRSHOT_DIR, else ~/Pictures/Screenshots.
     property string shotFolder: ""
     readonly property string shotDir: shotFolder !== "" ? shotFolder : Quickshell.env("HYPRSHOT_DIR") || home + "/Pictures/Screenshots"
@@ -115,6 +120,11 @@ Singleton {
             return false;
         set("folder", p);
         return true;
+    }
+
+    function setActivate(on: bool): void {
+        activateShow = on;
+        desktopConf.setText("activate=" + (on ? 1 : 0) + "\n");
     }
 
     // False when it is not a full path, so the field can say so; empty goes back to the default.
@@ -345,6 +355,21 @@ Singleton {
             Notifs.say("Privacy", code === 0 ? I18n.t("Traces wiped") : I18n.t("Could not wipe the traces"), root.wipeResult, code === 0 ? "normal" : "critical");
             root.scanTraces();
         }
+    }
+
+    FileView {
+        id: desktopConf
+
+        onLoaded: {
+            for (const line of text().split("\n")) {
+                if (line.startsWith("activate="))
+                    root.activateShow = line.slice(9) !== "0";
+            }
+        }
+
+        path: root.desktopFile
+        printErrors: false
+        blockWrites: true
     }
 
     FileView {

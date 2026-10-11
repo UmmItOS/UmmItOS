@@ -107,6 +107,8 @@ Singleton {
     readonly property real pressScale: 0.92
     // Where an opening surface grows from, as a fraction of its full size.
     readonly property real popScale: 0.94
+    // The "Activate Linux" joke's grey: how much of the text colour shows.
+    readonly property real activateOpacity: 0.45
     // A control that cannot be used right now.
     readonly property real disabledOpacity: 0.4
     // A countdown number lands from this size.

@@ -93,6 +93,8 @@ ShellRoot {
 
     Widgets {}
 
+    ActivateLinux {}
+
     LockScreen {}
 
     OsdWindow {}

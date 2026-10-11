@@ -109,6 +109,19 @@ ColumnLayout {
         }
     }
 
+    SettingRow {
+        title: I18n.t("Activate Linux")
+        hint: I18n.t("A grey reminder in the corner of the screen, as another system has.")
+
+        Toggle {
+            onToggled: Settings.setActivate(!Settings.activateShow)
+
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            checked: Settings.activateShow
+        }
+    }
+
     RowLayout {
         spacing: Theme.spacing.medium
 
