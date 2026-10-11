@@ -73,7 +73,9 @@ It must run inside a Hyprland session (it calls `hyprctl`) and needs `jq`. Befor
 
 ### Two installer entry points, one implementation
 
-`install.sh` **sources** `install/*.sh` in order, so the sub-steps share shell state and one failure aborts the whole run. `install/install-packages.sh` only runs `install_all_packages` when executed directly; `install.sh` calls it after sourcing. `install-menu.sh` sources the same file and calls `install_{main,gpu,laptop}_packages` per menu entry, and runs `install/copy-config.sh` and `install/setup-dm.sh` as child scripts. Change package handling in `install-packages.sh` only; do not copy it into the menu again.
+Both call `run_installer` in `lib/install-flow.sh`: a colourful terminal checklist of steps (`step_main`, `step_gpu`, `step_laptop`, `step_omz`, `step_dots`, `step_dm`), each run in turn on the normal screen (they ask questions), then a results screen. `install-menu.sh` shows the checklist; `install.sh` passes `--all`, which skips it after one question. The screens are `script/misc/_tui.sh`, the same library `script/misc/update.sh` and `post-install.sh` use, so a change to the look is made once. A failed step skips the rest (`stop_on_fail`), since a login screen without its packages would lock you out. `install/install-packages.sh` still only runs `install_all_packages` when executed directly; the flow calls its functions. Change package handling there only.
+
+**Test an installer with `UMMITOS_DRY_RUN=1`**: `tui_run` prints each step's name and runs nothing. `post-install.sh` has no dry run: test it with a fake `HOME` and a stub `hyprctl` first in `PATH`. Never run a real step on the machine you are working on to see what it does.
 
 ### Hyprland config is Lua
 

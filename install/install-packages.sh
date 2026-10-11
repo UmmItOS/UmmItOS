@@ -45,10 +45,12 @@ install_packages_with_paru() {
     fi
 
     if prompt_yna ":: Install these ${package_type} packages? - Total Package (${total_packages})"; then
-        paru -S --needed "${packages[@]}"
+        local status=0
+        paru -S --needed "${packages[@]}" || status=$?
 
         pause_and_continue "${package_type} packages installed completed. Press any key to keep going :)"
         clear
+        return "$status"
     else
         echo "${COLOR_YELLOW}:: Skipping ${package_type} package installation.${COLOR_RESET}"
 
