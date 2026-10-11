@@ -11,6 +11,7 @@ ColumnLayout {
     // What is ticked to be wiped, and how many times it is overwritten.
     property var picks: ({
             ocr: true,
+            battery: true,
             clipboard: true,
             changes: true,
             launches: true,
@@ -25,6 +26,12 @@ ColumnLayout {
             title: I18n.t("Screenshot text"),
             hint: I18n.t("The words read out of your screenshots, for the gallery search."),
             by: I18n.t("Written by script/misc/ocr-index.sh (tesseract), when the gallery opens and when a screenshot is saved.")
+        },
+        {
+            key: "battery",
+            title: I18n.t("Battery history"),
+            hint: I18n.t("Every minute's battery level and draw, and how much CPU each app used."),
+            by: I18n.t("Written by script/misc/battery-log.sh, once a minute while the shell runs.")
         },
         {
             key: "clipboard",

@@ -161,7 +161,7 @@
     "Uptime": "開機時間",
     "1 day": "1 日",
     "%1 days": "%1 日",
-    "1 hour": "1 個鐘",
+    "1 hour": "1 小時",
     "%1 hours": "%1 個鐘",
     "1 minute": "1 分鐘",
     "%1 minutes": "%1 分鐘",
@@ -388,14 +388,12 @@
     "Never": "永不",
     "5 min": "5 分鐘",
     "15 min": "15 分鐘",
-    "1 hour": "1 小時",
     "Wayland does not reveal which app copied an item, so per-app exclusions are unavailable.": "Wayland 唔會透露邊個應用程式複製咗項目，所以無法按應用程式排除。",
     "Clear clipboard now": "即刻清除剪貼簿",
     "Could not apply clipboard privacy settings": "無法套用剪貼簿私隱設定",
     "The clipboard helper exited with an error.": "剪貼簿輔助程式發生錯誤。",
     "Clipboard history is off": "剪貼簿記錄已關閉",
-    "Clear all": "全部清除"
-,
+    "Clear all": "全部清除",
     "Bar": "工具列",
     "Choose what the status bar shows.": "揀狀態列顯示啲乜。",
     "Latest file change": "最新檔案變動",
@@ -404,15 +402,13 @@
     "Use a full path, like ~/Projects": "請用完整路徑，例如 ~/Projects",
     "That folder does not exist": "搵唔到呢個資料夾",
     "Type a folder, then Enter. Empty watches the shell's own folder.": "輸入資料夾，然後撳 Enter。留空就監察 shell 自己嘅資料夾。",
-    "The shell's own folder": "Shell 自己嘅資料夾"
-,
+    "The shell's own folder": "Shell 自己嘅資料夾",
     "File changes": "檔案變動",
     "No changes yet": "暫時未有變動",
     "just now": "啱啱",
     "%1 min ago": "%1 分鐘前",
     "%1 h ago": "%1 小時前",
-    "%1 d ago": "%1 日前"
-,
+    "%1 d ago": "%1 日前",
     "Screenshots": "截圖",
     "Screenshot gallery": "截圖相簿",
     "Where screenshots are saved, and what Super+F shows.": "截圖儲存喺邊度，亦係 Super+F 會顯示嘅資料夾。",
@@ -421,17 +417,13 @@
     "No screenshots yet": "暫時未有截圖",
     "Enter to copy · Esc to close": "撳 Enter 複製 · Esc 關閉",
     "%1 screenshots in %2": "%2 入面有 %1 張截圖",
-    "Use a full path, like ~/Pictures": "請用完整路徑，例如 ~/Pictures"
-,
-    "Enter to copy or open · Backspace to go up · Esc to close": "撳 Enter 複製或開啟 · Backspace 返回上一層 · Esc 關閉"
-,
-    "Loading screenshots": "載入緊截圖"
-,
+    "Use a full path, like ~/Pictures": "請用完整路徑，例如 ~/Pictures",
+    "Enter to copy or open · Backspace to go up · Esc to close": "撳 Enter 複製或開啟 · Backspace 返回上一層 · Esc 關閉",
+    "Loading screenshots": "載入緊截圖",
     "Search the text inside screenshots": "喺截圖入面搵文字",
     "%1 matches for %2": "「%2」有 %1 個相符",
     "Reading text from screenshots: %1 of %2": "讀取截圖文字：%1 / %2",
-    "Type to search · Enter to copy or open · Esc to close": "打字搜尋 · Enter 複製或開啟 · Esc 關閉"
-,
+    "Type to search · Enter to copy or open · Esc to close": "打字搜尋 · Enter 複製或開啟 · Esc 關閉",
     "Overwrites, then deletes, what the desktop remembers, so it cannot be read back from the files.": "先覆寫再刪除桌面記住嘅資料，令檔案入面讀唔返出嚟。",
     "Search text in screenshots": "搜尋截圖入面嘅文字",
     "Reads the text inside each new screenshot so the gallery can search it. Off reads nothing more.": "讀取每張新截圖入面嘅文字，相簿先可以搜尋。關閉就唔再讀。",
@@ -464,14 +456,14 @@
     "%1 files overwritten and removed.": "已覆寫並刪除 %1 個檔案。",
     "The wiper stopped with an error.": "清除程式出錯停止。",
     "Traces wiped": "痕跡已徹底清除",
-    "Could not wipe the traces": "無法徹底清除痕跡"
-,
-    "Anti-forensics": "反鑑識"
-,
+    "Could not wipe the traces": "無法徹底清除痕跡",
+    "Anti-forensics": "反鑑識",
     "Activate Linux": "啟用 Linux",
     "Go to Settings to activate Linux.": "前往「設定」以啟用 Linux。",
-    "A grey reminder in the corner of the screen, as another system has.": "螢幕角落一段灰色提示，就好似另一個系統咁。"
-,
+    "A grey reminder in the corner of the screen, as another system has.": "螢幕角落一段灰色提示，就好似另一個系統咁。",
     "Weather card": "天氣卡片",
-    "Shows the weather on the desktop, under the windows.": "喺桌面、視窗下面顯示天氣。"
+    "Shows the weather on the desktop, under the windows.": "喺桌面、視窗下面顯示天氣。",
+    "Battery history": "電池紀錄",
+    "Every minute's battery level and draw, and how much CPU each app used.": "每分鐘嘅電量同耗電，同埋每個 app 用咗幾多 CPU。",
+    "Written by script/misc/battery-log.sh, once a minute while the shell runs.": "由 script/misc/battery-log.sh 寫入，shell 行緊時每分鐘一次。"
 }
