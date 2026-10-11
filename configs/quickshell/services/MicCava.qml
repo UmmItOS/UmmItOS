@@ -47,7 +47,7 @@ noise_reduction = 30
     // The first reading is the state at start, not news.
     property bool settled: false
 
-    // kind: "info" a device arrived, "mute" you switched it, "gone" it is not there: three looks, so they are told apart.
+    // kind: "info" a device arrived, "muted" you muted it, "on" you unmuted it, "gone" it is not there. Red is off or missing, green is on.
     property string noteKind: "info"
 
     function say(text: string, kind: string): void {
@@ -59,7 +59,7 @@ noise_reduction = 30
     // You muted or unmuted it (the disc, or a key): the device is still there.
     onMutedChanged: {
         if (settled && present)
-            say(muted ? I18n.t("Microphone muted") : I18n.t("Microphone on"), "mute");
+            say(muted ? I18n.t("Microphone muted") : I18n.t("Microphone on"), muted ? "muted" : "on");
     }
 
     function toggleMute(): void {

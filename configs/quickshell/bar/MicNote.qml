@@ -9,7 +9,7 @@ Text {
 
     textFormat: Text.PlainText
     text: MicCava.note
-    color: MicCava.noteKind === "gone" ? Theme.urgent : MicCava.noteKind === "mute" ? Theme.warn : Theme.good
+    color: MicCava.noteKind === "gone" || MicCava.noteKind === "muted" ? Theme.urgent : Theme.good
     elide: Text.ElideMiddle
     font.family: Theme.font
     font.pixelSize: Theme.fontSize.smaller
