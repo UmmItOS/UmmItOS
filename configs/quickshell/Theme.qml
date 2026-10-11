@@ -662,9 +662,19 @@ Singleton {
         readonly property int curve: 140
         readonly property int line: 2
         readonly property int row: 36
-        // The share bar and the fill under the curve, in the accent.
-        readonly property real barAlpha: 0.28
-        readonly property real fillAlpha: 0.15
+        // The fill under the curve, in the accent.
+        readonly property real fillAlpha: 0.22
+        // An app row: icon, name over a thin share bar.
+        readonly property int appIcon: 32
+        readonly property int bar: 4
+        // The "why" tiles.
+        readonly property int tile: 116
+        readonly property int tiles: 3
+        // Apps listed; the rest are too small to matter, and the sheet must fit the screen.
+        readonly property int apps: 8
+        // Cards and rows rise in one after another, this far apart and from this far down.
+        readonly property int stagger: 40
+        readonly property int rise: 16
     }
 
     // The SAO menu (sao/): Sword Art Online's own palette and sizes, apart from the shell's look on purpose.

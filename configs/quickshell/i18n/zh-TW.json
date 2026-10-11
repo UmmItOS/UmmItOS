@@ -490,5 +490,16 @@
     "%1 h %2 min": "%1 小時 %2 分",
     "%1 min": "%1 分",
     "~%1% · %2 Wh": "~%1% · %2 Wh",
-    "%1 · %2 W avg": "%1 · 平均 %2 W"
+    "%1 · %2 W avg": "%1 · 平均 %2 W",
+    "%1% used": "已用 %1%",
+    "No battery use yet": "尚未使用電池",
+    "%1 on battery": "使用電池 %1",
+    "about %1 left": "約剩 %1",
+    "estimated": "估算",
+    "Average draw": "平均耗電",
+    "%1 W": "%1 W",
+    "quiet": "安靜",
+    "balanced": "平衡",
+    "performance": "效能",
+    "unknown": "不明"
 }
