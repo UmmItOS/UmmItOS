@@ -111,6 +111,8 @@ ShellRoot {
     // A window wanting attention on a workspace out of sight.
     UrgentNotifier {}
     MicNotifier {}
+    // A battery sample a minute, for the battery screen.
+    BatteryLog {}
     GreeterSync {}
 
     // A nudge once the last full upgrade is over a week old.

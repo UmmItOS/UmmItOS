@@ -581,6 +581,8 @@ Singleton {
         // Settle before arming the OSD, or a new sink flashes a volume nobody touched.
         readonly property int osdArm: 1200
         // A method change this soon after a focus change is that window's own, not a switch.
+        // How often the battery screen's logger takes a sample.
+        readonly property int batteryLog: 60000
         readonly property int imeFocus: 400
         // A method switch is a glance, not a value to watch, so it leaves sooner than osdHide.
         readonly property int imeHide: 600
