@@ -10,6 +10,10 @@ db=$state/battery.db
 prev=${XDG_RUNTIME_DIR:-/tmp}/ummitos-battery
 # Longer than this between samples means the machine slept.
 sleep_gap=180
+# On battery, an app that takes this share of a full battery in the last
+# window gets one notice per unplug.
+alert_pct=10
+alert_window=900
 
 sql() {
 	sqlite3 -cmd '.timeout 10000' "$db" "$@"
@@ -103,6 +107,23 @@ if [[ -r $prev.ticks && -r $prev.last ]]; then
 	fi
 	sql "BEGIN; INSERT OR REPLACE INTO samples VALUES ($now, $plugged, $energy, ${watts:-NULL},
 		${cpu:-NULL}, ${brightness:-NULL}, $wifi, $bt, '${profile//\'/}'); $rows $slept COMMIT;"
+fi
+
+# Plugged in clears who was warned; on battery, warn once per app per unplug.
+if ((plugged)); then
+	rm -f "$prev.warned"
+elif [[ -r $bat/energy_full ]]; then
+	full=$(awk '{ printf "%.4f", $1 / 1e6 }' "$bat/energy_full")
+	while IFS='|' read -r app pct; do
+		[[ -n $app ]] || continue
+		grep -qxF -- "$app" "$prev.warned" 2> /dev/null && continue
+		echo "$app" >> "$prev.warned"
+		notify-send -a Battery -- "$app is draining the battery" \
+			"It used ${pct}% of a full battery in the last $((alert_window / 60)) minutes."
+	done < <(sql "SELECT u.app, round(sum(s.watts / 60.0 * u.cpu_s / k.c) / $full * 100, 1) p
+		FROM usage u JOIN samples s USING (t) JOIN (SELECT t, sum(cpu_s) c FROM usage GROUP BY t) k USING (t)
+		WHERE u.t > $now - $alert_window AND s.plugged = 0 AND s.watts > 0
+		GROUP BY u.app HAVING p >= $alert_pct;")
 fi
 
 printf '%s\n' "$snapshot" > "$prev.ticks"
