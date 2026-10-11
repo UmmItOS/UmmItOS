@@ -30,6 +30,7 @@ FlyoutList 1.0 FlyoutList.qml
 FlyoutRow 1.0 FlyoutRow.qml
 FlyoutSearching 1.0 FlyoutSearching.qml
 singleton Cava 1.0 services/Cava.qml
+singleton MicCava 1.0 services/MicCava.qml
 singleton Cheatsheet 1.0 cheatsheet/Cheatsheet.qml
 singleton Screenshot 1.0 screenshot/Screenshot.qml
 singleton Gallery 1.0 screenshot/Gallery.qml

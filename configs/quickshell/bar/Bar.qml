@@ -239,9 +239,18 @@ PanelWindow {
         anchors.verticalCenter: parent.verticalCenter
     }
 
+    // The microphone on the other side, so the clock has something on each.
+    MicMini {
+        id: mic
+
+        anchors.left: clockColumn.right
+        anchors.leftMargin: Theme.spacing.large
+        anchors.verticalCenter: parent.verticalCenter
+    }
+
     // Beside the clock, so it never moves the centre or the clusters.
     RecordingPill {
-        anchors.left: clockColumn.right
+        anchors.left: mic.right
         anchors.leftMargin: Theme.spacing.large
         anchors.verticalCenter: parent.verticalCenter
     }

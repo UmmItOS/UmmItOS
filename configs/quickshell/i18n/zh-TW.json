@@ -502,4 +502,7 @@
     "balanced": "平衡",
     "performance": "效能",
     "unknown": "不明"
+,
+    "Microphone muted": "麥克風已靜音",
+    "Microphone in use": "麥克風使用中"
 }
