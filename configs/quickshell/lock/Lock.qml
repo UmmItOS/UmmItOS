@@ -73,8 +73,11 @@ Singleton {
     }
 
     function preview(): void {
-        if (previewing)
+        if (previewing) {
             previewing = false;
+            intruder = false;
+            intruderPhoto = "";
+        }
         else if (!preparing)
             capture(() => previewing = true);
     }
@@ -237,6 +240,17 @@ Singleton {
 
         function preview(): void {
             root.preview();
+        }
+
+        // The intruder alarm in the preview, to see it: the lock's avatar stands in for the photo; no camera, no sound.
+        function alarm(): void {
+            if (root.locked)
+                return;
+            root.intruder = true;
+            root.intruderAt = Qt.formatDateTime(new Date(), "HH:mm:ss");
+            root.intruderPhoto = Qt.resolvedUrl("avatar.webp");
+            if (!root.previewing)
+                root.preview();
         }
 
         target: "lock"

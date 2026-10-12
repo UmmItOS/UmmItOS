@@ -348,7 +348,13 @@ Item {
                 text = "";
             }
 
-            Keys.onEscapePressed: text = ""
+            // Esc clears the field; on an empty field in the preview, it closes the preview.
+            Keys.onEscapePressed: {
+                if (text === "" && Lock.previewing)
+                    Lock.preview();
+                else
+                    text = "";
+            }
 
             anchors.fill: parent
             anchors.leftMargin: Theme.spacing.large
