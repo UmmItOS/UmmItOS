@@ -557,7 +557,7 @@ Item {
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 textFormat: Text.PlainText
-                text: I18n.t("You have been photographed. The owner of this computer will see it.")
+                text: I18n.t("You are being recorded. The owner of this computer will see it.")
                 color: "white"
                 font.family: Theme.font
                 font.pixelSize: Theme.fontSize.larger
@@ -594,7 +594,8 @@ Item {
                     id: shot
 
                     anchors.fill: parent
-                    source: Lock.intruderPhoto
+                    source: Lock.intruderPhoto === "" ? "" : Lock.intruderPhoto + "?" + Lock.frame
+                    asynchronous: false
                     fillMode: Image.PreserveAspectCrop
                     cache: false
                     visible: false

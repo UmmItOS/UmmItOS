@@ -24,6 +24,8 @@ Singleton {
     // After the second wrong password: the photo just taken of whoever is there, and when.
     property bool intruder: false
     property string intruderPhoto: ""
+    property bool recording: false
+    property int frame: 0
     property string intruderAt: ""
     // Held only until PAM asks for it.
     property string pending: ""
@@ -77,8 +79,9 @@ Singleton {
             previewing = false;
             intruder = false;
             intruderPhoto = "";
-            // The preview's photo was only to look at.
-            Quickshell.execDetached(["rm", "-rf", Quickshell.env("XDG_RUNTIME_DIR") + "/ummitos-intruder-preview"]);
+            // The preview's clip was only to look at.
+            intruderShot.running = false;
+            Quickshell.execDetached(["sh", "-c", 'sleep 1; rm -rf "$1/ummitos-intruder-preview"', "sh", Quickshell.env("XDG_RUNTIME_DIR")]);
         }
         else if (!preparing)
             capture(() => previewing = true);
@@ -281,9 +284,24 @@ Singleton {
         property bool preview: false
 
         command: ["sh", "-c", 'd=$(readlink -f "$1"); for s in "$d/../../script/misc/intruder.sh" "$HOME/script/misc/intruder.sh"; do [ -x "$s" ] && exec "$s" "$2"; done', "sh", Quickshell.shellDir, preview ? "--preview" : ""]
-        stdout: StdioCollector {
-            onStreamFinished: if (root.intruder && text.trim() !== "")
-                root.intruderPhoto = "file://" + text.trim()
+        onRunningChanged: if (!running)
+            root.recording = false
+
+        stdout: SplitParser {
+            onRead: line => {
+                if (root.intruder && line !== "") {
+                    root.intruderPhoto = "file://" + line;
+                    root.recording = true;
+                }
+            }
         }
+    }
+
+    // The camera writes a new frame eight times a second; the query defeats Qt's image cache.
+    Timer {
+        running: root.recording && root.shown
+        repeat: true
+        interval: Theme.lock.liveFrame
+        onTriggered: root.frame++
     }
 }
