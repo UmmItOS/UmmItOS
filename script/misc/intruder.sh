@@ -8,7 +8,10 @@ state=${XDG_STATE_HOME:-$HOME/.local/state}/ummitos
 dir=$state/intruders
 camera=${UMMITOS_CAMERA:-/dev/video0}
 
-mkdir -p "$dir" && chmod 700 "$state" "$dir"
+# A preview of the alarm keeps its photo in memory only, and the lock deletes it on close.
+[[ $1 == --preview ]] && dir=${XDG_RUNTIME_DIR:-/tmp}/ummitos-intruder-preview
+
+mkdir -p "$dir" && chmod 700 "$dir"
 
 # The first few frames come out dark while the camera sets its exposure.
 # Prints the photo's path, which the lock screen shows back to them.

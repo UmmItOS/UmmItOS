@@ -77,6 +77,8 @@ Singleton {
             previewing = false;
             intruder = false;
             intruderPhoto = "";
+            // The preview's photo was only to look at.
+            Quickshell.execDetached(["rm", "-rf", Quickshell.env("XDG_RUNTIME_DIR") + "/ummitos-intruder-preview"]);
         }
         else if (!preparing)
             capture(() => previewing = true);
@@ -123,6 +125,7 @@ Singleton {
         if (attempts === 2) {
             intruder = true;
             intruderAt = Qt.formatDateTime(new Date(), "HH:mm:ss");
+            intruderShot.preview = false;
             intruderShot.running = true;
         }
     }
@@ -242,13 +245,15 @@ Singleton {
             root.preview();
         }
 
-        // The intruder alarm in the preview, to see and hear it: the lock's avatar stands in for the photo; no camera.
+        // The intruder alarm in the preview, to see and hear it, with a real photo kept in memory only.
         function alarm(): void {
             if (root.locked)
                 return;
             root.intruder = true;
             root.intruderAt = Qt.formatDateTime(new Date(), "HH:mm:ss");
-            root.intruderPhoto = Qt.resolvedUrl("avatar.webp");
+            root.intruderPhoto = "";
+            intruderShot.preview = true;
+            intruderShot.running = true;
             if (!root.previewing)
                 root.preview();
         }
@@ -272,7 +277,10 @@ Singleton {
     Process {
         id: intruderShot
 
-        command: ["sh", "-c", 'd=$(readlink -f "$1"); for s in "$d/../../script/misc/intruder.sh" "$HOME/script/misc/intruder.sh"; do [ -x "$s" ] && exec "$s"; done', "sh", Quickshell.shellDir]
+        // A preview's photo stays in memory; a real one is kept.
+        property bool preview: false
+
+        command: ["sh", "-c", 'd=$(readlink -f "$1"); for s in "$d/../../script/misc/intruder.sh" "$HOME/script/misc/intruder.sh"; do [ -x "$s" ] && exec "$s" "$2"; done', "sh", Quickshell.shellDir, preview ? "--preview" : ""]
         stdout: StdioCollector {
             onStreamFinished: if (root.intruder && text.trim() !== "")
                 root.intruderPhoto = "file://" + text.trim()
