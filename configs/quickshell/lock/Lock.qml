@@ -242,13 +242,14 @@ Singleton {
             root.preview();
         }
 
-        // The intruder alarm in the preview, to see it: the lock's avatar stands in for the photo; no camera, no sound.
+        // The intruder alarm in the preview, to see and hear it: the lock's avatar stands in for the photo; no camera.
         function alarm(): void {
             if (root.locked)
                 return;
             root.intruder = true;
             root.intruderAt = Qt.formatDateTime(new Date(), "HH:mm:ss");
             root.intruderPhoto = Qt.resolvedUrl("avatar.webp");
+            Sounds.play("intruder");
             if (!root.previewing)
                 root.preview();
         }
