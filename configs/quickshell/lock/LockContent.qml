@@ -571,16 +571,81 @@ Item {
                 color: Qt.alpha(Theme.urgent, Theme.lock.alarmDim)
 
                 Image {
+                    id: shot
+
                     anchors.fill: parent
                     source: Lock.intruderPhoto
                     fillMode: Image.PreserveAspectCrop
                     cache: false
-                    opacity: status === Image.Ready ? 1 : 0
+                    visible: false
+                }
+
+                // Shown as a security camera would: the saved photo itself stays untouched.
+                MultiEffect {
+                    anchors.fill: parent
+                    source: shot
+                    saturation: Theme.lock.cctvSaturation
+                    contrast: Theme.lock.cctvContrast
+                    brightness: Theme.lock.cctvBright
+                    colorization: Theme.lock.cctvTintMix
+                    colorizationColor: Theme.lock.cctvTint
+                    opacity: shot.status === Image.Ready ? 1 : 0
 
                     Behavior on opacity {
                         NumberAnimation {
                             duration: Theme.duration.expressiveFastEffects
                         }
+                    }
+                }
+
+                Canvas {
+                    anchors.fill: parent
+                    visible: shot.status === Image.Ready
+                    onPaint: {
+                        const ctx = getContext("2d");
+                        ctx.reset();
+                        ctx.fillStyle = Qt.rgba(0, 0, 0, Theme.lock.scanAlpha);
+                        for (let y = 0; y < height; y += Theme.lock.scanGap)
+                            ctx.fillRect(0, y, width, 1);
+                    }
+                }
+
+                Row {
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    anchors.margins: Theme.spacing.small
+                    spacing: Theme.spacing.extraSmall
+                    visible: shot.status === Image.Ready
+
+                    Rectangle {
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: Theme.spacing.small
+                        height: width
+                        radius: width / 2
+                        color: Theme.urgent
+
+                        SequentialAnimation on opacity {
+                            running: alarm.visible
+                            loops: Animation.Infinite
+
+                            NumberAnimation {
+                                to: 0
+                                duration: Theme.lock.recBlink
+                            }
+                            NumberAnimation {
+                                to: 1
+                                duration: Theme.lock.recBlink
+                            }
+                        }
+                    }
+
+                    Text {
+                        textFormat: Text.PlainText
+                        text: "REC"
+                        color: "white"
+                        font.family: Theme.fontMono
+                        font.pixelSize: Theme.fontSize.small
+                        font.weight: Theme.weight.bold
                     }
                 }
 

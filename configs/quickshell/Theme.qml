@@ -639,6 +639,15 @@ Singleton {
         readonly property real alarmDim: 0.4
         readonly property int alarmPhoto: 280
         readonly property real alarmTop: 0.1
+        // The photo shown back looks like a security camera: cold, grey, hard, with scan lines and a blinking REC.
+        readonly property real cctvSaturation: -0.85
+        readonly property real cctvContrast: 0.35
+        readonly property real cctvBright: -0.05
+        readonly property color cctvTint: "#7fd3c3"
+        readonly property real cctvTintMix: 0.25
+        readonly property int scanGap: 3
+        readonly property real scanAlpha: 0.18
+        readonly property int recBlink: 600
         readonly property int clock: 180
         readonly property int date: 32
         readonly property int user: 24

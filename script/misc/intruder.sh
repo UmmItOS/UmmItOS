@@ -11,12 +11,12 @@ camera=${UMMITOS_CAMERA:-/dev/video0}
 
 mkdir -p "$dir" && chmod 700 "$state" "$dir"
 
-# The first frames come out dark while the camera sets its exposure.
+# The first few frames come out dark while the camera sets its exposure.
 # Prints the photo's path, which the lock screen shows back to them.
 photo() {
 	local file
 	file=$dir/$(date +%Y-%m-%d_%H-%M-%S).jpg
-	ffmpeg -loglevel error -f v4l2 -i "$camera" -vf "select=gte(n\,15)" \
+	ffmpeg -loglevel error -f v4l2 -i "$camera" -vf "select=gte(n\,3)" \
 		-frames:v 1 -y "$file" < /dev/null && chmod 600 "$file" && echo "$file"
 }
 
