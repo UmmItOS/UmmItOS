@@ -12,6 +12,7 @@ ColumnLayout {
     property var picks: ({
             ocr: true,
             battery: true,
+            intruders: true,
             clipboard: true,
             changes: true,
             launches: true,
@@ -32,6 +33,12 @@ ColumnLayout {
             title: I18n.t("Battery history"),
             hint: I18n.t("Every minute's battery level and draw, and how much CPU each app used."),
             by: I18n.t("Written by script/misc/battery-log.sh, once a minute while the shell runs.")
+        },
+        {
+            key: "intruders",
+            title: I18n.t("Intruder photos"),
+            hint: I18n.t("Webcam photos taken when someone typed a wrong password twice at the lock screen."),
+            by: I18n.t("Written by script/misc/intruder.sh, on the second wrong password.")
         },
         {
             key: "clipboard",

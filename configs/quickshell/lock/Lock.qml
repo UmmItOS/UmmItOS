@@ -110,6 +110,9 @@ Singleton {
         failed = true;
         attempts++;
         wrong();
+        // The second wrong password: an alarm to make whoever it is stop, and a webcam photo of them, kept on this machine.
+        if (attempts === 2)
+            Quickshell.execDetached(["sh", "-c", 'd=$(readlink -f "$1"); for s in "$d/../../script/misc/intruder.sh" "$HOME/script/misc/intruder.sh"; do [ -x "$s" ] && exec "$s"; done', "sh", Quickshell.shellDir]);
     }
 
     FileView {

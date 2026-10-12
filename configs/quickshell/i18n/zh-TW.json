@@ -501,21 +501,15 @@
     "quiet": "安靜",
     "balanced": "平衡",
     "performance": "效能",
-    "unknown": "不明"
-,
+    "unknown": "不明",
     "Microphone muted": "麥克風已靜音",
-    "Microphone in use": "麥克風使用中"
-,
+    "Microphone in use": "麥克風使用中",
     "Show the microphone level": "顯示麥克風音量",
-    "Keeps the microphone open so the bar can draw its level. Off draws it only while an app records.": "保持麥克風開啟，狀態列才能畫出音量。關閉後僅在有程式錄音時繪製。"
-,
-    "No microphone": "沒有麥克風"
-,
+    "Keeps the microphone open so the bar can draw its level. Off draws it only while an app records.": "保持麥克風開啟，狀態列才能畫出音量。關閉後僅在有程式錄音時繪製。",
+    "No microphone": "沒有麥克風",
     "Microphone disconnected": "麥克風已中斷連線",
-    "%1 connected": "%1 已連接"
-,
-    "Microphone on": "麥克風已開啟"
-,
+    "%1 connected": "%1 已連接",
+    "Microphone on": "麥克風已開啟",
     "Health check": "健康檢查",
     "Checking…": "檢查中…",
     "All good": "一切正常",
@@ -528,10 +522,12 @@
     "Repository": "Repository",
     "Scripts": "Scripts",
     "Hyprland": "Hyprland",
-    "Config": "設定"
-,
+    "Config": "設定",
     "Tools": "工具",
     "Input": "輸入法",
     "Dotfiles": "設定檔",
-    "Autostart": "開機啟動"
+    "Autostart": "開機啟動",
+    "Intruder photos": "入侵者相片",
+    "Webcam photos taken when someone typed a wrong password twice at the lock screen.": "有人在鎖定畫面輸入兩次錯誤密碼時，webcam 拍下的照片。",
+    "Written by script/misc/intruder.sh, on the second wrong password.": "由 script/misc/intruder.sh 在第二次輸入錯誤密碼時寫入。"
 }

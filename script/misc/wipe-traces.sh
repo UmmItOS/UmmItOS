@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Overwrites, then deletes, the traces the desktop keeps about you, so they
 # cannot be read back from the files. Usage:
-#   wipe-traces.sh [--passes N] ocr battery clipboard changes launches place temp
+#   wipe-traces.sh [--passes N] ocr battery intruders clipboard changes launches place temp
 # Prints one "wiped<TAB>name<TAB>files" line per name. With --list it wipes
 # nothing and prints "file<TAB>name<TAB>path<TAB>bytes" for each file it would,
 # and "fs<TAB>type" for the file system they sit on.
@@ -81,6 +81,10 @@ wipe_battery() {
 	done
 }
 
+wipe_intruders() {
+	shred_tree "$state/ummitos/intruders"
+}
+
 wipe_changes() {
 	shred_named file-changes.json
 }
@@ -120,7 +124,7 @@ for name in "${names[@]}"; do
 	wiped=0
 	current=$name
 	case $name in
-		ocr | battery | clipboard | changes | launches | place | temp)
+		ocr | battery | intruders | clipboard | changes | launches | place | temp)
 			"wipe_$name"
 			;;
 		*) continue ;;
