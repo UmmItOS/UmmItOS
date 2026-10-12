@@ -564,7 +564,27 @@ Item {
             }
 
             ClippingRectangle {
+                id: frame
+
+                // The photo grows in and sharpens out of a blur once it has arrived.
+                readonly property real arrived: shot.status === Image.Ready ? 1 : 0
+                property real shown: arrived
+
                 anchors.horizontalCenter: parent.horizontalCenter
+                scale: Theme.popScale + (1 - Theme.popScale) * shown
+                layer.enabled: shown < 1
+                layer.effect: MotionBlur {
+                    settled: frame.shown
+                }
+
+                Behavior on shown {
+                    NumberAnimation {
+                        duration: Theme.duration.expressiveDefaultSpatial
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curve.emphasizedDecel
+                    }
+                }
+
                 width: Theme.lock.alarmPhoto
                 height: width * 3 / 4
                 radius: Theme.rounding.large

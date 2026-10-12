@@ -249,12 +249,24 @@ Singleton {
             root.intruder = true;
             root.intruderAt = Qt.formatDateTime(new Date(), "HH:mm:ss");
             root.intruderPhoto = Qt.resolvedUrl("avatar.webp");
-            Sounds.play("intruder");
             if (!root.previewing)
                 root.preview();
         }
 
         target: "lock"
+    }
+
+    // The alarm, again and again while the warning is up; a correct unlock or closing the preview stops it at once.
+    // Set by hand, not bound: the loop's restart would break a binding and then nothing could stop it.
+    readonly property bool sirenOn: intruder && shown
+    onSirenOnChanged: siren.running = sirenOn
+
+    Process {
+        id: siren
+
+        command: ["pw-play", Sounds.dir + "/intruder"]
+        onExited: if (root.sirenOn)
+            Qt.callLater(() => siren.running = root.sirenOn)
     }
 
     Process {

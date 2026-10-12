@@ -635,7 +635,7 @@ Singleton {
         // A faint red over the whole screen that flashes with the edges.
         readonly property real alarmWash: 0.14
         // The screen under the warning goes dark, so the clock steps back and the warning is all that reads.
-        readonly property real alarmShade: 0.7
+        readonly property real alarmShade: 0.92
         readonly property real alarmDim: 0.4
         readonly property int alarmPhoto: 280
         readonly property real alarmTop: 0.1

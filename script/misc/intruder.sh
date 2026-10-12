@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 # Run by the lock screen on the second wrong password: one webcam photo of
-# whoever is at the keyboard, kept only on this machine, and a quiet intruder
-# alarm that follows the output's mute, so a muted laptop in class stays silent.
+# whoever is at the keyboard, kept only on this machine. The lock screen plays
+# the alarm itself, on a loop, so it can stop it the moment it is unlocked.
 # Style: https://style.ysap.sh/
 
 state=${XDG_STATE_HOME:-$HOME/.local/state}/ummitos
 dir=$state/intruders
-sound=${XDG_CONFIG_HOME:-$HOME/.config}/ummitos/sounds/intruder
 camera=${UMMITOS_CAMERA:-/dev/video0}
 
 mkdir -p "$dir" && chmod 700 "$state" "$dir"
@@ -20,6 +19,4 @@ photo() {
 		-frames:v 1 -y "$file" < /dev/null && chmod 600 "$file" && echo "$file"
 }
 
-pw-play "$sound" &
 photo
-wait
