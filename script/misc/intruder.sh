@@ -21,8 +21,8 @@ rm -f "$frame"
 # The lock screen reads this path, then reloads the frame while it records.
 echo "$frame"
 
-# Atomic frames, so the lock never reads half a picture; exec, so stopping the lock's process stops the camera.
+# -t before -i limits the camera itself, so both outputs end; exec, so stopping the lock stops the camera.
 umask 077
-exec ffmpeg -loglevel error -f v4l2 -i "$camera" -t "$seconds" \
+exec ffmpeg -loglevel error -t "$seconds" -f v4l2 -i "$camera" \
 	-map 0:v -c:v libx264 -preset ultrafast -crf 28 -y "$clip" \
 	-map 0:v -vf fps=8 -q:v 4 -update 1 -atomic_writing 1 -y "$frame" < /dev/null

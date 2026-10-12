@@ -224,6 +224,7 @@ Singleton {
             root.attempts = 0;
             root.intruder = false;
             root.intruderPhoto = "";
+            intruderShot.running = false;
             root.unlocking = true;
             release.restart();
         }
