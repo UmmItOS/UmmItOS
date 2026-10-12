@@ -21,6 +21,10 @@ Singleton {
     property bool checking: false
     property bool failed: false
     property int attempts: 0
+    // After the second wrong password: the photo just taken of whoever is there, and when.
+    property bool intruder: false
+    property string intruderPhoto: ""
+    property string intruderAt: ""
     // Held only until PAM asks for it.
     property string pending: ""
 
@@ -63,6 +67,8 @@ Singleton {
             return;
         failed = false;
         attempts = 0;
+        intruder = false;
+        intruderPhoto = "";
         capture(() => locked = true);
     }
 
@@ -110,9 +116,12 @@ Singleton {
         failed = true;
         attempts++;
         wrong();
-        // The second wrong password: an alarm to make whoever it is stop, and a webcam photo of them, kept on this machine.
-        if (attempts === 2)
-            Quickshell.execDetached(["sh", "-c", 'd=$(readlink -f "$1"); for s in "$d/../../script/misc/intruder.sh" "$HOME/script/misc/intruder.sh"; do [ -x "$s" ] && exec "$s"; done', "sh", Quickshell.shellDir]);
+        // The second wrong password: an alarm, a webcam photo of them kept on this machine, and the screen turns to a warning.
+        if (attempts === 2) {
+            intruder = true;
+            intruderAt = Qt.formatDateTime(new Date(), "HH:mm:ss");
+            intruderShot.running = true;
+        }
     }
 
     FileView {
@@ -204,6 +213,8 @@ Singleton {
             root.checking = false;
             root.failed = false;
             root.attempts = 0;
+            root.intruder = false;
+            root.intruderPhoto = "";
             root.unlocking = true;
             release.restart();
         }
@@ -229,5 +240,15 @@ Singleton {
         }
 
         target: "lock"
+    }
+
+    Process {
+        id: intruderShot
+
+        command: ["sh", "-c", 'd=$(readlink -f "$1"); for s in "$d/../../script/misc/intruder.sh" "$HOME/script/misc/intruder.sh"; do [ -x "$s" ] && exec "$s"; done', "sh", Quickshell.shellDir]
+        stdout: StdioCollector {
+            onStreamFinished: if (root.intruder && text.trim() !== "")
+                root.intruderPhoto = "file://" + text.trim()
+        }
     }
 }

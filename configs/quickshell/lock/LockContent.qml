@@ -407,6 +407,201 @@ Item {
         }
     }
 
+    // After the second wrong password: the screen turns to a warning, with the photo just taken of whoever is there.
+    Item {
+        id: alarm
+
+        anchors.fill: parent
+        visible: opacity > 0
+        opacity: Lock.intruder ? 1 : 0
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Theme.duration.expressiveDefaultSpatial
+            }
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            color: Qt.rgba(0, 0, 0, Theme.lock.alarmShade)
+        }
+
+        // An alarm beacon: red from every edge and a faint wash over the screen, flashing twice a beat.
+        Item {
+            id: glow
+
+            anchors.fill: parent
+
+            SequentialAnimation on opacity {
+                running: alarm.visible
+                loops: Animation.Infinite
+
+                NumberAnimation {
+                    to: 1
+                    duration: Theme.lock.flashOn
+                }
+                NumberAnimation {
+                    to: Theme.lock.flashLow
+                    duration: Theme.lock.flashOff
+                    easing.type: Easing.OutQuad
+                }
+                NumberAnimation {
+                    to: 1
+                    duration: Theme.lock.flashOn
+                }
+                NumberAnimation {
+                    to: Theme.lock.flashLow
+                    duration: Theme.lock.flashRest
+                    easing.type: Easing.OutQuad
+                }
+            }
+
+            Rectangle {
+                anchors.fill: parent
+                color: Qt.alpha(Theme.urgent, Theme.lock.alarmWash)
+            }
+
+            Rectangle {
+                anchors { left: parent.left; right: parent.right; top: parent.top }
+                height: Theme.lock.alarmEdge
+                gradient: Gradient {
+                    orientation: Gradient.Vertical
+                    GradientStop {
+                        position: 0
+                        color: Qt.alpha(Theme.urgent, Theme.lock.alarmGlow)
+                    }
+                    GradientStop {
+                        position: 1
+                        color: Qt.alpha(Theme.urgent, 0)
+                    }
+                }
+            }
+            Rectangle {
+                anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
+                height: Theme.lock.alarmEdge
+                gradient: Gradient {
+                    orientation: Gradient.Vertical
+                    GradientStop {
+                        position: 0
+                        color: Qt.alpha(Theme.urgent, 0)
+                    }
+                    GradientStop {
+                        position: 1
+                        color: Qt.alpha(Theme.urgent, Theme.lock.alarmGlow)
+                    }
+                }
+            }
+            Rectangle {
+                anchors { top: parent.top; bottom: parent.bottom; left: parent.left }
+                width: Theme.lock.alarmEdge
+                gradient: Gradient {
+                    orientation: Gradient.Horizontal
+                    GradientStop {
+                        position: 0
+                        color: Qt.alpha(Theme.urgent, Theme.lock.alarmGlow)
+                    }
+                    GradientStop {
+                        position: 1
+                        color: Qt.alpha(Theme.urgent, 0)
+                    }
+                }
+            }
+            Rectangle {
+                anchors { top: parent.top; bottom: parent.bottom; right: parent.right }
+                width: Theme.lock.alarmEdge
+                gradient: Gradient {
+                    orientation: Gradient.Horizontal
+                    GradientStop {
+                        position: 0
+                        color: Qt.alpha(Theme.urgent, 0)
+                    }
+                    GradientStop {
+                        position: 1
+                        color: Qt.alpha(Theme.urgent, Theme.lock.alarmGlow)
+                    }
+                }
+            }
+
+        }
+
+        Column {
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: parent.height * Theme.lock.alarmTop
+            spacing: Theme.spacing.medium
+            scale: Theme.popScale + (1 - Theme.popScale) * alarm.opacity
+
+            MaterialIcon {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "warning"
+                color: Theme.urgent
+                size: Theme.icon.huge
+                fill: 1
+            }
+
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                textFormat: Text.PlainText
+                text: I18n.t("Unauthorised access")
+                color: Theme.urgent
+                font.family: Theme.fontDisplay
+                font.pixelSize: Theme.fontSize.huge
+                font.weight: Theme.weight.bold
+            }
+
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                textFormat: Text.PlainText
+                text: I18n.t("You have been photographed. The owner of this computer will see it.")
+                color: "white"
+                font.family: Theme.font
+                font.pixelSize: Theme.fontSize.larger
+            }
+
+            ClippingRectangle {
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: Theme.lock.alarmPhoto
+                height: width * 3 / 4
+                radius: Theme.rounding.large
+                color: Qt.alpha(Theme.urgent, Theme.lock.alarmDim)
+
+                Image {
+                    anchors.fill: parent
+                    source: Lock.intruderPhoto
+                    fillMode: Image.PreserveAspectCrop
+                    cache: false
+                    opacity: status === Image.Ready ? 1 : 0
+
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: Theme.duration.expressiveFastEffects
+                        }
+                    }
+                }
+
+                MaterialIcon {
+                    anchors.centerIn: parent
+                    visible: Lock.intruderPhoto === ""
+                    text: "photo_camera"
+                    color: "white"
+                    size: Theme.icon.huge
+                }
+            }
+
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                textFormat: Text.PlainText
+                text: I18n.t("Recorded at %1").arg(Lock.intruderAt)
+                color: "white"
+                opacity: Theme.lock.alarmGlow
+                font.family: Theme.font
+                font.pixelSize: Theme.fontSize.normal
+                font.features: ({
+                        tnum: 1
+                    })
+            }
+        }
+    }
+
     // The lock covers every layer, so it draws the wake itself.
     WakeCurtain {
         anchors.fill: parent

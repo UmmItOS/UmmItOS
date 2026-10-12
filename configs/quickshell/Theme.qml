@@ -624,6 +624,21 @@ Singleton {
 
     // The lock screen's sizes, kept from hyprlock so the switch looks the same.
     readonly property QtObject lock: QtObject {
+        // The intruder warning: how far the red glow reaches in from each edge, its pulse, and the photo shown back.
+        readonly property int alarmEdge: 160
+        readonly property real alarmGlow: 0.75
+        // Flash, dark, flash, rest: a double beat about once a second, kept at 2 Hz or slower so it never strobes.
+        readonly property int flashOn: 90
+        readonly property int flashOff: 260
+        readonly property int flashRest: 560
+        readonly property real flashLow: 0.12
+        // A faint red over the whole screen that flashes with the edges.
+        readonly property real alarmWash: 0.14
+        // The screen under the warning goes dark, so the clock steps back and the warning is all that reads.
+        readonly property real alarmShade: 0.7
+        readonly property real alarmDim: 0.4
+        readonly property int alarmPhoto: 280
+        readonly property real alarmTop: 0.1
         readonly property int clock: 180
         readonly property int date: 32
         readonly property int user: 24

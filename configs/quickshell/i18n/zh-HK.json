@@ -529,5 +529,8 @@
     "Autostart": "開機啟動",
     "Intruder photos": "入侵者相片",
     "Webcam photos taken when someone typed a wrong password twice at the lock screen.": "有人喺鎖機畫面打錯兩次密碼時，webcam 影低嘅相。",
-    "Written by script/misc/intruder.sh, on the second wrong password.": "由 script/misc/intruder.sh 喺第二次打錯密碼時寫入。"
+    "Written by script/misc/intruder.sh, on the second wrong password.": "由 script/misc/intruder.sh 喺第二次打錯密碼時寫入。",
+    "Unauthorised access": "未經授權嘅存取",
+    "You have been photographed. The owner of this computer will see it.": "你已經被影低，呢部機嘅主人會睇到。",
+    "Recorded at %1": "記錄於 %1"
 }
