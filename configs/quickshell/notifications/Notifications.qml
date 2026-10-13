@@ -95,8 +95,10 @@ Scope {
         readonly property real columnRight: width - Theme.spacing.medium
         readonly property real columnLeft: columnRight - toastWidth + Theme.spacing.medium * 2
 
-        // Only for a dropdown over the column, and never off screen.
+        // For the open panel, which sits on the same column, or a dropdown over it; never off screen.
         readonly property real clearance: {
+            if (Notifs.panelOpen)
+                return Math.min(Theme.notification.width, columnLeft - Theme.spacing.medium);
             const f = Notifs.flyout;
             // Flyout edges are in its own screen's coordinates.
             if (!f || Notifs.flyoutScreen !== (screen?.name ?? "") || Notifs.flyoutRight <= columnLeft)
