@@ -1,4 +1,5 @@
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Wayland
 import QtQuick
 import ".."
@@ -12,14 +13,16 @@ Variants {
 
         required property var modelData
 
+        // Under a window the card is not seen, so moving it would only be motion nobody asked for.
+        readonly property bool seen: (Hyprland.monitorFor(modelData)?.activeWorkspace?.toplevels.values.length ?? 0) === 0
         // The notifications share this corner; the card steps below the toasts and beside the open panel.
-        readonly property bool shared: Notifs.toastScreen === (modelData?.name ?? "")
+        readonly property bool shared: win.seen && Notifs.toastScreen === (modelData?.name ?? "")
         readonly property real down: win.shared && Notifs.toastHeight > 0 ? Notifs.toastHeight + Theme.spacing.medium : 0
         // The card's own left edge, in screen x, before it moves.
         readonly property real cardLeft: (modelData?.width ?? Theme.fallbackScreen.width) - Theme.windowInset - card.implicitWidth
         // A bar dropdown over the card pushes it clear to the left; the open panel moves it by the panel's width.
         readonly property real left: {
-            const f = Notifs.flyout && Notifs.flyoutScreen === (modelData?.name ?? "") && Notifs.flyoutRight > win.cardLeft;
+            const f = win.seen && Notifs.flyout && Notifs.flyoutScreen === (modelData?.name ?? "") && Notifs.flyoutRight > win.cardLeft;
             // Far enough that the card's right edge clears the dropdown's left edge.
             const fromFlyout = f ? win.cardLeft + card.implicitWidth - Notifs.flyoutLeft + Theme.spacing.small : 0;
             return Math.max(fromFlyout, win.shared && Notifs.panelOpen ? Theme.notification.width : 0);
