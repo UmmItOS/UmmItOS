@@ -5,7 +5,7 @@ import QtQuick
 import QtQuick.Layouts
 import ".."
 
-// UmmItOS Settings: a full-height sheet docked right, like the notification panel; a click outside closes it.
+// UmmItOS Settings: a full-height sheet docked left, clear of the notifications and the weather card on the right; a click outside closes it.
 OverlayWindow {
     id: win
 
@@ -107,10 +107,10 @@ OverlayWindow {
         anchors {
             top: parent.top
             bottom: parent.bottom
-            right: parent.right
+            left: parent.left
             topMargin: Theme.barHeight + Theme.spacing.small
             bottomMargin: Theme.spacing.small
-            rightMargin: Theme.spacing.small
+            leftMargin: Theme.spacing.small
         }
 
         width: Math.min(Theme.settings.width, parent.width - Theme.spacing.extraLarge * 2)
@@ -118,7 +118,7 @@ OverlayWindow {
 
         // Slides in from the edge it docks to; Translate, since the anchors own x.
         transform: Translate {
-            x: (1 - win.reveal) * panel.width
+            x: -(1 - win.reveal) * panel.width
         }
 
         Surface {
