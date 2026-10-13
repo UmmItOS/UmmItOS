@@ -549,5 +549,8 @@
     "Networks this computer remembers. Joins are counted from the first time the shell ran this page's counter.": "這台電腦記住的網路。連線次數從殼層第一次開始計數時算起。",
     "No saved Wi-Fi networks": "沒有已儲存的 Wi-Fi 網路",
     "joins": "次連線",
-    "Wi-Fi": "Wi-Fi"
+    "Wi-Fi": "Wi-Fi",
+    "No network": "沒有網路",
+    "LAN": "有線網路",
+    "Empty workspace": "空的工作區"
 }

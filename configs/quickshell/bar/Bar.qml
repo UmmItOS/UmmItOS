@@ -68,6 +68,10 @@ PanelWindow {
             Layout.alignment: Qt.AlignVCenter
         }
 
+        NetInfo {
+            Layout.alignment: Qt.AlignVCenter
+        }
+
         Cluster {
             Layout.alignment: Qt.AlignVCenter
 

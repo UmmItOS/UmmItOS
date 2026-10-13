@@ -274,6 +274,9 @@ Singleton {
         // Marks a bar button whose action is narrowed, like shuffle limited to one folder.
         readonly property int badge: 6
         readonly property real workspaceIdle: 0.28
+        // The network label is read at a glance, not looked at.
+        readonly property real netInfo: 0.5
+        readonly property int netName: 140
         readonly property real workspaceGlowBlur: 0.9
         readonly property real workspaceGlow: 0.55
     }
@@ -603,6 +606,8 @@ Singleton {
         readonly property int wifiTick: 30000
         // How often the Wi-Fi menu re-reads each network's dBm.
         readonly property int wifiLevels: 3000
+        // NetworkManager sends events in bursts; one re-read after they settle.
+        readonly property int netSettle: 300
         // A method change this soon after a focus change is that window's own, not a switch.
         // How often the battery screen's logger takes a sample.
         readonly property int batteryLog: 60000

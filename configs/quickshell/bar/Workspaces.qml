@@ -91,6 +91,23 @@ RowLayout {
                 anchors.margins: -Theme.hitSlop
                 cursorShape: Qt.PointingHandCursor
             }
+
+            // Reaches past the dot, as its click does.
+            HoverHandler {
+                id: hover
+
+                margin: Theme.hitSlop
+            }
+
+            // The titles of the windows on it, like the other icons' labels.
+            Tip {
+                anchorItem: pill
+                wanted: hover.hovered
+                text: {
+                    const titles = Hyprland.toplevels.values.filter(t => t && t.workspace?.id === pill.modelData?.id).map(t => t.title || t.lastIpcObject?.class || "");
+                    return titles.length > 0 ? titles.join("\n") : I18n.t("Empty workspace");
+                }
+            }
         }
     }
 }

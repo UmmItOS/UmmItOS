@@ -48,7 +48,8 @@ PopupWindow {
         anchors.centerIn: parent
         width: label.implicitWidth + Theme.spacing.medium * 2
         height: label.implicitHeight + Theme.spacing.small * 2
-        radius: Theme.rounding.full
+        // A pill for one line; several lines read as a card.
+        radius: label.lineCount > 1 ? Theme.rounding.medium : Theme.rounding.full
         color: Theme.bgTray
         opacity: root.showing ? 1 : 0
         scale: root.showing ? 1 : Theme.popScale
