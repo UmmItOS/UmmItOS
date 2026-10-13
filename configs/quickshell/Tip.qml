@@ -1,5 +1,7 @@
 import Quickshell
+import Quickshell.Widgets
 import QtQuick
+import QtQuick.Layouts
 
 // A short label under an icon-only control, after the pointer rests on it.
 PopupWindow {
@@ -7,12 +9,14 @@ PopupWindow {
 
     required property Item anchorItem
     property string text
+    // A list instead of a label: { text, glyph } or { text, image } per row, the icon before the words.
+    property var rows: []
     // The control is hovered; the tip follows after a pause.
     property bool wanted: false
     property bool showing: false
 
     onWantedChanged: {
-        if (wanted && text !== "") {
+        if (wanted && (text !== "" || rows.length > 0)) {
             delay.restart();
         } else {
             delay.stop();
@@ -27,8 +31,8 @@ PopupWindow {
         margins.top: Theme.spacing.small
     }
 
-    implicitWidth: label.implicitWidth + Theme.spacing.medium * 2 + Theme.windowInset
-    implicitHeight: label.implicitHeight + Theme.spacing.small * 2 + Theme.windowInset
+    implicitWidth: sheet.width + Theme.windowInset
+    implicitHeight: sheet.height + Theme.windowInset
     color: "transparent"
     visible: showing || sheet.opacity > 0
     // Never takes the pointer, so it cannot cover what it describes or flicker under the cursor.
@@ -46,10 +50,12 @@ PopupWindow {
         id: sheet
 
         anchors.centerIn: parent
-        width: label.implicitWidth + Theme.spacing.medium * 2
-        height: label.implicitHeight + Theme.spacing.small * 2
-        // A pill for one line; several lines read as a card.
-        radius: label.lineCount > 1 ? Theme.rounding.medium : Theme.rounding.full
+        readonly property bool listed: root.rows.length > 0
+
+        width: (listed ? list.implicitWidth : label.implicitWidth) + Theme.spacing.medium * 2
+        height: (listed ? list.implicitHeight + Theme.spacing.medium * 2 : label.implicitHeight + Theme.spacing.small * 2)
+        // A pill for one line; a list reads as a card.
+        radius: listed || label.lineCount > 1 ? Theme.rounding.medium : Theme.rounding.full
         color: Theme.bgTray
         opacity: root.showing ? 1 : 0
         scale: root.showing ? 1 : Theme.popScale
@@ -71,10 +77,57 @@ PopupWindow {
             }
         }
 
+        ColumnLayout {
+            id: list
+
+            anchors.centerIn: parent
+            visible: sheet.listed
+            spacing: Theme.spacing.small
+
+            Repeater {
+                model: root.rows
+
+                RowLayout {
+                    id: entry
+
+                    required property var modelData
+
+                    spacing: Theme.spacing.small
+
+                    IconImage {
+                        Layout.alignment: Qt.AlignVCenter
+                        visible: (entry.modelData.image ?? "") !== ""
+                        implicitSize: Theme.icon.small
+                        source: entry.modelData.image ?? ""
+                    }
+
+                    MaterialIcon {
+                        Layout.alignment: Qt.AlignVCenter
+                        visible: (entry.modelData.image ?? "") === "" && (entry.modelData.glyph ?? "") !== ""
+                        text: entry.modelData.glyph ?? ""
+                        color: Theme.accentText
+                        size: Theme.icon.small
+                    }
+
+                    Text {
+                        Layout.alignment: Qt.AlignVCenter
+                        Layout.maximumWidth: Theme.tipWidth
+                        text: entry.modelData.text
+                        textFormat: Text.PlainText
+                        elide: Text.ElideRight
+                        color: Theme.fg
+                        font.family: Theme.font
+                        font.pixelSize: Theme.fontSize.smaller
+                    }
+                }
+            }
+        }
+
         Text {
             id: label
 
             anchors.centerIn: parent
+            visible: !sheet.listed
             text: root.text
             textFormat: Text.PlainText
             color: Theme.fg

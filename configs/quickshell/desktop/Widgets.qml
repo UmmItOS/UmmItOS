@@ -15,7 +15,15 @@ Variants {
         // The notifications share this corner; the card steps below the toasts and beside the open panel.
         readonly property bool shared: Notifs.toastScreen === (modelData?.name ?? "")
         readonly property real down: win.shared && Notifs.toastHeight > 0 ? Notifs.toastHeight + Theme.spacing.medium : 0
-        readonly property real left: win.shared && Notifs.panelOpen ? Theme.notification.width : 0
+        // The card's own left edge, in screen x, before it moves.
+        readonly property real cardLeft: (modelData?.width ?? Theme.fallbackScreen.width) - Theme.windowInset - card.implicitWidth
+        // A bar dropdown over the card pushes it clear to the left; the open panel moves it by the panel's width.
+        readonly property real left: {
+            const f = Notifs.flyout && Notifs.flyoutScreen === (modelData?.name ?? "") && Notifs.flyoutRight > win.cardLeft;
+            // Far enough that the card's right edge clears the dropdown's left edge.
+            const fromFlyout = f ? win.cardLeft + card.implicitWidth - Notifs.flyoutLeft + Theme.spacing.small : 0;
+            return Math.max(fromFlyout, win.shared && Notifs.panelOpen ? Theme.notification.width : 0);
+        }
 
         screen: modelData
         // Stays mapped while the card fades out.
@@ -36,7 +44,7 @@ Variants {
         }
 
         // Room to move into, so the card slides by transform instead of resizing the surface.
-        implicitWidth: card.implicitWidth + Theme.notification.width
+        implicitWidth: (modelData?.width ?? Theme.fallbackScreen.width) - Theme.windowInset * 2
         implicitHeight: (modelData?.height ?? Theme.fallbackScreen.height) - Theme.barHeight - Theme.windowInset * 2
         color: "transparent"
 
@@ -56,7 +64,7 @@ Variants {
             transform: Translate {
                 id: shift
 
-                x: -win.left
+                x: -Math.min(win.left, win.cardLeft - Theme.windowInset)
                 y: Math.min(win.down, win.height - card.height)
 
                 Behavior on x {

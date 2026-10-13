@@ -118,6 +118,7 @@ Singleton {
             root.dnd = !root.dnd;
         }
 
+
         target: "notifications"
     }
 }

@@ -176,6 +176,8 @@ Singleton {
     readonly property int cardFeather: 56
     // A desktop widget's width (a medium macOS widget).
     readonly property int widgetWidth: 340
+    // The longest line a hover list shows before it elides.
+    readonly property int tipWidth: 420
 
     // The lecture pen (draw/).
     readonly property QtObject draw: QtObject {

@@ -12,11 +12,24 @@ RowLayout {
     readonly property var paired: Bluez.Bluetooth.devices.values.filter(d => d.connected)
     readonly property string adapter: Bluez.Bluetooth.defaultAdapter?.adapterId ?? ""
 
-    readonly property string details: {
-        const lines = NetIfaces.list.map(i => [i.kind, i.device, i.name === i.device ? "" : i.name].filter(p => p !== "").join(" · "));
+    readonly property var details: {
+        const glyphs = {
+            "Wi-Fi": "wifi",
+            "LAN": "lan",
+            "VPN": "vpn_lock",
+            "Docker": "deployed_code",
+            "Bridge": "device_hub"
+        };
+        const rows = NetIfaces.list.map(i => ({
+                    glyph: glyphs[i.kind],
+                    text: [i.kind, i.device, i.name === i.device ? "" : i.name].filter(p => p !== "").join(" · ")
+                }));
         for (const d of root.paired)
-            lines.push(["Bluetooth", root.adapter, d.name].filter(p => p !== "").join(" · "));
-        return lines.length > 0 ? lines.join("\n") : I18n.t("No network");
+            rows.push({
+                glyph: "bluetooth",
+                text: ["Bluetooth", root.adapter, d.name].filter(p => p !== "").join(" · ")
+            });
+        return rows;
     }
 
     spacing: Theme.spacing.extraSmall
@@ -28,7 +41,8 @@ RowLayout {
 
     Tip {
         anchorItem: root
-        text: root.details
+        text: I18n.t("No network")
+        rows: root.details
         wanted: hover.hovered
     }
 

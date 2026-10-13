@@ -103,10 +103,16 @@ RowLayout {
             Tip {
                 anchorItem: pill
                 wanted: hover.hovered
-                text: {
-                    const titles = Hyprland.toplevels.values.filter(t => t && t.workspace?.id === pill.modelData?.id).map(t => t.title || t.lastIpcObject?.class || "");
-                    return titles.length > 0 ? titles.join("\n") : I18n.t("Empty workspace");
-                }
+                text: I18n.t("Empty workspace")
+                rows: Hyprland.toplevels.values.filter(t => t && t.workspace?.id === pill.modelData?.id).map(t => {
+                    const app = t.wayland?.appId || t.lastIpcObject?.class || "";
+                    const entry = DesktopEntries.heuristicLookup(app);
+                    return {
+                        text: t.title || entry?.name || app,
+                        image: entry?.icon ? Quickshell.iconPath(entry.icon, true) : "",
+                        glyph: "web_asset"
+                    };
+                })
             }
         }
     }
