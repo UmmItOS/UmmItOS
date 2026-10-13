@@ -382,7 +382,10 @@ Singleton {
     }
 
     readonly property QtObject wifiAsk: QtObject {
-        readonly property int card: 400
+        readonly property int card: 480
+        readonly property int badge: 88
+        readonly property int field: 52
+        readonly property real tint: 0.16
     }
 
     readonly property QtObject session: QtObject {

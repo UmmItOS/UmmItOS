@@ -9,6 +9,8 @@ OverlayWindow {
     id: win
 
     property bool showText: false
+    readonly property bool wrong: WifiAsk.error !== ""
+    readonly property color mood: win.wrong ? Theme.urgent : Theme.accent
 
     function submit(): void {
         if (psk.text !== "")
@@ -19,6 +21,8 @@ OverlayWindow {
         psk.text = "";
         win.showText = false;
         psk.forceActiveFocus();
+        if (win.wrong)
+            no.restart();
     }
 
     shown: WifiAsk.open
@@ -55,20 +59,34 @@ OverlayWindow {
                 margins: Theme.spacing.extraLarge
             }
 
-            spacing: Theme.spacing.medium
+            spacing: Theme.spacing.small
 
-            MaterialIcon {
+            Rectangle {
                 Layout.alignment: Qt.AlignHCenter
-                text: "wifi_password"
-                color: Theme.accentText
-                size: Theme.icon.huge
+                Layout.bottomMargin: Theme.spacing.medium
+                implicitWidth: Theme.wifiAsk.badge
+                implicitHeight: Theme.wifiAsk.badge
+                radius: width / 2
+                color: Qt.alpha(win.mood, Theme.wifiAsk.tint)
+
+                Behavior on color {
+                    FastColor {}
+                }
+
+                MaterialIcon {
+                    anchors.centerIn: parent
+                    text: win.wrong ? "lock" : "wifi_password"
+                    color: win.wrong ? Theme.urgent : Theme.accentText
+                    size: Theme.icon.extraLarge
+                }
             }
 
             Text {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
+                elide: Text.ElideRight
                 textFormat: Text.PlainText
-                text: I18n.t("Wi-Fi password required")
+                text: WifiAsk.name
                 color: Theme.fg
 
                 font {
@@ -83,21 +101,76 @@ OverlayWindow {
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.Wrap
                 textFormat: Text.PlainText
-                text: WifiAsk.error !== "" ? WifiAsk.error : I18n.t("Enter the password for “%1”").arg(WifiAsk.name)
-                color: WifiAsk.error !== "" ? Theme.urgent : Theme.dim
+                text: win.wrong ? WifiAsk.error : I18n.t("Wi-Fi password required")
+                color: win.wrong ? Theme.urgent : Theme.dim
 
                 font {
                     family: Theme.font
-                    pixelSize: Theme.fontSize.smaller
+                    pixelSize: Theme.fontSize.normal
+                }
+
+                Behavior on color {
+                    FastColor {}
                 }
             }
 
             Rectangle {
+                id: field
+
                 Layout.fillWidth: true
-                Layout.topMargin: Theme.spacing.small
-                implicitHeight: Theme.control.field
+                Layout.topMargin: Theme.spacing.large
+                implicitHeight: Theme.wifiAsk.field
                 radius: Theme.rounding.full
-                color: Theme.bgAlt
+                color: win.wrong && psk.text === "" ? Qt.alpha(Theme.urgent, Theme.wifiAsk.tint) : psk.activeFocus ? Theme.bgTray : Theme.bgAlt
+
+                transform: Translate {
+                    id: shake
+                }
+
+                Behavior on color {
+                    FastColor {}
+                }
+
+                // A wrong password shakes the field, as the lock screen does.
+                SequentialAnimation {
+                    id: no
+
+                    NumberAnimation {
+                        target: shake
+                        property: "x"
+                        to: Theme.spacing.medium
+                        duration: Theme.duration.shake[0]
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curve.standard
+                    }
+
+                    NumberAnimation {
+                        target: shake
+                        property: "x"
+                        to: -Theme.spacing.medium
+                        duration: Theme.duration.shake[1]
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curve.standard
+                    }
+
+                    NumberAnimation {
+                        target: shake
+                        property: "x"
+                        to: Theme.spacing.small
+                        duration: Theme.duration.shake[2]
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curve.standard
+                    }
+
+                    NumberAnimation {
+                        target: shake
+                        property: "x"
+                        to: 0
+                        duration: Theme.duration.shake[3]
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curve.standard
+                    }
+                }
 
                 TextInput {
                     id: psk
@@ -110,17 +183,19 @@ OverlayWindow {
                         left: parent.left
                         right: eye.left
                         verticalCenter: parent.verticalCenter
-                        leftMargin: Theme.spacing.large
+                        leftMargin: Theme.spacing.largeIncreased
                         rightMargin: Theme.spacing.small
                     }
 
                     clip: true
                     echoMode: win.showText ? TextInput.Normal : TextInput.Password
                     color: Theme.fg
+                    selectionColor: Theme.accent
+                    selectedTextColor: Theme.accentOn
 
                     font {
                         family: Theme.font
-                        pixelSize: Theme.fontSize.smaller
+                        pixelSize: Theme.fontSize.larger
                     }
 
                     Text {
@@ -141,25 +216,28 @@ OverlayWindow {
                     anchors {
                         right: parent.right
                         verticalCenter: parent.verticalCenter
-                        rightMargin: Theme.spacing.medium
+                        rightMargin: Theme.spacing.large
                     }
 
                     icon: win.showText ? "visibility_off" : "visibility"
                     label: win.showText ? "Hide password" : "Show password"
                     baseColor: Theme.dim
                     hoverColor: Theme.fg
-                    size: Theme.icon.small
+                    size: Theme.icon.normal
                 }
             }
 
             RowLayout {
-                Layout.alignment: Qt.AlignRight
-                Layout.topMargin: Theme.spacing.small
+                Layout.fillWidth: true
+                Layout.topMargin: Theme.spacing.medium
                 spacing: Theme.spacing.small
 
                 Action {
                     onClicked: WifiAsk.cancel()
 
+                    // Equal halves: fillWidth alone shares by each button's own width.
+                    Layout.fillWidth: true
+                    Layout.preferredWidth: 1
                     label: I18n.t("Cancel")
                     rest: Theme.bgAlt
                 }
@@ -167,6 +245,9 @@ OverlayWindow {
                 Action {
                     onClicked: win.submit()
 
+                    Layout.fillWidth: true
+                    Layout.preferredWidth: 1
+                    icon: "wifi"
                     label: I18n.t("Connect")
                     primary: true
                     enabled: psk.text !== ""
