@@ -533,5 +533,11 @@
     "Unauthorised access": "未經授權的存取",
     "You are being recorded. The owner of this computer will see it.": "你正在被錄影，這台電腦的主人會看到。",
     "Recorded at %1": "記錄於 %1",
-    "Wi-Fi password required": "需要 Wi-Fi 密碼"
+    "Wi-Fi password required": "需要 Wi-Fi 密碼",
+    "Wants to connect to this computer": "想連線到這台電腦",
+    "Pair if the device shows the same code": "如果裝置顯示相同的代碼，就配對",
+    "Wants to pair with this computer": "想與這台電腦配對",
+    "A Bluetooth device": "一個藍牙裝置",
+    "Allow": "允許",
+    "Pair": "配對"
 }

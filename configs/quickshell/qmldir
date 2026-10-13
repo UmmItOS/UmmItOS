@@ -52,3 +52,4 @@ singleton FileChanges 1.0 bar/FileChanges.qml
 Tip 1.0 Tip.qml
 singleton Power 1.0 power/Power.qml
 singleton WifiAsk 1.0 bar/WifiAsk.qml
+singleton BtAsk 1.0 bar/BtAsk.qml

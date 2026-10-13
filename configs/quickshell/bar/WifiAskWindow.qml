@@ -4,35 +4,59 @@ import QtQuick
 import QtQuick.Layouts
 import ".."
 
-// GNOME's way: a password asked in the middle of the screen, not in a dropdown.
+// GNOME's way: a Wi-Fi password, or a Bluetooth yes or no, asked in the middle of the screen.
 OverlayWindow {
     id: win
 
     property bool showText: false
-    readonly property bool wrong: WifiAsk.error !== ""
+    // Set on open, so the exit keeps the look it opened with.
+    property bool bt: false
+    readonly property bool wrong: !win.bt && WifiAsk.error !== ""
     readonly property color mood: win.wrong ? Theme.urgent : Theme.accent
 
     function submit(): void {
-        if (psk.text !== "")
+        if (win.bt)
+            BtAsk.answer(true);
+        else if (psk.text !== "")
             WifiAsk.connect(psk.text);
     }
 
+    function cancel(): void {
+        if (win.bt)
+            BtAsk.answer(false);
+        else
+            WifiAsk.cancel();
+    }
+
     onOpened: {
+        win.bt = BtAsk.open;
         psk.text = "";
         win.showText = false;
-        psk.forceActiveFocus();
+        if (win.bt)
+            keys.forceActiveFocus();
+        else
+            psk.forceActiveFocus();
         if (win.wrong)
             no.restart();
     }
 
-    shown: WifiAsk.open
+    shown: WifiAsk.open || BtAsk.open
     name: "wifi-ask"
     scrim: Theme.shade.normal
 
     MouseArea {
-        onClicked: WifiAsk.cancel()
+        onClicked: win.cancel()
 
         anchors.fill: parent
+    }
+
+    // Holds the keys when there is no field to type in.
+    Item {
+        id: keys
+
+        Keys.onReturnPressed: win.submit()
+        Keys.onEnterPressed: win.submit()
+        Keys.onEscapePressed: win.cancel()
     }
 
     Surface {
@@ -75,7 +99,7 @@ OverlayWindow {
 
                 MaterialIcon {
                     anchors.centerIn: parent
-                    text: win.wrong ? "lock" : "wifi_password"
+                    text: win.bt ? "bluetooth" : win.wrong ? "lock" : "wifi_password"
                     color: win.wrong ? Theme.urgent : Theme.accentText
                     size: Theme.icon.extraLarge
                 }
@@ -86,7 +110,7 @@ OverlayWindow {
                 horizontalAlignment: Text.AlignHCenter
                 elide: Text.ElideRight
                 textFormat: Text.PlainText
-                text: WifiAsk.name
+                text: win.bt ? BtAsk.name : WifiAsk.name
                 color: Theme.fg
 
                 font {
@@ -101,7 +125,13 @@ OverlayWindow {
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.Wrap
                 textFormat: Text.PlainText
-                text: win.wrong ? WifiAsk.error : I18n.t("Wi-Fi password required")
+                text: {
+                    if (win.bt && BtAsk.kind === "service")
+                        return I18n.t("Wants to connect to this computer");
+                    if (win.bt)
+                        return BtAsk.passkey !== "" ? I18n.t("Pair if the device shows the same code") : I18n.t("Wants to pair with this computer");
+                    return win.wrong ? WifiAsk.error : I18n.t("Wi-Fi password required");
+                }
                 color: win.wrong ? Theme.urgent : Theme.dim
 
                 font {
@@ -114,11 +144,29 @@ OverlayWindow {
                 }
             }
 
+            Text {
+                Layout.fillWidth: true
+                Layout.topMargin: Theme.spacing.medium
+                visible: win.bt && BtAsk.passkey !== ""
+                horizontalAlignment: Text.AlignHCenter
+                textFormat: Text.PlainText
+                text: BtAsk.passkey
+                color: Theme.fg
+
+                font {
+                    family: Theme.fontMono
+                    pixelSize: Theme.fontSize.huge
+                    weight: Theme.weight.bold
+                    letterSpacing: Theme.spacing.small
+                }
+            }
+
             Rectangle {
                 id: field
 
                 Layout.fillWidth: true
                 Layout.topMargin: Theme.spacing.large
+                visible: !win.bt
                 implicitHeight: Theme.wifiAsk.field
                 radius: Theme.rounding.full
                 color: win.wrong && psk.text === "" ? Qt.alpha(Theme.urgent, Theme.wifiAsk.tint) : psk.activeFocus ? Theme.bgTray : Theme.bgAlt
@@ -177,7 +225,7 @@ OverlayWindow {
 
                     Keys.onReturnPressed: win.submit()
                     Keys.onEnterPressed: win.submit()
-                    Keys.onEscapePressed: WifiAsk.cancel()
+                    Keys.onEscapePressed: win.cancel()
 
                     anchors {
                         left: parent.left
@@ -233,7 +281,7 @@ OverlayWindow {
                 spacing: Theme.spacing.small
 
                 Action {
-                    onClicked: WifiAsk.cancel()
+                    onClicked: win.cancel()
 
                     // Equal halves: fillWidth alone shares by each button's own width.
                     Layout.fillWidth: true
@@ -247,10 +295,10 @@ OverlayWindow {
 
                     Layout.fillWidth: true
                     Layout.preferredWidth: 1
-                    icon: "wifi"
-                    label: I18n.t("Connect")
+                    icon: win.bt ? "bluetooth" : "wifi"
+                    label: !win.bt ? I18n.t("Connect") : BtAsk.kind === "service" ? I18n.t("Allow") : I18n.t("Pair")
                     primary: true
-                    enabled: psk.text !== ""
+                    enabled: win.bt || psk.text !== ""
                 }
             }
         }
