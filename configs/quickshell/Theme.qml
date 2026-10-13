@@ -637,7 +637,7 @@ Singleton {
         // The screen under the warning goes dark, so the clock steps back and the warning is all that reads.
         readonly property real alarmShade: 0.92
         readonly property real alarmDim: 0.4
-        readonly property int alarmPhoto: 280
+        readonly property int alarmPhoto: 560
         readonly property real alarmTop: 0.1
         // The photo shown back looks like a security camera: cold, grey, hard, with scan lines and a blinking REC.
         readonly property real cctvSaturation: -0.85
