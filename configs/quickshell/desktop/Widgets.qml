@@ -8,7 +8,14 @@ Variants {
     model: Quickshell.screens
 
     PanelWindow {
+        id: win
+
         required property var modelData
+
+        // The notifications share this corner; the card steps below the toasts and beside the open panel.
+        readonly property bool shared: Notifs.toastScreen === (modelData?.name ?? "")
+        readonly property real down: win.shared && Notifs.toastHeight > 0 ? Notifs.toastHeight + Theme.spacing.medium : 0
+        readonly property real left: win.shared && Notifs.panelOpen ? Theme.notification.width : 0
 
         screen: modelData
         // Stays mapped while the card fades out.
@@ -28,12 +35,46 @@ Variants {
             right: Theme.windowInset
         }
 
-        implicitWidth: card.implicitWidth
-        implicitHeight: card.implicitHeight
+        // Room to move into, so the card slides by transform instead of resizing the surface.
+        implicitWidth: card.implicitWidth + Theme.notification.width
+        implicitHeight: (modelData?.height ?? Theme.fallbackScreen.height) - Theme.barHeight - Theme.windowInset * 2
         color: "transparent"
+
+        mask: Region {
+            x: card.x + shift.x
+            y: card.y + shift.y
+            width: card.width
+            height: card.height
+        }
 
         WeatherCard {
             id: card
+
+            anchors.top: parent.top
+            anchors.right: parent.right
+
+            transform: Translate {
+                id: shift
+
+                x: -win.left
+                y: Math.min(win.down, win.height - card.height)
+
+                Behavior on x {
+                    NumberAnimation {
+                        duration: Theme.duration.expressiveDefaultSpatial
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curve.emphasizedDecel
+                    }
+                }
+
+                Behavior on y {
+                    NumberAnimation {
+                        duration: Theme.duration.expressiveDefaultSpatial
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.curve.emphasizedDecel
+                    }
+                }
+            }
         }
     }
 }

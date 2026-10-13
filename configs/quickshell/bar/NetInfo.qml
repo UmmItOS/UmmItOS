@@ -58,6 +58,16 @@ RowLayout {
         size: Theme.icon.small
     }
 
+    // The glyph alone did not say what it was.
+    Text {
+        Layout.alignment: Qt.AlignVCenter
+        visible: NetIfaces.vpn
+        text: "VPN"
+        color: Theme.fg
+        font.family: Theme.font
+        font.pixelSize: Theme.fontSize.small
+    }
+
     MaterialIcon {
         Layout.alignment: Qt.AlignVCenter
         visible: root.paired.length > 0

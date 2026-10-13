@@ -107,6 +107,9 @@ Scope {
             return Math.max(0, Math.min(needed, columnLeft - Theme.spacing.medium));
         }
 
+        // contentHeight lags a card that grows after arrival, so count the cards' own extent too.
+        readonly property real used: Math.min(list.height, Math.max(list.contentHeight, list.contentItem.childrenRect.y + list.contentItem.childrenRect.height - list.contentY))
+
         WlrLayershell.namespace: "ummitos-notifications"
 
         anchors {
@@ -131,8 +134,19 @@ Scope {
             x: list.x
             y: list.y
             width: list.width
-            // contentHeight lags a card that grows after arrival, so count the cards' own extent too.
-            height: Math.min(list.height, Math.max(list.contentHeight, list.contentItem.childrenRect.y + list.contentItem.childrenRect.height - list.contentY))
+            height: toasts.used
+        }
+
+        Binding {
+            target: Notifs
+            property: "toastHeight"
+            value: list.count > 0 ? toasts.used : 0
+        }
+
+        Binding {
+            target: Notifs
+            property: "toastScreen"
+            value: toasts.screen?.name ?? ""
         }
 
         // A ListView, so removals animate instead of snapping.

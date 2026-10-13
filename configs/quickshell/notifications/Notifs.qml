@@ -18,6 +18,9 @@ Singleton {
     property real flyoutLeft: 0
     property real flyoutRight: 0
     property string flyoutScreen: ""
+    // How far down the toasts reach, and on which screen, so the weather card can step below them.
+    property real toastHeight: 0
+    property string toastScreen: ""
 
     readonly property int cap: 60
 
