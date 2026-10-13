@@ -539,5 +539,15 @@
     "Wants to pair with this computer": "想與這台電腦配對",
     "A Bluetooth device": "一個藍牙裝置",
     "Allow": "允許",
-    "Pair": "配對"
+    "Pair": "配對",
+    "Saved networks": "已儲存的網路",
+    "Turn Wi-Fi off": "關閉 Wi-Fi",
+    "Turn Wi-Fi on": "開啟 Wi-Fi",
+    "Connected for %1": "已連線 %1",
+    "Out of range · last used %1": "不在範圍內 · 上次使用 %1",
+    "In range · last used %1": "在範圍內 · 上次使用 %1",
+    "Networks this computer remembers. Joins are counted from the first time the shell ran this page's counter.": "這台電腦記住的網路。連線次數從殼層第一次開始計數時算起。",
+    "No saved Wi-Fi networks": "沒有已儲存的 Wi-Fi 網路",
+    "joins": "次連線",
+    "Wi-Fi": "Wi-Fi"
 }

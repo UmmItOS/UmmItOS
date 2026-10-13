@@ -38,6 +38,10 @@ Singleton {
             icon: "toolbar"
         },
         {
+            name: "Wi-Fi",
+            icon: "wifi"
+        },
+        {
             name: "Screenshots",
             icon: "screenshot_region"
         },
@@ -520,7 +524,7 @@ Singleton {
             root.toggle();
         }
 
-        // 0 Record, 1 Packages, 2 Update, 3 Privacy, 4 Language, 5 About.
+        // The index into pages: 0 Record, 1 Packages, 6 Wi-Fi.
         function page(index: int): void {
             root.page = Math.max(0, Math.min(index, root.pages.length - 1));
             root.open = true;

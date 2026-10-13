@@ -278,6 +278,8 @@ OverlayWindow {
 
                 BarPage {}
 
+                WifiPage {}
+
                 ScreenshotsPage {}
 
                 LanguagePage {}

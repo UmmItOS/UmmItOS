@@ -32,6 +32,8 @@ ShellRoot {
     readonly property bool accentTimed: AccentTime.loaded
     // And the sounds, so their links exist to change before anything has played.
     readonly property string soundsDir: Sounds.dir
+    // And the Wi-Fi counter, so a join is counted while nothing shows it.
+    readonly property bool wifiCounted: WifiStats.loaded
 
     // Re-offer tray icons the new host lacks: some apps register only once.
     Component.onCompleted: Quickshell.execDetached(["sh", "-c", `

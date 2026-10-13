@@ -21,6 +21,7 @@ RowLayout {
     property string failReason: ""
 
     property bool popupOpen: false
+    property bool menuOpen: false
     property bool scanning: false
 
     readonly property bool searching: Networking.wifiEnabled && root.wifi && root.scanning
@@ -88,6 +89,75 @@ RowLayout {
 
     TapHandler {
         onTapped: root.popupOpen = !root.popupOpen
+    }
+
+    TapHandler {
+        onTapped: {
+            root.popupOpen = false;
+            root.menuOpen = !root.menuOpen;
+        }
+
+        acceptedButtons: Qt.RightButton
+    }
+
+    // Right click: the same kind of menu a tray app gets.
+    Flyout {
+        onCloseRequested: root.menuOpen = false
+
+        anchorItem: root
+        visible: root.menuOpen
+        title: "Wi-Fi"
+        implicitWidth: Theme.control.menu
+        hug: true
+        toggleVisible: false
+
+        Repeater {
+            model: [
+                {
+                    text: I18n.t("Saved networks"),
+                    run: () => {
+                        Settings.page = Settings.pages.findIndex(p => p.name === "Wi-Fi");
+                        Settings.open = true;
+                    }
+                },
+                {
+                    text: Networking.wifiEnabled ? I18n.t("Turn Wi-Fi off") : I18n.t("Turn Wi-Fi on"),
+                    run: () => Networking.wifiEnabled = !Networking.wifiEnabled
+                }
+            ]
+
+            FlyoutRow {
+                id: entry
+
+                required property var modelData
+
+                Layout.fillWidth: true
+                implicitHeight: Theme.control.row
+                color: hovered ? Theme.bgTray : "transparent"
+
+                Text {
+                    anchors {
+                        fill: parent
+                        leftMargin: Theme.spacing.medium
+                        rightMargin: Theme.spacing.medium
+                    }
+
+                    verticalAlignment: Text.AlignVCenter
+                    textFormat: Text.PlainText
+                    text: entry.modelData.text
+                    color: Theme.fg
+                    font.family: Theme.font
+                    font.pixelSize: Theme.fontSize.normal
+                }
+
+                TapHandler {
+                    onTapped: {
+                        entry.modelData.run();
+                        root.menuOpen = false;
+                    }
+                }
+            }
+        }
     }
 
     Flyout {
