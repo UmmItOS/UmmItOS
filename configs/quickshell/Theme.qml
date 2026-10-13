@@ -648,7 +648,7 @@ Singleton {
         readonly property int scanGap: 3
         readonly property real scanAlpha: 0.18
         readonly property int recBlink: 600
-        readonly property int liveFrame: 125
+        readonly property int clipLength: 30000
         readonly property int clock: 180
         readonly property int date: 32
         readonly property int user: 24

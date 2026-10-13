@@ -2,6 +2,7 @@ import Quickshell
 import Quickshell.Widgets
 import QtQuick
 import QtQuick.Effects
+import QtMultimedia
 import "../bar"
 import ".."
 import "../wake"
@@ -12,6 +13,8 @@ Item {
 
     // Which screen this is, for its picture of the desktop.
     required property string screenName
+    // This screen shows the live camera when an intruder is caught.
+    property bool live: false
 
     // 0 is the desktop, 1 the lock; both ways fade.
     property real haze: 0
@@ -566,8 +569,8 @@ Item {
             ClippingRectangle {
                 id: frame
 
-                // The photo grows in and sharpens out of a blur once it has arrived.
-                readonly property real arrived: shot.status === Image.Ready ? 1 : 0
+                // The feed grows in and sharpens out of a blur once recording starts.
+                readonly property real arrived: Lock.recording ? 1 : 0
                 property real shown: arrived
 
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -590,15 +593,20 @@ Item {
                 radius: Theme.rounding.large
                 color: Qt.alpha(Theme.urgent, Theme.lock.alarmDim)
 
-                Image {
+                VideoOutput {
                     id: shot
 
                     anchors.fill: parent
-                    source: Lock.intruderFrame === "" ? "" : Lock.intruderFrame + "?" + Lock.frame
-                    asynchronous: false
-                    fillMode: Image.PreserveAspectCrop
-                    cache: false
+                    fillMode: VideoOutput.PreserveAspectCrop
                     visible: false
+                }
+
+                Binding {
+                    target: Lock
+                    property: "cameraView"
+                    value: shot
+                    when: root.live && Lock.intruder
+                    restoreMode: Binding.RestoreNone
                 }
 
                 // Shown as a security camera would: the saved photo itself stays untouched.
@@ -610,7 +618,7 @@ Item {
                     brightness: Theme.lock.cctvBright
                     colorization: Theme.lock.cctvTintMix
                     colorizationColor: Theme.lock.cctvTint
-                    opacity: shot.status === Image.Ready ? 1 : 0
+                    opacity: Lock.recording ? 1 : 0
 
                     Behavior on opacity {
                         NumberAnimation {
@@ -621,7 +629,7 @@ Item {
 
                 Canvas {
                     anchors.fill: parent
-                    visible: shot.status === Image.Ready
+                    visible: Lock.recording
                     onPaint: {
                         const ctx = getContext("2d");
                         ctx.reset();
@@ -636,7 +644,7 @@ Item {
                     anchors.left: parent.left
                     anchors.margins: Theme.spacing.small
                     spacing: Theme.spacing.extraSmall
-                    visible: shot.status === Image.Ready
+                    visible: Lock.recording
 
                     Rectangle {
                         anchors.verticalCenter: parent.verticalCenter
@@ -672,7 +680,7 @@ Item {
 
                 MaterialIcon {
                     anchors.centerIn: parent
-                    visible: Lock.intruderFrame === ""
+                    visible: !Lock.recording
                     text: "photo_camera"
                     color: "white"
                     size: Theme.icon.huge

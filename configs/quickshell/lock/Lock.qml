@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Pam
 import QtQuick
+import QtMultimedia
 import ".."
 
 // The lock's state and its password check. The surfaces only draw it.
@@ -21,11 +22,13 @@ Singleton {
     property bool checking: false
     property bool failed: false
     property int attempts: 0
-    // After the second wrong password: the live camera frame of whoever is there, and when.
+    // After the second wrong password: a live camera view of whoever is there, and when.
     property bool intruder: false
-    property string intruderFrame: ""
-    property bool recording: false
-    property int frame: 0
+    // The view on the screen in use; the camera draws straight into it, with no delay.
+    property var cameraView: null
+    readonly property bool recording: camera.item?.recorder.recorderState === MediaRecorder.RecordingState
+    // From record() until the clip is written; keeps the camera loaded that long.
+    property bool filming: false
     // The alarm loops while the warning is up; set by hand, since the loop's restart would break a binding.
     readonly property bool sirenOn: intruder && shown
     property string intruderAt: ""
@@ -72,7 +75,6 @@ Singleton {
         failed = false;
         attempts = 0;
         intruder = false;
-        intruderFrame = "";
         capture(() => locked = true);
     }
 
@@ -80,10 +82,7 @@ Singleton {
         if (previewing) {
             previewing = false;
             intruder = false;
-            intruderFrame = "";
-            // The preview's clip was only to look at.
-            intruderShot.running = false;
-            Quickshell.execDetached(["sh", "-c", 'sleep 1; rm -rf "$1/ummitos-intruder-preview"', "sh", Quickshell.env("XDG_RUNTIME_DIR")]);
+            stopClip();
         }
         else if (!preparing)
             capture(() => previewing = true);
@@ -133,6 +132,10 @@ Singleton {
             intruderShot.preview = false;
             intruderShot.running = true;
         }
+    }
+
+    function stopClip(): void {
+        camera.item?.recorder.stop();
     }
 
     onSirenOnChanged: siren.running = sirenOn
@@ -227,8 +230,7 @@ Singleton {
             root.failed = false;
             root.attempts = 0;
             root.intruder = false;
-            root.intruderFrame = "";
-            intruderShot.running = false;
+            root.stopClip();
             root.unlocking = true;
             release.restart();
         }
@@ -259,7 +261,6 @@ Singleton {
                 return;
             root.intruder = true;
             root.intruderAt = Qt.formatDateTime(new Date(), "HH:mm:ss");
-            root.intruderFrame = "";
             intruderShot.preview = true;
             intruderShot.running = true;
             if (!root.previewing)
@@ -284,27 +285,50 @@ Singleton {
         // A preview's clip stays in memory; a real one is kept.
         property bool preview: false
 
-        onRunningChanged: if (!running)
-            root.recording = false
-
         command: ["sh", "-c", 'd=$(readlink -f "$1"); for s in "$d/../../script/misc/intruder.sh" "$HOME/script/misc/intruder.sh"; do [ -x "$s" ] && exec "$s" "$2"; done', "sh", Quickshell.shellDir, preview ? "--preview" : ""]
 
         stdout: SplitParser {
             onRead: line => {
-                if (root.intruder && line !== "") {
-                    root.intruderFrame = "file://" + line;
-                    root.recording = true;
+                const recorder = camera.item?.recorder;
+                if (root.intruder && recorder && line !== "") {
+                    recorder.outputLocation = "file://" + line;
+                    recorder.record();
+                    root.filming = true;
+                    clipEnd.restart();
                 }
             }
         }
     }
 
-    // The camera writes a new frame eight times a second; the query defeats Qt's image cache.
-    Timer {
-        onTriggered: root.frame++
+    // Loaded only while needed: Qt holds the device open for as long as a Camera exists.
+    Loader {
+        id: camera
 
-        running: root.recording && root.shown
-        repeat: true
-        interval: Theme.lock.liveFrame
+        active: root.intruder || root.filming
+
+        sourceComponent: CaptureSession {
+            camera: Camera {
+                active: true
+            }
+            videoOutput: root.cameraView
+            recorder: MediaRecorder {
+                onRecorderStateChanged: {
+                    if (recorderState !== MediaRecorder.StoppedState)
+                        return;
+                    root.filming = false;
+                    // The preview's clip was only to look at.
+                    if (intruderShot.preview)
+                        Quickshell.execDetached(["rm", "-rf", Quickshell.env("XDG_RUNTIME_DIR") + "/ummitos-intruder-preview"]);
+                }
+            }
+        }
+    }
+
+    Timer {
+        id: clipEnd
+
+        onTriggered: root.stopClip()
+
+        interval: Theme.lock.clipLength
     }
 }

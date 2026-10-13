@@ -17,6 +17,7 @@ Scope {
                 anchors.fill: parent
                 // The surface's screen is unset at build time.
                 screenName: surface.screen?.name || (Hyprland.focusedMonitor?.name ?? "")
+                live: screenName === Hyprland.focusedMonitor?.name
             }
         }
     }
@@ -30,6 +31,7 @@ Scope {
         LockContent {
             anchors.fill: parent
             screenName: preview.screen?.name ?? ""
+            live: Lock.previewing
         }
     }
 }
