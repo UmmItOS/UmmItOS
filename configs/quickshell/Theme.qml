@@ -381,6 +381,10 @@ Singleton {
         readonly property real lineHeight: 1.35
     }
 
+    readonly property QtObject wifiAsk: QtObject {
+        readonly property int card: 400
+    }
+
     readonly property QtObject session: QtObject {
         readonly property int tile: 156
         readonly property real activeScale: 1.06

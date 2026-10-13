@@ -63,6 +63,8 @@ ShellRoot {
 
     SessionWindow {}
 
+    WifiAskWindow {}
+
     SwitcherWindow {}
 
     Variants {

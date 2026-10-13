@@ -532,5 +532,7 @@
     "Written by script/misc/intruder.sh, on the second wrong password.": "由 script/misc/intruder.sh 在第二次輸入錯誤密碼時寫入。",
     "Unauthorised access": "未經授權的存取",
     "You are being recorded. The owner of this computer will see it.": "你正在被錄影，這台電腦的主人會看到。",
-    "Recorded at %1": "記錄於 %1"
+    "Recorded at %1": "記錄於 %1",
+    "Wi-Fi password required": "需要 Wi-Fi 密碼",
+    "Enter the password for “%1”": "請輸入「%1」的密碼"
 }

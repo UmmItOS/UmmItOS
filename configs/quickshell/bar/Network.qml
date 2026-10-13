@@ -16,9 +16,6 @@ RowLayout {
     // Not by signal: it changes every scan and rebuilt the rows.
     readonly property var networks: root.wifi ? [...root.wifi.networks.values].sort((a, b) => (b.connected - a.connected) || (b.known - a.known) || a.name.localeCompare(b.name)) : []
 
-    // Here, not in the row, so a rebuilt row keeps the typed password.
-    property string askingFor: ""
-    property string pskDraft: ""
     // The last failed network and why; cleared by the next attempt.
     property string failedFor: ""
     property string failReason: ""
@@ -62,9 +59,6 @@ RowLayout {
         if (popupOpen) {
             scanning = true;
             scanGrace.restart();
-        } else {
-            askingFor = "";
-            pskDraft = "";
         }
     }
 
@@ -145,7 +139,6 @@ RowLayout {
                 readonly property bool busy: row.modelData.stateChanging
                 readonly property int lineHeight: Theme.control.row
 
-                readonly property bool askingPsk: root.askingFor !== "" && root.askingFor === row.modelData.name
                 readonly property bool failed: root.failedFor !== "" && root.failedFor === row.modelData.name
 
                 function attempt(): void {
@@ -155,16 +148,7 @@ RowLayout {
 
                 width: list.width
                 active: row.modelData.connected
-                // The expanded row is as tall as what it holds, not a guess.
-                implicitHeight: row.askingPsk ? content.implicitHeight : row.lineHeight
-
-                Behavior on implicitHeight {
-                    NumberAnimation {
-                        duration: Theme.duration.expressiveFastSpatial
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: Theme.curve.standard
-                    }
-                }
+                implicitHeight: row.lineHeight
 
                 Connections {
                     function onConnectionFailed(reason: int): void {
@@ -173,9 +157,8 @@ RowLayout {
                         // A rejected password asks again; the other failures are not the password.
                         const secrets = reason === ConnectionFailReason.NoSecrets || reason === ConnectionFailReason.WifiClientDisconnected || reason === ConnectionFailReason.WifiAuthTimeout;
                         if (secrets && root.secured(row.modelData)) {
-                            root.pskDraft = "";
-                            root.askingFor = row.modelData.name;
-                            psk.forceActiveFocus();
+                            root.popupOpen = false;
+                            WifiAsk.ask(row.modelData, root.failReason);
                         }
                     }
 
@@ -274,71 +257,6 @@ RowLayout {
                             size: Theme.icon.small
                         }
                     }
-
-                    // Only asked for when the network is new and secured.
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.bottomMargin: Theme.spacing.medium
-                        implicitHeight: Theme.control.field
-                        radius: Theme.rounding.full
-                        color: Theme.bgAlt
-                        visible: row.askingPsk
-
-                        TextInput {
-                            id: psk
-
-                            onTextChanged: {
-                                if (row.askingPsk)
-                                    root.pskDraft = text;
-                            }
-
-                            // A recreated row takes the focus back.
-                            Component.onCompleted: {
-                                if (row.askingPsk)
-                                    forceActiveFocus();
-                            }
-
-                            Keys.onReturnPressed: {
-                                row.attempt();
-                                row.modelData.connectWithPsk(text);
-                                root.askingFor = "";
-                                root.pskDraft = "";
-                            }
-
-                            Keys.onEscapePressed: {
-                                root.askingFor = "";
-                                root.pskDraft = "";
-                            }
-
-                            clip: true
-
-                            anchors {
-                                fill: parent
-                                leftMargin: Theme.spacing.large
-                                rightMargin: Theme.spacing.large
-                            }
-
-                            verticalAlignment: TextInput.AlignVCenter
-                            echoMode: TextInput.Password
-                            color: Theme.fg
-
-                            font {
-                                family: Theme.font
-                                pixelSize: Theme.fontSize.smaller
-                            }
-
-                            text: row.askingPsk ? root.pskDraft : ""
-
-                            Text {
-                                anchors.fill: parent
-                                verticalAlignment: Text.AlignVCenter
-                                visible: psk.text === ""
-                                text: I18n.t("Password, then Enter")
-                                color: Theme.dim
-                                font: psk.font
-                            }
-                        }
-                    }
                 }
 
                 MouseArea {
@@ -349,9 +267,8 @@ RowLayout {
                             row.attempt();
                             row.modelData.connect();
                         } else {
-                            root.pskDraft = "";
-                            root.askingFor = row.modelData.name;
-                            psk.forceActiveFocus();
+                            root.popupOpen = false;
+                            WifiAsk.ask(row.modelData, "");
                         }
                     }
 
