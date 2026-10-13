@@ -21,11 +21,13 @@ Singleton {
     property bool checking: false
     property bool failed: false
     property int attempts: 0
-    // After the second wrong password: the photo just taken of whoever is there, and when.
+    // After the second wrong password: the live camera frame of whoever is there, and when.
     property bool intruder: false
-    property string intruderPhoto: ""
+    property string intruderFrame: ""
     property bool recording: false
     property int frame: 0
+    // The alarm loops while the warning is up; set by hand, since the loop's restart would break a binding.
+    readonly property bool sirenOn: intruder && shown
     property string intruderAt: ""
     // Held only until PAM asks for it.
     property string pending: ""
@@ -70,7 +72,7 @@ Singleton {
         failed = false;
         attempts = 0;
         intruder = false;
-        intruderPhoto = "";
+        intruderFrame = "";
         capture(() => locked = true);
     }
 
@@ -78,7 +80,7 @@ Singleton {
         if (previewing) {
             previewing = false;
             intruder = false;
-            intruderPhoto = "";
+            intruderFrame = "";
             // The preview's clip was only to look at.
             intruderShot.running = false;
             Quickshell.execDetached(["sh", "-c", 'sleep 1; rm -rf "$1/ummitos-intruder-preview"', "sh", Quickshell.env("XDG_RUNTIME_DIR")]);
@@ -124,7 +126,7 @@ Singleton {
         failed = true;
         attempts++;
         wrong();
-        // The second wrong password: an alarm, a webcam photo of them kept on this machine, and the screen turns to a warning.
+        // The second wrong password: an alarm, a webcam clip of them kept on this machine, and the screen turns to a warning.
         if (attempts === 2) {
             intruder = true;
             intruderAt = Qt.formatDateTime(new Date(), "HH:mm:ss");
@@ -132,6 +134,8 @@ Singleton {
             intruderShot.running = true;
         }
     }
+
+    onSirenOnChanged: siren.running = sirenOn
 
     FileView {
         onLoaded: root.hasFace = true
@@ -223,7 +227,7 @@ Singleton {
             root.failed = false;
             root.attempts = 0;
             root.intruder = false;
-            root.intruderPhoto = "";
+            root.intruderFrame = "";
             intruderShot.running = false;
             root.unlocking = true;
             release.restart();
@@ -249,13 +253,13 @@ Singleton {
             root.preview();
         }
 
-        // The intruder alarm in the preview, to see and hear it, with a real photo kept in memory only.
+        // The intruder alarm in the preview, to see and hear it, with a real clip kept in memory only.
         function alarm(): void {
             if (root.locked)
                 return;
             root.intruder = true;
             root.intruderAt = Qt.formatDateTime(new Date(), "HH:mm:ss");
-            root.intruderPhoto = "";
+            root.intruderFrame = "";
             intruderShot.preview = true;
             intruderShot.running = true;
             if (!root.previewing)
@@ -265,33 +269,30 @@ Singleton {
         target: "lock"
     }
 
-    // The alarm, again and again while the warning is up; a correct unlock or closing the preview stops it at once.
-    // Set by hand, not bound: the loop's restart would break a binding and then nothing could stop it.
-    readonly property bool sirenOn: intruder && shown
-    onSirenOnChanged: siren.running = sirenOn
-
     Process {
         id: siren
 
-        command: ["pw-play", Sounds.dir + "/intruder"]
         onExited: if (root.sirenOn)
             Qt.callLater(() => siren.running = root.sirenOn)
+
+        command: ["pw-play", Sounds.dir + "/intruder"]
     }
 
     Process {
         id: intruderShot
 
-        // A preview's photo stays in memory; a real one is kept.
+        // A preview's clip stays in memory; a real one is kept.
         property bool preview: false
 
-        command: ["sh", "-c", 'd=$(readlink -f "$1"); for s in "$d/../../script/misc/intruder.sh" "$HOME/script/misc/intruder.sh"; do [ -x "$s" ] && exec "$s" "$2"; done', "sh", Quickshell.shellDir, preview ? "--preview" : ""]
         onRunningChanged: if (!running)
             root.recording = false
+
+        command: ["sh", "-c", 'd=$(readlink -f "$1"); for s in "$d/../../script/misc/intruder.sh" "$HOME/script/misc/intruder.sh"; do [ -x "$s" ] && exec "$s" "$2"; done', "sh", Quickshell.shellDir, preview ? "--preview" : ""]
 
         stdout: SplitParser {
             onRead: line => {
                 if (root.intruder && line !== "") {
-                    root.intruderPhoto = "file://" + line;
+                    root.intruderFrame = "file://" + line;
                     root.recording = true;
                 }
             }
@@ -300,9 +301,10 @@ Singleton {
 
     // The camera writes a new frame eight times a second; the query defeats Qt's image cache.
     Timer {
+        onTriggered: root.frame++
+
         running: root.recording && root.shown
         repeat: true
         interval: Theme.lock.liveFrame
-        onTriggered: root.frame++
     }
 }

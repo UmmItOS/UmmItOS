@@ -594,7 +594,7 @@ Item {
                     id: shot
 
                     anchors.fill: parent
-                    source: Lock.intruderPhoto === "" ? "" : Lock.intruderPhoto + "?" + Lock.frame
+                    source: Lock.intruderFrame === "" ? "" : Lock.intruderFrame + "?" + Lock.frame
                     asynchronous: false
                     fillMode: Image.PreserveAspectCrop
                     cache: false
@@ -672,7 +672,7 @@ Item {
 
                 MaterialIcon {
                     anchors.centerIn: parent
-                    visible: Lock.intruderPhoto === ""
+                    visible: Lock.intruderFrame === ""
                     text: "photo_camera"
                     color: "white"
                     size: Theme.icon.huge

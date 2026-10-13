@@ -18,11 +18,18 @@ clip=$dir/$(date +%Y-%m-%d_%H-%M-%S).mkv
 frame=$live/frame.jpg
 rm -f "$frame"
 
-# The lock screen reads this path, then reloads the frame while it records.
-echo "$frame"
-
-# -t before -i limits the camera itself, so both outputs end; exec, so stopping the lock stops the camera.
+# -t before -i limits the camera itself, so both outputs end.
 umask 077
-exec ffmpeg -loglevel error -t "$seconds" -f v4l2 -i "$camera" \
+ffmpeg -loglevel error -t "$seconds" -f v4l2 -i "$camera" \
 	-map 0:v -c:v libx264 -preset ultrafast -crf 28 -y "$clip" \
-	-map 0:v -vf fps=8 -q:v 4 -update 1 -atomic_writing 1 -y "$frame" < /dev/null
+	-map 0:v -vf fps=8 -q:v 4 -update 1 -atomic_writing 1 -y "$frame" < /dev/null &
+pid=$!
+# Stopping the lock's process stops the camera.
+trap 'kill "$pid"' TERM
+
+# The path only once the first frame exists, so the lock never asks for a missing file.
+until [[ -e $frame ]] || ! kill -0 "$pid" 2> /dev/null; do
+	sleep 0.1
+done
+[[ -e $frame ]] && echo "$frame"
+wait "$pid"
