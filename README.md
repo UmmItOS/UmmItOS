@@ -17,7 +17,7 @@ If you like these dotfiles, please leave a star — it keeps me motivated to mai
 
 ## Contributing
 
-See the [contributing guidelines](./CONTRIBUTING.md).
+See the [contributing guidelines](./DOCS/CONTRIBUTING.md).
 
 ## License
 

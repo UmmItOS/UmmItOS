@@ -15,4 +15,4 @@
 
 ## Checklist
 - [ ] Follows [Conventional Commits](https://www.conventionalcommits.org/)
-- [ ] Read [Contributing Guidelines](./CONTRIBUTING.md) 
+- [ ] Read [Contributing Guidelines](../DOCS/CONTRIBUTING.md) 

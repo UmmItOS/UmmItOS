@@ -1,6 +1,6 @@
 # Feature checklist
 
-Go through this before a feature, fix or change to the shell is committed. The rules it points to live in [CLAUDE.md](CLAUDE.md).
+Go through this before a feature, fix or change to the shell is committed. The rules it points to live in [CLAUDE.md](../CLAUDE.md).
 
 ## 1. Programming
 

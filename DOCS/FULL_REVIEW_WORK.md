@@ -1,6 +1,6 @@
 # Full review
 
-When this file is mentioned (`@FULL_REVIEW_WORK.md`), run a full review of the work in scope, following the steps below. The rules being reviewed against live in [CLAUDE.md](CLAUDE.md) and [CHECKLIST.md](CHECKLIST.md); this file only says how to run the review.
+When this file is mentioned (`@DOCS/FULL_REVIEW_WORK.md`), run a full review of the work in scope, following the steps below. The rules being reviewed against live in [CLAUDE.md](../CLAUDE.md) and [CHECKLIST.md](CHECKLIST.md); this file only says how to run the review.
 
 ## 1. Pick the scope
 

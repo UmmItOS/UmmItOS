@@ -13,7 +13,7 @@ UmmItOS is Arch Linux plus Hyprland, shipped as a bash installer and a dotfiles 
 
 Every feature, fix or change goes through the checklist: programming reviewed with `/qt-development-skills:qt-qml`, UI and UX reviewed with `/hallmark` with motion included, and nothing is done until it is checked on screen.
 
-@CHECKLIST.md
+@DOCS/CHECKLIST.md
 
 ## Commands
 
