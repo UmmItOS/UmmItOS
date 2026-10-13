@@ -55,6 +55,13 @@ Singleton {
         }
     ]
 
+    // The sidebar's order: A to Z by each name in the chosen language, compared by Unicode code point.
+    // Indices into pages, which keeps its own order for the page stack and `ipc call settings page`.
+    readonly property var order: pages.map((p, i) => i).sort((a, b) => {
+        const x = I18n.t(pages[a].name), y = I18n.t(pages[b].name);
+        return x < y ? -1 : x > y ? 1 : 0;
+    })
+
     readonly property string home: Quickshell.env("HOME")
     // Plain key=value lines, so the script can read them without the shell.
     readonly property string recordFile: (Quickshell.env("XDG_CONFIG_HOME") || home + "/.config") + "/ummitos/recording.conf"

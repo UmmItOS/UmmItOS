@@ -5,7 +5,7 @@ import QtQuick
 import QtQuick.Layouts
 import ".."
 
-// UmmItOS Settings: a panel under the bar; a click outside it closes it.
+// UmmItOS Settings: a full-height sheet docked right, like the notification panel; a click outside closes it.
 OverlayWindow {
     id: win
 
@@ -35,7 +35,7 @@ OverlayWindow {
                 stack.currentIndex = Settings.page;
                 return;
             }
-            win.travel = Settings.page > stack.currentIndex ? 1 : -1;
+            win.travel = Settings.order.indexOf(Settings.page) > Settings.order.indexOf(stack.currentIndex) ? 1 : -1;
             swap.restart();
         }
 
@@ -104,20 +104,28 @@ OverlayWindow {
 
         Keys.onEscapePressed: Settings.open = false
 
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: parent.top
-        anchors.topMargin: Theme.barHeight + Theme.spacing.small
+        anchors {
+            top: parent.top
+            bottom: parent.bottom
+            right: parent.right
+            topMargin: Theme.barHeight + Theme.spacing.small
+            bottomMargin: Theme.spacing.small
+            rightMargin: Theme.spacing.small
+        }
+
         width: Math.min(Theme.settings.width, parent.width - Theme.spacing.extraLarge * 2)
-        height: Math.min(Theme.settings.height, parent.height - anchors.topMargin - Theme.spacing.extraLarge)
         opacity: Math.min(1, win.reveal)
-        scale: Theme.popScale + (1 - Theme.popScale) * win.reveal
-        transformOrigin: Item.Top
+
+        // Slides in from the edge it docks to; Translate, since the anchors own x.
+        transform: Translate {
+            x: (1 - win.reveal) * panel.width
+        }
 
         Surface {
             anchors.fill: parent
             radius: Theme.rounding.extraExtraLarge
             tone: Theme.scrim(Theme.panelTint)
-            lift: Theme.lift.panel
+            lift: Theme.lift.sheet
         }
 
         // Swallow clicks so they do not reach the dismiss handler.
@@ -165,7 +173,7 @@ OverlayWindow {
 
                         transform: Translate {
                             // Through count: itemAt() in a binding runs once otherwise.
-                            y: tabs.count > 0 ? tabs.itemAt(Settings.page)?.y ?? 0 : 0
+                            y: tabs.count > 0 ? tabs.itemAt(Settings.order.indexOf(Settings.page))?.y ?? 0 : 0
 
                             Behavior on y {
                                 enabled: win.settled
@@ -188,16 +196,17 @@ OverlayWindow {
                         Repeater {
                             id: tabs
 
-                            model: Settings.pages
+                            model: Settings.order
 
                             FlyoutRow {
                                 id: entry
 
-                                required property var modelData
-                                required property int index
+                                // The page's index in Settings.pages.
+                                required property int modelData
+                                readonly property var page: Settings.pages[entry.modelData]
 
                                 width: entries.width
-                                active: Settings.page === entry.index
+                                active: Settings.page === entry.modelData
                                 // The pill is the fill; a row only shows its hover.
                                 color: entry.hovered && !entry.active ? Theme.bgTray : "transparent"
                                 scale: press.pressed ? Theme.pressScale : 1
@@ -216,7 +225,7 @@ OverlayWindow {
                                     spacing: Theme.spacing.medium
 
                                     MaterialIcon {
-                                        text: entry.modelData.icon
+                                        text: entry.page.icon
                                         color: entry.active ? entry.ink : entry.inkDim
                                         size: Theme.icon.small
                                         fill: entry.active ? 1 : 0
@@ -224,7 +233,7 @@ OverlayWindow {
 
                                     Text {
                                         Layout.fillWidth: true
-                                        text: I18n.t(entry.modelData.name)
+                                        text: I18n.t(entry.page.name)
                                         color: entry.ink
                                         font.family: Theme.font
                                         font.pixelSize: Theme.fontSize.normal
@@ -235,7 +244,7 @@ OverlayWindow {
                                 TapHandler {
                                     id: press
 
-                                    onTapped: Settings.page = entry.index
+                                    onTapped: Settings.page = entry.modelData
                                 }
                             }
                         }
