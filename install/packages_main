@@ -58,3 +58,11 @@ extra/playerctl
 extra/pacman-contrib
 extra/fzf
 extra/inotify-tools
+extra/qt6-multimedia
+extra/qt6-multimedia-ffmpeg
+extra/tesseract
+extra/tesseract-data-eng
+extra/tesseract-data-chi_tra
+core/sqlite
+core/curl
+extra/xdg-utils
