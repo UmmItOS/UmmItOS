@@ -294,6 +294,8 @@ OverlayWindow {
                 LanguagePage {}
 
                 AboutPage {}
+
+                MiscPage {}
             }
         }
     }

@@ -552,5 +552,7 @@
     "Wi-Fi": "Wi-Fi",
     "No network": "沒有網路",
     "LAN": "有線網路",
-    "Empty workspace": "空的工作區"
+    "Empty workspace": "空的工作區",
+    "Misc": "其他",
+    "Small things that have no page of their own.": "沒有自己一頁的小設定。"
 }

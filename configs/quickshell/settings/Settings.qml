@@ -52,14 +52,19 @@ Singleton {
         {
             name: "About",
             icon: "info"
+        },
+        {
+            name: "Misc",
+            icon: "category"
         }
     ]
 
-    // The sidebar's order: A to Z by each name in the chosen language, compared by Unicode code point.
+    // The sidebar's order: A to Z by each name in the chosen language, compared by Unicode code point; About stays last.
     // Indices into pages, which keeps its own order for the page stack and `ipc call settings page`.
     readonly property var order: pages.map((p, i) => i).sort((a, b) => {
+        const last = (pages[a].name === "About") - (pages[b].name === "About");
         const x = I18n.t(pages[a].name), y = I18n.t(pages[b].name);
-        return x < y ? -1 : x > y ? 1 : 0;
+        return last !== 0 ? last : x < y ? -1 : x > y ? 1 : 0;
     })
 
     readonly property string home: Quickshell.env("HOME")
