@@ -208,7 +208,7 @@ Singleton {
     function scanTraces(): void {
         if (traceScan.running || wiping)
             return;
-        traceScan.command = wiperCommand(["--list", "ocr", "clipboard", "changes", "launches", "place", "temp"]);
+        traceScan.command = wiperCommand(["--list", "ocr", "clipboard", "changes", "launches", "place", "wifi", "temp"]);
         traceScan.running = true;
     }
 
@@ -226,6 +226,8 @@ Singleton {
             Launcher.forgetClipboard();
         if (names.includes("place"))
             Weather.setLocation("");
+        if (names.includes("wifi"))
+            WifiStats.forget();
         if (names.includes("ocr"))
             Gallery.indexed = 0;
         wiper.counts = ({});

@@ -42,6 +42,14 @@ Singleton {
         store.setText(JSON.stringify(data));
     }
 
+    // Before a wipe: empties the counts without saving, and keeps the current network so it is not counted as a new join.
+    function forget(): void {
+        data = {
+            networks: {},
+            now: current
+        };
+    }
+
     function refresh(): void {
         list.running = true;
     }

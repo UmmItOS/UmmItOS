@@ -554,5 +554,8 @@
     "LAN": "有線網絡",
     "Empty workspace": "空嘅工作區",
     "Misc": "其他",
-    "Small things that have no page of their own.": "冇自己一頁嘅細設定。"
+    "Small things that have no page of their own.": "冇自己一頁嘅細設定。",
+    "Wi-Fi history": "Wi-Fi 紀錄",
+    "Which networks you joined, how often and when: a rough record of where you have been.": "你連過邊啲網絡、幾多次、幾時連：大概記低咗你去過邊。",
+    "Kept by the Wi-Fi counter (services/WifiStats.qml) in ~/.local/state/ummitos/wifi.json.": "由 Wi-Fi 計數器（services/WifiStats.qml）存喺 ~/.local/state/ummitos/wifi.json。"
 }

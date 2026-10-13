@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Overwrites, then deletes, the traces the desktop keeps about you, so they
 # cannot be read back from the files. Usage:
-#   wipe-traces.sh [--passes N] ocr battery intruders clipboard changes launches place temp
+#   wipe-traces.sh [--passes N] ocr battery intruders clipboard changes launches place wifi temp
 # Prints one "wiped<TAB>name<TAB>files" line per name. With --list it wipes
 # nothing and prints "file<TAB>name<TAB>path<TAB>bytes" for each file it would,
 # and "fs<TAB>type" for the file system they sit on.
@@ -97,6 +97,10 @@ wipe_place() {
 	shred_named weather-location.txt
 }
 
+wipe_wifi() {
+	shred_tree "$state/ummitos/wifi.json"
+}
+
 wipe_temp() {
 	local f
 	while IFS= read -r -d '' f; do
@@ -124,7 +128,7 @@ for name in "${names[@]}"; do
 	wiped=0
 	current=$name
 	case $name in
-		ocr | battery | intruders | clipboard | changes | launches | place | temp)
+		ocr | battery | intruders | clipboard | changes | launches | place | wifi | temp)
 			"wipe_$name"
 			;;
 		*) continue ;;

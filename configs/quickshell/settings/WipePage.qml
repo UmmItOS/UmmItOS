@@ -17,6 +17,7 @@ ColumnLayout {
             changes: true,
             launches: true,
             place: true,
+            wifi: true,
             temp: true
         })
     property int passes: 3
@@ -63,6 +64,12 @@ ColumnLayout {
             title: I18n.t("Weather place"),
             hint: I18n.t("The place you typed for the weather."),
             by: I18n.t("Kept by the weather service (services/Weather.qml) in the shell's state folder.")
+        },
+        {
+            key: "wifi",
+            title: I18n.t("Wi-Fi history"),
+            hint: I18n.t("Which networks you joined, how often and when: a rough record of where you have been."),
+            by: I18n.t("Kept by the Wi-Fi counter (services/WifiStats.qml) in ~/.local/state/ummitos/wifi.json.")
         },
         {
             key: "temp",
