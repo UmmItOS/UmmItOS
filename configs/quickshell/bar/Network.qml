@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Layouts
+import Quickshell.Io
 import Quickshell.Networking
 import ".."
 
@@ -22,6 +23,8 @@ RowLayout {
 
     property bool popupOpen: false
     property bool menuOpen: false
+    // The strongest access point's dBm per network name, as the driver measured it.
+    property var levels: ({})
     property bool scanning: false
 
     readonly property bool searching: Networking.wifiEnabled && root.wifi && root.scanning
@@ -85,6 +88,38 @@ RowLayout {
         }
 
         color: root.active || root.plugged ? Theme.fg : Theme.dim
+    }
+
+    // NetworkManager only gives a percentage; iw's scan cache has the dBm, without root.
+    Process {
+        id: dump
+
+        command: ["iw", "dev", root.wifi?.name ?? "", "scan", "dump"]
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const found = {};
+                let level = 0;
+                for (const line of text.split("\n")) {
+                    const signal = line.match(/^\s*signal: (-?[\d.]+) dBm/);
+                    const ssid = line.match(/^\s*SSID: (.+)$/);
+                    if (signal)
+                        level = Math.round(Number(signal[1]));
+                    else if (ssid && (found[ssid[1]] === undefined || level > found[ssid[1]]))
+                        found[ssid[1]] = level;
+                }
+                root.levels = found;
+            }
+        }
+    }
+
+    Timer {
+        onTriggered: dump.running = true
+
+        running: root.popupOpen && root.wifi !== null
+        repeat: true
+        triggeredOnStart: true
+        interval: Theme.duration.wifiLevels
     }
 
     TapHandler {
@@ -301,6 +336,21 @@ RowLayout {
 
                             Behavior on opacity {
                                 FastFade {}
+                            }
+                        }
+
+                        // The number airodump calls PWR: nearer zero is closer.
+                        Text {
+                            readonly property var level: root.levels[row.modelData.name]
+
+                            visible: !row.busy && level !== undefined
+                            textFormat: Text.PlainText
+                            text: level + " dBm"
+                            color: row.inkDim
+
+                            font {
+                                family: Theme.fontMono
+                                pixelSize: Theme.fontSize.small
                             }
                         }
 

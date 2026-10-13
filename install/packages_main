@@ -66,3 +66,4 @@ extra/tesseract-data-chi_tra
 core/sqlite
 core/curl
 extra/xdg-utils
+core/iw

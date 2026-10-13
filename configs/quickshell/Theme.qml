@@ -601,6 +601,8 @@ Singleton {
         readonly property int osdArm: 1200
         // How often the Wi-Fi page updates the connected time.
         readonly property int wifiTick: 30000
+        // How often the Wi-Fi menu re-reads each network's dBm.
+        readonly property int wifiLevels: 3000
         // A method change this soon after a focus change is that window's own, not a switch.
         // How often the battery screen's logger takes a sample.
         readonly property int batteryLog: 60000
