@@ -5,7 +5,7 @@ import Quickshell.Io
 import QtQuick
 import ".."
 
-// How many updates wait, checked a while after login, every few hours and when an update run ends; the bar's update button wears a dot for it.
+// How many updates wait, and any security notice, checked a while after login, every few hours and when an update run ends; the bar's update button wears a dot for it.
 Singleton {
     id: root
 
@@ -19,6 +19,8 @@ Singleton {
     function check(): void {
         if (!scan.running)
             scan.running = true;
+        if (!notices.running)
+            notices.running = true;
     }
 
     Timer {
@@ -36,6 +38,13 @@ Singleton {
 
         running: true
         interval: Theme.duration.updatesFirst
+    }
+
+    // Security notices from Arch's news and UmmItOS's advisories, each sent once.
+    Process {
+        id: notices
+
+        command: ["bash", Quickshell.env("HOME") + "/script/misc/advisories.sh", "--notify"]
     }
 
     // update.sh adds a line when a run ends: read the count again.

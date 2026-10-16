@@ -1,0 +1,9 @@
+[
+	{
+		"id": "2026-10-13-fake-yay-paru",
+		"date": "2026-10-13",
+		"title": "Fake yay and paru packages on the AUR",
+		"text": "The AUR package yyay (user marchos1as) ran a remote script as root when installed. Removed; if you installed it, treat this machine as compromised. Read every PKGBUILD change.",
+		"link": "https://lists.archlinux.org/archives/list/aur-general@lists.archlinux.org/thread/L3TGW6CC6WCX32VKEXLFAYDWCQXA2ICZ/"
+	}
+]

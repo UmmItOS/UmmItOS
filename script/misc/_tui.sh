@@ -14,6 +14,8 @@
 #   results_notes           optional lines under the results
 #   results_info            optional "Status" box under the results, one
 #                           "tone|text" entry per row: ok, warn, bad or mute
+#   sel_info                the same kind of rows, in a "Security notices" box
+#                           above the checklist
 # Hooks, all optional, named in:
 #   tui_key_hook            called with the key the checklist did not use;
 #                           returns 0 when it handled it
@@ -40,6 +42,7 @@ steps=()
 choices=()
 results_notes=()
 results_info=()
+sel_info=()
 
 sel_title='Pick what to do'
 sel_box='Steps'
@@ -200,6 +203,26 @@ tui_wait() {
 	read -rsn1
 }
 
+# tui_info_box TITLE ROW...: a box of "tone|text" rows (ok, warn, bad, mute, or note for a line that goes with the row above).
+tui_info_box() {
+	local title=$1 row icon tone name inner=$((width - 2))
+	shift
+	tui_top "$title"
+	for row; do
+		case ${row%%|*} in
+			ok) icon='✔' tone=$fg_ok ;;
+			warn) icon='!' tone=$fg_warn ;;
+			bad) icon='✘' tone=$fg_bad ;;
+			note) icon=' ' tone=$fg_mute ;;
+			*) icon='·' tone=$fg_mute ;;
+		esac
+		printf -v name '%-*.*s' "$((inner - 4))" "$((inner - 4))" "${row#*|}"
+		tui_row " $tone$icon $fg_text$name "
+	done
+	tui_bottom
+	tui_emit ''
+}
+
 tui_draw_select() {
 	local i inner labw=0 descw box name desc tag
 	local sel=$bg_sel$bold$fg_accent
@@ -210,6 +233,7 @@ tui_draw_select() {
 	done
 	descw=$((inner - 19 - labw))
 	tui_banner
+	((${#sel_info[@]})) && tui_info_box 'Security notices' "${sel_info[@]}"
 	tui_emit "${fg_text}${bold}$sel_title"
 	tui_emit ''
 	tui_top "$sel_box"
@@ -367,21 +391,7 @@ tui_draw_results() {
 	tui_row " $fg_mute$rest$secs "
 	tui_bottom
 	tui_emit ''
-	if ((${#results_info[@]})); then
-		tui_top Status
-		for rest in "${results_info[@]}"; do
-			case ${rest%%|*} in
-				ok) icon='✔' tone=$fg_ok ;;
-				warn) icon='!' tone=$fg_warn ;;
-				bad) icon='✘' tone=$fg_bad ;;
-				*) icon='·' tone=$fg_mute ;;
-			esac
-			printf -v name '%-*.*s' "$((inner - 4))" "$((inner - 4))" "${rest#*|}"
-			tui_row " $tone$icon $fg_text$name "
-		done
-		tui_bottom
-		tui_emit ''
-	fi
+	((${#results_info[@]})) && tui_info_box Status "${results_info[@]}"
 	tui_top 'What next?'
 	for i in "${!choices[@]}"; do
 		printf -v name '%-*s' "$((inner - 4))" "${choices[i]}"

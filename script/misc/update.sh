@@ -197,6 +197,8 @@ if [[ ! -t 0 || ! -t 1 ]]; then
 	exit 1
 fi
 
+mapfile -t sel_info < <("$dir/advisories.sh" 2> /dev/null)
+
 tui_start
 
 if ((${#steps[@]} == 0)); then
