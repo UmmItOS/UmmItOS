@@ -59,13 +59,9 @@ Singleton {
         }
     ]
 
-    // The sidebar's order: A to Z by each name in the chosen language, compared by Unicode code point; About stays last.
+    // The sidebar's order, the same in every language: what you set up first, then your data, then the system, About last.
     // Indices into pages, which keeps its own order for the page stack and `ipc call settings page`.
-    readonly property var order: pages.map((p, i) => i).sort((a, b) => {
-        const last = (pages[a].name === "About") - (pages[b].name === "About");
-        const x = I18n.t(pages[a].name), y = I18n.t(pages[b].name);
-        return last !== 0 ? last : x < y ? -1 : x > y ? 1 : 0;
-    })
+    readonly property var order: ["Wi-Fi", "Bar", "Screenshots", "Record", "Privacy", "Anti-forensics", "Packages", "Update", "Language", "Misc", "About"].map(n => pages.findIndex(p => p.name === n))
 
     readonly property string home: Quickshell.env("HOME")
     // Plain key=value lines, so the script can read them without the shell.
