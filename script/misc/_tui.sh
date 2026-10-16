@@ -14,12 +14,15 @@
 #   results_notes           optional lines under the results
 #   results_info            optional "Status" box under the results, one
 #                           "tone|text" entry per row: ok, warn, bad or mute
-#   sel_info                the same kind of rows, in a "Security notices" box
+#   sel_info                the same kind of rows, in an "Arch news" box
 #                           above the checklist
 # Hooks, all optional, named in:
 #   tui_key_hook            called with the key the checklist did not use;
 #                           returns 0 when it handled it
 #   tui_step_hook           called with the step's index before it runs
+#   tui_idle_hook           called every tui_poll seconds while the checklist
+#                           waits for a key; returns 0 when something changed
+#                           and the screen should be drawn again
 # UMMITOS_DRY_RUN=1 makes tui_run pretend: nothing is executed.
 
 reset=$'\e[0m'
@@ -52,6 +55,9 @@ results_bad='Finished with %d failed step(s)'
 stop_on_fail=0
 tui_key_hook=
 tui_step_hook=
+tui_idle_hook=
+# Seconds the checklist waits for a key before the idle hook runs; empty waits for ever.
+tui_poll=
 
 tui_on=0
 cols=80
@@ -161,9 +167,13 @@ tui_flush() {
 # Sets key to up, down, space, enter, all, quit, resize or other.
 tui_readkey() {
 	local rest status
-	IFS= read -rsn1 key
+	IFS= read -rsn1 ${tui_poll:+-t "$tui_poll"} key
 	status=$?
-	if ((status > 128)); then
+	# 142 is read's own timeout; any other signal here is a resize.
+	if ((status == 142)); then
+		key=idle
+		return
+	elif ((status > 128)); then
 		key=resize
 		return
 	fi
@@ -233,7 +243,7 @@ tui_draw_select() {
 	done
 	descw=$((inner - 19 - labw))
 	tui_banner
-	((${#sel_info[@]})) && tui_info_box 'Security notices' "${sel_info[@]}"
+	((${#sel_info[@]})) && tui_info_box 'Arch news' "${sel_info[@]}"
 	tui_emit "${fg_text}${bold}$sel_title"
 	tui_emit ''
 	tui_top "$sel_box"
@@ -268,7 +278,11 @@ tui_select() {
 	note=
 	while true; do
 		tui_draw_select
-		tui_readkey
+		while true; do
+			tui_readkey
+			[[ $key == idle ]] || break
+			"$tui_idle_hook" && break
+		done
 		note=
 		case $key in
 			up) ((cursor = (cursor + count - 1) % count)) ;;

@@ -197,9 +197,23 @@ if [[ ! -t 0 || ! -t 1 ]]; then
 	exit 1
 fi
 
-mapfile -t sel_info < <("$dir/advisories.sh" 2> /dev/null)
+# The notices are fetched while the checklist is already on screen.
+notices_dir=$(mktemp -d)
+("$dir/advisories.sh" > "$notices_dir/rows" 2> /dev/null; : > "$notices_dir/done") &
+sel_info=('mute|Checking the Arch news...')
+tui_poll=0.3
+
+update_idle() {
+	[[ -e $notices_dir/done ]] || return 1
+	mapfile -t sel_info < "$notices_dir/rows"
+	((${#sel_info[@]})) || sel_info=('mute|No news to show')
+	tui_poll=
+	return 0
+}
+tui_idle_hook=update_idle
 
 tui_start
+trap 'tui_leave; rm -rf -- "$notices_dir"' EXIT
 
 if ((${#steps[@]} == 0)); then
 	tui_message 'Nothing on this system to update from here.'

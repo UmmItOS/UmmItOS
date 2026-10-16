@@ -143,7 +143,7 @@ Super+H (`Doctor` singleton, `doctor/DoctorWindow.qml`) runs `script/misc/doctor
 
 ### Security notices
 
-`script/misc/advisories.sh` prints a notice box of the Arch news feed (`archlinux.org/feeds/news/`, the last 30 days) for the top of `update.sh` (the rows come from `sel_info` in `_tui.sh`), and with `--notify` sends each new alarming item from the last week once as a critical notice; the shell's `Updates` service runs that after login and every 6 hours. The mailing lists sit behind Anubis, so nothing reads them by script. Everything that arrives is stripped of control characters and shown as plain text.
+`script/misc/advisories.sh` prints a notice box of the five newest items of the Arch news feed (`archlinux.org/feeds/news/`) for the top of `update.sh` (the rows come from `sel_info` in `_tui.sh`), and with `--notify` sends each new alarming item from the last week once as a critical notice; the shell's `Updates` service runs that after login and every 6 hours. The mailing lists sit behind Anubis, so nothing reads them by script. Everything that arrives is stripped of control characters and shown as plain text.
 
 ### Wipe
 
