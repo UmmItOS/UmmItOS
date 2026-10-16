@@ -19,12 +19,13 @@ banner=(
 sel_title='What should be updated?'
 sel_box=Updates
 sel_hint='↑/↓ move · space tick · y auto-yes · a all/none · enter run'
-results_ok='Everything is up to date'
+results_ok='✔ Update complete: every step finished successfully'
 choices=('Reboot now' 'Run again' 'Change the selection' 'Open a shell' 'Exit')
 choice=4
 
 yes=()
 assume=0
+snapshot=
 
 update_repos() {
 	local opts=()
@@ -96,8 +97,9 @@ tui_step_hook=update_step
 # it, what is still waiting to update, and whether a reboot is due.
 update_status() {
 	local when=$1 before=$2 list rc repo=0 aur=0 flat=0 left
-	local checked=1 text
+	local checked=1 text up new gone
 	results_info=()
+	results_ok='✔ Update complete: every step finished successfully'
 	printf '\n%sChecking what is left to update...%s\n' "$fg_mute" "$reset"
 	if command -v checkupdates &> /dev/null; then
 		list=$(checkupdates 2> /dev/null)
@@ -123,6 +125,17 @@ update_status() {
 	else
 		results_info+=("ok|This run: finished in ${total_secs}s, at ${when#* }")
 	fi
+	if [[ -s $snapshot ]]; then
+		read -r up new gone < <(pacman -Q | awk -v old="$snapshot" '
+			BEGIN { while ((getline l < old) > 0) { split(l, a, " "); was[a[1]] = a[2] } }
+			{ if (!($1 in was)) n++; else if (was[$1] != $2) u++; seen[$1] = 1 }
+			END { for (k in was) if (!(k in seen)) g++; print u + 0, n + 0, g + 0 }')
+		if ((up + new + gone)); then
+			results_info+=("ok|Packages: $up upgraded, $new new, $gone removed")
+		else
+			results_info+=('mute|Packages: none changed, they were already current')
+		fi
+	fi
 	[[ -n $before ]] && results_info+=("mute|Run before: $before")
 	if ((!checked)); then
 		results_info+=('warn|Could not check what is left (offline?)')
@@ -130,7 +143,7 @@ update_status() {
 		text="$left update(s) still waiting: $repo repo, $aur AUR"
 		((flat)) && text+=", $flat flatpak"
 		results_info+=("warn|$text")
-		results_ok='Done, but updates are still waiting'
+		results_ok='! Steps finished, but updates are still waiting'
 	else
 		results_info+=('ok|Nothing left to update')
 	fi
@@ -142,11 +155,13 @@ update_status() {
 
 run_steps() {
 	local when before
+	snapshot=$(mktemp)
+	pacman -Q > "$snapshot" 2> /dev/null
 	tui_run
 	tui_stamp when
 	before=$(tail -n 1 "$log" 2> /dev/null)
 	before=${before#*> }
-	before=${before/: / · }
+	before=${before/: / - }
 	if ((failures)); then
 		printf '<ERROR> %s: upgrade had %d failed step(s), %ds\n' \
 			"$when" "$failures" "$total_secs" >> "$log"
@@ -158,6 +173,7 @@ run_steps() {
 		say Update 'System updated' "Finished in $total_secs seconds."
 	fi
 	update_status "$when" "$before"
+	rm -f -- "$snapshot"
 	tui_wait
 }
 
