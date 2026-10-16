@@ -12,6 +12,8 @@
 #   sel_hint                the key hint under it
 #   choices                 the "What next?" entries
 #   results_notes           optional lines under the results
+#   results_info            optional "Status" box under the results, one
+#                           "tone|text" entry per row: ok, warn, bad or mute
 # Hooks, all optional, named in:
 #   tui_key_hook            called with the key the checklist did not use;
 #                           returns 0 when it handled it
@@ -37,6 +39,7 @@ tags=()
 steps=()
 choices=()
 results_notes=()
+results_info=()
 
 sel_title='Pick what to do'
 sel_box='Steps'
@@ -364,6 +367,21 @@ tui_draw_results() {
 	tui_row " $fg_mute$rest$secs "
 	tui_bottom
 	tui_emit ''
+	if ((${#results_info[@]})); then
+		tui_top Status
+		for rest in "${results_info[@]}"; do
+			case ${rest%%|*} in
+				ok) icon='✔' tone=$fg_ok ;;
+				warn) icon='!' tone=$fg_warn ;;
+				bad) icon='✘' tone=$fg_bad ;;
+				*) icon='·' tone=$fg_mute ;;
+			esac
+			printf -v name '%-*.*s' "$((inner - 4))" "$((inner - 4))" "${rest#*|}"
+			tui_row " $tone$icon $fg_text$name "
+		done
+		tui_bottom
+		tui_emit ''
+	fi
 	tui_top 'What next?'
 	for i in "${!choices[@]}"; do
 		printf -v name '%-*s' "$((inner - 4))" "${choices[i]}"

@@ -92,10 +92,61 @@ update_step() {
 }
 tui_step_hook=update_step
 
+# Fills the results screen's Status box: how this run went, the run before
+# it, what is still waiting to update, and whether a reboot is due.
+update_status() {
+	local when=$1 before=$2 list rc repo=0 aur=0 flat=0 left
+	local checked=1 text
+	results_info=()
+	printf '\n%sChecking what is left to update...%s\n' "$fg_mute" "$reset"
+	if command -v checkupdates &> /dev/null; then
+		list=$(checkupdates 2> /dev/null)
+		rc=$?
+		# 2 is "nothing to update"; anything else but 0 is a failed check.
+		if ((rc == 0)); then
+			repo=$(wc -l <<< "$list")
+		elif ((rc != 2)); then
+			checked=0
+		fi
+	fi
+	if command -v paru &> /dev/null; then
+		list=$(paru -Qua 2> /dev/null)
+		[[ -n $list ]] && aur=$(wc -l <<< "$list")
+	fi
+	if command -v flatpak &> /dev/null; then
+		list=$(flatpak remote-ls --updates 2> /dev/null)
+		[[ -n $list ]] && flat=$(wc -l <<< "$list")
+	fi
+	left=$((repo + aur + flat))
+	if ((failures)); then
+		results_info+=("bad|This run: $failures step(s) failed, ${total_secs}s, at ${when#* }")
+	else
+		results_info+=("ok|This run: finished in ${total_secs}s, at ${when#* }")
+	fi
+	[[ -n $before ]] && results_info+=("mute|Run before: $before")
+	if ((!checked)); then
+		results_info+=('warn|Could not check what is left (offline?)')
+	elif ((left)); then
+		text="$left update(s) still waiting: $repo repo, $aur AUR"
+		((flat)) && text+=", $flat flatpak"
+		results_info+=("warn|$text")
+		results_ok='Done, but updates are still waiting'
+	else
+		results_info+=('ok|Nothing left to update')
+	fi
+	# A replaced kernel removes the modules of the one that is running.
+	if [[ ! -d /usr/lib/modules/$(uname -r) ]]; then
+		results_info+=('warn|Reboot needed: a new kernel was installed')
+	fi
+}
+
 run_steps() {
-	local when
+	local when before
 	tui_run
 	tui_stamp when
+	before=$(tail -n 1 "$log" 2> /dev/null)
+	before=${before#*> }
+	before=${before/: / · }
 	if ((failures)); then
 		printf '<ERROR> %s: upgrade had %d failed step(s), %ds\n' \
 			"$when" "$failures" "$total_secs" >> "$log"
@@ -106,6 +157,7 @@ run_steps() {
 			"$when" "$total_secs" >> "$log"
 		say Update 'System updated' "Finished in $total_secs seconds."
 	fi
+	update_status "$when" "$before"
 	tui_wait
 }
 
