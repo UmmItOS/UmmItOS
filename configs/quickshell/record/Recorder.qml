@@ -12,7 +12,7 @@ Singleton {
     property bool open: false
     property bool system: true
     property bool mic: false
-    // 5 to 1 while counting down, 0 otherwise.
+    // 3 to 1 while counting down, 0 otherwise.
     property int count: 0
     readonly property bool counting: count > 0
     // Set by screen-record.sh; nothing else on screen shows a recording is running.
@@ -32,6 +32,8 @@ Singleton {
             mic: root.mic
         }));
         count = Theme.record.countdown;
+        // A tick for each number; none when the recording itself starts.
+        Sounds.play("record-tick");
         tick.restart();
     }
 
@@ -61,6 +63,7 @@ Singleton {
         onTriggered: {
             if (root.count > 1) {
                 root.count--;
+                Sounds.play("record-tick");
                 return;
             }
             tick.stop();
@@ -152,6 +155,7 @@ Singleton {
         function close(): void {
             root.cancel();
         }
+
 
         target: "record"
     }

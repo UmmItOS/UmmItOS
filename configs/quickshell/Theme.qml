@@ -557,7 +557,7 @@ Singleton {
 
     readonly property QtObject record: QtObject {
         // Seconds counted down before recording starts.
-        readonly property int countdown: 5
+        readonly property int countdown: 3
     }
 
     readonly property QtObject duration: QtObject {
