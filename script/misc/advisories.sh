@@ -1,19 +1,16 @@
 #!/usr/bin/env bash
-# Security notices for the updater: UmmItOS's own advisories (advisories.json)
-# and the Arch news of the last 30 days. Prints one "tone|text" line per row,
-# for the notice box in update.sh. With --notify it sends each alarming one that
-# was not seen before as a notice, once (news only while it is a week old). Offline, it falls back to the
-# advisories file next to it. Style: https://style.ysap.sh/
+# Security notices for the updater: the Arch news of the last 30 days. Prints
+# one "tone|text" line per row, for the notice box in update.sh. With --notify
+# it sends each alarming one that was not seen before as a notice, once, while
+# it is a week old. Style: https://style.ysap.sh/
 
 dir=${BASH_SOURCE[0]%/*}
 [[ $dir == "${BASH_SOURCE[0]}" ]] && dir=.
 state=${XDG_STATE_HOME:-$HOME/.local/state}/ummitos
 seen=$state/notices-seen
 feed=https://archlinux.org/feeds/news/
-own=https://raw.githubusercontent.com/UmmItOS/UmmItOS/master/script/misc/advisories.json
 news_days=30
 notify_days=7
-own_days=60
 alarming='malicious|malware|compromis|rootkit|security|manual intervention'
 
 tones=()
@@ -50,15 +47,6 @@ decode() {
 
 now=$(date +%s)
 
-json=$(get "$own")
-jq -e 'type == "array"' <<< "$json" &> /dev/null || json=$(cat "$dir/advisories.json" 2> /dev/null)
-while IFS=$'\t' read -r id date title text link; do
-	[[ $date =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] || continue
-	t=$(date -d "$date" +%s 2> /dev/null) || continue
-	((now - t <= own_days * 86400)) || continue
-	add bad "$id" "$date  $title" "$text" "$link" "$((now - t))"
-done < <(jq -r '.[]? | [.id, .date, .title, .text, .link] | @tsv' <<< "$json" 2> /dev/null)
-
 shown=0
 while IFS=$'\t' read -r pub title link; do
 	((shown < 3)) || break
@@ -85,7 +73,7 @@ if [[ $1 == --notify ]]; then
 	for i in "${!ids[@]}"; do
 		[[ ${tones[i]} == mute ]] && continue
 		# Old news is in the updater's box, not worth a notice now.
-		[[ ${tones[i]} == warn ]] && ((ages[i] > notify_days * 86400)) && continue
+		((ages[i] > notify_days * 86400)) && continue
 		grep -qxF -- "${ids[i]}" "$seen" && continue
 		body=${texts[i]}
 		[[ -n ${links[i]} ]] && body+=$'\n'"<a href=\"${links[i]}\">${links[i]}</a>"
