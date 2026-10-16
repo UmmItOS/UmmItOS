@@ -309,5 +309,24 @@ PanelWindow {
         TapHandler {
             onTapped: Dashboard.toggleTab(0)
         }
+
+        HoverHandler {
+            id: clockHover
+        }
+
+        Tip {
+            anchorItem: clockColumn
+            rows: [
+                {
+                    glyph: "calendar_month",
+                    text: clock.date.toLocaleString(I18n.locale, I18n.t("dddd, d MMMM yyyy"))
+                },
+                {
+                    glyph: "dashboard",
+                    text: I18n.t("Click to open the dashboard")
+                }
+            ]
+            wanted: clockHover.hovered && !Dashboard.open
+        }
     }
 }

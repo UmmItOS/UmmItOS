@@ -570,5 +570,7 @@
     "%1 % · charging": "%1 % · 充緊電",
     "%1 % · on battery": "%1 % · 用緊電池",
     "%1 until full": "仲要 %1 充滿",
-    "%1 left": "仲剩 %1"
+    "%1 left": "仲剩 %1",
+    "dddd, d MMMM yyyy": "yyyy年M月d日 dddd",
+    "Click to open the dashboard": "㩒一下開儀表板"
 }
