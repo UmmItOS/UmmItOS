@@ -156,7 +156,6 @@ Singleton {
             root.cancel();
         }
 
-
         target: "record"
     }
 }
