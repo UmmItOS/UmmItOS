@@ -96,6 +96,27 @@ RowLayout {
         onTapped: root.popupOpen = !root.popupOpen
     }
 
+    HoverHandler {
+        id: hover
+    }
+
+    // The level, and which device it is for.
+    Tip {
+        anchorItem: root
+        rows: [
+            {
+                glyph: root.glyphFor(root.level, root.muted),
+                text: root.muted ? I18n.t("Volume · muted") : I18n.t("Volume · %1 %").arg(Math.round(root.level * 100))
+            }
+        ].concat(root.sink ? [
+                {
+                    glyph: "speaker",
+                    text: root.sink.description || root.sink.name
+                }
+            ] : [])
+        wanted: hover.hovered && !root.popupOpen && root.audio !== null
+    }
+
     WheelHandler {
         onWheel: event => {
             if (event.angleDelta.y !== 0)

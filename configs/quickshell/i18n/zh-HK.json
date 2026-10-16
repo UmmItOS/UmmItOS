@@ -559,5 +559,16 @@
     "Which networks you joined, how often and when: a rough record of where you have been.": "你連過邊啲網絡、幾多次、幾時連：大概記低咗你去過邊。",
     "Kept by the Wi-Fi counter (services/WifiStats.qml) in ~/.local/state/ummitos/wifi.json.": "由 Wi-Fi 計數器（services/WifiStats.qml）存喺 ~/.local/state/ummitos/wifi.json。",
     "Network, last %1 s": "網絡，最近 %1 秒",
-    "%1 now · %2 peak": "而家 %1 · 高位 %2"
+    "%1 now · %2 peak": "而家 %1 · 高位 %2",
+    "Wired network": "有線網絡",
+    "Wi-Fi · %1": "Wi-Fi · %1",
+    "Wi-Fi · not connected": "Wi-Fi · 未連接",
+    "No device connected": "冇連接任何裝置",
+    "Volume · muted": "音量 · 已靜音",
+    "Volume · %1 %": "音量 · %1 %",
+    "%1 % · fully charged": "%1 % · 已充滿",
+    "%1 % · charging": "%1 % · 充緊電",
+    "%1 % · on battery": "%1 % · 用緊電池",
+    "%1 until full": "仲要 %1 充滿",
+    "%1 left": "仲剩 %1"
 }

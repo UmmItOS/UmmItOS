@@ -77,6 +77,8 @@ RowLayout {
     }
 
     MaterialIcon {
+        id: glyph
+
         Layout.alignment: Qt.AlignVCenter
 
         text: {
@@ -124,6 +126,21 @@ RowLayout {
 
     TapHandler {
         onTapped: root.popupOpen = !root.popupOpen
+    }
+
+    HoverHandler {
+        id: hover
+    }
+
+    Tip {
+        anchorItem: root
+        rows: [
+            {
+                glyph: glyph.text,
+                text: root.plugged ? I18n.t("Wired network") : !root.wifi ? I18n.t("No Wi-Fi adapter") : !Networking.wifiEnabled ? I18n.t("Wi-Fi is off") : root.active ? I18n.t("Wi-Fi · %1").arg(root.active.name) : I18n.t("Wi-Fi · not connected")
+            }
+        ]
+        wanted: hover.hovered && !root.popupOpen && !root.menuOpen
     }
 
     TapHandler {

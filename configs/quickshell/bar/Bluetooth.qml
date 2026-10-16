@@ -45,6 +45,8 @@ RowLayout {
     spacing: Theme.spacing.small
 
     MaterialIcon {
+        id: glyph
+
         Layout.alignment: Qt.AlignVCenter
 
         text: {
@@ -58,6 +60,30 @@ RowLayout {
 
     TapHandler {
         onTapped: root.popupOpen = !root.popupOpen
+    }
+
+    HoverHandler {
+        id: hover
+    }
+
+    // Every connected device, or why there is none.
+    Tip {
+        anchorItem: root
+        rows: {
+            const names = [...Bluez.Bluetooth.devices.values].filter(d => d.connected).map(d => ({
+                        glyph: "bluetooth_connected",
+                        text: d.name || d.address
+                    }));
+            if (names.length > 0)
+                return names;
+            return [
+                {
+                    glyph: glyph.text,
+                    text: !root.adapter ? I18n.t("No Bluetooth adapter") : !root.on ? I18n.t("Bluetooth is off") : I18n.t("No device connected")
+                }
+            ];
+        }
+        wanted: hover.hovered && !root.popupOpen
     }
 
     Flyout {

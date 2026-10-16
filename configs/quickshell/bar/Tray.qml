@@ -46,6 +46,7 @@ RowLayout {
             readonly property string fallback: missing && glyph === "" ? root.appIcon(modelData.id) : ""
 
             property bool menuOpen: false
+            readonly property string name: modelData.tooltipTitle || modelData.title || modelData.id.replace(/_status_icon_\d+$/, "")
 
             onClicked: event => {
                 if (event.button === Qt.RightButton && entry.modelData.hasMenu) {
@@ -59,6 +60,7 @@ RowLayout {
             implicitHeight: Theme.icon.tray
             Layout.alignment: Qt.AlignVCenter
             acceptedButtons: Qt.LeftButton | Qt.RightButton
+            hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
             scale: pressed ? Theme.pressScale : 1
 
@@ -89,8 +91,14 @@ RowLayout {
 
                 anchorItem: entry
                 menu: entry.modelData.menu
-                title: entry.modelData.tooltipTitle || entry.modelData.title || entry.modelData.id.replace(/_status_icon_\d+$/, "")
+                title: entry.name
                 visible: entry.menuOpen
+            }
+
+            Tip {
+                anchorItem: entry
+                text: entry.name
+                wanted: entry.containsMouse && !entry.menuOpen
             }
         }
     }

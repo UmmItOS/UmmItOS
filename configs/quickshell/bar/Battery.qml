@@ -62,6 +62,14 @@ RowLayout {
         return "battery_1_bar";
     }
 
+    // UPower's estimate in seconds, for the way the battery is going; 0 when it has none yet.
+    readonly property int seconds: (charging ? battery?.timeToFull : battery?.timeToEmpty) ?? 0
+
+    function span(total: int): string {
+        const minutes = Math.round(total / 60);
+        return minutes >= 60 ? I18n.t("%1 h %2 min").arg(Math.floor(minutes / 60)).arg(minutes % 60) : I18n.t("%1 minutes").arg(minutes);
+    }
+
     visible: present
     spacing: Theme.spacing.small
 
@@ -122,6 +130,25 @@ RowLayout {
     }
 
     HoverHandler {
+        id: hover
+
         cursorShape: Qt.PointingHandCursor
+    }
+
+    // The level and state, and the time left when UPower knows it.
+    Tip {
+        anchorItem: root
+        rows: [
+            {
+                glyph: root.glyph,
+                text: (root.full ? I18n.t("%1 % · fully charged") : root.charging ? I18n.t("%1 % · charging") : I18n.t("%1 % · on battery")).arg(Math.round(root.pct * 100))
+            }
+        ].concat(root.seconds > 0 ? [
+                {
+                    glyph: "schedule",
+                    text: (root.charging ? I18n.t("%1 until full") : I18n.t("%1 left")).arg(root.span(root.seconds))
+                }
+            ] : [])
+        wanted: hover.hovered
     }
 }
