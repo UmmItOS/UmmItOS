@@ -16,6 +16,8 @@
 #                           "tone|text" entry per row: ok, warn, bad or mute
 #   sel_info                the same kind of rows, in an "Arch news" box
 #                           above the checklist
+# A row may end in a tab and an https link: the row then is a link the terminal
+# can open (OSC 8; in kitty, ctrl+shift+click).
 # Hooks, all optional, named in:
 #   tui_key_hook            called with the key the checklist did not use;
 #                           returns 0 when it handled it
@@ -215,7 +217,7 @@ tui_wait() {
 
 # tui_info_box TITLE ROW...: a box of "tone|text" rows (ok, warn, bad, mute, or note for a line that goes with the row above).
 tui_info_box() {
-	local title=$1 row icon tone name inner=$((width - 2))
+	local title=$1 row icon tone name text link inner=$((width - 2))
 	shift
 	tui_top "$title"
 	for row; do
@@ -226,7 +228,15 @@ tui_info_box() {
 			note) icon=' ' tone=$fg_mute ;;
 			*) icon='·' tone=$fg_mute ;;
 		esac
-		printf -v name '%-*.*s' "$((inner - 4))" "$((inner - 4))" "${row#*|}"
+		text=${row#*|}
+		link=
+		if [[ $text == *$'\t'* ]]; then
+			link=${text#*$'\t'}
+			text=${text%%$'\t'*}
+		fi
+		printf -v name '%-*.*s' "$((inner - 4))" "$((inner - 4))" "$text"
+		# Padded and cut first: the escapes take no room on screen.
+		[[ -n $link ]] && name=$'\e]8;;'$link$'\e\\'$name$'\e]8;;\e\\'
 		tui_row " $tone$icon $fg_text$name "
 	done
 	tui_bottom

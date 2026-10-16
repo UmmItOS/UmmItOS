@@ -94,7 +94,7 @@ fi
 
 [[ -n $body ]] || echo 'warn|Could not read the Arch news (offline?)'
 for i in "${!ids[@]}"; do
-	printf '%s|%s\n' "${tones[i]}" "${heads[i]}"
+	printf '%s|%s%s\n' "${tones[i]}" "${heads[i]}" "${links[i]:+$'\t'${links[i]}}"
 	[[ -n ${texts[i]} ]] || continue
 	while IFS= read -r line; do
 		printf 'note|%s\n' "$line"
