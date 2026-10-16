@@ -17,11 +17,29 @@ Singleton {
 
     property real downRate: 0
     property real upRate: 0
+    // The last chartSamples seconds, oldest first, for the bar's hover chart.
+    property var downHist: []
+    property var upHist: []
     property real lastRx: -1
     property real lastTx: -1
 
+    // One decimal below ten keeps the string length steady.
+    function human(bytes: real): string {
+        if (bytes >= 1048576) {
+            const m = bytes / 1048576;
+            return (m < 10 ? m.toFixed(1) : Math.round(m)) + " M";
+        }
+        if (bytes >= 1024) {
+            const k = bytes / 1024;
+            return (k < 10 ? k.toFixed(1) : Math.round(k)) + " k";
+        }
+        return Math.round(bytes) + " B";
+    }
+
     // Reset the baseline on a new interface.
     onDeviceChanged: {
+        downHist = [];
+        upHist = [];
         lastRx = -1;
         lastTx = -1;
         downRate = 0;
@@ -52,6 +70,8 @@ Singleton {
                 if (root.lastRx >= 0) {
                     root.downRate = Math.max(0, rx - root.lastRx);
                     root.upRate = Math.max(0, tx - root.lastTx);
+                    root.downHist = root.downHist.slice(1 - Theme.bar.chartSamples).concat(root.downRate);
+                    root.upHist = root.upHist.slice(1 - Theme.bar.chartSamples).concat(root.upRate);
                 }
                 root.lastRx = rx;
                 root.lastTx = tx;

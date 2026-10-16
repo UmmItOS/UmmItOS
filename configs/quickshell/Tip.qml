@@ -11,12 +11,14 @@ PopupWindow {
     property string text
     // A list instead of a label: { text, glyph } or { text, image } per row, the icon before the words.
     property var rows: []
+    // Anything else, such as a chart, in place of the label or the list.
+    property Component body: null
     // The control is hovered; the tip follows after a pause.
     property bool wanted: false
     property bool showing: false
 
     onWantedChanged: {
-        if (wanted && (text !== "" || rows.length > 0)) {
+        if (wanted && (text !== "" || rows.length > 0 || body !== null)) {
             delay.restart();
         } else {
             delay.stop();
@@ -50,12 +52,14 @@ PopupWindow {
         id: sheet
 
         anchors.centerIn: parent
-        readonly property bool listed: root.rows.length > 0
+        readonly property bool custom: root.body !== null
+        readonly property bool listed: !custom && root.rows.length > 0
+        // One line of any kind is a pill.
+        readonly property bool single: !custom && root.rows.length <= 1 && label.lineCount <= 1
 
-        width: (listed ? list.implicitWidth : label.implicitWidth) + Theme.spacing.medium * 2
-        height: (listed ? list.implicitHeight + Theme.spacing.medium * 2 : label.implicitHeight + Theme.spacing.small * 2)
-        // A pill for one line; a list reads as a card.
-        radius: listed || label.lineCount > 1 ? Theme.rounding.medium : Theme.rounding.full
+        width: (custom ? body.implicitWidth : listed ? list.implicitWidth : label.implicitWidth) + Theme.spacing.medium * 2
+        height: (custom ? body.implicitHeight + Theme.spacing.medium * 2 : listed ? list.implicitHeight + (single ? Theme.spacing.small : Theme.spacing.medium) * 2 : label.implicitHeight + Theme.spacing.small * 2)
+        radius: single ? Theme.rounding.full : Theme.rounding.medium
         color: Theme.bgTray
         opacity: root.showing ? 1 : 0
         scale: root.showing ? 1 : Theme.popScale
@@ -123,11 +127,20 @@ PopupWindow {
             }
         }
 
+        // Built only while the tip shows, so a chart paints nothing in the dark.
+        Loader {
+            id: body
+
+            anchors.centerIn: parent
+            active: sheet.custom && root.visible
+            sourceComponent: root.body
+        }
+
         Text {
             id: label
 
             anchors.centerIn: parent
-            visible: !sheet.listed
+            visible: !sheet.listed && !sheet.custom
             text: root.text
             textFormat: Text.PlainText
             color: Theme.fg

@@ -260,6 +260,12 @@ Singleton {
         readonly property int mediaBars: 8
         // The latest-file-change label, before it elides.
         readonly property int fileWatch: 220
+        // The bandwidth history on hover: width, height and seconds of it, the line, and how strongly the area under it shows.
+        readonly property int chartWidth: 240
+        readonly property int chartHeight: 64
+        readonly property int chartSamples: 60
+        readonly property int chartLine: 2
+        readonly property real chartFill: 0.25
         // The pill round a group of bar items.
         readonly property int cluster: 32
         readonly property int accentColumns: 4
@@ -590,6 +596,9 @@ Singleton {
         readonly property int toast: 6000
         // How long after start the quiet health check runs.
         readonly property int doctorStart: 20000
+        // The update count is read this long after login, then this often.
+        readonly property int updatesFirst: 45000
+        readonly property int updatesCheck: 21600000
         // After start, how long the first microphone reading is the state we began in, not news.
         readonly property int micSettle: 4000
         // An image copied this soon after a screenshot is that screenshot, which has its shutter already.

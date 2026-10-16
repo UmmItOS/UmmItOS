@@ -557,5 +557,7 @@
     "Small things that have no page of their own.": "沒有自己一頁的小設定。",
     "Wi-Fi history": "Wi-Fi 紀錄",
     "Which networks you joined, how often and when: a rough record of where you have been.": "你連過哪些網路、幾次、何時連：大致記錄了你去過哪裡。",
-    "Kept by the Wi-Fi counter (services/WifiStats.qml) in ~/.local/state/ummitos/wifi.json.": "由 Wi-Fi 計數器（services/WifiStats.qml）存在 ~/.local/state/ummitos/wifi.json。"
+    "Kept by the Wi-Fi counter (services/WifiStats.qml) in ~/.local/state/ummitos/wifi.json.": "由 Wi-Fi 計數器（services/WifiStats.qml）存在 ~/.local/state/ummitos/wifi.json。",
+    "Network, last %1 s": "網路，最近 %1 秒",
+    "%1 now · %2 peak": "目前 %1 · 峰值 %2"
 }

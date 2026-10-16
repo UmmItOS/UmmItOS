@@ -29,39 +29,9 @@ BarButton {
     icon: "wallpaper"
     label: "Random wallpaper · right-click to choose a folder"
     rightClickable: true
-
-    // Says the shuffle is narrowed to one folder, without recolouring the button.
-    Rectangle {
-        anchors {
-            top: parent.top
-            right: parent.right
-        }
-
-        width: Theme.bar.badge
-        height: width
-        radius: width / 2
-        color: Theme.accentText
-        scale: Wallpapers.filtered ? 1 : 0
-        opacity: Wallpapers.filtered ? 1 : 0
-
-        Behavior on scale {
-            enabled: Wallpapers.ready
-
-            NumberAnimation {
-                duration: Theme.duration.expressiveFastSpatial
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Wallpapers.filtered ? Theme.curve.emphasizedDecel : Theme.curve.emphasizedAccel
-            }
-        }
-
-        Behavior on opacity {
-            enabled: Wallpapers.ready
-
-            NumberAnimation {
-                duration: Theme.duration.expressiveFastEffects
-            }
-        }
-    }
+    // The shuffle is narrowed to one folder, without recolouring the button.
+    badge: Wallpapers.filtered
+    badgeReady: Wallpapers.ready
 
     Flyout {
         onCloseRequested: root.popupOpen = false

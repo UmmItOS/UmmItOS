@@ -11,6 +11,10 @@ MaterialIcon {
     property color hoverColor: Theme.accent2
     // Only a button that handles rightClicked takes the right button, so others do not press for nothing.
     property bool rightClickable: false
+    // A small dot on the corner: something here wants a look.
+    property bool badge: false
+    // False while the first value is still arriving, so the dot does not animate in at login.
+    property bool badgeReady: true
 
     signal clicked
     signal rightClicked
@@ -36,9 +40,49 @@ MaterialIcon {
         }
     }
 
+    // The dot springs in and out; leaving is quicker.
+    Rectangle {
+        anchors {
+            top: parent.top
+            right: parent.right
+        }
+
+        width: Theme.bar.badge
+        height: width
+        radius: width / 2
+        color: Theme.accentText
+        scale: root.badge ? 1 : 0
+        opacity: root.badge ? 1 : 0
+
+        Behavior on scale {
+            enabled: root.badgeReady
+
+            NumberAnimation {
+                duration: Theme.duration.expressiveFastSpatial
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: root.badge ? Theme.curve.emphasizedDecel : Theme.curve.emphasizedAccel
+            }
+        }
+
+        Behavior on opacity {
+            enabled: root.badgeReady
+
+            NumberAnimation {
+                duration: Theme.duration.expressiveFastEffects
+            }
+        }
+    }
+
+    // Its own icon first, so the tip reads like the button.
     Tip {
         anchorItem: root
         text: I18n.t(root.label)
+        rows: [
+            {
+                glyph: root.icon,
+                text: I18n.t(root.label)
+            }
+        ]
         wanted: mouse.containsMouse && !mouse.pressed
     }
 

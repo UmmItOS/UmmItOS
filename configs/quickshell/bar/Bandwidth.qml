@@ -11,19 +11,6 @@ RowLayout {
     // A threshold rather than zero, so the arrows do not flicker on idle chatter.
     readonly property real busyAt: Theme.bar.busyAt
 
-    // One decimal below ten keeps the string length steady.
-    function human(bytes: real): string {
-        if (bytes >= 1048576) {
-            const m = bytes / 1048576;
-            return (m < 10 ? m.toFixed(1) : Math.round(m)) + " M";
-        }
-        if (bytes >= 1024) {
-            const k = bytes / 1024;
-            return (k < 10 ? k.toFixed(1) : Math.round(k)) + " k";
-        }
-        return Math.round(bytes) + " B";
-    }
-
     spacing: 0
 
     component Rate: RowLayout {
@@ -50,7 +37,7 @@ RowLayout {
             Layout.alignment: Qt.AlignVCenter
             Layout.preferredWidth: Theme.control.readout
             horizontalAlignment: Text.AlignLeft
-            text: root.human(parent.value)
+            text: Net.human(parent.value)
             color: Theme.fg
             font.family: Theme.font
             font.pixelSize: Theme.fontSize.smaller
@@ -76,5 +63,15 @@ RowLayout {
 
     TapHandler {
         onTapped: Dashboard.toggleTab(1)
+    }
+
+    HoverHandler {
+        id: hover
+    }
+
+    Tip {
+        anchorItem: root
+        body: BandwidthChart {}
+        wanted: hover.hovered
     }
 }

@@ -144,10 +144,11 @@ PanelWindow {
                     }
 
                     BarButton {
-                        onClicked: Quickshell.execDetached(["kitty", "--execute", bar.home + "/script/misc/update.sh"])
+                        onClicked: Updates.update()
 
                         icon: "system_update_alt"
                         label: "Update UmmItOS"
+                        badge: Updates.count > 0
                     }
 
                     WallpaperShuffle {}
