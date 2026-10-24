@@ -8,13 +8,18 @@ import ".."
 Rectangle {
     id: card
 
+    // The desktop follows its Settings switch; the lock screen always shows it.
+    property bool wanted: Settings.weatherShow
+    // Off where something else drives the opacity frame by frame (the lock's fade), or the fade chases it and lags.
+    property bool fadeSelf: true
+
     implicitWidth: Theme.widgetWidth
     implicitHeight: body.implicitHeight + Theme.spacing.large * 2
     radius: Theme.rounding.extraLarge
     color: Theme.scrim(Theme.panelTint)
 
     // Its window maps when the forecast arrives, so this runs on each appearance.
-    opacity: Weather.ready && Settings.weatherShow ? 1 : 0
+    opacity: Weather.ready && card.wanted ? 1 : 0
     layer.enabled: opacity < 1
 
     layer.effect: MotionBlur {
@@ -22,6 +27,8 @@ Rectangle {
     }
 
     Behavior on opacity {
+        enabled: card.fadeSelf
+
         NumberAnimation {
             duration: Theme.duration.expressiveDefaultEffects
         }

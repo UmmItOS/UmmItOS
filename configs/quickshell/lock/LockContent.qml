@@ -265,6 +265,16 @@ Item {
         }
     }
 
+    // The weather, top left, across from the battery.
+    WeatherCard {
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.margins: parent.width * Theme.lock.margin
+        wanted: true
+        fadeSelf: false
+        opacity: root.haze * (Weather.ready ? 1 : 0)
+    }
+
     // What is playing, at the foot of the lock like a phone's: the desktop card, with its controls under the pointer.
     MediaCard {
         anchors.horizontalCenter: parent.horizontalCenter
