@@ -4,6 +4,7 @@ import QtQuick
 import QtQuick.Effects
 import QtMultimedia
 import "../bar"
+import "../desktop"
 import ".."
 import "../wake"
 
@@ -262,6 +263,15 @@ Item {
                 passes: 1
             }
         }
+    }
+
+    // What is playing, at the foot of the lock like a phone's: the desktop card, with its controls under the pointer.
+    MediaCard {
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: parent.width * Theme.lock.margin
+        wanted: true
+        opacity: root.haze * (playing ? 1 : 0)
     }
 
     // The field, outside the shadowed layer so typing is never delayed by it.

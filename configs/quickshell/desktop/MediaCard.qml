@@ -9,8 +9,10 @@ import ".."
 Rectangle {
     id: card
 
+    // The desktop follows its Settings switch; the lock screen always shows it.
+    property bool wanted: Settings.mediaShow
     readonly property var player: Players.active
-    readonly property bool playing: (player?.isPlaying ?? false) && Settings.mediaShow
+    readonly property bool playing: (player?.isPlaying ?? false) && card.wanted
     readonly property bool timed: (player?.lengthSupported ?? false) && (player?.length ?? 0) > 0
     // The low bands, which carry the beat.
     readonly property real beat: ((Cava.levels[0] ?? 0) + (Cava.levels[1] ?? 0) + (Cava.levels[2] ?? 0)) / 3
