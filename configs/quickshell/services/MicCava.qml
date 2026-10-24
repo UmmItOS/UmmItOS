@@ -16,9 +16,11 @@ Singleton {
     // Discs showing the bars, one per screen.
     property int viewers: 0
 
-    // WirePlumber may name no default source; then the first input device is it.
-    readonly property var source: Pipewire.defaultAudioSource ?? Pipewire.nodes.values.find(n => !n.isStream && !n.isSink && n.name.includes("input")) ?? null
-    readonly property bool present: source !== null && inputs.length > 0
+    // Names of input sources whose active port is really available (a jack with a mic in it, or a USB mic). Read from pactl, since Quickshell cannot see a port's availability.
+    property var availNames: []
+    // The source to draw: the default if its jack is available, else the first available one.
+    readonly property var source: (Pipewire.defaultAudioSource && availNames.includes(Pipewire.defaultAudioSource.name) ? Pipewire.defaultAudioSource : inputs[0]) ?? null
+    readonly property bool present: inputs.length > 0
     readonly property bool muted: source?.audio?.muted ?? false
     // Another app records from a microphone (our own cava stream does not count).
     readonly property bool inUse: Pipewire.nodes.values.some(n => n.isStream && !n.isSink && n.name !== "cava")
@@ -67,8 +69,8 @@ noise_reduction = 30
             source.audio.muted = !source.audio.muted;
     }
 
-    // Every input device now, by name: the sensor reads this, not the default, which follows the user's choice.
-    readonly property var inputs: Pipewire.nodes.values.filter(n => !n.isStream && !n.isSink && (n.name.includes("input") || n.name.includes("source")) && !n.name.endsWith(".monitor"))
+    // The input nodes with a mic actually plugged in, not every input device a card exposes.
+    readonly property var inputs: Pipewire.nodes.values.filter(n => root.availNames.includes(n.name))
     property var known: []
 
     function label(node: var): string {
@@ -103,6 +105,45 @@ noise_reduction = 30
     onRunningChanged: {
         if (!running)
             levels = [];
+    }
+
+    // A jack plug or unplug does not change the node set, so watch pactl's events too.
+    Connections {
+        function onNodesChanged(): void {
+            availDebounce.restart();
+        }
+
+        target: Pipewire.nodes
+    }
+
+    Timer {
+        id: availDebounce
+
+        interval: Theme.duration.small
+        onTriggered: avail.running = true
+    }
+
+    // Reads which input sources have an available active port.
+    Process {
+        id: avail
+
+        running: true
+        command: ["sh", "-c", 'pactl list sources 2>/dev/null | awk \'/^[[:space:]]*Name: / { name=$2; delete av } /\\(type:.*availab|: .*\\(type:/ { l=$0; sub(/^[[:space:]]+/,"",l); split(l,a,":"); av[a[1]]=(l ~ /not available/)?"no":"yes" } /^[[:space:]]*Active Port: / { if (name !~ /monitor/ && av[$3] != "no") print name }\'']
+        stdout: StdioCollector {
+            onStreamFinished: root.availNames = text.split("\n").filter(v => v !== "")
+        }
+    }
+
+    // pactl's own events: a mic plugged into or out of the jack fires a source change.
+    Process {
+        running: true
+        command: ["pactl", "subscribe"]
+        stdout: SplitParser {
+            onRead: line => {
+                if (line.includes("source") || line.includes("server") || line.includes("card"))
+                    availDebounce.restart();
+            }
+        }
     }
 
     PwObjectTracker {
