@@ -22,6 +22,8 @@ Singleton {
     property bool watched: false
     // Bar discs showing the audio bars, one per screen.
     property int barViewers: 0
+    // Desktop now-playing cards on screen; they show the position, so it ticks for them too.
+    property int cardViewers: 0
 
     function timeText(seconds: real): string {
         if (!seconds || seconds < 0)
@@ -34,7 +36,7 @@ Singleton {
     Timer {
         onTriggered: root.active.positionChanged()
 
-        running: root.watched && (root.active?.isPlaying ?? false)
+        running: (root.watched || root.cardViewers > 0) && (root.active?.isPlaying ?? false)
         interval: 1000
         repeat: true
         triggeredOnStart: true

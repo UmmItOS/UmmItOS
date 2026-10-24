@@ -174,6 +174,23 @@ Singleton {
 
     // How far in from a wallpaper card's edge its picture fades out, so no edge shows.
     readonly property int cardFeather: 56
+    // The desktop now-playing card: the cover, how far it swells with the beat, its halo, the live bars and the title's scroll.
+    readonly property QtObject media: QtObject {
+        readonly property int art: 64
+        readonly property real beat: 0.07
+        readonly property real haloScale: 1.3
+        readonly property int bars: 5
+        readonly property int barWidth: 4
+        readonly property int barMax: 26
+        readonly property int barMin: 3
+        // Pixels per second the overflowing title moves, and the pause at each end.
+        readonly property int scrollSpeed: 40
+        readonly property int scrollPause: 1600
+        readonly property int progress: 3
+        // How far a new track's text rises in from.
+        readonly property int rise: 10
+    }
+
     // A desktop widget's width (a medium macOS widget).
     readonly property int widgetWidth: 340
     // The longest line a hover list shows before it elides.
