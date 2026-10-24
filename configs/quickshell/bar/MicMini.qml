@@ -29,12 +29,6 @@ Item {
     implicitWidth: art + (Theme.bar.mediaGap + Theme.bar.mediaReach) * 2
     implicitHeight: implicitWidth
     scale: tap.pressed ? Theme.pressScale : 1
-    opacity: MicCava.present ? 1 : Theme.disabledOpacity
-
-    Behavior on opacity {
-        FastFade {}
-    }
-
     Accessible.role: Accessible.Button
     Accessible.name: I18n.t(!MicCava.present ? "No microphone" : MicCava.muted ? "Microphone muted" : "Microphone")
 
@@ -84,7 +78,7 @@ Item {
             anchors.centerIn: parent
             // No microphone: a different glyph, dimmed; muted: struck through and red.
             text: !MicCava.present ? "mic_external_off" : MicCava.muted ? "mic_off" : "mic"
-            color: !MicCava.present ? Theme.dim : MicCava.muted ? Theme.urgent : Theme.fg
+            color: !MicCava.present || MicCava.muted ? Theme.urgent : Theme.fg
             size: Theme.icon.small
 
             Behavior on color {
