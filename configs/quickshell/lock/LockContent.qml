@@ -271,6 +271,7 @@ Item {
         anchors.bottom: parent.bottom
         anchors.bottomMargin: parent.width * Theme.lock.margin
         wanted: true
+        fadeSelf: false
         opacity: root.haze * (playing ? 1 : 0)
     }
 

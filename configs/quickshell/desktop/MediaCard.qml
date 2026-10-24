@@ -11,6 +11,8 @@ Rectangle {
 
     // The desktop follows its Settings switch; the lock screen always shows it.
     property bool wanted: Settings.mediaShow
+    // Off where something else drives the opacity frame by frame (the lock's fade), or the fade chases it and lags.
+    property bool fadeSelf: true
     readonly property var player: Players.active
     readonly property bool playing: (player?.isPlaying ?? false) && card.wanted
     readonly property bool timed: (player?.lengthSupported ?? false) && (player?.length ?? 0) > 0
@@ -49,6 +51,8 @@ Rectangle {
     }
 
     Behavior on opacity {
+        enabled: card.fadeSelf
+
         NumberAnimation {
             duration: Theme.duration.expressiveDefaultEffects
         }
