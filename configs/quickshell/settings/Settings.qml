@@ -85,6 +85,7 @@ Singleton {
     // The joke reminder in the corner of the screen, and the weather card on the desktop.
     property bool activateShow: true
     property bool weatherShow: true
+    property bool mediaShow: true
     // Keeps the microphone open so the bar's mic disc can show its level.
     property bool micListen: true
 
@@ -138,7 +139,7 @@ Singleton {
     }
 
     function writeDesktop(): void {
-        desktopConf.setText("activate=" + (activateShow ? 1 : 0) + "\nweather=" + (weatherShow ? 1 : 0) + "\nmic=" + (micListen ? 1 : 0) + "\n");
+        desktopConf.setText("activate=" + (activateShow ? 1 : 0) + "\nweather=" + (weatherShow ? 1 : 0) + "\nmic=" + (micListen ? 1 : 0) + "\nmedia=" + (mediaShow ? 1 : 0) + "\n");
     }
 
     function setActivate(on: bool): void {
@@ -153,6 +154,11 @@ Singleton {
 
     function setWeatherCard(on: bool): void {
         weatherShow = on;
+        writeDesktop();
+    }
+
+    function setMediaCard(on: bool): void {
+        mediaShow = on;
         writeDesktop();
     }
 
@@ -399,6 +405,8 @@ Singleton {
                     root.weatherShow = line.slice(8) !== "0";
                 else if (line.startsWith("mic="))
                     root.micListen = line.slice(4) !== "0";
+                else if (line.startsWith("media="))
+                    root.mediaShow = line.slice(6) !== "0";
             }
         }
 

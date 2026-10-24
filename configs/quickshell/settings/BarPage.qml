@@ -130,6 +130,19 @@ ColumnLayout {
         }
     }
 
+    SettingRow {
+        title: I18n.t("Now playing card")
+        hint: I18n.t("Shows what is playing on the desktop while music plays.")
+
+        Toggle {
+            onToggled: Settings.setMediaCard(!Settings.mediaShow)
+
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            checked: Settings.mediaShow
+        }
+    }
+
     Item {
         Layout.fillHeight: true
     }

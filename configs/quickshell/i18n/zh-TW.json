@@ -572,5 +572,8 @@
     "%1 until full": "還需 %1 充飽",
     "%1 left": "還剩 %1",
     "dddd, d MMMM yyyy": "yyyy年M月d日 dddd",
-    "Click to open the dashboard": "點一下開啟儀表板"
+    "Click to open the dashboard": "點一下開啟儀表板",
+    "Now playing": "正在播放",
+    "Now playing card": "正在播放卡片",
+    "Shows what is playing on the desktop while music plays.": "播放音樂時在桌面顯示正在播放的內容。"
 }
