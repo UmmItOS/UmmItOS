@@ -78,7 +78,7 @@ Item {
             anchors.centerIn: parent
             // No microphone: a different glyph, dimmed; muted: struck through and red.
             text: !MicCava.present ? "mic_external_off" : MicCava.muted ? "mic_off" : "mic"
-            color: !MicCava.present || MicCava.muted ? Theme.urgent : Theme.fg
+            color: !MicCava.present ? Theme.dim : MicCava.muted ? Theme.urgent : Theme.fg
             size: Theme.icon.small
 
             Behavior on color {
