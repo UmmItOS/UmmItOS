@@ -29,6 +29,7 @@ unmix() {
 }
 
 if pgrep -u "$USER" -x wl-screenrec > /dev/null; then
+    asked=${EPOCHREALTIME/./}
     pkill -INT -u "$USER" -x wl-screenrec
     # The file is only complete once the recorder has exited.
     while pgrep -u "$USER" -x wl-screenrec > /dev/null; do sleep 0.1; done
@@ -39,7 +40,8 @@ if pgrep -u "$USER" -x wl-screenrec > /dev/null; then
     qs -c ummitos ipc call record stopped
     notify-send -a "Screen recording" "Recording saved" "$file${note:+
 $note}"
-    echo "$(date '+%F %T') saved $file" >> "$log"
+    # How long the recorder took to finish the file, to catch a slow stop.
+    echo "$(date '+%F %T') saved $file (stop took $(( (${EPOCHREALTIME/./} - asked) / 1000 )) ms)" >> "$log"
     exit 0
 fi
 
