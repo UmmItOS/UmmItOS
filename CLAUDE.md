@@ -210,6 +210,16 @@ For things that need input you cannot give from a terminal, mark every temporary
 - **Qt's default text rendering is soft.** Its distance-field text reads blurry at 12–17px over a translucent panel, with colour fringes. `shell.qml` turns it off for the whole shell with `//@ pragma Env QML_DISABLE_DISTANCEFIELD=1`; Qt has no other global switch (`QQuickWindow::setTextRenderType` is C++ only), and the pragma needs a `qs` restart, not a reload.
 - **Notifications are replaced in place.** `notify-send -r`, players and progress notices update the same `Notification` object, so anything copied from it must be refreshed on `summaryChanged`/`bodyChanged`/`imageChanged`.
 
+## Versions
+
+The version lives in `VERSION` and in signed tags (`vX.Y.Z`). Whoever works on the repo decides when to cut one; the owner asked for small, steady versions, never one big jump that holds weeks of work.
+
+- **Patch (`X.Y.Z+1`)**: fixes only, no new feature. Cut it once a fix (or a few related ones) is checked on screen.
+- **Minor (`X.Y+1.0`)**: one or more finished features, checked on screen. Cut it when a feature set is complete, not after every commit, and not while one of its parts is half done.
+- **Major**: only when the owner says so.
+- Never skip a number, and never tag over a known regression introduced since the last tag: fix it first or leave it out.
+- Bump and tag locally with the `VERSION` commit and `git tag -s` from [DOCS/RELEASE.md](DOCS/RELEASE.md) steps 2–3, and say in the reply that a version was cut. Pushing and the GitHub release (steps 1, 4–6) wait until the owner asks.
+
 ## Hard rules
 
 - Arch Linux only. `install.sh` and `install-menu.sh` gate on `/etc/arch-release`.
