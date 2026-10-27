@@ -817,6 +817,45 @@ Singleton {
         readonly property real flip: -90
     }
 
+    // The picture converter (convert/): GTA V's weapon wheel and mission banner, apart from the shell's look on purpose.
+    readonly property QtObject gta: QtObject {
+        readonly property color slot: Qt.rgba(0, 0, 0, 0.45)
+        readonly property color slotLit: Qt.rgba(1, 1, 1, 0.3)
+        // Fainter than a slot: the hub's words need a ground over a busy screen.
+        readonly property color hub: Qt.rgba(0, 0, 0, 0.3)
+        readonly property color text: "#ffffff"
+        readonly property color soft: Qt.rgba(1, 1, 1, 0.75)
+        // GTA's white lettering carries a thin black outline instead of a panel.
+        readonly property color outline: "#000000"
+        readonly property color gold: "#f0c850"
+        readonly property color red: "#d8393a"
+        readonly property color band: Qt.rgba(0, 0, 0, 0.55)
+        // The ring's outer and inner radius, and the clear gap between its slots.
+        readonly property int outer: 360
+        readonly property int inner: 160
+        readonly property int gap: 4
+        readonly property int icon: 44
+        readonly property int name: 22
+        readonly property int hint: 13
+        readonly property int thumb: 88
+        // The picked slot's icon and name grow by this; the wheel by `dropScale` while a drag is over it.
+        readonly property real lit: 1.1
+        readonly property real dropScale: 1.04
+        readonly property real openScale: 0.85
+        // The banner: its band's height and centre (a share of the screen), the title's height, and the size it lands from.
+        readonly property int bandHeight: 230
+        readonly property real bandAt: 0.42
+        readonly property int title: 96
+        readonly property real titleFrom: 1.4
+        // The title's drop shadow, down and right like the game's.
+        readonly property int shadowOffset: 4
+        readonly property real shadowBlur: 0.3
+        readonly property int headline: 26
+        readonly property int detail: 16
+        // How long the banner stays, like the game's.
+        readonly property int hold: 4500
+    }
+
     // Lower damping overshoots more.
     readonly property QtObject spring: QtObject {
         readonly property real stiffness: 12

@@ -43,6 +43,7 @@ singleton Draw 1.0 draw/Draw.qml
 singleton Weather 1.0 services/Weather.qml
 singleton Settings 1.0 settings/Settings.qml
 singleton Scan 1.0 scan/Scan.qml
+singleton Convert 1.0 convert/Convert.qml
 singleton AccentTime 1.0 services/AccentTime.qml
 singleton I18n 1.0 i18n/I18n.qml
 singleton Sao 1.0 sao/Sao.qml

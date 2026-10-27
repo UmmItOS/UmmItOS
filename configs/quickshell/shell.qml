@@ -6,6 +6,7 @@ import QtQuick
 import "background"
 import "charging"
 import "cheatsheet"
+import "convert"
 import "record"
 import "dashboard"
 import "desktop"
@@ -98,6 +99,8 @@ ShellRoot {
     SettingsWindow {}
 
     ScanWindow {}
+
+    ConvertWindow {}
 
     DrawWindow {}
 
