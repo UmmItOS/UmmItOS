@@ -109,7 +109,7 @@ noise_reduction = 30
 
     // A jack plug or unplug does not change the node set, so watch pactl's events too.
     Connections {
-        function onNodesChanged(): void {
+        function onValuesChanged(): void {
             availDebounce.restart();
         }
 
