@@ -30,6 +30,10 @@ Scope {
 
             property real shown: Settings.fpsShow ? 1 : 0
             property int fps: 0
+            // Frames this window has swapped, and the count and wall-clock time at the last reading.
+            property int swaps: 0
+            property int mark: 0
+            property real markTime: 0
 
             screen: modelData
             visible: shown > 0
@@ -61,20 +65,35 @@ Scope {
                 }
             }
 
-            // Frames tick only while the counter shows; a running one keeps the window rendering.
-            FrameAnimation {
-                id: frames
+            // Counts frames really swapped: FrameAnimation's own ticks follow Qt's timer and ran past the refresh rate.
+            Connections {
+                function onFrameSwapped(): void {
+                    win.swaps++;
+                }
 
-                running: Settings.fpsShow
+                target: Settings.fpsShow ? pill.Window.window : null
             }
 
-            // Reads the frame time a few times a second so the number can be read.
+            // Redraws every tick so a frame is swapped each time the compositor allows one.
+            FrameAnimation {
+                running: Settings.fpsShow
+                onTriggered: pill.Window.window?.update()
+            }
+
             Timer {
                 interval: Theme.fps.interval
                 running: Settings.fpsShow
                 repeat: true
                 triggeredOnStart: true
-                onTriggered: win.fps = frames.smoothFrameTime > 0 ? Math.round(1 / frames.smoothFrameTime) : 0
+                onTriggered: {
+                    const now = Date.now();
+                    const n = win.swaps;
+                    if (win.markTime > 0 && now > win.markTime)
+                        win.fps = Math.round((n - win.mark) * 1000 / (now - win.markTime));
+                    win.mark = n;
+                    win.markTime = now;
+                }
+                onRunningChanged: win.markTime = 0
             }
 
             // The weather card's material and type, so it reads as one of the desktop widgets.
