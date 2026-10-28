@@ -2,7 +2,9 @@
 # Sourced by the other helpers. One test stack per user; its state lives here.
 REPO=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)
 PARENT_RUNTIME=${PARENT_RUNTIME:-/run/user/$(id -u)}
-STACK=$PARENT_RUNTIME/verify-ummitos
+# Short on purpose: Hyprland's sockets live at $STACK/run/hypr/<62-char id>/.socket2.sock, and a Unix
+# socket path over 108 bytes silently disables Hyprland IPC for the shell under test.
+STACK=$PARENT_RUNTIME/vu
 EVIDENCE_ROOT=${XDG_STATE_HOME:-$HOME/.local/state}/verify-ummitos/runs
 CONFIG_ID=ummitos-test
 # Load what up.sh recorded, if a stack is running.

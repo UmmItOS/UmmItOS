@@ -8,8 +8,8 @@ description: Drive the UmmItOS Quickshell desktop shell (configs/quickshell) the
 The shell under test is this repo's `configs/quickshell`, run as `qs -c ummitos-test` inside its own **nested Hyprland**. That stack has:
 
 - a private D-Bus session;
-- a private `XDG_RUNTIME_DIR` under `/run/user/$UID/verify-ummitos/run`;
-- a fake `HOME` under `/run/user/$UID/verify-ummitos/home`;
+- a private `XDG_RUNTIME_DIR` under `/run/user/$UID/vu/run`;
+- a fake `HOME` under `/run/user/$UID/vu/home`;
 - a headless output `VERIFY` (1920x1080) that it renders to.
 
 The nested compositor's window is sent to the parent's hidden `special:verify` workspace.
@@ -110,15 +110,15 @@ Then it:
 
 - unmounts the FUSE mounts under the stack;
 - disables the parent window rule;
-- deletes `/run/user/$UID/verify-ummitos`.
+- deletes `/run/user/$UID/vu`.
 
 It never kills by process name. The evidence under `~/.local/state/verify-ummitos/runs/` is kept; delete old runs yourself when they are no longer needed.
 
 After a failed iteration, run `down.sh` anyway. To check nothing is left behind:
 
 ```sh
-grep -c verify-ummitos /proc/self/mountinfo   # 0
-ls /run/user/$UID/verify-ummitos              # absent
+grep -c "/run/user/$UID/vu/" /proc/self/mountinfo   # 0
+ls /run/user/$UID/vu                          # absent
 pgrep -a qs                                   # only the live "qs -c ummitos"
 ```
 

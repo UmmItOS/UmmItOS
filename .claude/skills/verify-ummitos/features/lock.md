@@ -1,17 +1,18 @@
 # Lock screen
 
-Super+L locks the session with an ext-session-lock surface on every screen. Only a correct password (PAM `pam_unix`) unlocks it.
+Super+L locks the session with an ext-session-lock surface on every screen. Only a correct password unlocks it; the shell's own PAM stack is `configs/quickshell/lock/pam/password`, a single `auth required pam_unix.so` line.
 
 ## Sub-features
 
-- `lock-engage`: `lock lock` captures the screen, then locks. `isLocked` returns true.
-- `lock-preview`: `lock preview` shows the same content in an ordinary window; calling it again closes it.
-- `lock-wrong`: a wrong password shows the error state. The second wrong one starts the intruder alarm.
+- `lock-preview`: `lock preview` shows the lock content in an ordinary window, and calling it again closes it.
+- `lock-engage`: `lock lock` takes a grim capture of the screen and then locks. `isLocked` prints `true`.
+- `lock-wrong`: a wrong password turns the field red, shakes it and shows "Wrong password · attempt 1".
+- `lock-alarm`: the second wrong password starts the intruder alarm: overlay, siren, a live webcam and a 30 s clip. **Never drive this sub-feature.**
 
 ## How to get to it (user POV)
 
 - Super+L, which calls `lock lock`.
-- hypridle after idle, and before sleep.
+- hypridle: `lock_cmd`, and before sleep through `loginctl lock-session`. The idle listener runs `detect_vm.sh`.
 
 ## Driving it with verify-ummitos
 
@@ -19,16 +20,19 @@ Preconditions:
 
 - `doctor.sh` is all `ok`.
 - `.claude/skills/verify-ummitos/scripts/ipc.sh lock isLocked` prints `false`.
+- Drive the lock **last**, because nothing in the stack can unlock it.
 
 Steps:
 
-- **Preview.** Run `.claude/skills/verify-ummitos/scripts/ipc.sh lock preview`, then `.claude/skills/verify-ummitos/scripts/shot.sh lock-preview`. The lock content is shown: clock, password field, and the weather card when it has data. Run `.claude/skills/verify-ummitos/scripts/ipc.sh lock preview` again to close it.
-- **Engage.** Run `.claude/skills/verify-ummitos/scripts/ipc.sh lock lock`, wait about 2 s, then run `.claude/skills/verify-ummitos/scripts/ipc.sh lock isLocked`. It prints `true`. Run `.claude/skills/verify-ummitos/scripts/shot.sh lock-engaged`.
-- **Wrong password.** Run `.claude/skills/verify-ummitos/scripts/run.sh wtype "not-the-password"` and `.claude/skills/verify-ummitos/scripts/run.sh wtype -k Return`, then `.claude/skills/verify-ummitos/scripts/shot.sh lock-wrong`. The field shows the failure state. Stop after one wrong attempt.
-- **End.** You cannot unlock without the user's real password. End the journey with `down.sh`, which removes the nested compositor and its lock with it.
+- **Preview.** Run `.claude/skills/verify-ummitos/scripts/ipc.sh lock preview`, wait about 1 s, then `.claude/skills/verify-ummitos/scripts/shot.sh lock-preview`. Expect the date, a big clock, the avatar, the user name and "Enter your password to unlock". The password field stays hidden until you type. Run `.claude/skills/verify-ummitos/scripts/ipc.sh lock preview` again and take a shot; the preview is gone.
+- **Engage.** Run `.claude/skills/verify-ummitos/scripts/ipc.sh lock lock`, then poll: `timeout 5 sh -c 'until [ "$(.claude/skills/verify-ummitos/scripts/ipc.sh lock isLocked)" = true ]; do sleep 0.2; done'`. After 1 more second run `.claude/skills/verify-ummitos/scripts/shot.sh lock-engaged`.
+- **One wrong password.** Run `.claude/skills/verify-ummitos/scripts/run.sh wtype "not-the-password"`, then `.claude/skills/verify-ummitos/scripts/run.sh wtype -k Return`, **once**. Wait about 3.5 s for pam_unix's failure delay, then `.claude/skills/verify-ummitos/scripts/shot.sh lock-wrong`. Expect the red "Wrong password · attempt 1" (proven 2026-10-29). If it has not shown yet, take another shot; never send Return again.
+- **End.** Run `.claude/skills/verify-ummitos/scripts/down.sh`. It removes the nested compositor, and its lock goes with it.
 
 ## Gotchas
 
-- Never type the user's real password, and never ask for it. `lock-unlock` cannot be proven in this stack.
-- A second wrong password starts the intruder alarm. The webcam script resolves to `<repo>/script/misc/intruder.sh`, which would open the real camera. Stop after one wrong attempt.
-- The lock uses PAM for the real user, so the account's faillock state applies.
+- Never type or ask for the user's real password. Unlocking cannot be proven in this stack.
+- **Never send a second wrong password, and never call `lock alarm`.** Either one sets `intruder`, and that loads a Qt `Camera` inside the test shell itself (`Lock.qml`). The stack does not isolate `/dev/video*`, so the user's real webcam turns on. The clip path from `script/misc/intruder.sh` lands in the fake HOME and dies with `down.sh`, but the camera still opens.
+- While PAM checks the password, the field is disabled, and keys typed meanwhile are dropped.
+- `isLocked` turns true when the shell sets `locked`, not when the compositor confirms the lock. Prove the lock with the screenshot.
+- The shell's PAM stack has no `pam_faillock`, so test attempts do not count against the account.
