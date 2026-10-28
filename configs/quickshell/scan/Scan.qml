@@ -59,7 +59,8 @@ Singleton {
         const web = data.match(/^(https?):\/\/([\x21-\x7e]+)$/i);
         if (web) {
             const rest = web[2];
-            const authority = rest.split(/[\/?#]/)[0];
+            // Browsers end the authority at a backslash too, so leaving it out would name the wrong host.
+            const authority = rest.split(/[\/\\?#]/)[0];
             // A user:password@ before the host is a classic disguise; the host is after the last @.
             const host = authority.split("@").pop();
             const path = rest.slice(authority.length).split(/[?#]/)[0];
