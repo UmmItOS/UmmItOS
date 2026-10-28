@@ -108,6 +108,8 @@ ShellRoot {
 
     ActivateLinux {}
 
+    FpsMeter {}
+
     LockScreen {}
 
     OsdWindow {}

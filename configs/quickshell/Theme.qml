@@ -196,6 +196,15 @@ Singleton {
     // The longest line a hover list shows before it elides.
     readonly property int tipWidth: 420
 
+    // The frame-rate counter (desktop/FpsMeter.qml).
+    readonly property QtObject fps: QtObject {
+        // How often the number is read, in ms.
+        readonly property int interval: 500
+        // Share of the screen's refresh rate: at or above is green, above warn is amber, below is red.
+        readonly property real good: 0.95
+        readonly property real warn: 0.6
+    }
+
     // The lecture pen (draw/).
     readonly property QtObject draw: QtObject {
         readonly property var widths: [3, 6, 12]

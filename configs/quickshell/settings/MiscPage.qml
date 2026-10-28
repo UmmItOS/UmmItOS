@@ -43,6 +43,19 @@ ColumnLayout {
         }
     }
 
+    SettingRow {
+        title: I18n.t("Show FPS")
+        hint: I18n.t("A frame-rate counter in the top-left corner, like cl_showfps 1.")
+
+        Toggle {
+            onToggled: Settings.setFps(!Settings.fpsShow)
+
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            checked: Settings.fpsShow
+        }
+    }
+
     Item {
         Layout.fillHeight: true
     }

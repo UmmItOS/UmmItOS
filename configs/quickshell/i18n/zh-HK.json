@@ -610,5 +610,8 @@
     "It is not a picture.": "呢個唔係圖片。",
     "The download failed.": "下載失敗。",
     "The file is gone.": "個檔案已經唔喺度。",
+    "Show FPS": "顯示幀率",
+    "A frame-rate counter in the top-left corner, like cl_showfps 1.": "喺左上角顯示幀率計數器，好似 cl_showfps 1 咁。",
+    "%1 FPS": "%1 FPS",
     "Convert pictures": "轉換圖片格式"
 }

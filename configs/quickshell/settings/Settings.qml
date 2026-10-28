@@ -86,6 +86,8 @@ Singleton {
     property bool activateShow: true
     property bool weatherShow: true
     property bool mediaShow: true
+    // A frame-rate counter in the corner; off until asked for.
+    property bool fpsShow: false
     // Keeps the microphone open so the bar's mic disc can show its level.
     property bool micListen: true
 
@@ -129,6 +131,11 @@ Singleton {
             refresh();
     }
 
+    function setFps(on: bool): void {
+        fpsShow = on;
+        writeDesktop();
+    }
+
     // False when it is not a full path, so the field can say so.
     function setFolder(path: string): bool {
         const p = path.trim().replace(/^~(?=\/|$)/, home).replace(/\/+$/, "");
@@ -139,7 +146,7 @@ Singleton {
     }
 
     function writeDesktop(): void {
-        desktopConf.setText("activate=" + (activateShow ? 1 : 0) + "\nweather=" + (weatherShow ? 1 : 0) + "\nmic=" + (micListen ? 1 : 0) + "\nmedia=" + (mediaShow ? 1 : 0) + "\n");
+        desktopConf.setText("activate=" + (activateShow ? 1 : 0) + "\nweather=" + (weatherShow ? 1 : 0) + "\nmic=" + (micListen ? 1 : 0) + "\nmedia=" + (mediaShow ? 1 : 0) + "\nfps=" + (fpsShow ? 1 : 0) + "\n");
     }
 
     function setActivate(on: bool): void {
@@ -407,6 +414,8 @@ Singleton {
                     root.micListen = line.slice(4) !== "0";
                 else if (line.startsWith("media="))
                     root.mediaShow = line.slice(6) !== "0";
+                else if (line.startsWith("fps="))
+                    root.fpsShow = line.slice(4) === "1";
             }
         }
 
