@@ -97,7 +97,8 @@ for src in "$@"; do
         ico) opts=(-resize '256x256>') ;;
     esac
 
-    if err=$(magick "$kind:$frames" "${opts[@]}" "$coder:$out" 2>&1); then
+    # ImageMagick expands %d, %o and the like in output names; %% keeps the free name the loop above checked.
+    if err=$(magick "$kind:$frames" "${opts[@]}" "$coder:${out//%/%%}" 2>&1); then
         printf 'ok\t%s\t%s\n' "$src" "$out"
     else
         rm -f "$out"
