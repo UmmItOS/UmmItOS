@@ -37,9 +37,9 @@ Scope {
 
             screen: modelData
             visible: shown > 0
-            // Over fullscreen windows too, like the game overlay it imitates.
+            // Top, not Overlay: the overview, launcher and every other shell surface draw over it.
             WlrLayershell.namespace: "ummitos-fps"
-            WlrLayershell.layer: WlrLayer.Overlay
+            WlrLayershell.layer: WlrLayer.Top
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
             exclusionMode: ExclusionMode.Ignore
 
