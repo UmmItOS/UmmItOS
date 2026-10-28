@@ -34,6 +34,7 @@ const links = [
     "https://BANK.Example/x",
     "https://bank%2Eexample/",
     "https://bank.example:8443/x",
+    "https://a+b.example/",
 ];
 
 let failed = 0;

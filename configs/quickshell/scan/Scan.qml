@@ -59,13 +59,26 @@ Singleton {
         const web = data.match(/^(https?):\/\/([\x21-\x7e]+)$/i);
         if (web) {
             const rest = web[2];
-            // Browsers end the authority at a backslash too, so leaving it out would name the wrong host.
-            const authority = rest.split(/[\/\\?#]/)[0];
+            const cut = rest.search(/[?#]/);
+            // Browsers read \ as / and skip every slash before the authority, so do the same before cutting it.
+            const head = (cut < 0 ? rest : rest.slice(0, cut)).replace(/\\/g, "/").replace(/^\/+/, "");
+            const authority = head.split("/")[0];
             // A user:password@ before the host is a classic disguise; the host is after the last @.
-            const host = authority.split("@").pop();
-            const path = rest.slice(authority.length).split(/[?#]/)[0];
+            const hostPort = authority.split("@").pop();
+            const portAt = hostPort.match(/^(.*):(\d*)$/);
+            const rawHost = portAt ? portAt[1] : hostPort;
+            // Not decode(): its + to space is for query strings, and + is a legal host character.
+            let host = rawHost;
+            try {
+                host = decodeURIComponent(rawHost);
+            } catch (e) {}
+            host = host.toLowerCase();
+            const port = portAt ? portAt[2] : "";
+            const path = head.slice(authority.length);
             const fragment = rest.split("#")[1] ?? "";
             const fields = [["Scheme", web[1].toLowerCase()], ["Host", host]];
+            if (port !== "")
+                fields.push(["Port", port]);
             if (authority.includes("@"))
                 fields.push(["User info", authority.slice(0, authority.lastIndexOf("@"))]);
             if (path !== "" && path !== "/")

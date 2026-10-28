@@ -191,6 +191,7 @@
     "d MMMM": "M月d日",
     "Scheme": "協定",
     "Host": "主機",
+    "Port": "連接埠",
     "User info": "用戶資料",
     "Path": "路徑",
     "Fragment": "片段",
