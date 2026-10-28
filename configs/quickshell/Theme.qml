@@ -200,9 +200,6 @@ Singleton {
     readonly property QtObject fps: QtObject {
         // How often the number is read, in ms.
         readonly property int interval: 500
-        // Share of the screen's refresh rate: at or above is green, above warn is amber, below is red.
-        readonly property real good: 0.95
-        readonly property real warn: 0.6
     }
 
     // The lecture pen (draw/).

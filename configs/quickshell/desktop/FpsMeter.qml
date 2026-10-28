@@ -1,7 +1,6 @@
 pragma ComponentBehavior: Bound
 
 import Quickshell
-import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Wayland
 import QtQuick
@@ -31,9 +30,6 @@ Scope {
 
             property real shown: Settings.fpsShow ? 1 : 0
             property int fps: 0
-            readonly property real refresh: Hyprland.monitorFor(modelData)?.lastIpcObject?.refreshRate ?? 0
-            readonly property real ratio: refresh > 0 ? fps / refresh : -1
-            readonly property color tone: ratio < 0 ? Theme.fg : ratio >= Theme.fps.good ? Theme.good : ratio >= Theme.fps.warn ? Theme.warn : Theme.urgent
 
             screen: modelData
             visible: shown > 0
@@ -81,12 +77,13 @@ Scope {
                 onTriggered: win.fps = frames.smoothFrameTime > 0 ? Math.round(1 / frames.smoothFrameTime) : 0
             }
 
+            // The weather card's material and type, so it reads as one of the desktop widgets.
             Rectangle {
                 id: pill
 
-                width: label.implicitWidth + 2 * Theme.spacing.medium
-                height: label.implicitHeight + 2 * Theme.spacing.small
-                radius: Theme.rounding.medium
+                width: row.implicitWidth + 2 * Theme.spacing.large
+                height: row.implicitHeight + 2 * Theme.spacing.medium
+                radius: Theme.rounding.extraLarge
                 color: Theme.scrim(Theme.panelTint)
                 opacity: win.shown
                 layer.enabled: win.shown < 1
@@ -95,25 +92,43 @@ Scope {
                     settled: win.shown
                 }
 
-                Text {
-                    id: label
+                Row {
+                    id: row
 
                     anchors.centerIn: parent
-                    textFormat: Text.PlainText
-                    text: I18n.t("%1 FPS").arg(win.fps)
-                    color: win.tone
-                    font.family: Theme.fontMono
-                    font.pixelSize: Theme.fontSize.smaller
-                    font.weight: Theme.weight.medium
+                    spacing: Theme.spacing.small
 
-                    font.features: ({
-                            tnum: 1
-                        })
+                    MaterialIcon {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "speed"
+                        color: Theme.accentText
+                        fill: 1
+                        size: Theme.icon.normal
+                    }
 
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: Theme.duration.expressiveFastEffects
-                        }
+                    Text {
+                        anchors.baseline: unit.baseline
+                        textFormat: Text.PlainText
+                        text: win.fps
+                        color: Theme.fg
+                        font.family: Theme.fontDisplay
+                        font.pixelSize: Theme.fontSize.extraLarge
+                        font.weight: Font.Light
+
+                        font.features: ({
+                                tnum: 1
+                            })
+                    }
+
+                    Text {
+                        id: unit
+
+                        anchors.verticalCenter: parent.verticalCenter
+                        textFormat: Text.PlainText
+                        text: I18n.t("FPS")
+                        color: Theme.dim
+                        font.family: Theme.font
+                        font.pixelSize: Theme.fontSize.smaller
                     }
                 }
             }

@@ -612,6 +612,6 @@
     "The file is gone.": "檔案已經不在了。",
     "Show FPS": "顯示幀率",
     "A frame-rate counter in the top-left corner, like cl_showfps 1.": "在左上角顯示幀率計數器，就像 cl_showfps 1。",
-    "%1 FPS": "%1 FPS",
+    "FPS": "FPS",
     "Convert pictures": "轉換圖片格式"
 }
