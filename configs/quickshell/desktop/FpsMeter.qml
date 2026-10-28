@@ -37,9 +37,9 @@ Scope {
 
             screen: modelData
             visible: shown > 0
-            // Top, not Overlay: the overview, launcher and every other shell surface draw over it.
+            // Bottom, with the weather card: windows and every shell surface cover it.
             WlrLayershell.namespace: "ummitos-fps"
-            WlrLayershell.layer: WlrLayer.Top
+            WlrLayershell.layer: WlrLayer.Bottom
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
             exclusionMode: ExclusionMode.Ignore
 
