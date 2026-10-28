@@ -5,6 +5,8 @@ PARENT_RUNTIME=${PARENT_RUNTIME:-/run/user/$(id -u)}
 # Short on purpose: Hyprland's sockets live at $STACK/run/hypr/<62-char id>/.socket2.sock, and a Unix
 # socket path over 108 bytes silently disables Hyprland IPC for the shell under test.
 STACK=$PARENT_RUNTIME/vu
+# up.sh writes this into $STACK it created; down.sh deletes nothing without it.
+MARKER=$STACK/.verify-ummitos
 EVIDENCE_ROOT=${XDG_STATE_HOME:-$HOME/.local/state}/verify-ummitos/runs
 CONFIG_ID=ummitos-test
 # Load what up.sh recorded, if a stack is running.

@@ -11,7 +11,7 @@ check "nested Hyprland $NESTED_SIG answers" in_stack hyprctl -j monitors
 check "shell under test is $REPO/configs/quickshell" test "$(readlink "$STACK/home/.config/quickshell/$CONFIG_ID")" = "$REPO/configs/quickshell"
 frames_ok() { in_stack hyprctl -j monitors | grep -q '"VERIFY"'; }
 check "headless output VERIFY renders" frames_ok
-hypr_ipc_ok() { [[ -S $STACK/run/hypr/$NESTED_SIG/.socket2.sock ]] && ! grep -q ServerNotFound "$STACK/qs.out"; }
+hypr_ipc_ok() { [[ -S $STACK/run/hypr/$NESTED_SIG/.socket2.sock && -f $STACK/qs.out ]] && ! grep -qE 'ServerNotFound|Unable to find hyprland socket|Cannot connect to hyprland|Unable to connect to hyprland event socket|Hyprland ipc status request failed|event socket disconnected' "$STACK/qs.out"; }
 check "test shell reaches Hyprland IPC (socket2)" hypr_ipc_ok
 ipc_ok() { in_stack qs -c "$CONFIG_ID" ipc show | grep -q '^target lock'; }
 check "IPC targets reachable" ipc_ok

@@ -7,7 +7,7 @@ Super+L locks the session with an ext-session-lock surface on every screen. Only
 - `lock-preview`: `lock preview` shows the lock content in an ordinary window, and calling it again closes it.
 - `lock-engage`: `lock lock` takes a grim capture of the screen and then locks. `isLocked` prints `true`.
 - `lock-wrong`: a wrong password turns the field red, shakes it and shows "Wrong password · attempt 1".
-- `lock-alarm`: the second wrong password starts the intruder alarm: overlay, siren, a live webcam and a 30 s clip. **Never drive this sub-feature.**
+- `lock-alarm`: the second wrong password starts the intruder alarm: overlay, siren, a live webcam and a 30 s clip. **Never drive this sub-feature**; `ipc.sh lock alarm` is refused.
 
 ## How to get to it (user POV)
 
@@ -32,7 +32,7 @@ Steps:
 ## Gotchas
 
 - Never type or ask for the user's real password. Unlocking cannot be proven in this stack.
-- **Never send a second wrong password, and never call `lock alarm`.** Either one sets `intruder`, and that loads a Qt `Camera` inside the test shell itself (`Lock.qml`). The stack does not isolate `/dev/video*`, so the user's real webcam turns on. The clip path from `script/misc/intruder.sh` lands in the fake HOME and dies with `down.sh`, but the camera still opens.
+- **Never send a second wrong password, and never call `lock alarm`.** Either one sets `intruder`, and that loads a Qt `Camera` inside the test shell itself (`Lock.qml`). `ipc.sh` refuses `lock alarm`; the second wrong password is only covered by `up.sh` masking `/dev/video*` and `/dev/media*` with `/dev/null` for the test `qs` (via `bwrap`), which is unproven against a real camera node. The clip from `script/misc/intruder.sh` lands in the fake HOME and dies with `down.sh`.
 - While PAM checks the password, the field is disabled, and keys typed meanwhile are dropped.
 - `isLocked` turns true when the shell sets `locked`, not when the compositor confirms the lock. Prove the lock with the screenshot.
 - The shell's PAM stack has no `pam_faillock`, so test attempts do not count against the account.

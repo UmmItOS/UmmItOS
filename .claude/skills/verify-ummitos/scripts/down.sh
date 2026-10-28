@@ -2,6 +2,7 @@
 # Tear down only what up.sh started. Evidence in $EVIDENCE_ROOT is kept.
 source "$(dirname "$0")/env.sh"
 [[ -d $STACK ]] || { echo "no stack"; exit 0; }
+[[ -f $MARKER ]] || { echo "$STACK was not created by up.sh; leaving it alone"; exit 0; }
 [[ -f $STACK/qs.out ]] && [[ -n ${EVIDENCE:-} ]] && cp "$STACK/qs.out" "$EVIDENCE/qs.log" 2>/dev/null
 for f in qs.pid session.pid; do
     pid=$(cat "$STACK/$f" 2>/dev/null) || continue

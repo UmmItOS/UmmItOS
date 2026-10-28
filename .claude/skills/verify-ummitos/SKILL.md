@@ -29,7 +29,7 @@ When it is ready, it prints `up: run <RUN_ID>, evidence in <dir>`. Ready means t
 - the nested Hyprland answers `hyprctl` on its own socket;
 - `qs -c ummitos-test` has logged `Configuration Loaded`.
 
-It takes about 3–6 s. If a stack is already up, it refuses to start; run `down.sh` first.
+It takes about 3–6 s. If a stack is already up, it refuses to start; run `down.sh` first. It also refuses when `/run/user/$UID/vu` exists without the `.verify-ummitos` marker it writes, and it stops (and tears down) if Hyprland's socket path would reach 108 bytes, the Unix socket limit.
 
 What `up.sh` does, so you can debug it:
 
@@ -38,7 +38,7 @@ What `up.sh` does, so you can debug it:
 3. Adds a runtime window rule in the **parent** Hyprland that moves class `aquamarine` to `special:verify silent`.
 4. Starts `start-hyprland` under `dbus-run-session`.
 5. Creates the headless `VERIFY` output and disables `WAYLAND-1` (the window output, which gets no frames while hidden).
-6. Starts `qs -c ummitos-test` with the stack environment.
+6. Starts `qs -c ummitos-test` with the stack environment, under `bwrap` with every `/dev/video*` and `/dev/media*` node replaced by `/dev/null` inside that process only. The lock's intruder alarm opens a Qt Camera there; the mask keeps the real webcam off. A camera cannot be proven blocked on a host with no such node, and `ipc.sh` also refuses `lock alarm`.
 
 It is a hot-reloading checkout: `~/.config/quickshell/ummitos-test` inside the fake HOME links to `<repo>/configs/quickshell`. A save in the repo reloads the test shell, and the live shell too. Wait for a new `Configuration Loaded` in `$STACK/qs.out` before driving after an edit.
 
@@ -54,7 +54,7 @@ This is read-only. Every line must say `ok`. It checks that:
 - the nested Hyprland answers;
 - the test config link points at **this** repo;
 - `VERIFY` exists, so grim can capture;
-- the IPC targets answer;
+- the IPC targets answer, and `qs.out` exists and holds none of Quickshell's Hyprland-IPC failure messages;
 - the last load line in `qs.out` is `Configuration Loaded`, not an `ERROR`.
 
 Run it first whenever something looks off. On any `FAIL`, run `down.sh`, then `up.sh`.
@@ -110,7 +110,7 @@ Then it:
 
 - unmounts the FUSE mounts under the stack;
 - disables the parent window rule;
-- deletes `/run/user/$UID/vu`.
+- deletes `/run/user/$UID/vu`, but only if it holds the `.verify-ummitos` marker `up.sh` wrote; otherwise it says so and leaves it.
 
 It never kills by process name. The evidence under `~/.local/state/verify-ummitos/runs/` is kept; delete old runs yourself when they are no longer needed.
 
