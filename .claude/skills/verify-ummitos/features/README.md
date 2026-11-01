@@ -27,9 +27,10 @@ This is the maintained source for verifying the user-facing behaviour of the Umm
 
 | File | Feature | Proven in this stack |
 |---|---|---|
-| [notifications.md](notifications.md) | Toasts, panel, clear, DND | yes (2026-10-29) |
-| [launcher.md](launcher.md) | App launcher and clipboard manager | yes (2026-10-29) |
-| [dashboard.md](dashboard.md) | Dashboard, System and Workspaces tabs | yes (2026-10-29) |
-| [converter.md](converter.md) | Picture converter wheel (open, pick, close; drop not drivable) | partly (2026-10-29) |
-| [scan.md](scan.md) | QR scanner: find and detail (Open not driven) | yes (2026-10-29) |
-| [lock.md](lock.md) | Lock screen: preview, engage, one wrong password (unlock not drivable). Drive last. | yes (2026-10-29) |
+| [notifications.md](notifications.md) | Toasts, panel, clear, DND | yes (2026-11-01) |
+| [launcher.md](launcher.md) | App launcher and clipboard manager | yes (2026-11-01) |
+| [dashboard.md](dashboard.md) | Dashboard, System and Workspaces tabs | yes (2026-11-01) |
+| [converter.md](converter.md) | Picture converter wheel (open, pick, close; drop not drivable) | partly (2026-11-01) |
+| [scan.md](scan.md) | QR scanner: find and detail (Open not driven) | yes (2026-11-01) |
+| [fps.md](fps.md) | FPS counter: on, off, saved | yes (2026-11-01) |
+| [lock.md](lock.md) | Lock screen: preview, engage, one wrong password (unlock not drivable). Drive last. | yes (2026-11-01) |

@@ -35,4 +35,4 @@ Steps (all proven 2026-10-29):
 - History is only in memory, with no state file. A hot reload (any QML save) wipes it and every open toast, so wait for a new `Configuration Loaded` before you start.
 - Transient notifications (`notify-send -e`) toast but never reach the history.
 - In the test stack the health check runs at start and posts "1 things need attention" from `UmmItOS`, because the fake HOME has no `~/script`. Expect it in the panel; this run showed it twice.
-- Sounds are silent: the chime goes through `pw-play`, and the stack has no PipeWire.
+- Sounds are silent: the chime goes through `Sounds.play` (`pw-play`), and the stack has no PipeWire.

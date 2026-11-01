@@ -21,11 +21,11 @@ Preconditions:
 - No other window is on screen: close kitty and the like first.
 - `qrencode` and `mpv` are installed.
 
-Steps (proven 2026-10-29):
+Steps (proven 2026-11-01):
 
 - **Show a code.** Run `. .claude/skills/verify-ummitos/scripts/env.sh; qrencode -s 12 -o "$STACK/home/qr.png" 'https://evil.example\@bank.example/login'`, then start mpv in the background: `( in_stack setsid mpv --no-config --image-display-duration=inf --force-window=yes --title=qr "$STACK/home/qr.png" >/dev/null 2>&1 & )`. Wait 2.5 s.
-- **Scan.** Run `.claude/skills/verify-ummitos/scripts/ipc.sh scan toggle`, wait 3 s, then `.claude/skills/verify-ummitos/scripts/shot.sh scan-result`. Expect the chip `evil.example` and the panel "Web link" with Host `evil.example`, Path `\@bank.example/login` and the raw content. The layer is `ummitos-scan`.
-- **Close.** Run `.claude/skills/verify-ummitos/scripts/run.sh wtype -k Escape`. Stop mpv by its environment: `for p in /proc/[0-9]*; do tr '\0' '\n' 2>/dev/null < $p/environ | grep -qx "XDG_RUNTIME_DIR=$STACK/run" && [ "$(cat $p/comm)" = mpv ] && kill ${p#/proc/}; done`. `down.sh` also catches it.
+- **Scan.** Run `.claude/skills/verify-ummitos/scripts/ipc.sh scan toggle`, wait 3 s, then `.claude/skills/verify-ummitos/scripts/shot.sh scan-result`. Expect the chip `evil.example` and the panel "Web link" with Host `evil.example`, Path `/@bank.example/login` (a browser reads the `\` as `/`) and the raw content `https://evil.example\@bank.example/login`. The layer is `ummitos-scan`.
+- **Close.** Run `.claude/skills/verify-ummitos/scripts/run.sh wtype -k Escape`, or `.claude/skills/verify-ummitos/scripts/ipc.sh scan close`. Stop mpv by its environment: `for p in /proc/[0-9]*; do tr '\0' '\n' 2>/dev/null < $p/environ | grep -qx "XDG_RUNTIME_DIR=$STACK/run" && [ "$(cat $p/comm)" = mpv ] && kill ${p#/proc/}; done`. `down.sh` also catches it.
 
 ## Gotchas
 
