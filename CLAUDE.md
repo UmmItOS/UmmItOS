@@ -51,7 +51,7 @@ Each part of the repo has its own rule file in `.claude/rules/`. Claude Code loa
 | [qml-traps.md](.claude/rules/qml-traps.md) | Traps found the hard way | `configs/quickshell/`, `configs/greeter/` |
 | [versions.md](.claude/rules/versions.md) | When to cut a patch, minor or major | always |
 
-The procedures stay in `DOCS/`: [CHECKLIST.md](DOCS/CHECKLIST.md) (imported above), [RELEASE.md](DOCS/RELEASE.md) and [FULL_REVIEW_WORK.md](DOCS/FULL_REVIEW_WORK.md).
+The checklist stays in [DOCS/CHECKLIST.md](DOCS/CHECKLIST.md) (imported above). The procedures are project skills: `/release` ([.claude/skills/release/](.claude/skills/release/SKILL.md)) cuts a version, `/full-review` ([.claude/skills/full-review/](.claude/skills/full-review/SKILL.md)) runs the five-lens review, and `verify-ummitos` checks a change on screen.
 
 ## Hard rules
 

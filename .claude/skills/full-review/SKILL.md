@@ -1,6 +1,11 @@
+---
+name: full-review
+description: Run a full UmmItOS review - five lenses in parallel (ponytail, QML, hallmark, security, bugs), then verify, merge and rank the findings. Use for /full-review, "full review", or a mention of the old DOCS/FULL_REVIEW_WORK.md.
+---
+
 # Full review
 
-When this file is mentioned (`@DOCS/FULL_REVIEW_WORK.md`), run a full review of the work in scope, following the steps below. The rules being reviewed against live in [CLAUDE.md](../CLAUDE.md), the area files in [.claude/rules/](../.claude/rules/) and [CHECKLIST.md](CHECKLIST.md); this file only says how to run the review.
+When this skill is invoked (`/full-review`, formerly `@DOCS/FULL_REVIEW_WORK.md`), run a full review of the work in scope, following the steps below. The rules being reviewed against live in [CLAUDE.md](../../../CLAUDE.md), the area files in [.claude/rules/](../../rules/) and [CHECKLIST.md](../../../DOCS/CHECKLIST.md); this file only says how to run the review.
 
 ## 1. Pick the scope
 

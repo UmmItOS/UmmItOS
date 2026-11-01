@@ -1,3 +1,8 @@
+---
+name: release
+description: Cut an UmmItOS version (patch, minor or rc) - bump VERSION, signed commit and tag, push master and the tag, publish the GitHub release with notes. Use when asked to release or "出 X.Y.Z", or when versions.md says a version is due.
+---
+
 # How to release
 
 1. **Check that everything is pushed.** `git rev-list --count origin/master..HEAD` should print `0`, and the worktree should be clean.
