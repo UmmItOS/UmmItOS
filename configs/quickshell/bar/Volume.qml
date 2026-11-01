@@ -18,7 +18,7 @@ RowLayout {
     readonly property bool muted: root.audio?.muted ?? false
 
     readonly property var devices: Pipewire.nodes.values.filter(n => n.audio && n.isSink && !n.isStream)
-    readonly property var streams: Pipewire.nodes.values.filter(n => n.audio && n.isSink && n.isStream)
+    readonly property var streams: Pipewire.nodes.values.filter(n => n.audio && n.isSink && n.isStream && n.name !== Sounds.node)
 
     property bool popupOpen: false
 

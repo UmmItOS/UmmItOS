@@ -10,10 +10,12 @@ import QtQuick
 Singleton {
     id: root
 
+    // Names the shell's own streams, so the volume menu can leave them out.
+    readonly property string node: "ummitos-sound"
     readonly property string dir: (Quickshell.env("XDG_CONFIG_HOME") || Quickshell.env("HOME") + "/.config") + "/ummitos/sounds"
 
     function play(event: string): void {
-        Quickshell.execDetached(["pw-play", dir + "/" + event]);
+        Quickshell.execDetached(["pw-play", "-P", '{ node.name = "' + root.node + '" }', dir + "/" + event]);
     }
 
     // A link already there is the user's, so it stays.
