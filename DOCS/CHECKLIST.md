@@ -1,16 +1,16 @@
 # Feature checklist
 
-Go through this before a feature, fix or change to the shell is committed. The rules it points to live in [CLAUDE.md](../CLAUDE.md).
+Go through this before a feature, fix or change to the shell is committed. The rules it points to live in [CLAUDE.md](../CLAUDE.md) and the area files in [.claude/rules/](../.claude/rules/).
 
 ## 1. Programming
 
 - [ ] **Review the code with `/qt-development-skills:qt-qml`** while writing it, and **`/qt-development-skills:qt-qml-review`** before committing: bindings, layouts, loaders, delegates, states, performance.
-- [ ] **Keep it simple (`/ponytail:ponytail`).** Reuse a shared component or helper before writing a new one (`Surface`, `Flyout`, `FlyoutRow`, `Action`, `Segmented`, `Toggle`, `Slider`, `Spinner`, `MaterialIcon`, `Reveal`, `MotionBlur`, `OverlayWindow`). No options nobody asked for; delete what nothing uses.
+- [ ] **Keep it simple (`/ponytail:ponytail`).** Reuse a shared component or helper before writing a new one (the list is "Shared components" in [.claude/rules/shell.md](../.claude/rules/shell.md)). No options nobody asked for; delete what nothing uses.
 - [ ] **Hunt the bugs.** Trace every path the change touches:
   - empty and null states, and races between processes and timers
   - reloads (lost IPC, reset singletons), sleep and wake, more than one monitor
   - anything that could leave the screen blocked or a state stuck
-  - every item in "Traps found the hard way" in CLAUDE.md
+  - every item in "Traps found the hard way" ([.claude/rules/qml-traps.md](../.claude/rules/qml-traps.md))
 - [ ] **Every object body keeps the QML order** (children recursively): `id`; properties and aliases, then signals; functions, then signal and lifecycle handlers; the item's own geometry and styling; states, transitions and `Behavior`s; `delegate:` and inline `component` declarations after the item's own styling; child elements last. Logic never sits between children, and nothing but children sits at the bottom.
 - [ ] **Text goes through `I18n.t()`,** with the key added to every language file.
 - [ ] **Comments are one short line,** and only for a why the code cannot show: a trap, a workaround, a reason for a number. No history, no restating the code.

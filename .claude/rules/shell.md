@@ -1,0 +1,54 @@
+---
+paths:
+  - "configs/quickshell/**"
+  - "configs/greeter/**"
+  - "script/**"
+---
+
+# The shell
+
+## Development loop
+
+`qs -c ummitos` resolves `~/.config/quickshell/ummitos`. Symlink that path to `configs/quickshell` so edits hot-reload into the running instance, then read the log after each save.
+
+Check QML APIs against the installed type definitions, not the online docs, which lag behind 0.3.1:
+
+```sh
+ls /usr/lib/qt6/qml/Quickshell/     # Hyprland, Io, Services/*, Wayland, Networking, Bluetooth, Widgets
+grep -A5 'name: "workspaces"' /usr/lib/qt6/qml/Quickshell/Hyprland/_Ipc/*.qmltypes
+```
+
+## Structure
+
+- **Singleton + window split.** Each surface has a singleton that holds its state and its `IpcHandler`, and a window that renders it: `Dashboard`/`DashboardWindow`, `Launcher`/`LauncherWindow`, `Session`, `Notifs`, `Osd`, `Wallpapers`, `Switcher`, `Cheatsheet`, `Screenshot`, `Recorder`/`RecordWindow`, `Settings`/`SettingsWindow`, `Scan`/`ScanWindow`, `Sao`/`SaoWindow`. The recording options live in `~/.config/ummitos/recording.conf` (plain `key=value`, written by `Settings`, read by `script/misc/screen-record.sh`), not in the shell's state path, so the script can find them. `shell.qml` instantiates one of each window, plus `Variants` over `Quickshell.screens` for the bar.
+- **Every singleton and shared component must be listed in `configs/quickshell/qmldir`.** If one is missing, it fails to resolve, and the error does not name the real cause.
+- **Singletons are lazy.** A singleton that nothing references never runs. A background watcher with no UI (`services/BatteryNotifier.qml`) is therefore a `Scope` instantiated in `shell.qml`, not a singleton.
+- **Notices go through the shell, never `hyprctl notify`.** Scripts and QML send `notify-send -a "<App name>" …` (always with `-a`, or the panel groups them under "notify-send"); a preview image goes in `-h string:image-path:<file>`, not `-i`. Clipboard copies are the exception: `script/cliphist/clip-store.sh` calls `qs -c ummitos ipc call copied text|image`, which stacks pills bottom-right (`toast/CopyToast.qml`). The notification panel groups history by app, which relies on `Notifs.record()` keeping each app's entries contiguous.
+- **Text goes through `I18n.t("English text")`** (`i18n/I18n.qml`). The English is the key into `i18n/<lang>.json` (`zh-HK` in written Cantonese, `zh-TW` in Taiwanese Mandarin), and a missing key falls back to English. Put numbers in with templates (`I18n.t("%1 packages missing").arg(n)`), never by joining pieces, since word order differs; date formats are keys too. New text adds its key to every language file in the same change. The language is picked on Settings → Language and saved to `Quickshell.statePath("language.txt")`.
+- **Every sound goes through `Sounds.play("<event>")`** (`services/Sounds.qml`), never `pw-play` directly. Nothing is hardcoded: `configs/quickshell/sounds/` holds one relative symlink per event (`sao-open -> ../sao/open.ogg`), and at start the shell gives each a link of the same name in `~/.config/ummitos/sounds/`, never replacing one that exists. A user changes a sound with `ln -sf <file> <event>`, silences it by linking `/dev/null`, and gets the built-in back by deleting the link. A new sound is a new link in `sounds/`.
+- **`services/`** holds shared data: `SysInfo` (proc polling), `Net` (bandwidth, one sampler however many bars), `Players` (the active MPRIS player), `Cava` (audio levels for the media ring, and for the bar's little music disc `bar/MediaMini.qml` left of the clock, which counts itself in `Players.barViewers` so Cava runs only while one shows), `MicCava` (the mic disc `bar/MicMini.qml` right of the clock: a mic counts as present only when an input source's active port is really available, read from `pactl` since Quickshell cannot see jack availability, so the built-in analog input with nothing plugged reads as no mic; `pactl subscribe` catches a jack plug or unplug; it listens only while another app is already recording from the microphone and a disc is on screen, never opens the mic itself; a tap mutes the source), `BatteryNotifier` and `MicNotifier` (after each wake, `script/misc/mic-check.sh` catches the built-in mic stuck after sleep and asks for a reboot), and `UrgentNotifier` (a window asking for attention on a workspace nobody can see gets a notice with a Go there action; it reads the window from `hyprctl -j clients`, since Quickshell's cached class and workspace can be empty, merges Hyprland's burst of urgent events within `duration.urgentRepeat`, and stays quiet when the app sent its own notification within `duration.urgentQuiet`). Anything that polls runs only while something on screen shows it: `SysInfo.active` is the OR of one flag per viewer (the dashboard's System tab binds `onDashboard`, the SAO Profile card `onProfile`), so two `Binding`s never fight over one property, and the dashboard binds and `Players.watched` (which gates `Cava.running`) to its Dashboard tab, not just to being open.
+- **Shared components** at the root are `Surface` (the material), `Flyout` (the bar dropdown used by Wi-Fi, Bluetooth and Volume), `FlyoutRow` and `FlyoutEmpty` (its list row and empty state), `Toggle`, `Slider`, `Spinner`, `MaterialIcon`, `Action` (the pill button; `primary` fills it with the accent), `Segmented` (one choice of several, with a sliding pill), `Tip` (the hover label under an icon-only control; give every `BarButton` a `label`, which feeds both the tip and its `Accessible.name`), `Reveal` (the open/close animation), `SettingRow` and `SettingsList` (a Settings page's row and list) and `MotionBlur` (the blur-in every arrival shares: `layer.enabled: opacity < 1` plus `layer.effect: MotionBlur { settled: <id>.opacity }`; `OverlayWindow` applies it to its content, and `blurIn: false` opts out a surface that shows the frozen screen). Reuse these rather than building one-off versions.
+- **Surfaces extend `OverlayWindow`.** It takes `shown` (the singleton's open flag) and `name`, and it keeps the window mapped while `reveal` animates to 0. Content drives its opacity and scale from `reveal`. Put per-open resets in `onOpened`, not `onVisibleChanged`: a reopen during the exit never unmaps the window, so a visibility hook would not run. While closing, it drops keyboard focus and passes pointer input through. Select on hover with `pointerMoved()`, never `onEntered`. Hyprland's layer animation is off for `ummitos-*` (`no_anim` in `appearance.lua`) so the two animations don't stack.
+
+## How input reaches the shell
+
+- Keybinds in `configs/hypr/hyprland/shortcuts.lua` call `qs -c ummitos ipc call <target> <fn>`. Every `run()` there goes through `script/misc/launch.sh`, which watches stderr for "command not found" and pops up a critical notice naming the missing program, with an Open Packages action. Adding a keybindable surface means adding an `IpcHandler` to its singleton. **Do not name an IPC function `show`**, because `qs ipc show` is a CLI subcommand and claims the name first.
+- Alt+Tab uses `GlobalShortcut` (`hl.dsp.global("quickshell:switcherNext")` in `shortcuts.lua`). It commits on a release bind (`"ALT + Alt_L"` with `release = true, transparent = true`) because Hyprland's bind layer consumes the release. Every commit path goes through `Switcher.release()`, which respects the pin.
+- **Tray menus are drawn by the shell** (`bar/TrayMenu.qml`, a `Flyout` over `QsMenuOpener`), not by `QsMenuAnchor`: Qt's native menus follow the platform theme, which for this Qt 6 shell is plain light. `bar/Tray.qml` also swaps in a glyph or the app's desktop icon when a tray icon is missing, and on start re-registers `org.kde.StatusNotifierItem-*` names the new watcher does not list (apps such as Proton VPN register once and vanish after a shell restart).
+- **Closing on an outside click:** bar flyouts are `PopupWindow`s and use `grabFocus: true`. `HyprlandFocusGrab` only owns layer surfaces, so it works for `PanelWindow` surfaces such as `NotificationPanel` but silently does nothing on an xdg-popup.
+
+## Design system
+
+`Theme.qml` is the single source of truth for colour, `rounding`, `spacing`, `fontSize`, `icon`, `duration`, `curve` (M3 bezier control points), `tracking`, `weight`, `barHeight`, `glass` (a card's sheen on a blurred panel) and `panelTint`. **Surface files contain no magic numbers.** If you need a new value, add a token for it.
+
+- **No borders anywhere, deliberately.** Depth comes from elevation (`bg` → `bgAlt` → `bgTray`) and spacing. Do not add `border.width`.
+- The accent is a fill colour, chosen from the bar's palette button and saved to `Quickshell.statePath("accent.txt")`; `#5003c0` is the default. `accentText` and `accent2` are derived from it, so never hardcode a purple: read the tokens and it follows the user's choice.
+- The cheat sheet's turning ring and the SAO menu's ringed buttons are the deliberate borders, by request.
+- Blur is Hyprland's, shared with every window, so every surface shows what is really under it and all blur looks alike. Do not draw a surface's own blur of the wallpaper: it shows the bottom layer, not the windows under the surface.
+- One Hyprland `hl.layer_rule` in `configs/hypr/hyprland/appearance.lua` matches `ummitos-.*`, so set `WlrLayershell.namespace: "ummitos-<name>"` on new surfaces. The exception is a surface that fades its own transparency over the screen (the wake, `wake-curtain`): the rule blurs and darkens what it covers until its alpha drops below 0.1 (`ignore_alpha`), then stops at once, which reads as a jump at the end of the fade. Such a surface uses a namespace outside the rule and stays mapped, so Hyprland never animates it in or out either.
+
+## Debugging state
+
+Before theorising about why a surface misbehaves, read its actual state. Add a temporary `function probe(): string` to the singleton's `IpcHandler` that returns `JSON.stringify({…})` of the internal values, call it between steps, and delete it afterwards.
+
+For things that need input you cannot give from a terminal, mark every temporary line `// PROBE` (an `IpcHandler` that calls the function a click would, a `console.log`) and remove them with `sed -i '/\/\/ PROBE/d'`. `hyprctl dispatch movecursor x y` moves the pointer. Animations are checked by recording: `wl-screenrec -f rec.mp4`, then `ffmpeg -i rec.mp4 -vf "fps=6,scale=320:-1,tile=4x3" -frames:v 1 grid.png` for a contact sheet. Never delete a user's files by guessing which one a test made; list the folder before and after and remove only the difference.

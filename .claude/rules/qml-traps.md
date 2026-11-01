@@ -1,0 +1,53 @@
+---
+paths:
+  - "configs/quickshell/**"
+  - "configs/greeter/**"
+---
+
+# Traps found the hard way
+
+- **`Layout.fillWidth` is contagious.** A filling child makes its row growable all the way up the tree, which ate the bar's centring. Give the child a fixed width instead. Centre things with anchors, not with spacers either side of content whose width varies.
+- **`Behavior` fires on the first assignment.** Async-fed values animate up from zero on first paint, so gate the `Behavior` on a flag.
+- **`RotationAnimation` leaves `rotation` where it stopped.** Use separate elements for the spinner and the static icon.
+- **Assign the committed value before clearing a preview value**, or a derived fallback binding flashes the stale value.
+- **List-typed QML properties are JS arrays.** Calling `.toLowerCase()` on one throws, and the whole binding silently empties.
+- **Anchoring an Item inside a Layout is undefined behaviour.** Use `TapHandler`, `WheelHandler` or `HoverHandler` instead of an anchored `MouseArea`.
+- **`layer.enabled` plus `scale` magnifies a raster.** To grow an item that carries a glow, change its size, not its `scale`.
+- **Enter events are not movement.** They fire when a surface opens under a still cursor or when geometry shifts. Compare the pointer position in window coordinates instead.
+- **Anchors own `x` and `y`.** A binding on `x` for an item with `anchors.fill` is silently ignored. Slide with a `Translate` transform instead.
+- **`Hyprland.workspaces` yields nulls** during create and destroy, so filter entries before reading them.
+- **Repeater-in-Layout cannot animate removal.** Lists that should animate items leaving (the notifications) are `ListView`s with `add`, `remove` and `displaced` transitions. Delegates outlive their model entry during `remove`, so read `modelData?.x ?? ""`.
+- **Name collisions shadow modules.** `bar/Bluetooth.qml` shadows `Quickshell.Bluetooth`, so the module is imported `as Bluez`.
+- **MPRIS length is unreliable.** When `lengthSupported` is false, Quickshell reports the position as the length, and some players (Floorp) publish the length late. Gate progress bars on `lengthSupported && length > 0`.
+- **Degenerate geometry can crash Qt.** Clamp computed radii to at least 1 (see `dashboard/Gauge.qml`).
+- **PipeWire nodes:** a device is `isSink && !isStream`, and an app stream is `isSink && isStream`. Nodes need a `PwObjectTracker` before their `audio` properties are readable.
+- **A leftover notification daemon steals the bus name.** If swaync (or dunst, mako) is still installed, D-Bus activates it whenever a notification arrives while the shell's name is released, which happens during every reload. The shell only claims the name at startup, so toasts silently stop until `qs` restarts. Mask it: `systemctl --user mask swaync.service`.
+- **A reload does not move a shown window to another layer.** Quickshell reuses the mapped surface, and Wayland fixes its layer at creation. After changing `WlrLayershell.layer`, hide the window and show it again (or restart `qs`); check with `hyprctl layers`.
+- **`sed -i` does not trigger a hot reload.** It writes a new file and renames it over the old one, and the watcher misses the swap. After a `sed -i`, `touch shell.qml`. A popup (`PopupWindow` with `grabFocus`) cannot be opened from a probe either: the compositor dismisses a grab that no click started.
+- **`transparent` does not pass a key through.** In `hl.bind`, `transparent` only stops other binds from shadowing it; `non_consuming` is what lets apps see the key. A release bind on Ctrl without it ate the Ctrl release, so fcitx5 thought Ctrl was held and stopped switching. Never bind a bare modifier the whole desktop uses.
+- **A shell pipeline in a `Process` outlives a reload.** A reload kills the `sh`, not the pipeline it started: `sh -c 'dbus-monitor … | while read …'` left a `dbus-monitor` orphaned under init on every save. Run the long-lived program as the `Process` itself and parse its lines in QML.
+- **A branch switch or pull can leave the running shell on the old code.** Git replaces the changed files, the watcher loses track of them, and even `touch shell.qml` no longer reloads. Restart it: `qs kill -c ummitos && qs -c ummitos -d`.
+- **IPC calls during a reload are lost.** For a moment after a save the targets do not exist ("Target not found", "Not ready to accept queries yet"). In scripts, wait until the log shows a new `Configuration Loaded` before calling.
+- **A failed reload can leave the log stale and the watcher idle.** After an error, the last lines of `qs log` may still show it even once the file is fixed. `touch shell.qml` and wait for a fresh `Configuration Loaded` before believing either.
+- **Files in subfolders need `import ".."`** to see `Theme` and the other root types. Without it the error is `Theme is not defined` at runtime, not at load.
+- **`width`, `height` and friends are FINAL.** Declaring a property with such a name on a subclass fails the whole file with "Cannot override FINAL property".
+- **QML JavaScript has no object spread** (`{...a}`) **and no `Array.flatMap`**; build the object and assign fields, and use `map` plus `concat`. The error only shows when the code runs, not at load.
+- **`clip: true` clips to a rectangle.** Inside rounded surfaces, clip with a `ClippingRectangle` of the same radius, or corners show.
+- **A blurred shape is cut off at its own bounds**, which reads as a square edge. For soft light use a radial gradient that fades to zero before the edge (a `Canvas`). To glow an outline, capture it with a `ShaderEffectSource` whose `sourceRect` is padded past the item, then blur that; feeding one `MultiEffect` straight into another (with `layer.enabled` on the first) hid the first one.
+- **`ScreencopyView` captures whatever is on screen, including the shell.** Capture only when your own overlay is fully gone, or you photograph yourself.
+- **State paths are per shell id.** `Quickshell.statePath()` resolves under `~/.local/state/quickshell/by-shell/<id>/`, and the id changes with how `qs` was started. Find the live one from the instance's own log, not by guessing.
+- **Bluetooth needs `bluetoothd` running before `qs` starts.** Otherwise the adapter stays null until the shell restarts.
+- **A missing theme icon is not an error.** `image://icon/<name>` for a name the theme lacks loads as Qt's magenta checkerboard with `status === Image.Ready`. Check `Quickshell.iconPath(name, true) !== ""` first. A tray pixmap that never arrived has a `image://qspixmap/…/0` source.
+- **`itemAt()` in a binding runs once.** It is a call, not a property, so a binding on `repeater.itemAt(i)` evaluated before the Repeater built its items stays null. Read through `repeater.count` so it re-runs.
+- **Several `Binding`s writing one property need `restoreMode: Binding.RestoreNone`.** With the default, the one switching off restores the value it saw when it switched on, in an order nothing guarantees, and leaves a stale value.
+- **A flag in a singleton read by a `Variants` delegate is read once per screen.** Clearing it in the first screen's handler starves the others; clear it with `Qt.callLater` in the singleton.
+- **A `Canvas` under a hidden item never paints.** For a mask or effect source drawn with a `Canvas`, keep it visible and capture it with a `ShaderEffectSource { hideSource: true }`, rather than `visible: false` plus `layer.enabled`.
+- **`MultiEffect`'s inverted mask draws nothing when its mask is empty or zero-sized**, not everything. For shapes that grow from nothing (the wake's circles), write a `ShaderEffect`: the source is `wake/curtain.frag`, compiled next to it with `/usr/lib/qt6/bin/qsb --glsl "100 es,120,150" --hlsl 50 --msl 12 -o curtain.frag.qsb curtain.frag`. Commit both; the shell loads the `.qsb`, so installs need no shader tools. **A hot reload keeps the old compiled shader** (Qt caches it by URL): after changing a shader's uniforms, rename the file or restart `qs`, or it reads the new properties as zero.
+- **Animate transforms, not geometry.** Growing an item by `width`/`height` every frame re-lays it out, and resizing a blurred source rebuilds its blur texture every frame; both stutter. Draw it once at full size and animate a `Scale` or `Translate`.
+- **Hyprland's blur draws a line across a fading surface.** With `ignore_alpha`, blur switches on in one step where the surface's alpha passes the threshold, so a gradient wash gets a hard edge. Hyprland's blur cannot fade; a soft edge means turning it off for that surface and drawing a blur in the shell.
+- **Shader colour uniforms arrive premultiplied.** Multiplying a `color` uniform by its alpha again makes a translucent fill almost vanish.
+- **A shader path resolves against the file that uses the component.** In a shared component, set `fragmentShader: Qt.resolvedUrl("x.frag.qsb")`.
+- **A scanned link's label must follow the browser's parser.** For http(s), WHATWG treats `\` as `/`, skips any slashes before the host, and percent-decodes and lowercases it, so `https:///bank.example@evil.example` opens evil.example. `Scan.describe()` normalises the same way; run `check-scan.mjs` after touching it.
+- **zbar's `--xml` output mangles non-ASCII.** Chinese text or an IDN link arrives as broken base64 with a wrong `length`, whatever the locale. `--raw -Sbinary` reads it correctly but gives no positions, so `Scan` reads such codes again, one region at a time (`grim -g`).
+- **Qt's default text rendering is soft.** Its distance-field text reads blurry at 12–17px over a translucent panel, with colour fringes. `shell.qml` turns it off for the whole shell with `//@ pragma Env QML_DISABLE_DISTANCEFIELD=1`; Qt has no other global switch (`QQuickWindow::setTextRenderType` is C++ only), and the pragma needs a `qs` restart, not a reload.
+- **Notifications are replaced in place.** `notify-send -r`, players and progress notices update the same `Notification` object, so anything copied from it must be refreshed on `summaryChanged`/`bodyChanged`/`imageChanged`.

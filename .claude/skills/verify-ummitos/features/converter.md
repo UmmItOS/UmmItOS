@@ -30,5 +30,5 @@ Steps (proven 2026-10-29):
 ## Gotchas
 
 - The lit slot carries over between opens; it is reset only by a fresh shell load. Always take a shot before the key, not only after.
-- A drop needs a real Wayland drag, and `wtype` cannot drag. IPC offers only toggle and close. The ydotool + `qs -p` drag-source harness in the repo's CLAUDE.md moves the user's real pointer, so `conv-drop` and `conv-run` are not provable with these helpers.
+- A drop needs a real Wayland drag, and `wtype` cannot drag. IPC offers only toggle and close. The ydotool + `qs -p` drag-source harness in the repo's `.claude/rules/shell-features.md` moves the user's real pointer, so `conv-drop` and `conv-run` are not provable with these helpers.
 - Running `convert toggle` while a MISSION banner is still up reuses the mapped surface. Keys may not arrive until a click (inferred from source, not proven).
