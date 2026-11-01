@@ -431,6 +431,7 @@ RowLayout {
                 Slider {
                     onMoved: value => {
                         stream.modelData.audio.volume = value;
+                        Audio.pop();
                         Osd.presentApp(root.iconFor(stream.modelData), root.labelFor(stream.modelData), value, stream.muted);
                     }
 

@@ -635,6 +635,8 @@ Singleton {
         readonly property int osdHide: 1400
         // Settle before arming the OSD, or a new sink flashes a volume nobody touched.
         readonly property int osdArm: 1200
+        // The shortest gap between two volume pops, so a dragged slider ticks instead of rattling.
+        readonly property int volumePop: 90
         // How often the Wi-Fi page updates the connected time.
         readonly property int wifiTick: 30000
         // How often the Wi-Fi menu re-reads each network's dBm.

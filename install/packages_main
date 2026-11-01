@@ -29,6 +29,7 @@ extra/pipewire-pulse
 extra/qjackctl
 extra/pavucontrol
 extra/wireplumber
+extra/sound-theme-freedesktop
 extra/mpv
 extra/imagemagick
 extra/grim
