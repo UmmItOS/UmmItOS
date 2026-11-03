@@ -10,6 +10,8 @@ OverlayWindow {
     id: win
 
     property int current: 0
+    // True while the keyboard moved the selection last; a real pointer move clears it.
+    property bool keyboard: false
 
     // a and b: how much of the first and second screen's ink is drawn; stacked: the second sits behind the first.
     readonly property var modes: [
@@ -89,9 +91,18 @@ OverlayWindow {
         id: scope
 
         Keys.onEscapePressed: Displays.open = false
-        Keys.onLeftPressed: win.current = (win.current - 1 + win.modes.length) % win.modes.length
-        Keys.onRightPressed: win.current = (win.current + 1) % win.modes.length
-        Keys.onReturnPressed: Displays.apply(win.modes[win.current].id)
+        Keys.onLeftPressed: {
+            win.keyboard = true;
+            win.current = (win.current - 1 + win.modes.length) % win.modes.length;
+        }
+        Keys.onRightPressed: {
+            win.keyboard = true;
+            win.current = (win.current + 1) % win.modes.length;
+        }
+        Keys.onReturnPressed: {
+            win.keyboard = true;
+            Displays.apply(win.modes[win.current].id);
+        }
 
         opacity: Math.min(1, win.reveal)
         scale: Theme.popScale + (1 - Theme.popScale) * win.reveal
@@ -109,9 +120,15 @@ OverlayWindow {
             tone: Theme.bg
             lift: Theme.lift.panel
 
-            // Swallows clicks so they do not close the panel.
+            // Swallows clicks so they do not close the panel; a real move anywhere on it ends the keyboard cue.
             MouseArea {
+                onPositionChanged: mouse => {
+                    if (win.pointerMoved(this, mouse.x, mouse.y))
+                        win.keyboard = false;
+                }
+
                 anchors.fill: parent
+                hoverEnabled: true
             }
 
             ColumnLayout {
@@ -147,7 +164,8 @@ OverlayWindow {
                             required property int index
 
                             readonly property bool chosen: Displays.mode === modelData.id
-                            readonly property bool selected: win.current === index
+                            readonly property bool hovered: press.containsMouse
+                            readonly property bool picked: win.keyboard && win.current === index
                             readonly property color ink: chosen ? Theme.accentOn : Theme.fg
                             // Duplicating puts the second screen behind and above the first.
                             readonly property real pairLeft: (Theme.displays.screenWidth + Theme.spacing.small - Theme.displays.screenShift) / 2
@@ -157,8 +175,8 @@ OverlayWindow {
                             enabled: Displays.outputs.length > 1
                             opacity: enabled ? 1 : Theme.disabledOpacity
                             radius: Theme.rounding.largeIncreased
-                            color: chosen ? Theme.accent : selected ? Theme.bgTray : Theme.glass
-                            scale: press.pressed ? Theme.pressScale : selected ? Theme.displays.activeScale : 1
+                            color: chosen ? Theme.accent : hovered || picked ? Theme.bgTray : Theme.glass
+                            scale: press.pressed ? Theme.pressScale : hovered ? Theme.displays.activeScale : 1
 
                             Behavior on color {
                                 FastColor {}
@@ -213,8 +231,10 @@ OverlayWindow {
                                 id: press
 
                                 onPositionChanged: mouse => {
-                                    if (win.pointerMoved(this, mouse.x, mouse.y))
+                                    if (win.pointerMoved(this, mouse.x, mouse.y)) {
+                                        win.keyboard = false;
                                         win.current = card.index;
+                                    }
                                 }
 
                                 onClicked: Displays.apply(card.modelData.id)

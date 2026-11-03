@@ -37,6 +37,8 @@ Steps (proven 2026-11-04):
 
 ## Gotchas
 
+- `hyprctl dispatch hl.dsp.cursor.move` only warps the pointer: the shell gets no motion, so hover looks never show. To prove hover, warp first, then send real motion with `run.sh wlrctl pointer move 10 10`. Proven 2026-11-04: real hover lights and lifts a card; after a key press the picked card shows only the flat lighter fill; real motion anywhere on the sheet clears that cue.
+
 - The stack lists a disabled WAYLAND-1 output (harness artifact). It counts as a connected, switched-off output.
 - The Keep button cannot be clicked reliably from the harness. Keep is proven only by reading the code (`Displays.qml` `keep()`), not on screen.
 - Never drive this on the live session: it changes the real monitors.
