@@ -12,6 +12,8 @@ OverlayWindow {
 
     // Where the cursor was when the sheet opened, for the light until it moves (window coordinates; -1 is unknown).
     property point seed: Qt.point(-1, -1)
+    // Set by the first real hover change; from then on the seed is stale and a late query must not restore it.
+    property bool pointerSeen: false
 
     // A bind's description in the chosen language; numbered ones ("1–10" once merged) share one template.
     function said(text: string): string {
@@ -22,6 +24,7 @@ OverlayWindow {
     onOpened: {
         scope.forceActiveFocus();
         win.seed = Qt.point(-1, -1);
+        win.pointerSeen = false;
         cursor.running = true;
     }
 
@@ -59,7 +62,7 @@ OverlayWindow {
         stdout: StdioCollector {
             onStreamFinished: {
                 const [x, y] = text.trim().split(",").map(Number);
-                if (!isNaN(x) && !isNaN(y))
+                if (!win.pointerSeen && !isNaN(x) && !isNaN(y))
                     win.seed = Qt.point(x - (win.screen?.x ?? 0), y - (win.screen?.y ?? 0));
             }
         }
@@ -246,6 +249,13 @@ OverlayWindow {
 
             HoverHandler {
                 id: pointer
+
+                onHoveredChanged: {
+                    win.pointerSeen = true;
+                    win.seed = Qt.point(-1, -1);
+                }
+                onPointChanged: if (hovered)
+                    spot.at = point.position
             }
 
             // A plain clip is square and lights the empty corners.
@@ -261,8 +271,18 @@ OverlayWindow {
 
                     width: spot.size
                     height: spot.size
-                    readonly property point at: pointer.hovered ? pointer.point.position : sheet.mapFromItem(win.contentItem, win.seed.x, win.seed.y)
+                    // Holds its last place while fading out, so it never slides away.
+                    property point at: Qt.point(0, 0)
                     readonly property bool lit: pointer.hovered || (win.seed.x >= 0 && at.x >= 0 && at.y >= 0 && at.x <= sheet.width && at.y <= sheet.height)
+
+                    Connections {
+                        function onSeedChanged(): void {
+                            if (win.seed.x >= 0)
+                                spot.at = sheet.mapFromItem(win.contentItem, win.seed.x, win.seed.y);
+                        }
+
+                        target: win
+                    }
 
                     x: at.x - spot.size / 2
                     y: at.y - spot.size / 2
