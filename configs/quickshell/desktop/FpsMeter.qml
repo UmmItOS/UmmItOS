@@ -129,7 +129,7 @@ Scope {
                     }
 
                     Text {
-                        anchors.baseline: unit.baseline
+                        anchors.verticalCenter: parent.verticalCenter
                         textFormat: Text.PlainText
                         text: win.fps
                         color: Theme.fg
