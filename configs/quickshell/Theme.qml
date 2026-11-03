@@ -28,7 +28,7 @@ Singleton {
     readonly property color glass: Qt.rgba(1, 1, 1, 0.04)
     readonly property color fg: "#e8e8f0"
     // About 7:1 over the panel; 0.45 sat on the 4.5:1 line and fell below it over a bright wallpaper.
-    readonly property color dim: Qt.rgba(1, 1, 1, 0.6)
+    readonly property color dim: Qt.rgba(1, 1, 1, 0.7)
     readonly property color urgent: "#ff6b6b"
     readonly property color warn: "#ffc46b"
     readonly property color good: "#6bdf9a"
