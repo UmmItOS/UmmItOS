@@ -236,7 +236,19 @@ Item {
             }
         }
 
+        // A backing for the name and the hint, so they read on a bright wallpaper too.
+        Rectangle {
+            x: Math.min(userText.x, hintText.x) - Theme.spacing.large
+            y: userText.y - Theme.spacing.small
+            width: Math.max(userText.width, hintText.width) + Theme.spacing.large * 2
+            height: hintText.y + hintText.height - userText.y + Theme.spacing.small * 2
+            radius: Theme.rounding.extraLarge
+            color: Theme.scrim(Theme.panelTint)
+        }
+
         Text {
+            id: userText
+
             anchors.centerIn: parent
             anchors.verticalCenterOffset: root.at(Theme.lock.userAt)
             textFormat: Text.PlainText
@@ -254,6 +266,8 @@ Item {
         }
 
         Text {
+            id: hintText
+
             anchors.centerIn: parent
             anchors.verticalCenterOffset: root.at(Theme.lock.hintAt)
             text: I18n.t("Enter your password to unlock")
