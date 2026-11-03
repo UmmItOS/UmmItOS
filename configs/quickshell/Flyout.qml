@@ -28,6 +28,13 @@ PopupWindow {
             Notifs.flyout = null;
     }
 
+    // Same path as an outside click: users reset the flag their visible binds to; a plain visible is cleared after.
+    function dismiss(): void {
+        root.closeRequested();
+        if (root.visible)
+            root.visible = false;
+    }
+
     // The grab closes the window itself, so hand the state back.
     onVisibleChanged: {
         if (root.visible) {
@@ -65,6 +72,10 @@ PopupWindow {
 
     Surface {
         id: sheet
+
+        // Focus here, not on a sibling: a text field's unhandled Escape bubbles up to this item.
+        focus: true
+        Keys.onEscapePressed: root.dismiss()
 
         layer.enabled: opacity < 1
 
