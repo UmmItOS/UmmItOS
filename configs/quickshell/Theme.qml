@@ -717,8 +717,8 @@ Singleton {
         readonly property int clipLength: 30000
         readonly property int clock: 180
         readonly property int date: 32
-        readonly property int user: 24
-        readonly property int hint: 16
+        readonly property int user: 28
+        readonly property int hint: 18
         readonly property int battery: 14
         readonly property int avatar: 100
         readonly property int ring: 3
@@ -757,8 +757,8 @@ Singleton {
         readonly property int spectrumEase: 90
         readonly property int spectrumDrop: 8
         readonly property color dateInk: Qt.rgba(1, 1, 1, 0.8)
-        readonly property color userInk: Qt.rgba(1, 1, 1, 0.9)
-        readonly property color hintInk: Qt.rgba(1, 1, 1, 0.6)
+        readonly property color userInk: Qt.rgba(1, 1, 1, 1)
+        readonly property color hintInk: Qt.rgba(1, 1, 1, 0.8)
         readonly property color placeholderInk: Qt.rgba(1, 1, 1, 0.5)
         readonly property color ringInk: Qt.rgba(1, 1, 1, 0.3)
         readonly property color glass: Qt.rgba(1, 1, 1, 0.1)
