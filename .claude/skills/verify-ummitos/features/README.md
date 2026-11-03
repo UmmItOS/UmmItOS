@@ -33,4 +33,5 @@ This is the maintained source for verifying the user-facing behaviour of the Umm
 | [converter.md](converter.md) | Picture converter wheel (open, pick, close; drop not drivable) | partly (2026-11-04) |
 | [scan.md](scan.md) | QR scanner: find and detail (Open not driven) | yes (2026-11-04) |
 | [fps.md](fps.md) | FPS counter: on, off, saved | yes (2026-11-04) |
+| [displays.md](displays.md) | Display chooser: modes, auto-revert, watchdog, desktop right-click | yes (2026-11-04) |
 | [lock.md](lock.md) | Lock screen: preview, engage, one wrong password (unlock and the music spectrum not drivable). Drive last. | yes (2026-11-04) |
