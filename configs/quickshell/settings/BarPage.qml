@@ -117,32 +117,6 @@ ColumnLayout {
         }
     }
 
-    SettingRow {
-        title: I18n.t("Weather card")
-        hint: I18n.t("Shows the weather on the desktop, under the windows.")
-
-        Toggle {
-            onToggled: Settings.setWeatherCard(!Settings.weatherShow)
-
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            checked: Settings.weatherShow
-        }
-    }
-
-    SettingRow {
-        title: I18n.t("Now playing card")
-        hint: I18n.t("Shows what is playing on the desktop while music plays.")
-
-        Toggle {
-            onToggled: Settings.setMediaCard(!Settings.mediaShow)
-
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            checked: Settings.mediaShow
-        }
-    }
-
     Item {
         Layout.fillHeight: true
     }
