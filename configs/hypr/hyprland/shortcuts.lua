@@ -30,6 +30,7 @@ bind("Shell", mainMod .. " + F", shell("gallery", "toggle"), "Screenshot gallery
 bind("Shell", mainMod .. " + B", shell("power", "toggle"), "Battery usage")
 bind("Shell", mainMod .. " + H", shell("doctor", "toggle"), "Health check")
 bind("Shell", mainMod .. " + I", shell("convert", "toggle"), "Convert pictures")
+bind("Shell", mainMod .. " + P", shell("displays", "toggle"), "Displays")
 bind("Shell", mainMod .. " + L", shell("lock", "lock"), "Lock screen")
 bind("Shell", "ALT + V", shell("launcher", "clipboard"), "Clipboard manager")
 bind("Shell", "ALT + W", shell("wallpaper", "toggle"), "Wallpaper picker")

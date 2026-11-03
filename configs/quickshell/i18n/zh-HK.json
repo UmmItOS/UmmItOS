@@ -613,5 +613,21 @@
     "Show FPS": "顯示幀率",
     "A frame-rate counter in the top-left corner, like cl_showfps 1.": "喺左上角顯示幀率計數器，好似 cl_showfps 1 咁。",
     "FPS": "FPS",
-    "Convert pictures": "轉換圖片格式"
+    "Convert pictures": "轉換圖片格式",
+    "Displays": "顯示器",
+    "Displays…": "顯示器…",
+    "Wallpaper…": "牆紙…",
+    "Desktop": "桌面",
+    "This screen only": "淨係呢個螢幕",
+    "Duplicate": "複製",
+    "Extend": "延伸",
+    "Second screen only": "淨係第二個螢幕",
+    "Only one display is connected": "淨係接咗一個顯示器",
+    "%1 × %2 @ %3 Hz": "%1 × %2 @ %3 Hz",
+    "Off": "關咗",
+    "Mirrors %1": "複製 %1",
+    "Keep these display settings?": "要保留呢啲顯示設定嗎？",
+    "Reverting in %1 s": "%1 秒後還原",
+    "Revert": "還原",
+    "Keep": "保留"
 }

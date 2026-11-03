@@ -29,6 +29,30 @@ Variants {
 
         color: "black"
 
+        // Where the right-click landed, for the menu to hang from.
+        Item {
+            id: spot
+
+            width: Theme.hairline
+            height: Theme.hairline
+        }
+
+        DesktopMenu {
+            id: menu
+
+            onChosen: what => {
+                menu.visible = false;
+                if (what === "displays")
+                    Displays.open = true;
+                else if (what === "wallpaper")
+                    Wallpapers.pickerOpen = true;
+                else
+                    Settings.open = true;
+            }
+
+            anchorItem: spot
+        }
+
         // Crossfade adapted from caelestia-dots/shell (GPL-3.0).
         Item {
             id: fader
@@ -60,6 +84,17 @@ Variants {
                 }
 
                 target: Wallpapers
+            }
+
+            TapHandler {
+                // A Flyout centres on its anchor, so aim half a menu right of the pointer to put its edge there.
+                onTapped: point => {
+                    spot.x = point.position.x + Theme.control.menu / 2;
+                    spot.y = point.position.y - Theme.spacing.small;
+                    menu.visible = true;
+                }
+
+                acceptedButtons: Qt.RightButton
             }
 
             Component {

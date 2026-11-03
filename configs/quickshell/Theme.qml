@@ -427,6 +427,19 @@ Singleton {
         readonly property real glow: 0.6
     }
 
+    // The display chooser (displays/): a mode card and the two screens drawn on it.
+    readonly property QtObject displays: QtObject {
+        readonly property int card: 176
+        readonly property int cardHeight: 156
+        readonly property int screenWidth: 56
+        readonly property int screenHeight: 36
+        // How far the screen behind peeks out when duplicating.
+        readonly property int screenShift: 10
+        // A screen that is off, as a share of the ink.
+        readonly property real screenOff: 0.3
+        readonly property real activeScale: 1.04
+    }
+
     readonly property QtObject doctor: QtObject {
         readonly property int width: 1000
         readonly property int height: 640
@@ -617,6 +630,8 @@ Singleton {
         readonly property int confirmHold: 3000
         // A toast that set no timeout of its own.
         readonly property int toast: 6000
+        // How long a new display setting waits to be kept before it is undone.
+        readonly property int displayConfirm: 15000
         // How long after start the quiet health check runs.
         readonly property int doctorStart: 20000
         // The update count is read this long after login, then this often.

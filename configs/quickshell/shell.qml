@@ -10,6 +10,7 @@ import "convert"
 import "record"
 import "dashboard"
 import "desktop"
+import "displays"
 import "doctor"
 import "draw"
 import "bar"
@@ -97,6 +98,8 @@ ShellRoot {
     RecordWindow {}
 
     SettingsWindow {}
+
+    DisplaysWindow {}
 
     ScanWindow {}
 
