@@ -169,7 +169,8 @@ OverlayWindow {
                             required property int index
 
                             readonly property bool chosen: Displays.mode === modelData.id
-                            readonly property bool hovered: press.containsMouse && win.pointerLive
+                            // Qt 6 still sends hover to a disabled item, so a card that cannot apply never lights.
+                            readonly property bool hovered: card.enabled && press.containsMouse && win.pointerLive
                             readonly property bool picked: win.keyboard && win.current === index
                             readonly property color ink: chosen ? Theme.accentOn : Theme.fg
                             // Duplicating puts the second screen behind and above the first.
@@ -247,7 +248,7 @@ OverlayWindow {
 
                                 anchors.fill: parent
                                 hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
+                                cursorShape: card.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                             }
                         }
                     }
