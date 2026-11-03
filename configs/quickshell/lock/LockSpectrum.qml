@@ -29,7 +29,7 @@ Item {
     }
 
     visible: opacity > 0
-    opacity: Cava.running ? Theme.lock.spectrumOpacity : 0
+    opacity: Cava.running && !Theme.reduceMotion ? Theme.lock.spectrumOpacity : 0
     layer.enabled: opacity < Theme.lock.spectrumOpacity
 
     layer.effect: MotionBlur {
