@@ -12,6 +12,8 @@ OverlayWindow {
     property int current: 0
     // True while the keyboard moved the selection last; a real pointer move clears it.
     property bool keyboard: false
+    // False until the pointer really moves after opening, so a card under a still pointer does not look hovered.
+    property bool pointerLive: false
 
     // a and b: how much of the first and second screen's ink is drawn; stacked: the second sits behind the first.
     readonly property var modes: [
@@ -50,6 +52,8 @@ OverlayWindow {
 
     onOpened: {
         current = modeIndex;
+        keyboard = false;
+        pointerLive = false;
         scope.forceActiveFocus();
     }
 
@@ -125,6 +129,7 @@ OverlayWindow {
                 onPositionChanged: mouse => {
                     if (win.pointerMoved(this, mouse.x, mouse.y))
                         win.keyboard = false;
+                        win.pointerLive = true;
                 }
 
                 anchors.fill: parent
@@ -164,7 +169,7 @@ OverlayWindow {
                             required property int index
 
                             readonly property bool chosen: Displays.mode === modelData.id
-                            readonly property bool hovered: press.containsMouse
+                            readonly property bool hovered: press.containsMouse && win.pointerLive
                             readonly property bool picked: win.keyboard && win.current === index
                             readonly property color ink: chosen ? Theme.accentOn : Theme.fg
                             // Duplicating puts the second screen behind and above the first.
@@ -233,6 +238,7 @@ OverlayWindow {
                                 onPositionChanged: mouse => {
                                     if (win.pointerMoved(this, mouse.x, mouse.y)) {
                                         win.keyboard = false;
+                                        win.pointerLive = true;
                                         win.current = card.index;
                                     }
                                 }
