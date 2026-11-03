@@ -7,7 +7,7 @@ Rectangle {
     readonly property bool hovered: hover.hovered
     // Content colours: readable on the accent fill once active.
     readonly property color ink: root.active ? Theme.accentOn : Theme.fg
-    readonly property color inkDim: root.active ? Qt.alpha(Theme.accentOn, Theme.dim.a) : Theme.dim
+    readonly property color inkDim: root.active ? Theme.accentOn : Theme.dim
 
     implicitHeight: Theme.control.row
     radius: Theme.rounding.large

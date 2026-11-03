@@ -354,7 +354,7 @@ OverlayWindow {
                                 visible: row.off || row.mirrors !== "none"
                                 textFormat: Text.PlainText
                                 text: row.off ? I18n.t("Off") : I18n.t("Mirrors %1").arg(row.mirrors)
-                                color: row.off ? Theme.dim : Theme.accentText
+                                color: Theme.dim
                                 font.family: Theme.font
                                 font.pixelSize: Theme.fontSize.smaller
                                 font.weight: Theme.weight.medium
