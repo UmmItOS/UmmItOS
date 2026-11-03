@@ -629,5 +629,7 @@
     "Keep these display settings?": "要保留呢啲顯示設定嗎？",
     "Reverting in %1 s": "%1 秒後還原",
     "Revert": "還原",
-    "Keep": "保留"
+    "Keep": "保留",
+    "Show on desktop": "顯示喺桌面",
+    "FPS counter": "FPS 計數器"
 }
