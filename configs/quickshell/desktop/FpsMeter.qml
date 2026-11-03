@@ -93,7 +93,10 @@ Scope {
                     win.mark = n;
                     win.markTime = now;
                 }
-                onRunningChanged: win.markTime = 0
+                onRunningChanged: {
+                    win.markTime = 0;
+                    win.fps = 0;
+                }
             }
 
             // The weather card's material and type, so it reads as one of the desktop widgets.
