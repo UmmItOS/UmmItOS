@@ -7,6 +7,7 @@ Super+L locks the session with an ext-session-lock surface on every screen. Only
 - `lock-preview`: `lock preview` shows the lock content in an ordinary window, and calling it again closes it.
 - `lock-engage`: `lock lock` takes a grim capture of the screen and then locks. `isLocked` prints `true`.
 - `lock-wrong`: a wrong password turns the field red, shakes it and shows "Wrong password · attempt 1".
+- `lock-spectrum`: while music plays, Cava's bands rise behind the clock (`lock/LockSpectrum.qml`), mirrored from the middle and coloured from the accent; with nothing playing the clock stands alone. **Not reachable in this stack**: Cava needs PipeWire (`pactl info` fails in the stack) and a playing MPRIS player. Prove it on the live session with `qs -c ummitos ipc call lock preview` while music plays, taking two `grim` shots apart to see the bars move.
 - `lock-alarm`: the second wrong password starts the intruder alarm: overlay, siren, a live webcam and a 30 s clip. **Never drive this sub-feature**; `ipc.sh lock alarm` is refused.
 
 ## How to get to it (user POV)
@@ -26,7 +27,7 @@ Steps:
 
 - **Preview.** Run `.claude/skills/verify-ummitos/scripts/ipc.sh lock preview`, wait about 1 s, then `.claude/skills/verify-ummitos/scripts/shot.sh lock-preview`. Expect the date, a big clock, the avatar, the user name and "Enter your password to unlock". The password field stays hidden until you type. Run `.claude/skills/verify-ummitos/scripts/ipc.sh lock preview` again and take a shot; the preview is gone.
 - **Engage.** Run `.claude/skills/verify-ummitos/scripts/ipc.sh lock lock`, then poll: `timeout 5 sh -c 'until [ "$(.claude/skills/verify-ummitos/scripts/ipc.sh lock isLocked)" = true ]; do sleep 0.2; done'`. After 1 more second run `.claude/skills/verify-ummitos/scripts/shot.sh lock-engaged`.
-- **One wrong password.** Run `.claude/skills/verify-ummitos/scripts/run.sh wtype "not-the-password"`, then `.claude/skills/verify-ummitos/scripts/run.sh wtype -k Return`, **once**. Wait about 3.5 s for pam_unix's failure delay, then `.claude/skills/verify-ummitos/scripts/shot.sh lock-wrong`. Expect the red "Wrong password · attempt 1" (proven 2026-11-01). If it has not shown yet, take another shot; never send Return again.
+- **One wrong password.** Run `.claude/skills/verify-ummitos/scripts/run.sh wtype "not-the-password"`, then `.claude/skills/verify-ummitos/scripts/run.sh wtype -k Return`, **once**. Wait about 3.5 s for pam_unix's failure delay, then `.claude/skills/verify-ummitos/scripts/shot.sh lock-wrong`. Expect the red "Wrong password · attempt 1" (proven 2026-11-04). If it has not shown yet, take another shot; never send Return again.
 - **End.** Run `.claude/skills/verify-ummitos/scripts/down.sh`. It removes the nested compositor, and its lock goes with it.
 
 ## Gotchas

@@ -21,7 +21,7 @@ Preconditions:
 - The wheel is closed.
 - The pointer is parked on the hub with `.claude/skills/verify-ummitos/scripts/run.sh hyprctl dispatch 'hl.dsp.cursor.move({ x = 960, y = 540 })'`, so hover cannot move the lit slot.
 
-Steps (proven 2026-10-29; open, Right and Escape re-proven 2026-11-01):
+Steps (proven 2026-11-04):
 
 - **Open.** Run `timeout 5 .claude/skills/verify-ummitos/scripts/ipc.sh convert toggle`, then `.claude/skills/verify-ummitos/scripts/shot.sh conv-open`. Note which slot is lit.
 - **Pick.** Run `.claude/skills/verify-ummitos/scripts/run.sh wtype -k Right`, then `.claude/skills/verify-ummitos/scripts/shot.sh conv-right`. The lit slot moves one step clockwise, for example PNG to JPG. Keys reach the wheel with no click. Then run `.claude/skills/verify-ummitos/scripts/run.sh wtype -k Tab`, `.claude/skills/verify-ummitos/scripts/run.sh wtype -k Left` and `.claude/skills/verify-ummitos/scripts/run.sh wtype -k Up` and take a shot: the net is one step back.

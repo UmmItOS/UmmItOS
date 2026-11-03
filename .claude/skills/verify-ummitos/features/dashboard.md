@@ -34,7 +34,7 @@ Steps:
 
 ## Gotchas
 
-- Escape does **not** close the dashboard (proven 2026-10-29). Its keyboard focus is OnDemand and it has no Escape handler. Use `close` or a click outside the panel.
+- Escape does **not** close the dashboard (proven 2026-11-04). Its keyboard focus is OnDemand and it has no Escape handler. Use `close` or a click outside the panel.
 - The dashboard has no weather. Weather is on the bar's picker, the desktop card and the lock screen.
 - The window stays mapped until its close animation ends. Wait about 1 s before checking that the layer is gone.
 - The Workspaces tab and every other Hyprland-backed view need Hyprland IPC. If `doctor.sh` fails its socket2 check, the tab shows nothing. That is the harness failing, not the product.
