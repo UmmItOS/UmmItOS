@@ -182,12 +182,6 @@ Item {
             font.family: Theme.fontDisplay
             font.pixelSize: Theme.lock.date
             font.weight: Theme.weight.medium
-            layer.enabled: true
-
-            layer.effect: Shade {
-                size: Theme.lock.shadow
-                passes: Theme.lock.shadowPasses
-            }
         }
 
         LockSpectrum {
