@@ -261,7 +261,7 @@ RowLayout {
                 Layout.fillWidth: true
                 implicitHeight: Theme.control.button
                 radius: Theme.rounding.large
-                color: deviceHover.hovered || device.current ? Theme.bgTray : "transparent"
+                color: deviceHover.hovered ? Theme.bgTray : "transparent"
 
                 Behavior on color {
                     FastColor {}
