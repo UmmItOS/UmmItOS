@@ -173,23 +173,20 @@ OverlayWindow {
                             readonly property bool hovered: card.enabled && press.containsMouse && win.pointerLive
                             readonly property bool picked: win.keyboard && win.current === index
                             readonly property color ink: chosen ? Theme.accentOn : Theme.fg
+                            // Only the picture dims when the card cannot apply; the label stays readable.
+                            readonly property color labelInk: enabled || chosen ? ink : Theme.dim
                             // Duplicating puts the second screen behind and above the first.
                             readonly property real pairLeft: (Theme.displays.screenWidth + Theme.spacing.small - Theme.displays.screenShift) / 2
 
                             Layout.preferredWidth: Theme.displays.card
                             Layout.preferredHeight: Theme.displays.cardHeight
                             enabled: Displays.outputs.length > 1
-                            opacity: enabled ? 1 : Theme.disabledOpacity
                             radius: Theme.rounding.largeIncreased
                             color: chosen ? Theme.accent : hovered || picked ? Theme.bgTray : Theme.glass
                             scale: press.pressed ? Theme.pressScale : hovered ? Theme.displays.activeScale : 1
 
                             Behavior on color {
                                 FastColor {}
-                            }
-
-                            Behavior on opacity {
-                                FastFade {}
                             }
 
                             Behavior on scale {
@@ -205,6 +202,11 @@ OverlayWindow {
                                     Layout.alignment: Qt.AlignHCenter
                                     implicitWidth: Theme.displays.screenWidth * 2 + Theme.spacing.small
                                     implicitHeight: Theme.displays.screenHeight + Theme.displays.screenShift
+                                    opacity: card.enabled || card.chosen ? 1 : Theme.disabledOpacity
+
+                                    Behavior on opacity {
+                                        FastFade {}
+                                    }
 
                                     Screen {
                                         x: card.modelData.stacked ? card.pairLeft + Theme.displays.screenShift : Theme.displays.screenWidth + Theme.spacing.small
@@ -226,10 +228,14 @@ OverlayWindow {
                                     horizontalAlignment: Text.AlignHCenter
                                     wrapMode: Text.WordWrap
                                     text: I18n.t(card.modelData.label)
-                                    color: card.ink
+                                    color: card.labelInk
                                     font.family: Theme.font
                                     font.pixelSize: Theme.fontSize.normal
                                     font.bold: card.chosen
+
+                                    Behavior on color {
+                                        FastColor {}
+                                    }
                                 }
                             }
 
