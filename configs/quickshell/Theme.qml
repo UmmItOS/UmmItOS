@@ -730,6 +730,17 @@ Singleton {
         readonly property real hintAt: -0.24
         readonly property real fieldAt: -0.29
         readonly property real fieldWidth: 0.15
+        // The music behind the clock: its width and height as shares of the screen, the gap between bars as a share of each slot, the quietest bar, how fast a bar follows, and how far it sits below the digits' baseline.
+        readonly property real spectrumWidth: 0.3
+        readonly property real spectrumHeight: 0.15
+        readonly property real spectrumGap: 0.35
+        readonly property real spectrumFloor: 0.04
+        readonly property real spectrumOpacity: 0.85
+        // Bars per Cava band, and how much lower the ends sit than the middle.
+        readonly property int spectrumSpread: 2
+        readonly property real spectrumTaper: 0.7
+        readonly property int spectrumEase: 90
+        readonly property int spectrumDrop: 8
         readonly property color dateInk: Qt.rgba(1, 1, 1, 0.8)
         readonly property color userInk: Qt.rgba(1, 1, 1, 0.9)
         readonly property color hintInk: Qt.rgba(1, 1, 1, 0.6)

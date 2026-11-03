@@ -190,7 +190,17 @@ Item {
             }
         }
 
+        LockSpectrum {
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottom: clockText.baseline
+            anchors.bottomMargin: -Theme.lock.spectrumDrop
+            width: parent.width * Theme.lock.spectrumWidth
+            height: parent.height * Theme.lock.spectrumHeight
+        }
+
         Text {
+            id: clockText
+
             anchors.centerIn: parent
             anchors.verticalCenterOffset: root.at(Theme.lock.clockAt)
             text: Qt.formatDateTime(clock.date, "HH:mm")
