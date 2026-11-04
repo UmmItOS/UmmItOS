@@ -78,6 +78,21 @@ OverlayWindow {
 
     // After an apply, or once the outputs are first read, the selection follows what is on.
     Connections {
+        function onConfirmingChanged(): void {
+            Qt.callLater(() => {
+                if (!win.shown)
+                    return;
+                if (Displays.confirming) {
+                    keep.forceActiveFocus(Qt.TabFocusReason);
+                    confirmation.Accessible.announce(confirmation.text);
+                } else {
+                    keep.focus = false;
+                    revert.focus = false;
+                    scope.forceActiveFocus();
+                }
+            });
+        }
+
         function onModeChanged(): void {
             win.current = win.modeIndex;
         }
@@ -178,11 +193,17 @@ OverlayWindow {
                             // Duplicating puts the second screen behind and above the first.
                             readonly property real pairLeft: (Theme.displays.screenWidth + Theme.spacing.small - Theme.displays.screenShift) / 2
 
+                            Accessible.onPressAction: if (card.enabled) Displays.apply(card.modelData.id)
+
+                            Accessible.role: Accessible.RadioButton
+                            Accessible.name: I18n.t(card.modelData.label)
+                            Accessible.checkable: true
+                            Accessible.checked: card.chosen
                             Layout.preferredWidth: Theme.displays.card
                             Layout.preferredHeight: Theme.displays.cardHeight
                             enabled: Displays.outputs.length > 1
                             radius: Theme.rounding.largeIncreased
-                            color: chosen ? Theme.accent : hovered || picked ? Theme.bgTray : Theme.glass
+                            color: chosen ? Theme.accent : hovered ? Theme.bgTray : Theme.glass
                             scale: press.pressed ? Theme.pressScale : hovered ? Theme.displays.activeScale : 1
 
                             Behavior on color {
@@ -236,6 +257,25 @@ OverlayWindow {
                                     Behavior on color {
                                         FastColor {}
                                     }
+
+                                    Rectangle {
+                                        anchors.top: parent.bottom
+                                        anchors.topMargin: Theme.spacing.extraSmall
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        width: Theme.spacing.extraLarge
+                                        height: Theme.spacing.extraSmall
+                                        radius: Theme.rounding.full
+                                        color: card.ink
+                                        opacity: card.picked ? 1 : 0
+
+                                        Behavior on opacity {
+                                            FastFade {}
+                                        }
+
+                                        Behavior on color {
+                                            FastColor {}
+                                        }
+                                    }
                                 }
                             }
 
@@ -243,7 +283,7 @@ OverlayWindow {
                                 id: press
 
                                 onPositionChanged: mouse => {
-                                    if (win.pointerMoved(this, mouse.x, mouse.y)) {
+                                    if (card.enabled && win.pointerMoved(this, mouse.x, mouse.y)) {
                                         win.keyboard = false;
                                         win.pointerLive = true;
                                         win.current = card.index;
@@ -271,6 +311,12 @@ OverlayWindow {
                     }
 
                     Text {
+                        id: singleNotice
+
+                        onVisibleChanged: if (visible && win.shown) Accessible.announce(text)
+
+                        Accessible.role: Accessible.StatusBar
+                        Accessible.name: singleNotice.text
                         Layout.fillWidth: true
                         text: I18n.t("Only one display is connected")
                         color: Theme.dim
@@ -368,6 +414,7 @@ OverlayWindow {
                     Layout.fillWidth: true
                     Layout.preferredHeight: Displays.confirming ? ask.implicitHeight : 0
                     visible: opacity > 0
+                    enabled: Displays.confirming
                     opacity: Displays.confirming ? 1 : 0
 
                     Behavior on Layout.preferredHeight {
@@ -395,6 +442,10 @@ OverlayWindow {
                             spacing: 0
 
                             Text {
+                                id: confirmation
+
+                                Accessible.role: Accessible.AlertMessage
+                                Accessible.name: confirmation.text
                                 text: I18n.t("Keep these display settings?")
                                 color: Theme.fg
                                 font.family: Theme.font
@@ -403,6 +454,8 @@ OverlayWindow {
                             }
 
                             Text {
+                                Accessible.role: Accessible.StatusBar
+                                Accessible.name: text
                                 text: I18n.t("Reverting in %1 s").arg(Displays.remaining)
                                 color: Theme.dim
                                 font.family: Theme.font
@@ -411,14 +464,22 @@ OverlayWindow {
                         }
 
                         Action {
+                            id: revert
+
                             onClicked: Displays.revert()
 
+                            KeyNavigation.tab: keep
+                            KeyNavigation.backtab: keep
                             label: I18n.t("Revert")
                         }
 
                         Action {
+                            id: keep
+
                             onClicked: Displays.keep()
 
+                            KeyNavigation.tab: revert
+                            KeyNavigation.backtab: revert
                             label: I18n.t("Keep")
                             primary: true
                         }
