@@ -12,6 +12,7 @@ Singleton {
 
     property list<string> list: []
     property bool pickerOpen
+    property bool browserOpen
 
     // `actual` is confirmed; `previewPath` is what the picker hovers.
     property string actual
@@ -117,8 +118,17 @@ Singleton {
     }
 
     onPickerOpenChanged: {
-        if (pickerOpen)
+        if (pickerOpen) {
+            browserOpen = false;
             scan.running = true;
+        }
+    }
+
+    onBrowserOpenChanged: {
+        if (browserOpen) {
+            pickerOpen = false;
+            scan.running = true;
+        }
     }
 
     // Recursive, so the Anime/ and Landscape/ subfolders are included.
@@ -194,6 +204,10 @@ Singleton {
 
         function toggle(): void {
             root.pickerOpen = !root.pickerOpen;
+        }
+
+        function browse(): void {
+            root.browserOpen = !root.browserOpen;
         }
 
         target: "wallpaper"

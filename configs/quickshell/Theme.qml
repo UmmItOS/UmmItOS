@@ -566,6 +566,19 @@ Singleton {
         readonly property int dot: 8
     }
 
+    readonly property QtObject browser: QtObject {
+        // The panel's share of the screen on each axis.
+        readonly property real share: 0.6
+        readonly property int railWidth: 240
+        readonly property int indent: 16
+        // The thumbnail size a column aims for; the grid stretches it to fill the width.
+        readonly property int cellWidth: 220
+        readonly property int cellHeight: 124
+        readonly property real hoverScale: 1.04
+        // Light, so the desktop behind still shows the hovered wallpaper.
+        readonly property real scrim: 0.12
+    }
+
     readonly property QtObject charge: QtObject {
         readonly property int sparks: 700
         readonly property int steps: 90

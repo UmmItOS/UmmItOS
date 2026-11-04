@@ -45,7 +45,7 @@ Variants {
                 if (what === "displays")
                     Displays.open = true;
                 else if (what === "wallpaper")
-                    Wallpapers.pickerOpen = true;
+                    Wallpapers.browserOpen = true;
                 else
                     Settings.open = true;
             }

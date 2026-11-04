@@ -59,6 +59,8 @@ ShellRoot {
 
     WallpaperPicker {}
 
+    WallpaperBrowser {}
+
     LauncherWindow {}
 
     ClipboardWindow {}

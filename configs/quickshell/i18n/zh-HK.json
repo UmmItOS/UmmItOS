@@ -629,5 +629,8 @@
     "Revert": "還原",
     "Keep": "保留",
     "Show on desktop": "顯示喺桌面",
-    "FPS counter": "FPS 計數器"
+    "FPS counter": "FPS 計數器",
+    "Random": "隨機",
+    "No wallpapers in ~/.wallpaper": "~/.wallpaper 入面冇牆紙",
+    "%1, %2 pictures": "%1，%2 張圖"
 }
