@@ -577,6 +577,9 @@ Singleton {
         // The picture's name under a thumbnail.
         readonly property int nameBand: 24
         readonly property real hoverScale: 1.04
+        // The current-wallpaper check badge, and the scale it grows from.
+        readonly property int badge: 24
+        readonly property real badgeFrom: 0.4
     }
 
     readonly property QtObject charge: QtObject {

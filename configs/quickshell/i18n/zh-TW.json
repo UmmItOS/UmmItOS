@@ -632,7 +632,9 @@
     "FPS counter": "FPS 計數器",
     "Wallpaper": "桌布",
     "Close": "關閉",
-    "Random": "隨機",
     "No wallpapers in ~/.wallpaper": "~/.wallpaper 中沒有桌布",
+    "Shuffle %1": "隨機挑選 %1",
+    "1 picture · hover to preview, click to set": "1 張圖片 · 移上去預覽，點一下即可設定",
+    "%1 pictures · hover to preview, click to set": "%1 張圖片 · 移上去預覽，點一下即可設定",
     "%1, %2 pictures": "%1，%2 張圖片"
 }

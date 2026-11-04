@@ -23,6 +23,8 @@ OverlayWindow {
                 numeric: true
             }));
     }
+    // The folder at the top of the selection's path; its children get the second row.
+    readonly property string rootFolder: browser.here.split("/")[0]
     readonly property var rail: [
         {
             path: "",
@@ -30,7 +32,17 @@ OverlayWindow {
             depth: 0,
             count: Wallpapers.list.length
         }
-    ].concat(Wallpapers.folders)
+    ].concat(Wallpapers.folders.filter(f => f.depth === 0))
+    readonly property var subList: browser.rootFolder === "" ? [] : Wallpapers.folders.filter(f => f.path.startsWith(browser.rootFolder + "/")).map(f => ({
+                path: f.path,
+                name: f.path.slice(browser.rootFolder.length + 1),
+                count: f.count
+            }))
+
+    onSubListChanged: {
+        if (browser.subList.length > 0)
+            panel.subKept = browser.subList;
+    }
 
     // On the flag, not on unmapping, so it does not wait for the exit.
     onShownChanged: {
@@ -68,12 +80,16 @@ OverlayWindow {
 
             // Eased apart from reveal, whose opening curve overshoots.
             property real slide: browser.shown ? 1 : 0
+            // 1 while the second chip row is out.
+            property real subShift: browser.subList.length > 0 ? 1 : 0
+            // The last non-empty row, so it can fade out with its chips still there.
+            property var subKept: []
 
             anchors {
                 top: parent.top
                 bottom: parent.bottom
                 right: parent.right
-                topMargin: Theme.barHeight
+                topMargin: Theme.barHeight + Theme.spacing.large
                 margins: Theme.spacing.large
             }
 
@@ -90,6 +106,14 @@ OverlayWindow {
                     duration: browser.shown ? Theme.duration.expressiveDefaultSpatial : Theme.duration.expressiveFastSpatial
                     easing.type: Easing.BezierSpline
                     easing.bezierCurve: browser.shown ? Theme.curve.emphasizedDecel : Theme.curve.emphasizedAccel
+                }
+            }
+
+            Behavior on subShift {
+                NumberAnimation {
+                    duration: Theme.duration.expressiveDefaultSpatial
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: browser.subList.length > 0 ? Theme.curve.emphasizedDecel : Theme.curve.emphasizedAccel
                 }
             }
 
@@ -122,24 +146,10 @@ OverlayWindow {
                 }
 
                 BarButton {
-                    readonly property bool here: Wallpapers.folder === browser.here
-
-                    onClicked: {
-                        if (!here)
-                            Wallpapers.setFolder(browser.here);
-                    }
+                    onClicked: Wallpapers.setFolder(browser.here)
 
                     icon: "shuffle"
-                    label: here ? "Shuffling from here" : "Shuffle from here"
-                    baseColor: here ? Theme.dim : Theme.accentText
-                    hoverColor: here ? Theme.dim : Theme.accent2
-                }
-
-                BarButton {
-                    onClicked: Wallpapers.setRandom()
-
-                    icon: "casino"
-                    label: "Random"
+                    label: I18n.t("Shuffle %1").arg(browser.here === "" ? I18n.t("All") : browser.here.slice(browser.here.lastIndexOf("/") + 1))
                 }
 
                 BarButton {
@@ -150,13 +160,32 @@ OverlayWindow {
                 }
             }
 
+            Text {
+                id: caption
+
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                    top: bar.bottom
+                    leftMargin: Theme.spacing.large
+                    rightMargin: Theme.spacing.large
+                }
+
+                textFormat: Text.PlainText
+                text: (browser.pictures.length === 1 ? I18n.t("1 picture · hover to preview, click to set") : I18n.t("%1 pictures · hover to preview, click to set").arg(browser.pictures.length))
+                color: Theme.dim
+                font.family: Theme.font
+                font.pixelSize: Theme.fontSize.smaller
+                elide: Text.ElideRight
+            }
+
             Flow {
                 id: chips
 
                 anchors {
                     left: parent.left
                     right: parent.right
-                    top: bar.bottom
+                    top: caption.bottom
                     leftMargin: Theme.spacing.large
                     rightMargin: Theme.spacing.large
                     topMargin: Theme.spacing.medium
@@ -167,55 +196,57 @@ OverlayWindow {
                 Repeater {
                     model: browser.rail
 
-                    delegate: Rectangle {
-                        id: chip
-
+                    delegate: FolderChip {
                         required property var modelData
 
-                        readonly property bool active: browser.here === chip.modelData.path
+                        onChosen: path => browser.here = path
 
-                        Accessible.role: Accessible.RadioButton
-                        Accessible.name: I18n.t("%1, %2 pictures").arg(chip.modelData.name).arg(chip.modelData.count)
-                        Accessible.checkable: true
-                        Accessible.checked: chip.active
-                        Accessible.onPressAction: browser.here = chip.modelData.path
-                        implicitWidth: label.implicitWidth + Theme.spacing.medium * 2
-                        implicitHeight: label.implicitHeight + Theme.spacing.small * 2
-                        radius: Theme.rounding.full
-                        color: chip.active ? Theme.accent : chipHover.hovered ? Theme.glass : Theme.bgTray
-                        scale: chipTap.pressed ? Theme.pressScale : 1
+                        path: modelData.path
+                        title: modelData.name
+                        count: modelData.count
+                        here: browser.here
+                    }
+                }
+            }
 
-                        Behavior on color {
-                            FastColor {}
-                        }
+            Flow {
+                id: subChips
 
-                        Behavior on scale {
-                            PressAnim {}
-                        }
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                    top: chips.bottom
+                    leftMargin: Theme.spacing.large
+                    rightMargin: Theme.spacing.large
+                    topMargin: Theme.spacing.small
+                }
 
-                        Text {
-                            id: label
+                visible: panel.subShift > 0
+                opacity: panel.subShift
+                spacing: Theme.spacing.small
 
-                            anchors.centerIn: parent
-                            textFormat: Text.PlainText
-                            text: chip.modelData.name
-                            color: chip.active ? Theme.accentOn : Theme.fg
-                            font.family: Theme.font
-                            font.pixelSize: Theme.fontSize.smaller
-                            font.weight: Theme.weight.medium
-                        }
+                transform: Translate {
+                    y: (panel.subShift - 1) * Theme.spacing.medium
+                }
 
-                        HoverHandler {
-                            id: chipHover
+                MaterialIcon {
+                    text: "subdirectory_arrow_right"
+                    size: Theme.icon.small
+                    color: Theme.dim
+                }
 
-                            cursorShape: Qt.PointingHandCursor
-                        }
+                Repeater {
+                    model: panel.subKept
 
-                        TapHandler {
-                            id: chipTap
+                    delegate: FolderChip {
+                        required property var modelData
 
-                            onTapped: browser.here = chip.modelData.path
-                        }
+                        onChosen: path => browser.here = path
+
+                        path: modelData.path
+                        title: modelData.name
+                        count: modelData.count
+                        here: browser.here
                     }
                 }
             }
@@ -232,6 +263,7 @@ OverlayWindow {
                     top: chips.bottom
                     bottom: parent.bottom
                     margins: Theme.spacing.large
+                    topMargin: Theme.spacing.large + panel.subShift * (subChips.implicitHeight + Theme.spacing.small)
                 }
 
                 clip: true
@@ -274,9 +306,12 @@ OverlayWindow {
                     required property string modelData
 
                     readonly property bool hovered: browser.hoverPath === cell.modelData
+                    readonly property bool current: cell.modelData === Wallpapers.actual
 
-                    Accessible.role: Accessible.Button
+                    Accessible.role: Accessible.RadioButton
                     Accessible.name: Wallpapers.name(cell.modelData)
+                    Accessible.checkable: true
+                    Accessible.checked: cell.current
                     Accessible.onPressAction: pick()
 
                     function pick(): void {
@@ -320,16 +355,39 @@ OverlayWindow {
 
                         Rectangle {
                             anchors {
-                                left: parent.left
-                                bottom: parent.bottom
-                                margins: Theme.spacing.medium
+                                top: parent.top
+                                right: parent.right
+                                margins: Theme.spacing.small
                             }
 
-                            visible: cell.modelData === Wallpapers.actual
-                            implicitWidth: Theme.picker.dot
-                            implicitHeight: Theme.picker.dot
-                            radius: Theme.picker.dot / 2
+                            implicitWidth: Theme.browser.badge
+                            implicitHeight: Theme.browser.badge
+                            radius: Theme.rounding.full
                             color: Theme.accent
+                            visible: opacity > 0
+                            opacity: cell.current ? 1 : 0
+                            scale: cell.current ? 1 : Theme.browser.badgeFrom
+
+                            Behavior on opacity {
+                                NumberAnimation {
+                                    duration: Theme.duration.expressiveFastEffects
+                                }
+                            }
+
+                            Behavior on scale {
+                                NumberAnimation {
+                                    duration: Theme.duration.expressiveFastEffects
+                                    easing.type: Easing.BezierSpline
+                                    easing.bezierCurve: cell.current ? Theme.curve.emphasizedDecel : Theme.curve.emphasizedAccel
+                                }
+                            }
+
+                            MaterialIcon {
+                                anchors.centerIn: parent
+                                text: "check"
+                                size: Theme.icon.tiny
+                                color: Theme.accentOn
+                            }
                         }
                     }
 
@@ -345,7 +403,7 @@ OverlayWindow {
 
                         textFormat: Text.PlainText
                         text: Wallpapers.name(cell.modelData)
-                        color: cell.hovered ? Theme.fg : Theme.dim
+                        color: cell.current ? Theme.accentText : cell.hovered ? Theme.fg : Theme.dim
                         font.family: Theme.font
                         font.pixelSize: Theme.fontSize.smaller
                         elide: Text.ElideRight
