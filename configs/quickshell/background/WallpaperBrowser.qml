@@ -5,6 +5,7 @@ import Quickshell.Widgets
 import QtQuick
 import QtQuick.Layouts
 import ".."
+import "../bar"
 
 // The mouse-first wallpaper chooser from the desktop menu; Alt+W keeps the carousel.
 OverlayWindow {
@@ -30,7 +31,6 @@ OverlayWindow {
             count: Wallpapers.list.length
         }
     ].concat(Wallpapers.folders)
-    readonly property string hereName: browser.here === "" ? I18n.t("All") : browser.here.slice(browser.here.lastIndexOf("/") + 1)
 
     // On the flag, not on unmapping, so it does not wait for the exit.
     onShownChanged: {
@@ -49,7 +49,6 @@ OverlayWindow {
 
     shown: Wallpapers.browserOpen
     name: "wallpaper-browser"
-    scrim: Theme.browser.scrim
 
     MouseArea {
         onClicked: Wallpapers.browserOpen = false
@@ -67,14 +66,34 @@ OverlayWindow {
         Surface {
             id: panel
 
-            anchors.centerIn: parent
-            width: Math.round(browser.width * Theme.browser.share)
-            height: Math.round(browser.height * Theme.browser.share)
+            // Eased apart from reveal, whose opening curve overshoots.
+            property real slide: browser.shown ? 1 : 0
+
+            anchors {
+                top: parent.top
+                bottom: parent.bottom
+                right: parent.right
+                topMargin: Theme.barHeight
+                margins: Theme.spacing.large
+            }
+
+            width: Theme.browser.drawerWidth
             radius: Theme.rounding.extraLarge
             opacity: Math.min(1, browser.reveal)
-            scale: Theme.popScale + (1 - Theme.popScale) * browser.reveal
 
-            // Swallows clicks, so only the empty desktop around the panel closes it.
+            transform: Translate {
+                x: (1 - panel.slide) * panel.width * Theme.browser.slideShare
+            }
+
+            Behavior on slide {
+                NumberAnimation {
+                    duration: browser.shown ? Theme.duration.expressiveDefaultSpatial : Theme.duration.expressiveFastSpatial
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: browser.shown ? Theme.curve.emphasizedDecel : Theme.curve.emphasizedAccel
+                }
+            }
+
+            // Swallows clicks, so only the empty desktop beside the drawer closes it.
             MouseArea {
                 anchors.fill: parent
             }
@@ -92,113 +111,111 @@ OverlayWindow {
                 spacing: Theme.spacing.medium
 
                 Text {
+                    Layout.fillWidth: true
                     textFormat: Text.PlainText
-                    text: I18n.t("Wallpapers")
+                    text: I18n.t("Wallpaper")
                     color: Theme.fg
                     font.family: Theme.fontDisplay
                     font.pixelSize: Theme.fontSize.extraLarge
                     font.bold: true
-                }
-
-                Text {
-                    Layout.fillWidth: true
-                    textFormat: Text.PlainText
-                    text: browser.hereName
-                    color: Theme.accentText
-                    font.family: Theme.font
-                    font.pixelSize: Theme.fontSize.normal
-                    font.weight: Theme.weight.medium
                     elide: Text.ElideRight
                 }
 
-                Action {
-                    onClicked: Wallpapers.setFolder(browser.here)
+                BarButton {
+                    readonly property bool here: Wallpapers.folder === browser.here
 
-                    primary: true
+                    onClicked: {
+                        if (!here)
+                            Wallpapers.setFolder(browser.here);
+                    }
+
                     icon: "shuffle"
-                    label: Wallpapers.folder === browser.here ? I18n.t("Shuffling from here") : I18n.t("Shuffle from here")
-                    enabled: Wallpapers.folder !== browser.here
+                    label: here ? "Shuffling from here" : "Shuffle from here"
+                    baseColor: here ? Theme.dim : Theme.accentText
+                    hoverColor: here ? Theme.dim : Theme.accent2
                 }
 
-                Action {
+                BarButton {
                     onClicked: Wallpapers.setRandom()
 
                     icon: "casino"
-                    label: I18n.t("Random")
+                    label: "Random"
+                }
+
+                BarButton {
+                    onClicked: Wallpapers.browserOpen = false
+
+                    icon: "close"
+                    label: "Close"
                 }
             }
 
-            ListView {
-                id: rail
+            Flow {
+                id: chips
 
                 anchors {
                     left: parent.left
+                    right: parent.right
                     top: bar.bottom
-                    bottom: parent.bottom
-                    margins: Theme.spacing.large
+                    leftMargin: Theme.spacing.large
+                    rightMargin: Theme.spacing.large
+                    topMargin: Theme.spacing.medium
                 }
 
-                width: Theme.browser.railWidth
-                clip: true
-                spacing: Theme.spacing.extraSmall
-                boundsBehavior: Flickable.StopAtBounds
-                model: ScriptModel {
-                    values: browser.rail
-                }
+                spacing: Theme.spacing.small
 
-                delegate: FlyoutRow {
-                    id: row
+                Repeater {
+                    model: browser.rail
 
-                    required property var modelData
+                    delegate: Rectangle {
+                        id: chip
 
-                    Accessible.role: Accessible.RadioButton
-                    Accessible.name: I18n.t("%1, %2 pictures").arg(row.modelData.name).arg(row.modelData.count)
-                    Accessible.checkable: true
-                    Accessible.checked: row.active
-                    width: ListView.view.width
-                    active: browser.here === row.modelData.path
-                    scale: tap.pressed ? Theme.pressScale : 1
+                        required property var modelData
 
-                    Behavior on scale {
-                        PressAnim {}
-                    }
+                        readonly property bool active: browser.here === chip.modelData.path
 
-                    RowLayout {
-                        anchors {
-                            fill: parent
-                            leftMargin: Theme.spacing.medium + row.modelData.depth * Theme.browser.indent
-                            rightMargin: Theme.spacing.medium
+                        Accessible.role: Accessible.RadioButton
+                        Accessible.name: I18n.t("%1, %2 pictures").arg(chip.modelData.name).arg(chip.modelData.count)
+                        Accessible.checkable: true
+                        Accessible.checked: chip.active
+                        Accessible.onPressAction: browser.here = chip.modelData.path
+                        implicitWidth: label.implicitWidth + Theme.spacing.medium * 2
+                        implicitHeight: label.implicitHeight + Theme.spacing.small * 2
+                        radius: Theme.rounding.full
+                        color: chip.active ? Theme.accent : chipHover.hovered ? Theme.glass : Theme.bgTray
+                        scale: chipTap.pressed ? Theme.pressScale : 1
+
+                        Behavior on color {
+                            FastColor {}
                         }
 
-                        spacing: Theme.spacing.small
-
-                        Text {
-                            Layout.fillWidth: true
-                            textFormat: Text.PlainText
-                            text: row.modelData.name
-                            color: row.ink
-                            font.family: Theme.font
-                            font.pixelSize: Theme.fontSize.normal
-                            elide: Text.ElideRight
+                        Behavior on scale {
+                            PressAnim {}
                         }
 
                         Text {
+                            id: label
+
+                            anchors.centerIn: parent
                             textFormat: Text.PlainText
-                            text: row.modelData.count
-                            color: row.inkDim
+                            text: chip.modelData.name
+                            color: chip.active ? Theme.accentOn : Theme.fg
                             font.family: Theme.font
                             font.pixelSize: Theme.fontSize.smaller
-
-                            font.features: ({
-                                    tnum: 1
-                                })
+                            font.weight: Theme.weight.medium
                         }
-                    }
 
-                    TapHandler {
-                        id: tap
+                        HoverHandler {
+                            id: chipHover
 
-                        onTapped: browser.here = row.modelData.path
+                            cursorShape: Qt.PointingHandCursor
+                        }
+
+                        TapHandler {
+                            id: chipTap
+
+                            onTapped: browser.here = chip.modelData.path
+                        }
                     }
                 }
             }
@@ -206,19 +223,20 @@ OverlayWindow {
             GridView {
                 id: grid
 
-                readonly property int columns: Math.max(1, Math.floor(width / Theme.browser.cellWidth))
+                readonly property int thumbWidth: grid.cellWidth - Theme.spacing.small * 2
+                readonly property int thumbHeight: Math.round(grid.thumbWidth * Theme.browser.thumbRatio)
 
                 anchors {
-                    left: rail.right
+                    left: parent.left
                     right: parent.right
-                    top: bar.bottom
+                    top: chips.bottom
                     bottom: parent.bottom
                     margins: Theme.spacing.large
                 }
 
                 clip: true
-                cellWidth: Math.floor(width / columns)
-                cellHeight: Math.round(cellWidth * Theme.browser.cellHeight / Theme.browser.cellWidth)
+                cellWidth: Math.floor(width / Theme.browser.columns)
+                cellHeight: grid.thumbHeight + Theme.browser.nameBand + Theme.spacing.small * 2
                 boundsBehavior: Flickable.StopAtBounds
                 model: ScriptModel {
                     values: browser.pictures
@@ -272,16 +290,23 @@ OverlayWindow {
 
                     ClippingRectangle {
                         anchors {
-                            fill: parent
-                            margins: Theme.spacing.small
+                            top: parent.top
+                            horizontalCenter: parent.horizontalCenter
+                            topMargin: Theme.spacing.small
                         }
 
+                        width: grid.thumbWidth
+                        height: grid.thumbHeight
                         radius: Theme.rounding.large
                         color: Theme.bgTray
                         scale: press.pressed ? Theme.pressScale : cell.hovered ? Theme.browser.hoverScale : 1
 
                         Behavior on scale {
-                            PressAnim {}
+                            NumberAnimation {
+                                duration: Theme.duration.expressiveFastEffects
+                                easing.type: Easing.BezierSpline
+                                easing.bezierCurve: Theme.curve.emphasizedDecel
+                            }
                         }
 
                         Image {
@@ -289,8 +314,8 @@ OverlayWindow {
                             source: "file://" + cell.modelData
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: true
-                            sourceSize.width: grid.cellWidth
-                            sourceSize.height: grid.cellHeight
+                            sourceSize.width: grid.thumbWidth
+                            sourceSize.height: grid.thumbHeight
                         }
 
                         Rectangle {
@@ -304,7 +329,29 @@ OverlayWindow {
                             implicitWidth: Theme.picker.dot
                             implicitHeight: Theme.picker.dot
                             radius: Theme.picker.dot / 2
-                            color: Theme.accentText
+                            color: Theme.accent
+                        }
+                    }
+
+                    Text {
+                        anchors {
+                            left: parent.left
+                            right: parent.right
+                            bottom: parent.bottom
+                            leftMargin: Theme.spacing.small
+                            rightMargin: Theme.spacing.small
+                            bottomMargin: Theme.spacing.small
+                        }
+
+                        textFormat: Text.PlainText
+                        text: Wallpapers.name(cell.modelData)
+                        color: cell.hovered ? Theme.fg : Theme.dim
+                        font.family: Theme.font
+                        font.pixelSize: Theme.fontSize.smaller
+                        elide: Text.ElideRight
+
+                        Behavior on color {
+                            FastColor {}
                         }
                     }
 

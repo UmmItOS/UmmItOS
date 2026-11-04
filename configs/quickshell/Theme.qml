@@ -567,16 +567,16 @@ Singleton {
     }
 
     readonly property QtObject browser: QtObject {
-        // The panel's share of the screen on each axis.
-        readonly property real share: 0.6
-        readonly property int railWidth: 240
-        readonly property int indent: 16
-        // The thumbnail size a column aims for; the grid stretches it to fill the width.
-        readonly property int cellWidth: 220
-        readonly property int cellHeight: 124
+        // The drawer on the right edge; the desktop beside it shows the hover preview.
+        readonly property int drawerWidth: 440
+        // How far of its own width the drawer travels as it arrives.
+        readonly property real slideShare: 0.3
+        readonly property int columns: 2
+        // A thumbnail's height over its width (16:10).
+        readonly property real thumbRatio: 0.625
+        // The picture's name under a thumbnail.
+        readonly property int nameBand: 24
         readonly property real hoverScale: 1.04
-        // Light, so the desktop behind still shows the hovered wallpaper.
-        readonly property real scrim: 0.12
     }
 
     readonly property QtObject charge: QtObject {
