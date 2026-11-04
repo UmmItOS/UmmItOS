@@ -25,6 +25,15 @@ Flyout {
         property bool ticked: false
         signal triggered
 
+        // FlyoutRow's accessibility handlers call this override too.
+        function activate(): void {
+            if (!entry.enabled || !entry.visible)
+                return;
+            entry.triggered();
+            if (!entry.checkable)
+                root.dismiss();
+        }
+
         Accessible.role: entry.checkable ? Accessible.CheckBox : Accessible.MenuItem
         Accessible.name: entry.label
         Accessible.checkable: entry.checkable
@@ -65,13 +74,14 @@ Flyout {
                 visible: entry.checkable
                 enabled: false
                 checked: entry.ticked
+                Accessible.ignored: true
             }
         }
 
         TapHandler {
             id: tap
 
-            onTapped: entry.triggered()
+            onTapped: entry.activate()
         }
     }
 
