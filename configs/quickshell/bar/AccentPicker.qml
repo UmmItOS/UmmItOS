@@ -43,22 +43,22 @@ BarButton {
         }
     }
 
-    component Swatch: Rectangle {
+    component Swatch: FlyoutRow {
         id: swatch
 
         property string colour
         // A colour in both rows is ticked once, in the used row.
-        property bool tick: Qt.colorEqual(Theme.accent, colour)
+        property bool tick: Qt.colorEqual(Theme.accent, swatch.colour)
 
+        Accessible.role: Accessible.RadioButton
+        Accessible.name: I18n.t("Accent colour") + " " + swatch.colour
+        Accessible.checkable: true
+        Accessible.checked: Qt.colorEqual(Theme.accent, swatch.colour)
         implicitWidth: root.cell
         implicitHeight: Theme.control.pill
         radius: Theme.rounding.full
-        color: hover.hovered ? Qt.lighter(colour, Theme.bar.swatchHover) : colour
+        color: "transparent"
         scale: tap.pressed ? Theme.pressScale : 1
-
-        Behavior on color {
-            FastColor {}
-        }
 
         Behavior on scale {
             NumberAnimation {
@@ -68,18 +68,36 @@ BarButton {
             }
         }
 
+        Rectangle {
+            anchors.fill: parent
+            radius: swatch.radius
+            color: swatch.hovered ? Qt.lighter(swatch.colour, Theme.bar.swatchHover) : swatch.colour
+            z: -1
+
+            Behavior on color {
+                FastColor {}
+            }
+
+            // Keep the inherited focus bar readable against any saved colour.
+            Rectangle {
+                width: Theme.spacing.extraSmall * 3
+                height: parent.height
+                radius: Theme.rounding.full
+                color: Qt.alpha(Theme.bg, 1)
+                opacity: swatch.keyboardFocused ? 1 : 0
+
+                Behavior on opacity {
+                    FastFade {}
+                }
+            }
+        }
+
         MaterialIcon {
             anchors.centerIn: parent
             visible: swatch.tick
             text: "check"
             color: Theme.accentOn
             size: Theme.icon.small
-        }
-
-        HoverHandler {
-            id: hover
-
-            cursorShape: Qt.PointingHandCursor
         }
 
         TapHandler {
@@ -118,20 +136,18 @@ BarButton {
                 values: root.used
             }
 
-            delegate: Column {
+            delegate: Swatch {
                 id: entry
 
                 required property string modelData
                 required property int index
 
-                spacing: Theme.spacing.extraSmall
-
-                Swatch {
-                    colour: entry.modelData
-                }
+                colour: entry.modelData
 
                 // The longest one reads first: bright and bold, the rest dim.
                 Text {
+                    anchors.top: parent.bottom
+                    anchors.topMargin: Theme.spacing.extraSmall
                     width: root.cell
                     horizontalAlignment: Text.AlignHCenter
                     elide: Text.ElideRight

@@ -251,24 +251,23 @@ RowLayout {
                 values: root.devices.length > 1 ? root.devices : []
             }
 
-            Rectangle {
+            FlyoutRow {
                 id: device
 
                 required property PwNode modelData
 
                 readonly property bool current: device.modelData === root.sink
 
+                Accessible.role: Accessible.RadioButton
+                Accessible.name: device.modelData.nickname || device.modelData.description || device.modelData.name
+                Accessible.checkable: true
+                Accessible.checked: device.current
                 Layout.fillWidth: true
                 implicitHeight: Theme.control.button
-                radius: Theme.rounding.large
-                color: deviceHover.hovered ? Theme.bgTray : "transparent"
+                scale: deviceMouse.pressed ? Theme.pressScale : 1
 
-                Behavior on color {
-                    FastColor {}
-                }
-
-                HoverHandler {
-                    id: deviceHover
+                Behavior on scale {
+                    PressAnim {}
                 }
 
                 RowLayout {
@@ -303,6 +302,8 @@ RowLayout {
                 }
 
                 MouseArea {
+                    id: deviceMouse
+
                     onClicked: Pipewire.preferredDefaultAudioSink = device.modelData
 
                     anchors.fill: parent
