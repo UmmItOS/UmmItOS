@@ -187,6 +187,9 @@ Singleton {
 
     // However it closes, a change not kept is undone.
     onOpenChanged: {
+        // "This screen" is the one in use, not the first in hyprctl's list, which can be one nobody sees.
+        if (root.open && !root.confirming && Hyprland.focusedMonitor?.name)
+            root.primary = Hyprland.focusedMonitor.name;
         if (root.open)
             root.refresh();
         else

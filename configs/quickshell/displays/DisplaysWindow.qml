@@ -79,18 +79,11 @@ OverlayWindow {
     // After an apply, or once the outputs are first read, the selection follows what is on.
     Connections {
         function onConfirmingChanged(): void {
-            Qt.callLater(() => {
-                if (!win.shown)
-                    return;
-                if (Displays.confirming) {
-                    keep.forceActiveFocus(Qt.TabFocusReason);
-                    confirmation.Accessible.announce(confirmation.text);
-                } else {
-                    keep.focus = false;
-                    revert.focus = false;
-                    scope.forceActiveFocus();
-                }
-            });
+            if (!Displays.confirming && win.shown) {
+                keep.focus = false;
+                revert.focus = false;
+                scope.forceActiveFocus();
+            }
         }
 
         function onModeChanged(): void {
@@ -411,6 +404,18 @@ OverlayWindow {
 
                 // Its space opens only while a change waits to be kept.
                 Item {
+                    id: confirmRow
+
+                    // Wait for the fade's first frame before focusing or announcing the row.
+                    readonly property bool ready: Displays.confirming && visible
+
+                    onReadyChanged: if (ready) Qt.callLater(() => {
+                        if (confirmRow.ready && win.shown) {
+                            keep.forceActiveFocus(Qt.TabFocusReason);
+                            confirmation.Accessible.announce(confirmation.text);
+                        }
+                    })
+
                     Layout.fillWidth: true
                     Layout.preferredHeight: Displays.confirming ? ask.implicitHeight : 0
                     visible: opacity > 0
