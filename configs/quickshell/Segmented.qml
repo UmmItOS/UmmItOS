@@ -21,16 +21,16 @@ Item {
         Qt.callLater(() => settled = true)
 
     implicitHeight: Theme.control.field
-    opacity: root.enabled ? 1 : Theme.disabledOpacity
-
-    Behavior on opacity {
-        FastFade {}
-    }
 
     Rectangle {
         anchors.fill: parent
         radius: Theme.rounding.full
         color: Theme.bgTray
+        opacity: root.enabled ? 1 : Theme.disabledOpacity
+
+        Behavior on opacity {
+            FastFade {}
+        }
     }
 
     Rectangle {
@@ -38,6 +38,7 @@ Item {
         height: parent.height
         radius: Theme.rounding.full
         color: Theme.accent
+        opacity: root.enabled ? 1 : Theme.disabledOpacity
         visible: root.values.indexOf(root.current) >= 0
 
         transform: Translate {
@@ -52,6 +53,10 @@ Item {
                     easing.bezierCurve: Theme.curve.emphasized
                 }
             }
+        }
+
+        Behavior on opacity {
+            FastFade {}
         }
     }
 
@@ -74,7 +79,7 @@ Item {
                     anchors.fill: parent
                     radius: Theme.rounding.full
                     color: Theme.glass
-                    visible: choiceHover.hovered && !choice.picked
+                    visible: root.enabled && choiceHover.hovered && !choice.picked
                 }
 
                 Text {
@@ -82,7 +87,7 @@ Item {
                     scale: choiceTap.pressed ? Theme.popScale : 1
                     textFormat: Text.PlainText
                     text: root.labels[choice.index]
-                    color: choice.picked ? Theme.accentOn : choiceHover.hovered ? Theme.fg : Theme.dim
+                    color: !root.enabled ? Theme.dim : choice.picked ? Theme.accentOn : choiceHover.hovered ? Theme.fg : Theme.dim
 
                     font {
                         family: Theme.font

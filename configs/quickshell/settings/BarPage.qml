@@ -50,17 +50,21 @@ ColumnLayout {
         title: I18n.t("Folder to watch")
         hint: page.rejected ? I18n.t("Use a full path, like ~/Projects") : Settings.watchMissing ? I18n.t("That folder does not exist") : I18n.t("Type a folder, then Enter. Empty watches the shell's own folder.")
         warn: page.rejected || Settings.watchMissing
-        opacity: Settings.watchShow ? 1 : Theme.disabledOpacity
         enabled: Settings.watchShow
 
-        Behavior on opacity {
-            FastFade {}
-        }
-
-        Rectangle {
+        Item {
             anchors.fill: parent
-            radius: Theme.rounding.full
-            color: Theme.bgTray
+
+            Rectangle {
+                anchors.fill: parent
+                radius: Theme.rounding.full
+                color: Theme.bgTray
+                opacity: Settings.watchShow ? 1 : Theme.disabledOpacity
+
+                Behavior on opacity {
+                    FastFade {}
+                }
+            }
 
             TextInput {
                 id: folder

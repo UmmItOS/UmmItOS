@@ -99,14 +99,14 @@ Scope {
                 }
             }
 
-            // The weather card's material and type, so it reads as one of the desktop widgets.
+            // A heavy scrim keeps the small label readable over bright wallpapers.
             Rectangle {
                 id: pill
 
                 width: row.implicitWidth + 2 * Theme.spacing.large
                 height: row.implicitHeight + 2 * Theme.spacing.medium
                 radius: Theme.rounding.extraLarge
-                color: Theme.scrim(Theme.panelTint)
+                color: Theme.scrim(Theme.shade.heavy)
                 opacity: win.shown
                 layer.enabled: win.shown < 1
 
