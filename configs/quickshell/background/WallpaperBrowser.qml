@@ -17,8 +17,9 @@ OverlayWindow {
     property string hoverPath: ""
 
     readonly property var pictures: {
-        const base = Wallpapers.dir + "/" + browser.here;
-        const all = browser.here === "" ? Wallpapers.list : Wallpapers.list.filter(p => p.slice(0, p.lastIndexOf("/")) === base);
+        // The whole subtree, as Shuffle draws from it, so the grid, the count and Shuffle agree.
+        const base = Wallpapers.dir + "/" + browser.here + "/";
+        const all = browser.here === "" ? Wallpapers.list : Wallpapers.list.filter(p => p.startsWith(base));
         return [...all].sort((a, b) => a.localeCompare(b, undefined, {
                 numeric: true
             }));
