@@ -636,5 +636,10 @@
     "Shuffle %1": "隨機挑選 %1",
     "1 picture · hover to preview, click to set": "1 張圖片 · 移上去預覽，點一下即可設定",
     "%1 pictures · hover to preview, click to set": "%1 張圖片 · 移上去預覽，點一下即可設定",
-    "%1, %2 pictures": "%1，%2 張圖片"
+    "%1, %2 pictures": "%1，%2 張圖片",
+    "Warn about heavy processes": "重負載程序提醒",
+    "When one process keeps the CPU above %1% or the GPU above %2% for %3 seconds, the bar and a notice say so. It never kills anything.": "當單一程式連續 %3 秒使用超過 %1% 的 CPU 或 %2% 的 GPU，狀態列與通知會提醒你，不會結束任何程式。",
+    "%1 is using a lot of %2": "%1 正在大量使用 %2",
+    "%1% of the machine for %2 s.": "佔用整台機器 %1%，已持續 %2 秒。",
+    "Heavy process": "重負載程式"
 }

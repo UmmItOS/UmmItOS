@@ -202,6 +202,13 @@ Singleton {
         readonly property int interval: 500
     }
 
+    // The heavy process warning (services/ProcWatch.qml): % of the whole machine, and samples in a row.
+    readonly property QtObject hog: QtObject {
+        readonly property int cpu: 50
+        readonly property int gpu: 80
+        readonly property int samples: 3
+    }
+
     // The lecture pen (draw/).
     readonly property QtObject draw: QtObject {
         readonly property var widths: [3, 6, 12]
@@ -615,6 +622,8 @@ Singleton {
     readonly property QtObject duration: QtObject {
         // How often the time on the current accent is counted and saved.
         readonly property int accentTick: 60000
+        // How often the heavy process sampler runs.
+        readonly property int hogPoll: 4000
         readonly property int small: 200
         readonly property int normal: 400
         readonly property int extraLarge: 1000

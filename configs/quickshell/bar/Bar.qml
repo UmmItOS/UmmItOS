@@ -194,6 +194,10 @@ PanelWindow {
             Layout.alignment: Qt.AlignVCenter
         }
 
+        HogWatch {
+            Layout.alignment: Qt.AlignVCenter
+        }
+
         Item {
             Layout.fillWidth: true
         }
