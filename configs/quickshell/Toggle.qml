@@ -33,7 +33,8 @@ Rectangle {
     implicitWidth: root.knob * 2 + root.inset * 2
     implicitHeight: root.knob + root.inset * 2
     radius: height / 2
-    color: root.keyboardFocusVisible ? Theme.accentText : root.checked ? Theme.accent : Theme.bgTray
+    // Focus lightens the track but keeps on and off apart.
+    color: root.checked ? (root.keyboardFocusVisible ? Theme.accentText : Theme.accent) : (root.keyboardFocusVisible ? Theme.dim : Theme.bgTray)
 
     scale: press.pressed ? Theme.pressScale : 1
 
