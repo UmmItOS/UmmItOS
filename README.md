@@ -9,7 +9,7 @@ UmmItOS is an Arch Linux + Hyprland desktop, packaged as a terminal installer an
 
 ## Documentation
 
-Installing, configuring and updating UmmItOS are covered on the official docs: **[docs.ummit.dev](https://docs.ummit.dev)**.
+Everything you need to install, update and use UmmItOS is in this README. For the design, read [CLAUDE.md](./CLAUDE.md).
 
 ## Requirements
 
