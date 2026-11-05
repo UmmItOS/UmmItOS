@@ -23,9 +23,6 @@ Singleton {
         const list = [];
         for (const line of lines) {
             const [pid, cpu, gpu, name] = line.split("\t");
-            // The compositor draws everything else's frames, so its GPU time is never the culprit.
-            if (name === "Hyprland")
-                continue;
             const c = Number(cpu), g = Number(gpu);
             const kind = g >= Theme.hog.gpu && g >= c ? "GPU" : c >= Theme.hog.cpu ? "CPU" : "";
             if (kind === "")
@@ -60,10 +57,12 @@ Singleton {
     }
 
     Timer {
-        onTriggered: sampler.running = true
+        // Not gated on the sampler: a running flag that drops and rises would fire triggeredOnStart back to back.
+        onTriggered: if (!sampler.running)
+            sampler.running = true
 
         interval: Theme.duration.hogPoll
-        running: Settings.hogWarn && !sampler.running
+        running: Settings.hogWarn
         repeat: true
         triggeredOnStart: true
     }

@@ -26,10 +26,12 @@ t1=$(date +%s%N)
 
 printf '%s\n--\n%s\n' "$a" "$b" | awk -v ns="$((t1 - t0))" -v cpus="$(nproc)" -v hz="$(getconf CLK_TCK)" '
     $1 == "--" { second = 1; next }
-    !second { v[$1, $2] = $3; next }
-    { d[$1, $2] = $3 - v[$1, $2]; ids[$2] = 1 }
+    # A process can hold several GPU clients, so their times add up; one seen only in the second read is skipped.
+    !second { v[$1, $2] += $3; next }
+    ($1, $2) in v { d[$1, $2] += $3; ids[$2] = 1 }
     END {
         for (pid in ids) {
+            d["c", pid] -= v["c", pid]; d["g", pid] -= v["g", pid]
             cpu = d["c", pid] * 100 / (ns / 1e9 * hz * cpus)
             gpu = d["g", pid] * 100 / ns
             if (gpu > 100) gpu = 100
@@ -40,4 +42,4 @@ printf '%s\n--\n%s\n' "$a" "$b" | awk -v ns="$((t1 - t0))" -v cpus="$(nproc)" -v
             printf "%s\t%.0f\t%.0f\t%s\t%.2f\n", pid, cpu, gpu, name, (cpu > gpu ? cpu : gpu)
         }
     }
-' | sort -t "$(printf '\t')" -k5,5nr | head -n 5 | cut -f1-4
+' | sort -t "$(printf '\t')" -k5,5nr | grep -v "$(printf '\t')Hyprland$(printf '\t')" | head -n 5 | cut -f1-4
