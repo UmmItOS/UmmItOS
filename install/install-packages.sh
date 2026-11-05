@@ -157,7 +157,7 @@ install_all_packages() {
     retire_old_notifier
 }
 
-# install.sh and install-menu.sh source this file and call the functions themselves
+# install-menu.sh sources this file and call the functions themselves
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     install_all_packages
 fi

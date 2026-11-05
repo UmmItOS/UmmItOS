@@ -73,14 +73,6 @@ command_exists() {
 }
 
 # Function to prompt for installation confirmation
-prompt_installation() {
-    if prompt_yna ":: Do you want to continue with the installation?"; then
-        return 0
-    else
-        echo "${COLOR_YELLOW}:: Installation aborted.${COLOR_RESET}"
-        exit 0
-    fi
-}
 
 # Function to print section headers
 print_header() {

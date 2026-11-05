@@ -1,7 +1,6 @@
 ---
 paths:
   - "setup.sh"
-  - "install.sh"
   - "install-menu.sh"
   - "post-install.sh"
   - "install/**"
@@ -16,14 +15,14 @@ paths:
 
 | Path | Purpose |
 |------|---------|
-| `setup.sh` | Bootstrap: installs `git`/`paru` if missing, clones the repo, runs `install.sh` |
+| `setup.sh` | Bootstrap: installs `git`/`paru` if missing, clones the repo, runs `install-menu.sh` |
 | `install/` | Installer sub-steps and plain-text package lists |
 | `lib/` | Shared bash library (`common.sh`, `display-utils.sh`) |
 | `configs/` | Dotfiles copied to `~/.config/` (and `configs/.zshrc` to `~/.zshrc`) |
 | `script/` | Helpers for cliphist, the idle lock, hyprpicker, updates and screen recording; copied to `~/script` |
 | `.wallpaper/` | Git submodule (`UmmItOS/wallpaper`), copied to `~/.wallpaper` |
 
-The order matters: `setup.sh` → `install.sh` → `install/install-packages.sh` → `install/oh-my-zsh.sh` → `install/copy-config.sh` → `install/setup-dm.sh` → reboot → `post-install.sh --start-config`.
+The order matters: `setup.sh` → `install-menu.sh` → `install/install-packages.sh` → `install/oh-my-zsh.sh` → `install/copy-config.sh` → `install/setup-dm.sh` → reboot → `post-install.sh --start-config`.
 
 ## Login screen (greetd)
 
@@ -48,8 +47,8 @@ It must run inside a Hyprland session (it calls `hyprctl`) and needs `jq`. Befor
 - `~/.config/hypr/hyprland.lua`: the first `hl.monitor(…)` line. Keep it on one line.
 - `~/.config/hypr/hyprland/env.lua`: the `hl.env("HYPRSHOT_DIR", …)` line. Keep it on one line.
 
-## Two installer entry points, one implementation
+## One installer entry point
 
-Both call `run_installer` in `lib/install-flow.sh`: a colourful terminal checklist of steps (`step_main`, `step_gpu`, `step_laptop`, `step_omz`, `step_dots`, `step_dm`), each run in turn on the normal screen (they ask questions), then a results screen. `install-menu.sh` shows the checklist; `install.sh` passes `--all`, which skips it after one question. The screens are `script/misc/_tui.sh`, the same library `script/misc/update.sh` and `post-install.sh` use, so a change to the look is made once. A failed step skips the rest (`stop_on_fail`), since a login screen without its packages would lock you out. `install/install-packages.sh` still only runs `install_all_packages` when executed directly; the flow calls its functions. Change package handling there only.
+`install-menu.sh` calls `run_installer` in `lib/install-flow.sh`: a colourful terminal checklist of steps (`step_main`, `step_gpu`, `step_laptop`, `step_omz`, `step_dots`, `step_dm`), each run in turn on the normal screen (they ask questions), then a results screen. There is no CLI mode. The screens are `script/misc/_tui.sh`, the same library `script/misc/update.sh` and `post-install.sh` use, so a change to the look is made once. A failed step skips the rest (`stop_on_fail`), since a login screen without its packages would lock you out. `install/install-packages.sh` still only runs `install_all_packages` when executed directly; the flow calls its functions. Change package handling there only.
 
 **Test an installer with `UMMITOS_DRY_RUN=1`**: `tui_run` prints each step's name and runs nothing. `post-install.sh` has no dry run: test it with a fake `HOME` and a stub `hyprctl` first in `PATH`. Never run a real step on the machine you are working on to see what it does.

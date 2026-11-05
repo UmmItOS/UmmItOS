@@ -13,7 +13,7 @@ install_oh_my_zsh() {
     echo "${COLOR_BLUE}:: Checking for Oh My Zsh...${COLOR_RESET}"
     if ! command_exists zsh; then
         echo "${COLOR_DARK_RED}:: zsh is not installed.${COLOR_RESET}"
-        echo "${COLOR_YELLOW}:: Install it by sudo pacman -S zsh or run the install.sh script again.${COLOR_RESET}"
+        echo "${COLOR_YELLOW}:: Install it by sudo pacman -S zsh or run install-menu.sh again.${COLOR_RESET}"
         return 1
     fi
 

@@ -88,9 +88,9 @@ if prompt_yna "Do you want to clone the repository?"; then
         echo -e "${COLOR_GREEN}[+] Repository cloned successfully.${COLOR_RESET}"
         cd "$repo" || exit 1
         if prompt_yna "Do you want to run the install script?"; then
-            if [[ -f install.sh ]]; then
+            if [[ -f install-menu.sh ]]; then
                 echo -e "${COLOR_GREEN}[+] Running install script...${COLOR_RESET}"
-                bash install.sh
+                bash install-menu.sh
             else
                 echo -e "${COLOR_GREY}[~] No install script found.${COLOR_RESET}"
             fi

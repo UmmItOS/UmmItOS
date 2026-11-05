@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC1091
-# The installer's screens and steps, shared by install.sh and install-menu.sh:
+# The installer's screens and steps, run by install-menu.sh:
 # a checklist of steps, each run in turn, then how it went. Style:
 # https://style.ysap.sh/
 
@@ -95,12 +95,7 @@ countdown_reboot() {
 	systemctl reboot
 }
 
-# run_installer [--all]: with --all the checklist is skipped and everything
-# applicable is installed after one question.
 run_installer() {
-	local all=0
-	[[ $1 == --all ]] && all=1
-
 	if ((EUID == 0)); then
 		echo "${COLOR_DARK_RED}:: Do not run the installer as root, like you would not run Hyprland as root. Use your normal user.${COLOR_RESET}"
 		exit 1
@@ -123,19 +118,14 @@ run_installer() {
 	tui_start
 
 	while true; do
-		if ((all)); then
-			clear
-			prompt_installation || exit 0
-		else
-			tui_enter
-			tui_select || exit 0
-		fi
+		tui_enter
+		tui_select || exit 0
 		tui_run
 		tui_wait
 		tui_results
 		case $chosen in
 			0) countdown_reboot ;;
-			1) all=0 ;;
+			1) ;;
 			*) exit 0 ;;
 		esac
 	done

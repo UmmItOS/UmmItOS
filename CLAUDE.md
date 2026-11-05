@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 UmmItOS is Arch Linux plus Hyprland, shipped as a bash installer and a dotfiles bundle. It is billed as the "first Hong Kong Linux distribution", but the OS underneath is Arch; this repo is the installer and the config bundle ([UmmItOS/UmmItOS](https://github.com/UmmItOS/UmmItOS)). It has two halves:
 
-- **Installer** (bash): `setup.sh` → `install.sh` / `install-menu.sh` → `install/*.sh`, with shared helpers in `lib/common.sh` (`is_laptop`, `has_amdgpu`, `enable_bluetooth`, `prompt_yna`, `backup_file`, and so on).
+- **Installer** (bash): `setup.sh` → `install-menu.sh` (the TUI, the only entry point) → `install/*.sh`, with shared helpers in `lib/common.sh` (`is_laptop`, `has_amdgpu`, `enable_bluetooth`, `prompt_yna`, `backup_file`, and so on).
 - **Desktop shell**: `configs/quickshell/`, a QML application for Quickshell 0.3.2. It draws the bar (its tool cluster folds behind a » toggle at the start of the pill, kept by the `Toolbox` singleton across restarts), notifications, wallpaper and its picker, the launcher and clipboard, the dashboard, the session menu, the volume/brightness OSD (which also shows each input method switch: fcitx5's glyph, 速 or A, the moment the key is pressed), the Wi-Fi, Bluetooth, audio and accent flyouts, an Alt+Tab switcher, a keybind cheat sheet, the screenshot tool, the screen recording dialog, a lecture pen (Super+D: draw and zoom over a frozen screen), a QR scanner (Super+Shift+Q or the bar's scan button: finds every code on screen with `zbarimg`, opens web links in the default browser, joins Wi-Fi codes, copies the rest), a picture converter (Super+I: GTA V's weapon wheel with eight formats for weapons; drop pictures on it, click a slot, and a "MISSION PASSED" banner follows), the lock screen, a settings panel (the gear beside the power button: recording options, recordings, the packages the installer would add that are missing, pending updates with where UmmItOS lives and whether `git pull` there updates the shell, About; it replaces the GTK `ummit-settings` app), an SAO menu (Super+M, or drag down from a strip on the left edge: Sword Art Online's round buttons for a Profile card with HP = battery and MP = RAM, Party, Items, Message, a Skills card listing the Claude Code agent skills, Option and the ○/× Logout dialog; its palette and Rationale font live in `Theme.sao`, apart from the shell's look on purpose), a hot-corner overview, copy notices, a charging ripple, desktop widgets (a wttr.in weather card and a now-playing card on the Bottom layer, under the windows, stacked top-right in one column that dodges the notifications so neither overflows or is covered; the desktop right-click menu toggles each) and a joke grey "Activate Linux" reminder in the bottom-right corner (`desktop/ActivateLinux.qml`, click-through, in a namespace outside the `ummitos-*` blur rule; Settings → Misc turns it off, saved in `~/.config/ummitos/desktop.conf`) and an FPS counter, off by default, top-left on the Bottom layer with the weather card, under the windows (`desktop/FpsMeter.qml`; Settings → Misc, or `ipc call fps toggle` / `ipc call fps set 1|0`, like cl_showfps). A right-click on the empty desktop opens a menu (`background/DesktopMenu.qml`): Displays…, Wallpaper…, Settings, and "Show on desktop" switches for those widgets; Displays… (or Super+P) is a Win+P-style chooser (`displays/`: this screen only, duplicate, extend, second screen only) that changes monitors at runtime only and reverts after 15 s unless kept, with a detached watchdog that reverts even if the shell dies. It replaced waybar, swaync, rofi, wlogout, swww, hyprshot and hyprlock. hypridle is still separate (`configs/hypr/`) and locks through the shell's IPC.
 
 ## Before you build
@@ -18,10 +18,9 @@ Every feature, fix or change goes through the checklist: programming reviewed wi
 ## Commands
 
 ```sh
-./install-menu.sh                 # TUI installer (what most users run)
-./install.sh                      # CLI installer: packages → oh-my-zsh → configs → display manager
+./install-menu.sh                 # TUI installer: packages → oh-my-zsh → configs → display manager
 ./post-install.sh --start-config  # Per-user tuning after reboot; needs a Hyprland session + jq
-shellcheck install.sh install-menu.sh post-install.sh setup.sh install/*.sh lib/*.sh script/**/*.sh
+shellcheck install-menu.sh post-install.sh setup.sh install/*.sh lib/*.sh script/**/*.sh
 
 qs -c ummitos -d                  # Run the shell daemonised (autostart.lua starts it at login)
 qs -c ummitos ipc show            # List every IPC target and function
@@ -55,9 +54,9 @@ The checklist stays in [DOCS/CHECKLIST.md](DOCS/CHECKLIST.md) (imported above). 
 
 ## Hard rules
 
-- Arch Linux only. `install.sh` and `install-menu.sh` gate on `/etc/arch-release`.
+- Arch Linux only. `install-menu.sh` gates on `/etc/arch-release`.
 - Use `paru` in new install code, never `pacman` directly; the one exception is installing `git` and `base-devel` before paru exists (`check_paru` in `lib/common.sh` and `setup.sh`). NVIDIA is unsupported, and GPU packages are AMD-only.
-- Never run or assume root. `install-menu.sh` rejects EUID 0; `install.sh` does not check, but it isn't meant to run as root either.
+- Never run or assume root. `install-menu.sh` rejects EUID 0.
 - Wallpapers (`.wallpaper`) and the brand images (`configs/quickshell/resources`, `UmmItOS/resources`, the About page's icon) are git submodules. Clone with `--recursive`, or run `git submodule update --init`.
 - Installer scripts run from the repo root and use relative paths (`./install/...`).
 - The helpers in `script/` write `.log` files, so read those rather than relying on notifications alone.
