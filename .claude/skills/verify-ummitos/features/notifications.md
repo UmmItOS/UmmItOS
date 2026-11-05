@@ -20,7 +20,7 @@ Preconditions:
 
 - `doctor.sh` is all `ok`.
 - The panel is closed.
-- About 8 s have passed since `up.sh`, so the start-up health-check toast has gone (see Gotchas).
+- About 8 s have passed since `up.sh`. The health check's critical toast stays on screen (critical toasts never time out), so judge each step by the toast it adds, not by an empty column (see Gotchas).
 
 Steps (all proven 2026-10-29):
 

@@ -10,7 +10,7 @@ A frame-rate card in the top-left corner of each screen, like Counter-Strike's `
 
 ## How to get to it (user POV)
 
-- Settings → Misc → Show FPS, or `qs -c ummitos ipc call fps set 1` (`set 0`, `toggle`). No key is bound.
+- Settings → Misc → Show FPS, the desktop right-click menu's "FPS counter" switch, or `qs -c ummitos ipc call fps set 1` (`set 0`, `toggle`). No key is bound.
 
 ## Driving it with verify-ummitos
 

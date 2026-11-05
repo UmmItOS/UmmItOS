@@ -32,7 +32,7 @@ Steps (proven 2026-11-04):
 - **Second screen only.** From Extend, Right then Return: VERIFY is off, VERIFY2 on at 0,0, never both off. 15 s later both are back.
 - **Twice in a row.** A second apply after a revert writes a fresh revert file again (it carries a timestamp line at the end).
 - **Auto-revert.** Wait 15 s without Keep. VERIFY2 is back at 1920,0, `mirrorOf` is `"none"`, and the revert file is gone.
-- **Desktop menu.** Move the pointer: `run.sh hyprctl dispatch 'hl.dsp.cursor.move({ x = 700, y = 600 })'`. Run `run.sh wlrctl pointer click right`, then `shot.sh displays-menu`: a menu titled "Desktop" with "Displays…", "Wallpaper…", "Settings" sits at the pointer. Click "Displays…" (pointer about 90 px right and 72 px below the click point) and the panel opens. A left click elsewhere closes the menu.
+- **Desktop menu.** Move the pointer: `run.sh hyprctl dispatch 'hl.dsp.cursor.move({ x = 700, y = 600 })'`. Run `run.sh wlrctl pointer click right`, then `shot.sh displays-menu`: a menu titled "Desktop" with "Displays…", "Wallpaper…", "Settings" and a "Show on desktop" group of four switches sits at the pointer (see desktop-menu.md). Click "Displays…" (pointer about 90 px right and 45 px below the click point), or press Down then Return, and the panel opens. A left click elsewhere closes the menu.
 - **Watchdog (last; ends the journey).** Apply Duplicate, then at once run `source .claude/skills/verify-ummitos/scripts/env.sh; kill -- -$(cat $STACK/qs.pid)`. About 15 s later the outputs are reverted and the revert file is gone. The test shell is dead afterwards: run `down.sh`, then `up.sh`.
 
 ## Gotchas
@@ -41,7 +41,8 @@ Steps (proven 2026-11-04):
 
 - `hyprctl dispatch hl.dsp.cursor.move` only warps the pointer: the shell gets no motion, so hover looks never show. To prove hover, warp first, then send real motion with `run.sh wlrctl pointer move 10 10`. Proven 2026-11-04: real hover lights and lifts a card; after a key press the picked card shows only the flat lighter fill; real motion anywhere on the sheet clears that cue. Opening the panel with a still pointer over a card shows no hover until the pointer really moves (enter events are not movement).
 
-- The stack lists a disabled WAYLAND-1 output (harness artifact). It counts as a connected, switched-off output.
+- The stack lists a disabled WAYLAND-1 output (harness artifact). It counts as a connected, switched-off output, so Duplicate switches it on as a mirror too ("Mirrors VERIFY"); the revert switches it back. Proven 2026-11-06.
+- "This screen" is the monitor focused when the panel opens, not the first one listed. Before opening, make sure VERIFY is focused (it is, unless a window on VERIFY2 took focus), or the modes swap sides.
 - The Keep button cannot be clicked reliably from the harness. Keep is proven only by reading the code (`Displays.qml` `keep()`), not on screen.
 - Never drive this on the live session: it changes the real monitors.
 - The change is runtime only. A Hyprland config reload restores the config's monitors.

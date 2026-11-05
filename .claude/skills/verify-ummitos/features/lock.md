@@ -4,7 +4,7 @@ Super+L locks the session with an ext-session-lock surface on every screen. Only
 
 ## Sub-features
 
-- `lock-preview`: `lock preview` shows the lock content in an ordinary window, and calling it again closes it.
+- `lock-preview`: `lock preview` shows the lock content in an ordinary window, and calling it again closes it. Its layer is `ummitos-lock-preview`.
 - `lock-engage`: `lock lock` takes a grim capture of the screen and then locks. `isLocked` prints `true`.
 - `lock-wrong`: a wrong password turns the field red, shakes it and shows "Wrong password · attempt 1".
 - `lock-spectrum`: while music plays, Cava's bands rise behind the clock (`lock/LockSpectrum.qml`), mirrored from the middle and coloured from the accent; with nothing playing the clock stands alone. **Not reachable in this stack**: Cava needs PipeWire (`pactl info` fails in the stack) and a playing MPRIS player. Prove it on the live session with `qs -c ummitos ipc call lock preview` while music plays, taking two `grim` shots apart to see the bars move.
