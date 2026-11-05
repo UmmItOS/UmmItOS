@@ -15,7 +15,7 @@ Singleton {
     property var hogs: []
     readonly property var top: hogs[0] ?? null
 
-    // pid -> { streak, warned }
+    // pid -> { streak }
     property var seen: ({})
 
     function update(lines: var): void {
@@ -31,21 +31,15 @@ Singleton {
             if (kind === "")
                 continue;
             const old = seen[pid] ?? {
-                streak: 0,
-                warned: false
+                streak: 0
             };
             const rec = {
-                streak: old.streak + 1,
-                warned: old.warned
+                streak: old.streak + 1
             };
             next[pid] = rec;
             if (rec.streak < Theme.hog.samples)
                 continue;
             const share = kind === "GPU" ? g : c;
-            if (!rec.warned) {
-                rec.warned = true;
-                Notifs.say("UmmItOS", I18n.t("%1 is using a lot of %2").arg(name).arg(kind), I18n.t("%1% of the machine for %2 s.").arg(Math.round(share)).arg(Math.round(rec.streak * Theme.duration.hogPoll / 1000)));
-            }
             list.push({
                 pid: Number(pid),
                 name: name,

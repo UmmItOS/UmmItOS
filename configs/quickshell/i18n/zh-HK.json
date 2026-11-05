@@ -639,7 +639,5 @@
     "%1, %2 pictures": "%1，%2 張圖",
     "Warn about heavy processes": "有程序食晒資源就提醒我",
     "When one process keeps the CPU above %1% or the GPU above %2% for %3 seconds, the bar and a notice say so. It never kills anything.": "當有個程序連續 %3 秒食晒超過 %1% CPU 或者 %2% GPU，列同通知會話你知。唔會殺任何程序。",
-    "%1 is using a lot of %2": "%1 用緊好多 %2",
-    "%1% of the machine for %2 s.": "成部機 %1% 嘅資源，已經 %2 秒。",
     "Heavy process": "重負載程序"
 }
