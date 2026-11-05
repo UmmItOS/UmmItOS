@@ -18,7 +18,7 @@ When one process keeps the CPU or GPU busy, the bar shows a warning beside the f
 Preconditions:
 
 - `doctor.sh` is all `ok`.
-- The shell runs `$HOME/script/misc/proc-hogs.sh`, and the stack's fake HOME has no `~/script`. Copy it in: `source scripts/env.sh; mkdir -p $STACK/home/script/misc; cp script/misc/proc-hogs.sh $STACK/home/script/misc/`.
+- The shell runs `$HOME/script/misc/proc-hogs.sh`. `up.sh` copies it into the fake HOME before the shell starts.
 - `ffmpeg` is installed. The stack shares `/proc` with the host, so a host process is seen.
 
 Steps (proven 2026-11-06):
@@ -31,5 +31,5 @@ Steps (proven 2026-11-06):
 
 - `-preset medium` reads about 30% on 20 threads, which is under the 50% threshold, so nothing shows. Use `slow`, or count threads with `nproc` and pick a load that crosses 50%.
 - If the label shows after one or two polls, the Timer is running back to back again. It must not be gated on `sampler.running`.
-- Until `proc-hogs.sh` is in `$STACK/home/script/misc`, `qs.out` gets "Process failed to start … proc-hogs.sh" every 4 s. Copy it in first.
+- If `proc-hogs.sh` is missing when the shell starts, `qs.out` gets one "Process failed to start … proc-hogs.sh" and ProcWatch stops polling until the setting is turned off and on again. The health check (Super+H) reports the missing script.
 - GPU use is readable only for the user's own processes, and the stack's headless output barely uses the GPU. GPU warnings are not proven here.

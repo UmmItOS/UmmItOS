@@ -11,6 +11,8 @@ RUN_ID=$(date +%Y%m%d-%H%M%S)
 EVIDENCE=$EVIDENCE_ROOT/$RUN_ID; mkdir -p "$EVIDENCE"
 # The shell under test, by its own config id, inside the fake HOME only.
 ln -sfn "$REPO/configs/quickshell" "$STACK/home/.config/quickshell/$CONFIG_ID"
+# The heavy-process sampler, which a real install has; ProcWatch stops for good if it is missing at start.
+mkdir -p "$STACK/home/script/misc" && cp "$REPO/script/misc/proc-hogs.sh" "$STACK/home/script/misc/"
 # Hyprland config copy: no autostart (it would start a second qs), a fixed monitor mode.
 cp -r "$REPO/configs/hypr" "$STACK/hypr"
 # Also no permissions module: its screencopy prompt would block the shell's own captures in the test.

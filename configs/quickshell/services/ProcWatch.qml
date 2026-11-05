@@ -17,6 +17,8 @@ Singleton {
 
     // pid -> { streak }
     property var seen: ({})
+    // The sampler would not start (~/script lacks it); the health check reports that, so stop retrying.
+    property bool missing: false
 
     function update(lines: var): void {
         const next = {};
@@ -51,9 +53,12 @@ Singleton {
         hogs = list;
     }
 
-    onEnabledChanged: if (!enabled) {
-        seen = {};
-        hogs = [];
+    onEnabledChanged: {
+        missing = false;
+        if (!enabled) {
+            seen = {};
+            hogs = [];
+        }
     }
 
     Timer {
@@ -62,13 +67,23 @@ Singleton {
             sampler.running = true
 
         interval: Theme.duration.hogPoll
-        running: Settings.hogWarn
+        running: Settings.hogWarn && !root.missing
         repeat: true
         triggeredOnStart: true
     }
 
     Process {
         id: sampler
+
+        // A failed start never emits started or exited, only running going false.
+        property bool began: false
+
+        onStarted: began = true
+        onRunningChanged: if (!running) {
+            if (!began)
+                root.missing = true;
+            began = false;
+        }
 
         command: [Quickshell.env("HOME") + "/script/misc/proc-hogs.sh"]
         stdout: StdioCollector {
