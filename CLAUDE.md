@@ -50,7 +50,7 @@ Each part of the repo has its own rule file in `.claude/rules/`. Claude Code loa
 | [qml-traps.md](.claude/rules/qml-traps.md) | Traps found the hard way | `configs/quickshell/`, `configs/greeter/` |
 | [versions.md](.claude/rules/versions.md) | When to cut a patch, minor or major | always |
 
-The checklist stays in [DOCS/CHECKLIST.md](DOCS/CHECKLIST.md) (imported above). The procedures are project skills: `/release` ([.claude/skills/release/](.claude/skills/release/SKILL.md)) cuts a version, `/full-review` ([.claude/skills/full-review/](.claude/skills/full-review/SKILL.md)) runs the five-lens review, and `verify-ummitos` checks a change on screen. Known issues with a write-up: [DOCS/RECORDING-FREEZE.md](DOCS/RECORDING-FREEZE.md) (a long recording freezes Hyprland when it stops).
+The checklist stays in [DOCS/CHECKLIST.md](DOCS/CHECKLIST.md) (imported above). The procedures are project skills: `/release` ([.claude/skills/release/](.claude/skills/release/SKILL.md)) cuts a version, `/full-review` ([.claude/skills/full-review/](.claude/skills/full-review/SKILL.md)) runs the five-lens review, and `verify-ummitos` checks a change on screen. Past issues with a write-up: [DOCS/RECORDING-FREEZE.md](DOCS/RECORDING-FREEZE.md) (a long wl-screenrec recording froze Hyprland when it stopped; fixed by moving to gpu-screen-recorder).
 
 ## Hard rules
 

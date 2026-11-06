@@ -22,7 +22,7 @@
     "Sharp": "清晰",
     "Frame rate": "影格速率",
     "The most frames per second it records": "每秒最多錄製的影格數",
-    "No cap": "不限",
+    "Screen": "跟隨螢幕",
     "Codec": "編碼器",
     "H.264 plays everywhere; HEVC and AV1 are smaller": "H.264 到處都能播放；HEVC 和 AV1 檔案較小",
     "Auto": "自動",

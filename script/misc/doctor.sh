@@ -184,7 +184,7 @@ check_system() {
 # The commands the shell and its scripts call; one missing breaks one feature.
 check_tools() {
 	local cmd missing=()
-	for cmd in qs hyprctl grim wl-copy wl-paste cliphist cava tesseract sqlite3 notify-send pw-play jq magick zbarimg wlrctl hypridle; do
+	for cmd in qs hyprctl grim wl-copy wl-paste cliphist cava tesseract sqlite3 notify-send pw-play jq magick zbarimg wlrctl hypridle gpu-screen-recorder; do
 		command -v "$cmd" &> /dev/null || missing+=("$cmd")
 	done
 	if ((${#missing[@]} == 0)); then

@@ -5,7 +5,7 @@ import QtQuick
 import QtQuick.Layouts
 import ".."
 
-// wl-screenrec's options, and the recordings they made.
+// gpu-screen-recorder's options, and the recordings they made.
 ColumnLayout {
     id: page
 
@@ -198,12 +198,12 @@ ColumnLayout {
         hint: I18n.t("Higher looks sharper and makes bigger files")
 
         Segmented {
-            onPicked: value => Settings.set("bitrate", value)
+            onPicked: value => Settings.set("quality", value)
 
             anchors.fill: parent
-            values: ["2 MB", "5 MB", "10 MB"]
+            values: ["high", "very_high", "ultra"]
             labels: [I18n.t("Small"), I18n.t("Balanced"), I18n.t("Sharp")]
-            current: Settings.bitrate
+            current: Settings.quality
         }
     }
 
@@ -216,7 +216,7 @@ ColumnLayout {
 
             anchors.fill: parent
             values: [30, 60, 120, 0]
-            labels: ["30", "60", "120", I18n.t("No cap")]
+            labels: ["30", "60", "120", I18n.t("Screen")]
             current: Settings.fps
         }
     }
@@ -229,7 +229,7 @@ ColumnLayout {
             onPicked: value => Settings.set("codec", value)
 
             anchors.fill: parent
-            values: ["auto", "avc", "hevc", "av1"]
+            values: ["auto", "h264", "hevc", "av1"]
             labels: [I18n.t("Auto"), "H.264", "HEVC", "AV1"]
             current: Settings.codec
         }

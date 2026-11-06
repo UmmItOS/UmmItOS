@@ -5,7 +5,6 @@ local function allow(binary)
     hl.permission({ binary = binary, type = "screencopy", mode = "allow" })
 end
 
-allow("/usr/bin/wl-screenrec")
 allow("/usr/bin/grim")
 allow("/usr/bin/hyprpicker")
 allow("/usr/bin/woomer")

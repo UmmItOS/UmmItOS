@@ -4,39 +4,34 @@
 
 # The settings panel (Settings.qml) writes these; missing keys keep the defaults.
 folder="$HOME/Videos/Recordings"
-bitrate="5 MB"
-fps=60
-codec=auto
+quality=ultra
+fps=0
+codec=hevc
 cursor=1
 conf="${XDG_CONFIG_HOME:-$HOME/.config}/ummitos/recording.conf"
 if [[ -f "$conf" ]]; then
     while IFS='=' read -r key value; do
         case "$key" in
-            folder | bitrate | fps | codec | cursor) [[ -n "$value" ]] && printf -v "$key" '%s' "$value" ;;
+            folder | quality | fps | codec | cursor) [[ -n "$value" ]] && printf -v "$key" '%s' "$value" ;;
         esac
     done < "$conf"
 fi
+# avc is wl-screenrec's name for H.264, in files saved before the switch.
+[[ "$codec" == avc ]] && codec=h264
 dir="$folder"
 log="$HOME/script/misc/screen-record.log"
 state="${XDG_RUNTIME_DIR:?not in a session}/screen-record"
 
-# Undo the temporary mix sink, if this recording made one.
-unmix() {
-    if [[ -f "$state/modules" ]]; then
-        while read -r id; do pactl unload-module "$id"; done < "$state/modules"
-        rm -f "$state/modules"
-    fi
-}
-
-if pgrep -u "$USER" -x wl-screenrec > /dev/null; then
+# By pid, not name: the kernel cuts gpu-screen-recorder's name to 15 characters.
+pid=$(cat "$state/pid" 2>/dev/null)
+if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
     asked=${EPOCHREALTIME/./}
-    pkill -INT -u "$USER" -x wl-screenrec
+    kill -INT "$pid"
     # The file is only complete once the recorder has exited.
-    while pgrep -u "$USER" -x wl-screenrec > /dev/null; do sleep 0.1; done
+    while kill -0 "$pid" 2>/dev/null; do sleep 0.1; done
     file=$(cat "$state/path" 2>/dev/null)
     note=$(cat "$state/note" 2>/dev/null)
-    rm -f "$state/path" "$state/note"
-    unmix
+    rm -f "$state/path" "$state/note" "$state/pid"
     qs -c ummitos ipc call record stopped
     notify-send -a "Screen recording" "Recording saved" "$file${note:+
 $note}"
@@ -56,7 +51,7 @@ mkdir -p "$dir" "$state"
 # A note left by a recording that failed must not reach this one.
 rm -f "$state/note"
 file="$dir/Recording_$(date +%Y-%m-%d_%H-%M-%S).mp4"
-output=$(hyprctl -j monitors | jq -r '.[] | select(.focused) | .name')
+read -r output rate < <(hyprctl -j monitors | jq -r '.[] | select(.focused) | "\(.name) \(.refreshRate | round)"')
 echo "$file" > "$state/path"
 
 # Said when saving, not now: a notice now would be in the video.
@@ -70,33 +65,27 @@ if [[ "$mic" == 1 ]] && ! "$HOME/script/misc/mic-check.sh"; then
     fi
 fi
 
-# wl-screenrec takes one audio device, so both are mixed into a temporary sink.
 audio=()
 if [[ "$system" == 1 && "$mic" == 1 ]]; then
-    {
-        pactl load-module module-null-sink sink_name=ummitos-record sink_properties=device.description=Recording
-        pactl load-module module-loopback source="$(pactl get-default-sink).monitor" sink=ummitos-record
-        pactl load-module module-loopback source="$(pactl get-default-source)" sink=ummitos-record
-    } > "$state/modules"
-    audio=(--audio --audio-device ummitos-record.monitor)
+    audio=(-a "default_output|default_input")
 elif [[ "$system" == 1 ]]; then
-    audio=(--audio --audio-device "$(pactl get-default-sink).monitor")
+    audio=(-a default_output)
 elif [[ "$mic" == 1 ]]; then
-    audio=(--audio --audio-device "$(pactl get-default-source)")
+    audio=(-a default_input)
 fi
 
 echo "$(date '+%F %T') started $file on $output (system=$system mic=$mic)" >> "$log"
 # The bar shows a recording pill while this runs; nothing else on screen says so.
 qs -c ummitos ipc call record started
 
-# --low-power=off: AMD has no low-power H.264 encoder, so the first try always failed.
-video=(-b "$bitrate" --codec "$codec")
-[[ "$fps" != 0 ]] && video+=(-m "$fps")
-[[ "$cursor" == 0 ]] && video+=(--no-cursor)
+# 0 is the screen's own refresh rate. Full colour range keeps blacks black instead of grey.
+[[ "$fps" == 0 ]] && fps=$rate
+[[ "$cursor" == 0 ]] && cursor=no || cursor=yes
 
-if ! wl-screenrec "${audio[@]}" "${video[@]}" --low-power=off -o "$output" -f "$file" 2>> "$log"; then
-    rm -f "$state/path" "$state/note"
-    unmix
+gpu-screen-recorder -w "$output" -f "$fps" -k "$codec" -q "$quality" -cr full -cursor "$cursor" "${audio[@]}" -o "$file" > /dev/null 2>> "$log" &
+echo $! > "$state/pid"
+if ! wait $!; then
+    rm -f "$state/path" "$state/note" "$state/pid"
     qs -c ummitos ipc call record stopped
     notify-send -a "Screen recording" "Recording failed" "See $log"
 fi

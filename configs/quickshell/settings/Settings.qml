@@ -69,11 +69,11 @@ Singleton {
     readonly property string privacyFile: (Quickshell.env("XDG_CONFIG_HOME") || home + "/.config") + "/ummitos/privacy.conf"
 
     property string folder: home + "/Videos/Recordings"
-    // wl-screenrec's -b: bytes per second, "5 MB" is 40 Mbps.
-    property string bitrate: "5 MB"
-    // 0 is no cap.
-    property int fps: 60
-    property string codec: "auto"
+    // gpu-screen-recorder's -q preset.
+    property string quality: "ultra"
+    // 0 is the screen's own refresh rate.
+    property int fps: 0
+    property string codec: "hevc"
     property bool cursor: true
 
     readonly property string barFile: (Quickshell.env("XDG_CONFIG_HOME") || home + "/.config") + "/ummitos/bar.conf"
@@ -128,7 +128,7 @@ Singleton {
 
     function set(key: string, value: var): void {
         root[key] = value;
-        conf.setText(["folder=" + folder, "bitrate=" + bitrate, "fps=" + fps, "codec=" + codec, "cursor=" + (cursor ? 1 : 0)].join("\n") + "\n");
+        conf.setText(["folder=" + folder, "quality=" + quality, "fps=" + fps, "codec=" + codec, "cursor=" + (cursor ? 1 : 0)].join("\n") + "\n");
         if (key === "folder")
             refresh();
     }
@@ -341,12 +341,12 @@ Singleton {
                 const key = line.slice(0, at), value = line.slice(at + 1);
                 if (key === "folder" && value !== "")
                     root.folder = value;
-                else if (key === "bitrate" && value !== "")
-                    root.bitrate = value;
+                else if (key === "quality" && value !== "")
+                    root.quality = value;
                 else if (key === "fps")
                     root.fps = Number(value) || 0;
                 else if (key === "codec" && value !== "")
-                    root.codec = value;
+                    root.codec = value === "avc" ? "h264" : value;
                 else if (key === "cursor")
                     root.cursor = value !== "0";
             }

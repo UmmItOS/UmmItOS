@@ -101,7 +101,7 @@ Singleton {
     // A recording already running when the shell (re)starts, dated by its state file.
     Process {
         running: true
-        command: ["sh", "-c", 'pgrep -u "$USER" -x wl-screenrec > /dev/null && stat -c %Y "$XDG_RUNTIME_DIR/screen-record/path"']
+        command: ["sh", "-c", 'kill -0 "$(cat "$XDG_RUNTIME_DIR/screen-record/pid")" 2>/dev/null && stat -c %Y "$XDG_RUNTIME_DIR/screen-record/path"']
 
         stdout: StdioCollector {
             onStreamFinished: {

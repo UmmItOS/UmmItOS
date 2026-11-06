@@ -2,7 +2,9 @@
 
 When a long screen recording stops, Hyprland freezes the whole screen, mouse included, for a while. The freeze grows with roughly the square of the recording's length. Nothing is lost: the video is saved, and the desktop comes back on its own.
 
-Found on 2026-10-30 with Hyprland 0.56.2 and wl-screenrec 0.3.2. It is not fixed yet.
+Found on 2026-10-30 with Hyprland 0.56.2 and wl-screenrec 0.3.2.
+
+**Resolved on 2026-11-06 by replacing wl-screenrec with gpu-screen-recorder.** It captures the monitor through KMS (`gsr-kms-server`), not Hyprland's screencopy, so no Wayland objects pile up. A 46-minute recording at 2560x1440 stopped with no freeze. The notes below are kept for the record.
 
 ## Measured on this machine
 
