@@ -22,15 +22,16 @@ sel_hint='↑/↓ move · space tick · y auto-yes · a all/none · enter run'
 results_ok='✔ Update complete: every step finished successfully'
 choices=('Reboot now' 'Run again' 'Change the selection' 'Open a shell' 'Exit')
 choice=4
-results_hint='↑/↓ move · enter choose · s soft reboot (on Reboot now) · q exit'
+results_hint='↑/↓ move · s soft reboot · enter choose · q exit'
 # 1: restart userspace only (systemctl soft-reboot), keeping the running kernel.
 soft=0
 
-# s on Reboot now picks the soft reboot.
+# s toggles the soft reboot on Reboot now, like y on the checklist.
 update_results_key() {
 	[[ $key == [sS] ]] && ((choice == 0)) || return 0
-	soft=1
-	chosen=0
+	((soft = !soft))
+	choice_tags[0]=
+	((soft)) && choice_tags[0]='soft reboot'
 }
 tui_results_hook=update_results_key
 
@@ -249,6 +250,7 @@ while true; do
 	while [[ $action == again ]]; do
 		run_steps
 		soft=0
+		choice_tags=()
 		tui_results
 		case $chosen in
 			0) action=reboot ;;

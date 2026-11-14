@@ -58,9 +58,11 @@ stop_on_fail=0
 tui_key_hook=
 tui_step_hook=
 tui_idle_hook=
-# Called with any other key on the results screen; it may set chosen.
+# Called with any other key on the results screen, with the key in $key.
 tui_results_hook=
 results_hint='↑/↓ move · enter choose · q exit'
+# Optional text at the right of a choice, like tags on the checklist.
+choice_tags=()
 # Seconds the checklist waits for a key before the idle hook runs; empty waits for ever.
 tui_poll=
 
@@ -421,11 +423,12 @@ tui_draw_results() {
 	((${#results_info[@]})) && tui_info_box Status "${results_info[@]}"
 	tui_top 'What next?'
 	for i in "${!choices[@]}"; do
-		printf -v name '%-*s' "$((inner - 4))" "${choices[i]}"
+		printf -v name '%-*s' "$((inner - 16))" "${choices[i]}"
+		printf -v rest '%-12s' "${choice_tags[i]:-}"
 		if ((i == choice)); then
-			tui_row "$bg_sel$bold$fg_accent ❯ $name "
+			tui_row "$bg_sel$bold$fg_accent ❯ $name$fg_warn$rest "
 		else
-			tui_row "   $fg_text$name "
+			tui_row "   $fg_text$name$fg_warn$rest "
 		fi
 	done
 	tui_bottom
