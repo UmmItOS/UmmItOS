@@ -58,6 +58,9 @@ stop_on_fail=0
 tui_key_hook=
 tui_step_hook=
 tui_idle_hook=
+# Called with any other key on the results screen; it may set chosen.
+tui_results_hook=
+results_hint='↑/↓ move · enter choose · q exit'
 # Seconds the checklist waits for a key before the idle hook runs; empty waits for ever.
 tui_poll=
 
@@ -430,7 +433,7 @@ tui_draw_results() {
 	for rest in "${results_notes[@]}"; do
 		tui_emit "${fg_mute}$rest"
 	done
-	tui_hint '↑/↓ move · enter choose · q exit'
+	tui_hint "$results_hint"
 	tui_flush
 }
 
@@ -447,6 +450,7 @@ tui_results() {
 			down) ((choice = (choice + 1) % count)) ;;
 			quit) chosen=$((count - 1)) ;;
 			enter) chosen=$choice ;;
+			*) [[ -n $tui_results_hook ]] && "$tui_results_hook" ;;
 		esac
 	done
 }

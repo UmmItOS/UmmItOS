@@ -22,6 +22,17 @@ sel_hint='↑/↓ move · space tick · y auto-yes · a all/none · enter run'
 results_ok='✔ Update complete: every step finished successfully'
 choices=('Reboot now' 'Run again' 'Change the selection' 'Open a shell' 'Exit')
 choice=4
+results_hint='↑/↓ move · enter choose · s soft reboot (on Reboot now) · q exit'
+# 1: restart userspace only (systemctl soft-reboot), keeping the running kernel.
+soft=0
+
+# s on Reboot now picks the soft reboot.
+update_results_key() {
+	[[ $key == [sS] ]] && ((choice == 0)) || return 0
+	soft=1
+	chosen=0
+}
+tui_results_hook=update_results_key
 
 yes=()
 assume=0
@@ -178,18 +189,29 @@ run_steps() {
 }
 
 countdown_reboot() {
-	local s
-	say Update Rebooting 'The system will reboot in 5 seconds.' critical
+	local s verb=reboot what=Rebooting note=
+	# A soft reboot keeps the running kernel, whose modules a kernel update removed.
+	if ((soft)) && [[ ! -d /usr/lib/modules/$(uname -r) ]]; then
+		soft=0
+		note='A new kernel was installed, so this is a full reboot.'
+	fi
+	if ((soft)); then
+		verb='soft-reboot'
+		what='Soft rebooting'
+		note='Userspace restarts; the kernel and firmware stay as they are.'
+	fi
+	say Update "$what" "The system will ${verb/-/ } in 5 seconds." critical
 	for s in 5 4 3 2 1; do
 		tui_measure
 		out=$'\e[H\e[2J\n\n'
-		tui_emit "${fg_warn}${bold}Rebooting in $s..."
+		tui_emit "${fg_warn}${bold}$what in $s..."
+		[[ -n $note ]] && tui_emit "${fg_mute}$note"
 		tui_emit "${fg_mute}Press Ctrl+C to cancel."
 		tui_flush
 		sleep 1
 	done
 	tui_leave
-	systemctl reboot
+	systemctl "$verb"
 }
 
 if [[ ! -t 0 || ! -t 1 ]]; then
@@ -226,6 +248,7 @@ while true; do
 	action=again
 	while [[ $action == again ]]; do
 		run_steps
+		soft=0
 		tui_results
 		case $chosen in
 			0) action=reboot ;;
