@@ -203,7 +203,7 @@ Singleton {
         if (unread.length === 0)
             return finish(found);
         reread.pending = found;
-        reread.command = ["sh", "-c", 'f="$1"; shift; for r; do grim -g "$r" -t ppm "$f" && zbarimg -q --raw -Sbinary "$f"; printf "\\036"; done; rm -f "$f"', "sh", crop, ...unread.map(c => `${Math.floor(screen.x + c.x) - 1},${Math.floor(screen.y + c.y) - 1} ${Math.ceil(c.w) + 2}x${Math.ceil(c.h) + 2}`)];
+        reread.command = ["sh", "-c", 'f="$1"; shift; for r; do grim -g "$r" -t ppm "$f" && zbarimg -q --raw -Sbinary "$f" | base64 -w0; echo; done; rm -f "$f"', "sh", crop, ...unread.map(c => `${Math.floor(screen.x + c.x) - 1},${Math.floor(screen.y + c.y) - 1} ${Math.ceil(c.w) + 2}x${Math.ceil(c.h) + 2}`)];
         reread.running = true;
     }
 
@@ -253,7 +253,8 @@ Singleton {
 
         stdout: StdioCollector {
             onStreamFinished: {
-                const texts = text.split("\x1e");
+                // One base64 line per region: a code's own bytes cannot split it.
+                const texts = text.split("\n").map(line => Qt.atob(line));
                 const found = reread.pending;
                 let i = 0;
                 for (const code of found)
