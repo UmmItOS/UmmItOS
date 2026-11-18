@@ -715,6 +715,8 @@ Singleton {
 
     // The lock screen's sizes, kept from hyprlock so the switch looks the same.
     readonly property QtObject lock: QtObject {
+        // The intruder siren's lowest volume, held while it plays.
+        readonly property real sirenVolume: 0.6
         // The intruder warning: how far the red glow reaches in from each edge, its pulse, and the photo shown back.
         readonly property int alarmEdge: 160
         readonly property real alarmGlow: 0.75
