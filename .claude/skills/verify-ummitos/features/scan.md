@@ -8,6 +8,7 @@ Super+Shift+Q, or the bar's scan button, photographs the screen and finds every 
 - `scan-detail`: the panel shows the selected code's fields. For a web link the Host is the host the browser will open (the backslash case is fixed in v1.2.1).
 - `scan-act`: Open, Copy and Wi-Fi join. **Do not drive Open**, because it launches the user's browser.
 - `scan-none`: with no code on screen, a "No QR code on screen" notice appears.
+- `scan-reread`: a code with non-ASCII content (zbar's XML mangles it) is read again per region, and each region comes back as one base64 line, so a code holding odd bytes such as 0x1E cannot shift data onto the next code.
 
 ## How to get to it (user POV)
 
@@ -26,6 +27,8 @@ Steps (proven 2026-11-01):
 - **Show a code.** Run `. .claude/skills/verify-ummitos/scripts/env.sh; qrencode -s 12 -o "$STACK/home/qr.png" 'https://evil.example\@bank.example/login'`, then start mpv in the background: `( in_stack setsid mpv --no-config --image-display-duration=inf --force-window=yes --title=qr "$STACK/home/qr.png" >/dev/null 2>&1 & )`. Wait 2.5 s.
 - **Scan.** Run `.claude/skills/verify-ummitos/scripts/ipc.sh scan toggle`, wait 3 s, then `.claude/skills/verify-ummitos/scripts/shot.sh scan-result`. Expect the chip `evil.example` and the panel "Web link" with Host `evil.example`, Path `/@bank.example/login` (a browser reads the `\` as `/`) and the raw content `https://evil.example\@bank.example/login`. The layer is `ummitos-scan`.
 - **Close.** Run `.claude/skills/verify-ummitos/scripts/run.sh wtype -k Escape`, or `.claude/skills/verify-ummitos/scripts/ipc.sh scan close`. Stop mpv by its environment: `for p in /proc/[0-9]*; do tr '\0' '\n' 2>/dev/null < $p/environ | grep -qx "XDG_RUNTIME_DIR=$STACK/run" && [ "$(cat $p/comm)" = mpv ] && kill ${p#/proc/}; done`. `down.sh` also catches it.
+
+- **Re-read path** (proven 2026-11-18). Put a UTF-8 code next to the link: `printf '香港 UmmItOS' | qrencode -8 -s 10 -o "$STACK/home/qr1.png"`, compose both onto one 1920x1080 picture with `magick` (`-geometry +300+300` and `+1200+300`), and show it full screen with `run.sh sh -c "mpv --no-config --fs --image-display-duration=inf --osc=no <picture> >/dev/null 2>&1 &"`. After `scan toggle`, one chip reads `香港 UmmItOS` and the other `evil.example`. To prove the old separator bug is gone, make the UTF-8 code `中文` + byte 0x1E + a URL: its chip must show the whole content, not just `中文`.
 
 ## Gotchas
 

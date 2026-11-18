@@ -6,7 +6,7 @@ A right-click on the empty desktop opens a small menu titled "Desktop" at the po
 
 - `menu-open`: a right-click shows the menu at the pointer, and a left click elsewhere closes it.
 - `menu-actions`: Displays… opens the display chooser (`ummitos-displays`), Wallpaper… opens the wallpaper drawer (`ummitos-wallpaper-browser`), and Settings opens Settings.
-- `menu-switches`: a switch row flips its widget, saves to `~/.config/ummitos/desktop.conf` (`weather=`, `media=`, `activate=`, `fps=`) and keeps the menu open.
+- `menu-switches`: a switch row flips its widget, saves to `~/.config/ummitos/desktop.conf` (`weather=`, `media=`, `activate=`, `fps=`; the file also holds `mic=` and `hog=` from Settings) and keeps the menu open.
 - `menu-keys`: Up and Down (and Tab) move a purple focus bar along the rows and wrap. Space or Return activates the row. Escape closes.
 
 ## How to get to it (user POV)

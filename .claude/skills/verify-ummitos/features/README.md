@@ -27,14 +27,16 @@ This is the maintained source for verifying the user-facing behaviour of the Umm
 
 | File | Feature | Proven in this stack |
 |---|---|---|
-| [notifications.md](notifications.md) | Toasts, panel, clear, DND | yes (2026-11-06) |
-| [launcher.md](launcher.md) | App launcher and clipboard manager | yes (2026-11-06) |
-| [dashboard.md](dashboard.md) | Dashboard, System and Workspaces tabs | yes (2026-11-06) |
-| [converter.md](converter.md) | Picture converter wheel (open, pick, close; drop not drivable) | partly (2026-11-04) |
-| [scan.md](scan.md) | QR scanner: find and detail (Open not driven) | yes (2026-11-06) |
-| [fps.md](fps.md) | FPS counter: on, off, saved | yes (2026-11-06) |
+| [notifications.md](notifications.md) | Toasts, panel, clear, DND | yes (2026-11-18) |
+| [launcher.md](launcher.md) | App launcher and clipboard manager | yes (2026-11-18) |
+| [dashboard.md](dashboard.md) | Dashboard, System and Workspaces tabs | yes (2026-11-18) |
+| [converter.md](converter.md) | Picture converter wheel (open, pick, close; drop not drivable) | partly (2026-11-18) |
+| [scan.md](scan.md) | QR scanner: find, detail and the non-ASCII re-read (Open not driven) | yes (2026-11-18) |
+| [fps.md](fps.md) | FPS counter: on, off, saved | yes (2026-11-18) |
 | [displays.md](displays.md) | Display chooser: modes, auto-revert, watchdog, desktop right-click | yes (2026-11-06) |
-| [desktop-menu.md](desktop-menu.md) | Desktop right-click menu: actions, show-on-desktop switches, keyboard | yes (2026-11-06) |
-| [wallpaper.md](wallpaper.md) | Wallpaper pickers: Alt+W carousel and the right-click drawer (chips, preview, set, shuffle) | yes (2026-11-06) |
-| [heavy-process.md](heavy-process.md) | Heavy process warning on the bar (CPU proven; GPU not drivable here) | partly (2026-11-06) |
-| [lock.md](lock.md) | Lock screen: preview, engage, one wrong password (unlock and the music spectrum not drivable). Drive last. | yes (2026-11-06) |
+| [desktop-menu.md](desktop-menu.md) | Desktop right-click menu: actions, show-on-desktop switches, keyboard | yes (2026-11-18) |
+| [wallpaper.md](wallpaper.md) | Wallpaper pickers: Alt+W carousel and the right-click drawer (chips, preview, set, shuffle) | yes (2026-11-18) |
+| [heavy-process.md](heavy-process.md) | Heavy process warning on the bar (CPU proven; GPU not drivable here) | partly (2026-11-18) |
+| [lock.md](lock.md) | Lock screen: preview, engage, one wrong password, lock.sh with the shell down (unlock and the music spectrum not drivable). Drive last. | yes (2026-11-18) |
+| [record.md](record.md) | Screen recording dialog and its settings (the portal recording needs PipeWire) | partly (2026-11-18) |
+| [bluetooth.md](bluetooth.md) | Bluetooth pairing dialog through a fake bluetoothctl: real question, spoof, answer | yes (2026-11-18) |

@@ -31,4 +31,5 @@ Steps (proven 2026-11-04):
 
 - The lit slot carries over between opens; it is reset only by a fresh shell load. Always take a shot before the key, not only after.
 - A drop needs a real Wayland drag, and `wtype` cannot drag. IPC offers only toggle and close. The ydotool + `qs -p` drag-source harness in the repo's `.claude/rules/shell-features.md` moves the user's real pointer, so `conv-drop` and `conv-run` are not provable with these helpers.
+- The conversion itself can be proven outside the shell (2026-11-18): `script/misc/img-convert.sh jpg <dir>/a.png` with a dangling symlink at `<dir>/a.jpg` writes `a-1.jpg` and leaves the link's target uncreated, and a 3.8 KB PNG declaring 60000x60000 fails at once with "cache resources exhausted" (the `-limit` flags). Use a scratch HOME.
 - Running `convert toggle` while a MISSION banner is still up reuses the mapped surface. Keys may not arrive until a click (inferred from source, not proven).
