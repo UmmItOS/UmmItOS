@@ -82,7 +82,9 @@ qs -c ummitos ipc call record started
 [[ "$fps" == 0 ]] && fps=$rate
 [[ "$cursor" == 0 ]] && cursor=no || cursor=yes
 
-gpu-screen-recorder -w "$output" -f "$fps" -k "$codec" -q "$quality" -cr full -cursor "$cursor" "${audio[@]}" -o "$file" > /dev/null 2>> "$log" &
+# Through the portal, which asks before the first recording and remembers the answer; KMS capture
+# would skip Hyprland's permission check, and the installer removes the capability it needs.
+gpu-screen-recorder -w portal -restore-portal-session yes -f "$fps" -k "$codec" -q "$quality" -cr full -cursor "$cursor" "${audio[@]}" -o "$file" > /dev/null 2>> "$log" &
 echo $! > "$state/pid"
 if ! wait $!; then
     rm -f "$state/path" "$state/note" "$state/pid"

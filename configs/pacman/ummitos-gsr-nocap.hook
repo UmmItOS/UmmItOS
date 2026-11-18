@@ -1,0 +1,13 @@
+# gpu-screen-recorder gives gsr-kms-server cap_sys_admin so it can read the screen through KMS,
+# past Hyprland's screencopy permissions, for any program you run. UmmItOS records through the
+# portal instead, which asks first, so the capability is taken away after every install or upgrade.
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = gpu-screen-recorder
+
+[Action]
+Description = Removing gsr-kms-server's screen-reading capability (UmmItOS records through the portal)...
+When = PostTransaction
+Exec = /bin/sh -c '/usr/bin/setcap -r /usr/bin/gsr-kms-server 2>/dev/null || true'
