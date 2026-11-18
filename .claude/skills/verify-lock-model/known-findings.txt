@@ -1,0 +1,6 @@
+# Counterexamples check.sh treats as known: "<scope> <property>: <actions>  # <id> <summary>".
+# A counterexample matches when it starts with <actions>; a liveness loop after them can vary.
+# Each was replayed against Lock.qml and is a real bug; see SKILL.md, Known findings. Delete a line once its bug is fixed.
+regression NoUnauthenticatedUnlock: Lock GrabFail Submit PamSuccess Submit ReleaseFire Lock PamSuccess GrabFail ReleaseFire  # F1 a second correct password in the unlock animation re-arms release, which opens the next lock
+full NoUnauthenticatedUnlock: Preview GrabFail Lock Submit GrabFail PamSuccess ReleaseFire  # F2 a password checked in the preview unlocks the real lock that started meanwhile
+full LockRequestHonoured: Preview Lock GrabFail  # F3 lock() during a preview capture is dropped

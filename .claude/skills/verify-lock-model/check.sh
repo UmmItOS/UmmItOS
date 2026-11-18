@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+# Model-check the lock state machine (LockModel.tla) with TLC: each property on its own, in two scopes.
+#   regression  AllowPreview = FALSE: nobody calls `lock preview` or `lock alarm`
+#   full        AllowPreview = TRUE
+# Each counterexample is compared with known-findings.txt (scope, property, action sequence).
+# Usage: check.sh [model.tla]   (default: LockModel.tla beside this script)
+# Exit 0 when every violation is a known finding, 1 on a new one, 2 when the tool is missing.
+set -uo pipefail
+
+here=$(cd "$(dirname "$0")" && pwd)
+spec=${1:-$here/LockModel.tla}
+version=v1.8.0
+sum=7e53aa636dac8a3cb0533f343115c0548e03fc0ce5edc7739becf58d3d0fb84f
+jar=${XDG_CACHE_HOME:-$HOME/.cache}/ummitos-tla/tla2tools-$version.jar
+properties=(NoUnauthenticatedUnlock NoUnlockWhileLockPending LockRequestHonoured)
+
+command -v java > /dev/null || { echo "check.sh: java is not installed (paru -S jre-openjdk-headless)" >&2; exit 2; }
+if [[ ! -f $jar ]]; then
+	mkdir -p "${jar%/*}"
+	curl -fsSL -o "$jar.part" "https://github.com/tlaplus/tlaplus/releases/download/$version/tla2tools.jar" || { echo "check.sh: download failed" >&2; exit 2; }
+	mv "$jar.part" "$jar"
+fi
+if [[ $(sha256sum "$jar" | cut -d' ' -f1) != "$sum" ]]; then
+	echo "check.sh: $jar does not match the pinned sha256; delete it and rerun" >&2
+	exit 2
+fi
+
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
+cp "$spec" "$work/LockModel.tla"
+traces=${TMPDIR:-/tmp}/verify-lock-model
+mkdir -p "$traces"
+new=0
+
+for scope in regression full; do
+	[[ $scope == regression ]] && preview=FALSE || preview=TRUE
+	for prop in "${properties[@]}"; do
+		printf 'CONSTANT AllowPreview = %s\nSPECIFICATION Spec\nINVARIANT TypeOK\nPROPERTY %s\n' "$preview" "$prop" > "$work/LockModel.cfg"
+		# One worker: the counterexample is then the same on every run.
+		out=$(cd "$work" && java -XX:+UseParallelGC -cp "$jar" tlc2.TLC -workers 1 -deadlock -cleanup LockModel 2>&1)
+		rc=$?
+		if ((rc == 0)); then
+			printf '  %-10s %-26s holds\n' "$scope" "$prop"
+			continue
+		fi
+		steps=$(grep -E '^State [0-9]+:|^Back to state' <<< "$out" | sed -E 's/^Back to state [0-9]+: <([A-Za-z0-9]+).*/back-to-\1/; s/^State [0-9]+: <([A-Za-z0-9]+).*/\1/; s/^State [0-9]+: Stuttering.*/stutter/' | grep -v '^Initial$' | tr '\n' ' ' | sed 's/ $//')
+		if [[ -z $steps ]]; then
+			printf '  %-10s %-26s TLC ERROR (exit %d)\n' "$scope" "$prop" "$rc"
+			printf '%s\n' "$out" | tail -20
+			new=1
+			continue
+		fi
+		trace=$traces/$scope-$prop.trace
+		printf '%s\n' "$out" | sed -n '/^Error:/,/states generated/p' > "$trace"
+		known=
+		while IFS= read -r line; do
+			want=${line#"$scope $prop: "}
+			[[ $want == "$line" ]] && continue
+			[[ "$steps " == "${want%%  #*} "* ]] && known=${line##*# } && break
+		done < "$here/known-findings.txt"
+		if [[ -n $known ]]; then
+			printf '  %-10s %-26s known finding %s\n' "$scope" "$prop" "${known%% *}"
+		else
+			printf '  %-10s %-26s NEW VIOLATION: %s\n' "$scope" "$prop" "$steps"
+			printf '  %-10s %-26s trace: %s\n' '' '' "$trace"
+			new=1
+		fi
+	done
+done
+
+if ((new)); then
+	echo "check.sh: new violation; replay it against Lock.qml (SKILL.md, Reading a result)"
+	exit 1
+fi
+echo "check.sh: no new violations"
+exit 0
