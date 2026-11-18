@@ -7,6 +7,6 @@
 dir=${XDG_STATE_HOME:-$HOME/.local/state}/ummitos/intruders
 
 # A preview of the alarm keeps its clip in memory only, and the lock deletes it on close.
-[[ $1 == --preview ]] && dir=${XDG_RUNTIME_DIR:-/tmp}/ummitos-intruder-preview
+[[ $1 == --preview ]] && dir=${XDG_RUNTIME_DIR:?not in a session}/ummitos-intruder-preview
 
 mkdir -p "$dir" && chmod 700 "$dir" && echo "$dir/$(date +%Y-%m-%d_%H-%M-%S).mp4"

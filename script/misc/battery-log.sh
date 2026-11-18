@@ -7,7 +7,7 @@
 
 state=${XDG_STATE_HOME:-$HOME/.local/state}/ummitos
 db=$state/battery.db
-prev=${XDG_RUNTIME_DIR:-/tmp}/ummitos-battery
+prev=${XDG_RUNTIME_DIR:?not in a session}/ummitos-battery
 # Longer than this between samples means the machine slept.
 sleep_gap=180
 # On battery, an app that takes this share of a full battery in the last

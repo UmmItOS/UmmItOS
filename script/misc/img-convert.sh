@@ -81,7 +81,8 @@ for src in "$@"; do
     [[ -n $base ]] || base=picture
     out=$dir/$base.$fmt
     n=1
-    while [[ -e $out ]]; do
+    # -L too: a dangling link fails -e, and magick would write through it.
+    while [[ -e $out || -L $out ]]; do
         out=$dir/$base-$n.$fmt
         ((n++))
     done
@@ -98,7 +99,8 @@ for src in "$@"; do
     esac
 
     # ImageMagick expands %d, %o and the like in output names; %% keeps the free name the loop above checked.
-    if err=$(magick "$kind:$frames" "${opts[@]}" "$coder:${out//%/%%}" 2>&1); then
+    # A small file can declare a huge picture; cap what decoding it may take.
+    if err=$(magick -limit memory 512MiB -limit disk 2GiB -limit time 120 "$kind:$frames" "${opts[@]}" "$coder:${out//%/%%}" 2>&1); then
         printf 'ok\t%s\t%s\n' "$src" "$out"
     else
         rm -f "$out"

@@ -12,7 +12,8 @@ mode=wipe
 current=
 state=${XDG_STATE_HOME:-$HOME/.local/state}
 cache=${XDG_CACHE_HOME:-$HOME/.cache}
-run=${XDG_RUNTIME_DIR:-/tmp}
+# No /tmp fallback: another account can plant ummitos-* links there for shred to follow.
+run=${XDG_RUNTIME_DIR:-}
 wiped=0
 
 # Overwrite with random data N times, once with zeros, then unlink.
@@ -103,6 +104,7 @@ wipe_wifi() {
 
 wipe_temp() {
 	local f
+	[[ -n $run ]] || return
 	while IFS= read -r -d '' f; do
 		shred_tree "$f"
 	done < <(find "$run" -maxdepth 1 -name 'ummitos-*' -print0 2> /dev/null)
