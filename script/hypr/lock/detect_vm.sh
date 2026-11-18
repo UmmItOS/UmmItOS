@@ -28,8 +28,8 @@ lock_screen() {
 
 # Function to check QEMU status
 check_qemu_and_lock() {
-    # Check if qemu-system-x86_64 is running
-    if pgrep -x "qemu-system-x86_64" > /dev/null; then
+    # The kernel keeps 15 characters of a process name, so -x matches "qemu-system-x86", not the full name.
+    if pgrep -u "$USER" -x "qemu-system-x86" > /dev/null; then
         echo -e "${BLUE}:: QEMU is running.${RESET}"
 
         # Display notification about QEMU running
