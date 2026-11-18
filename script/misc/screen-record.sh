@@ -74,10 +74,6 @@ elif [[ "$mic" == 1 ]]; then
     audio=(-a default_input)
 fi
 
-echo "$(date '+%F %T') started $file on $output (system=$system mic=$mic)" >> "$log"
-# The bar shows a recording pill while this runs; nothing else on screen says so.
-qs -c ummitos ipc call record started
-
 # 0 is the screen's own refresh rate. Full colour range keeps blacks black instead of grey.
 [[ "$fps" == 0 ]] && fps=$rate
 [[ "$cursor" == 0 ]] && cursor=no || cursor=yes
@@ -85,8 +81,23 @@ qs -c ummitos ipc call record started
 # Through the portal, which asks before the first recording and remembers the answer; KMS capture
 # would skip Hyprland's permission check, and the installer removes the capability it needs.
 gpu-screen-recorder -w portal -restore-portal-session yes -f "$fps" -k "$codec" -q "$quality" -cr full -cursor "$cursor" "${audio[@]}" -o "$file" > /dev/null 2>> "$log" &
-echo $! > "$state/pid"
-if ! wait $!; then
+pid=$!
+echo "$pid" > "$state/pid"
+# gsr opens the file only once the portal is answered and frames arrive, so the bar's pill
+# (nothing else on screen says it records) starts then, not while the picker is up.
+while kill -0 "$pid" 2> /dev/null && [[ ! -e $file ]]; do sleep 0.1; done
+if [[ -e $file ]]; then
+    echo "$(date '+%F %T') started $file on $output (system=$system mic=$mic)" >> "$log"
+    qs -c ummitos ipc call record started
+fi
+wait "$pid"
+rc=$?
+if [[ ! -e $file ]]; then
+    # Cancelled in the portal picker, or the recorder failed before its first frame.
+    rm -f "$state/path" "$state/note" "$state/pid"
+    qs -c ummitos ipc call record idle
+    notify-send -a "Screen recording" "Recording did not start" "Nothing was shared, or the recorder failed. See $log"
+elif ((rc != 0)); then
     rm -f "$state/path" "$state/note" "$state/pid"
     qs -c ummitos ipc call record stopped
     notify-send -a "Screen recording" "Recording failed" "See $log"

@@ -26,4 +26,4 @@ Steps (proven 2026-11-18):
 ## Gotchas
 
 - Do not press Start in the stack: the script calls the real `gpu-screen-recorder`, and with no PipeWire the portal never answers.
-- On the live session the bar pill starts counting when the script starts, before the portal picker is answered (a known product gap, 2026-11-18).
+- The bar pill starts when gpu-screen-recorder creates the file, which it does only after the portal picker is answered. Cancelling the picker gives a "Recording did not start" notice.
