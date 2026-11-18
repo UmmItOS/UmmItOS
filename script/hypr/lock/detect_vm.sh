@@ -23,7 +23,7 @@ check_locked() {
 }
 
 lock_screen() {
-    qs -c ummitos ipc call lock lock
+    bash "$(dirname "$0")/lock.sh"
 }
 
 # Function to check QEMU status
