@@ -31,29 +31,29 @@ It needs `java` (any recent JRE). The first run downloads TLC (`tla2tools.jar` v
 
 Covered, with the line numbers the model's comments cite:
 
-- `configs/quickshell/lock/Lock.qml`: `lock()` (66), `capture()` (56), `preview()` (81), `readyCheck()` (91), `release2()` (103), `submit()` (110), `fail()` (120), grab `onExited` (157), `waitLimit` (189), the `release` Timer (203), PAM `onCompleted`/`onError` (226, 239), the `lock` IpcHandler.
+- `configs/quickshell/lock/Lock.qml`: `lock()` (68) and its `take` callback, `capture()` (58), `preview()` (93), `readyCheck()` (103), `release2()` (115), `submit()` (122), `fail()` (133), grab `onExited` (170), `waitLimit` (202), the `release` Timer (216), PAM `onCompleted`/`onError` (239, 254), `checkLocked`, the `lock` IpcHandler.
 - `configs/quickshell/lock/LockContent.qml`: the password field's Return calls `Lock.submit()` whenever the lock or the preview shows; nothing disables it while `unlocking`.
 
-**Sync commit: `57e5a43`.** At that commit the model describes the files above. Move it forward only after you have read every change to them since this commit and confirmed the model still describes them.
+**Sync commit: `d19ac08`.** At that commit the model describes the files above. Move it forward only after you have read every change to them since this commit and confirmed the model still describes them.
 
 How the model maps the code:
 
 - Each action is one QML handler taken whole. QML runs handlers one at a time on one event loop, so nothing else can run inside one.
 - `grab` stands for the capture Process and the picture wait: `running` from `capture()` to `onExited`, `loaded` from a successful exit until `readyCheck()` or `waitLimit` calls `release2()`.
 - `checking` is a PAM conversation in flight. `PamSuccess` is `onCompleted` with `PamResult.Success`; `PamFail` covers any other result and `onError`.
-- Ghost variables, not in the code: `subLocked` (the check was submitted while locked), `authed` (a check submitted during this lock passed), `wantLock` (a lock request is not carried out yet).
+- `subLocked` is `root.checkLocked`. Ghost variables, not in the code: `authed` (a check submitted during this lock passed), `wantLock` (a lock request is not carried out yet).
 
 Not covered: Quickshell's `WlSessionLock` and the compositor (the model trusts that `locked = true` puts the lock surface up), a hot reload or a crash (Lock.qml fails closed there, see `.claude/rules/shell-features.md`), `lock.sh` and hypridle (outside the shell), the intruder alarm and camera, the wake curtain's picture reuse, timing (the model has no clock: the 500 ms release and the 300 ms picture wait are only "later").
 
-## Known findings
+## Fixed findings
 
-Each was replayed step by step against the code at the sync commit. All three need someone who has just typed the correct password (F1, F2) or a preview opened by IPC (F2, F3); none lets a person without the password in.
+`known-findings.txt` is empty: every property holds in both scopes. These three were found by this check at `57e5a43` and fixed in `d19ac08`; each was replayed step by step against the code first. All needed someone who had just typed the correct password or a preview opened by IPC.
 
-- **F1** (regression, `NoUnauthenticatedUnlock`). The lock is up; the right password unlocks it (`onCompleted` Success starts `release`, 500 ms). Inside those 500 ms Return is pressed again with the right password: `submit()` is not blocked by `unlocking`. `release` fires and unlocks. The second check also succeeds and starts `release` again. Super+L inside the next 500 ms: `lock()` captures and `release2()` sets `locked`. `release` fires and opens the new lock.
-- **F2** (full, `NoUnauthenticatedUnlock`). The preview shows; the right password is submitted there. Before PAM answers, `lock()` runs (it does not look at `checking`) and the capture sets `locked`. PAM succeeds and `release` opens the real lock.
-- **F3** (full, `LockRequestHonoured`). `lock preview` starts a capture; `lock()` arrives while `preparing` and returns at `if (locked || preparing) return;` (Lock.qml:73-74). The capture ends as a preview and nothing locks. `lock.sh` retries after 3 s, so idle and sleep recover; Super+L and the Session menu do not.
+- **F1** (`NoUnauthenticatedUnlock`). A second correct password inside the 500 ms unlock re-armed `release` after the unlock, and a Super+L inside the next 500 ms was opened by it. Fixed: `take` stops `release` and clears `unlocking` when the lock takes hold.
+- **F2** (`NoUnauthenticatedUnlock`). A password checked in the preview, with a real `lock()` arriving before PAM answered, opened the real lock. Fixed: `onCompleted` unlocks only when `checkLocked` equals `locked`.
+- **F3** (`LockRequestHonoured`). `lock()` during a preview's capture returned at `if (locked || preparing)` and the request was lost. Fixed: it sets `grab.then = take`, so the capture ends as the lock. Shown by the model only: in the test stack two IPC calls are slower than the capture, so the old code locked too.
 
-The root of F1 and F2: a PAM success or a pending `release` from before a lock carries into it. A fix that passes every property in a scratch model: `release2()` for a lock stops `release` and clears `unlocking`; `onCompleted` unlocks only when the check was submitted while in the same `locked` state; `lock()` during a preview capture turns that capture into a lock (`grab.then`). When a fix lands, delete its line from `known-findings.txt`.
+Removing any one of the three fixes from a copy of the model brings back a violation (checked 2026-11-18).
 
 ## When you change Lock.qml
 
