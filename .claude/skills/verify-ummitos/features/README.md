@@ -33,7 +33,7 @@ This is the maintained source for verifying the user-facing behaviour of the Umm
 | [converter.md](converter.md) | Picture converter wheel (open, pick, close; drop not drivable) | partly (2026-11-18) |
 | [scan.md](scan.md) | QR scanner: find, detail and the non-ASCII re-read (Open not driven) | yes (2026-11-18) |
 | [fps.md](fps.md) | FPS counter: on, off, saved | yes (2026-11-18) |
-| [displays.md](displays.md) | Display chooser: modes, auto-revert, watchdog, desktop right-click | yes (2026-11-06) |
+| [displays.md](displays.md) | Display chooser: modes, auto-revert, watchdog, desktop right-click | yes (2026-11-18) |
 | [desktop-menu.md](desktop-menu.md) | Desktop right-click menu: actions, show-on-desktop switches, keyboard | yes (2026-11-18) |
 | [wallpaper.md](wallpaper.md) | Wallpaper pickers: Alt+W carousel and the right-click drawer (chips, preview, set, shuffle) | yes (2026-11-18) |
 | [heavy-process.md](heavy-process.md) | Heavy process warning on the bar (CPU proven; GPU not drivable here) | partly (2026-11-18) |
