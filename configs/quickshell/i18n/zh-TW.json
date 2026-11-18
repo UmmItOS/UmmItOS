@@ -537,7 +537,7 @@
     "Wants to connect to this computer": "想連線到這台電腦",
     "Pair if the device shows the same code": "如果裝置顯示相同的代碼，就配對",
     "Wants to pair with this computer": "想與這台電腦配對",
-    "A Bluetooth device": "一個藍牙裝置",
+    "Unknown device": "不明裝置",
     "Allow": "允許",
     "Pair": "配對",
     "Saved networks": "已儲存的網路",

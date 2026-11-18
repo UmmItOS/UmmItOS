@@ -24,14 +24,19 @@ Singleton {
         agent.write(yes ? "yes\n" : "no\n");
     }
 
-    // One chunk per question; the question is the last thing in it.
+    // A device's name reaches the same output as it was sent, so only a last line that is the agent's own
+    // question, right after BlueZ's "Request ..." line, counts. The request carries no address, so the name is
+    // known only for the device this computer is pairing.
     function heard(chunk: string): void {
-        const question = chunk.slice(chunk.lastIndexOf("[agent]"));
-        const device = Bluez.Bluetooth.devices.values.find(d => d.pairing) ?? Bluez.Bluetooth.devices.values.find(d => d.state === Bluez.BluetoothDeviceState.Connecting);
-        const key = question.match(/Confirm passkey (\d+)/);
-        kind = question.includes("Authorize service") ? "service" : "pair";
-        passkey = key ? key[1] : "";
-        name = device?.name || I18n.t("A Bluetooth device");
+        const lines = chunk.replace(/\x1b\[[0-9;]*[A-Za-z]|[\x01\x02]/g, "").split(/[\r\n]+/).map(l => l.trim()).filter(l => l !== "");
+        const asked = lines[lines.length - 2] ?? "";
+        const question = (lines[lines.length - 1] ?? "").match(/^\[agent\] (?:Confirm passkey (\d{6})|Accept pairing|Authorize service [0-9A-Fa-f-]+)$/);
+        if (!question || !/^(Request confirmation|Request authorization|Authorize service)$/.test(asked))
+            return;
+        const ours = Bluez.Bluetooth.devices.values.filter(d => d.pairing);
+        kind = asked === "Authorize service" ? "service" : "pair";
+        passkey = question[1] ?? "";
+        name = ours.length === 1 && ours[0].name ? ours[0].name : I18n.t("Unknown device");
         open = true;
     }
 
@@ -45,7 +50,7 @@ Singleton {
         stdinEnabled: true
         command: ["bluetoothctl"]
 
-        // Questions end without a newline, so split on their ending instead.
+        // Questions end without a newline, so split on their ending; heard() checks the rest.
         // ponytail: a pairing cancelled by the device leaves the dialog up; the late answer is ignored by bluetoothctl.
         stdout: SplitParser {
             splitMarker: "(yes/no): "
