@@ -34,6 +34,8 @@ Singleton {
     property string intruderAt: ""
     // Held only until PAM asks for it.
     property string pending: ""
+    // Whether the check in flight began on the lock; a result for the other state must not unlock.
+    property bool checkLocked: false
 
     // ~/.face when there is one, the bundled picture otherwise.
     property bool hasFace: false
@@ -70,12 +72,22 @@ Singleton {
             unlocking = false;
             return;
         }
-        if (locked || preparing)
+        if (locked)
             return;
         failed = false;
         attempts = 0;
         intruder = false;
-        capture(() => locked = true);
+        // An unlock still pending from before (its 500 ms release) must not open this lock.
+        const take = () => {
+            release.stop();
+            unlocking = false;
+            locked = true;
+        };
+        // A preview's capture is in flight: it ends as this lock instead, or the request would be lost.
+        if (preparing)
+            grab.then = take;
+        else
+            capture(take);
     }
 
     function preview(): void {
@@ -112,6 +124,7 @@ Singleton {
             return;
         pending = password;
         checking = true;
+        checkLocked = locked;
         failed = false;
         if (!pam.start())
             fail();
@@ -227,6 +240,8 @@ Singleton {
             if (result !== PamResult.Success)
                 return root.fail();
             root.checking = false;
+            if (root.checkLocked !== root.locked)
+                return;
             root.failed = false;
             root.attempts = 0;
             root.intruder = false;
