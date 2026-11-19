@@ -11,6 +11,7 @@ description: Cut an UmmItOS version (patch, minor or rc) - bump VERSION, signed 
    - A release candidate sets `RC = -rcN` and `NAME = UmmItOS vX.Y.Z-rcN`.
    - A final release leaves `RC = ` empty and sets `NAME = UmmItOS vX.Y.Z`.
    - Edit only `MAJOR`, `MINOR`, `PATCH`, `RC` and `NAME`.
+   - In `README.md`, point the "**Latest release:**" line at the new tag (link text and URL), so it lands in the same commit.
 
 3. **Commit, then tag.** Both are GPG-signed through the git config (`commit.gpgsign`, `tag.gpgsign`).
    ```sh

@@ -5,7 +5,7 @@
 
 UmmItOS is an Arch Linux + Hyprland desktop, packaged as a terminal installer and a dotfiles bundle. Its desktop shell is written in QML on Quickshell: the bar, notifications, launcher, lock screen, settings and more, in English, written Cantonese and Taiwanese Mandarin.
 
-**Latest release:** [v1.4.2](https://github.com/UmmItOS/UmmItOS/releases/tag/v1.4.2). Every version is on the [releases page](https://github.com/UmmItOS/UmmItOS/releases).
+**Latest release:** [v1.6.0](https://github.com/UmmItOS/UmmItOS/releases/tag/v1.6.0). Every version is on the [releases page](https://github.com/UmmItOS/UmmItOS/releases).
 
 ## Documentation
 
