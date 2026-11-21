@@ -1,14 +1,9 @@
 #!/usr/bin/env bash
-# Locks the screen through the shell, for hypridle (idle and before sleep) and
-# detect_vm.sh. The lock is the shell, so when the shell is not running a plain
-# IPC call does nothing and the desktop stays open: start it, then lock.
-# Style: https://style.ysap.sh/
 
 locked() {
 	[[ $(qs -c ummitos ipc call lock isLocked 2> /dev/null) == true ]]
 }
 
-# The lock takes a picture of each screen first, so wait for it to report locked.
 lock_and_wait() {
 	local i
 	qs -c ummitos ipc call lock lock > /dev/null 2>&1

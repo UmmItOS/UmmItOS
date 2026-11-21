@@ -4,7 +4,6 @@
 # folder; with files, just those. Style: https://style.ysap.sh/
 
 state=${XDG_STATE_HOME:-$HOME/.local/state}/ummitos
-# The text of every screenshot: nobody else may read the database, even for the moment before its chmod.
 umask 077
 db=$state/ocr.db
 conf=${XDG_CONFIG_HOME:-$HOME/.config}/ummitos/screenshot.conf

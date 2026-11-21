@@ -12,7 +12,6 @@ mode=wipe
 current=
 state=${XDG_STATE_HOME:-$HOME/.local/state}
 cache=${XDG_CACHE_HOME:-$HOME/.cache}
-# No /tmp fallback: another account can plant ummitos-* links there for shred to follow.
 run=${XDG_RUNTIME_DIR:-}
 wiped=0
 

@@ -5,7 +5,6 @@ import QtQuick
 import QtQuick.Layouts
 import ".."
 
-// gpu-screen-recorder's options, and the recordings they made.
 ColumnLayout {
     id: page
 

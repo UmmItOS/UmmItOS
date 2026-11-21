@@ -78,8 +78,6 @@ fi
 [[ "$fps" == 0 ]] && fps=$rate
 [[ "$cursor" == 0 ]] && cursor=no || cursor=yes
 
-# Through the portal, which asks before the first recording and remembers the answer; KMS capture
-# would skip Hyprland's permission check, and the installer removes the capability it needs.
 gpu-screen-recorder -w portal -restore-portal-session yes -f "$fps" -k "$codec" -q "$quality" -cr full -cursor "$cursor" "${audio[@]}" -o "$file" > /dev/null 2>> "$log" &
 pid=$!
 echo "$pid" > "$state/pid"
@@ -93,7 +91,6 @@ fi
 wait "$pid"
 rc=$?
 if [[ ! -e $file ]]; then
-    # Cancelled in the portal picker, or the recorder failed before its first frame.
     rm -f "$state/path" "$state/note" "$state/pid"
     qs -c ummitos ipc call record idle
     notify-send -a "Screen recording" "Recording did not start" "Nothing was shared, or the recorder failed. See $log"

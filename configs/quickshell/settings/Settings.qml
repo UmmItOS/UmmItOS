@@ -69,7 +69,6 @@ Singleton {
     readonly property string privacyFile: (Quickshell.env("XDG_CONFIG_HOME") || home + "/.config") + "/ummitos/privacy.conf"
 
     property string folder: home + "/Videos/Recordings"
-    // gpu-screen-recorder's -q preset.
     property string quality: "ultra"
     // 0 is the screen's own refresh rate.
     property int fps: 0

@@ -253,7 +253,6 @@ Singleton {
 
         stdout: StdioCollector {
             onStreamFinished: {
-                // One base64 line per region: a code's own bytes cannot split it.
                 const texts = text.split("\n").map(line => Qt.atob(line));
                 const found = reread.pending;
                 let i = 0;

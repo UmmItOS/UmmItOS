@@ -34,7 +34,6 @@ Singleton {
     property string intruderAt: ""
     // Held only until PAM asks for it.
     property string pending: ""
-    // Whether the check in flight began on the lock; a result for the other state must not unlock.
     property bool checkLocked: false
 
     // ~/.face when there is one, the bundled picture otherwise.
@@ -77,13 +76,11 @@ Singleton {
         failed = false;
         attempts = 0;
         intruder = false;
-        // An unlock still pending from before (its 500 ms release) must not open this lock.
         const take = () => {
             release.stop();
             unlocking = false;
             locked = true;
         };
-        // A preview's capture is in flight: it ends as this lock instead, or the request would be lost.
         if (preparing)
             grab.then = take;
         else
@@ -291,7 +288,6 @@ Singleton {
         onExited: if (root.sirenOn)
             Qt.callLater(() => siren.running = root.sirenOn)
 
-        // The mute and volume keys still work on the lock, so the siren unmutes and keeps a floor while it plays.
         command: ["sh", "-c", 'while :; do wpctl set-mute @DEFAULT_AUDIO_SINK@ 0; v=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ | cut -d" " -f2); awk -v v="$v" -v f="$2" "BEGIN { exit !(v < f) }" && wpctl set-volume @DEFAULT_AUDIO_SINK@ "$2"; sleep 1; done & pw-play "$1"; kill $!', "sh", Sounds.dir + "/intruder", String(Theme.lock.sirenVolume)]
     }
 

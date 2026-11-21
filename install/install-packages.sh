@@ -136,8 +136,6 @@ install_laptop_packages() {
     fi
 }
 
-# Screen recording goes through the portal; this pacman hook strips the KMS helper's capability, which
-# would otherwise let any program read the screen without Hyprland asking.
 install_gsr_hook() {
     command -v gpu-screen-recorder &> /dev/null || return 0
     sudo install -Dm644 "$PARENT_DIR/configs/pacman/ummitos-gsr-nocap.hook" /etc/pacman.d/hooks/ummitos-gsr-nocap.hook &&

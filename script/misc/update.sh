@@ -23,10 +23,8 @@ results_ok='✔ Update complete: every step finished successfully'
 choices=('Reboot now' 'Run again' 'Change the selection' 'Open a shell' 'Exit')
 choice=4
 results_hint='↑/↓ move · s soft reboot · enter choose · q exit'
-# 1: restart userspace only (systemctl soft-reboot), keeping the running kernel.
 soft=0
 
-# s toggles the soft reboot on Reboot now, like y on the checklist.
 update_results_key() {
 	[[ $key == [sS] ]] && ((choice == 0)) || return 0
 	((soft = !soft))

@@ -58,10 +58,8 @@ stop_on_fail=0
 tui_key_hook=
 tui_step_hook=
 tui_idle_hook=
-# Called with any other key on the results screen, with the key in $key.
 tui_results_hook=
 results_hint='↑/↓ move · enter choose · q exit'
-# Optional text at the right of a choice, like tags on the checklist.
 choice_tags=()
 # Seconds the checklist waits for a key before the idle hook runs; empty waits for ever.
 tui_poll=

@@ -1,10 +1,4 @@
 #!/usr/bin/env bash
-# Model-check the lock state machine (LockModel.tla) with TLC: each property on its own, in two scopes.
-#   regression  AllowPreview = FALSE: nobody calls `lock preview` or `lock alarm`
-#   full        AllowPreview = TRUE
-# Each counterexample is compared with known-findings.txt (scope, property, action sequence).
-# Usage: check.sh [model.tla]   (default: LockModel.tla beside this script)
-# Exit 0 when every violation is a known finding, 1 on a new one, 2 when the tool is missing.
 set -uo pipefail
 
 here=$(cd "$(dirname "$0")" && pwd)
