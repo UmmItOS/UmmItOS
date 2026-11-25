@@ -37,6 +37,8 @@ Steps (proven 2026-11-04):
 
 ## Gotchas
 
+- A pick is ignored while a display command or a monitor read is still running (a few tens of ms), so two quick clicks apply only the first.
+- A shell restart during the confirm undoes the change at once, not after 15 s: the new shell restores any revert file the old one left (proven 2026-11-25 by killing the test shell mid-confirm and relaunching it with the command from `up.sh`).
 - With one output the cards are disabled, and Qt 6 still sends hover to disabled items: hovering one must not light it. Prove it on the live session (one monitor): open the panel, warp onto a card, send real motion with `wlrctl pointer move`, `grim`, and compare that card's background with its neighbour (equal = no hover). Proven 2026-11-04 after the owner's recording showed a disabled card lighting.
 
 - `hyprctl dispatch hl.dsp.cursor.move` only warps the pointer: the shell gets no motion, so hover looks never show. To prove hover, warp first, then send real motion with `run.sh wlrctl pointer move 10 10`. Proven 2026-11-04: real hover lights and lifts a card; after a key press the picked card shows only the flat lighter fill; real motion anywhere on the sheet clears that cue. Opening the panel with a still pointer over a card shows no hover until the pointer really moves (enter events are not movement).

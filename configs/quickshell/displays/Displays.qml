@@ -133,9 +133,9 @@ Singleton {
         return plan;
     }
 
-    // Runs the saved revert after a delay if the file is still there and no newer change refreshed it.
-    function rescue(delay: int): void {
-        Quickshell.execDetached(["sh", "-c", 'sleep "$1"; f="$2"; [ -f "$f" ] && [ $(( $(date +%s) - $(stat -c %Y "$f") )) -ge "$3" ] && hyprctl eval "$(cat "$f")" && rm -f "$f"', "sh", String(delay), root.undoFile, String(root.seconds)]);
+    // Runs the saved revert after a delay if the file is still there and at least `age` seconds old, so a newer change that rewrote it is left alone.
+    function rescue(delay: int, age: int): void {
+        Quickshell.execDetached(["sh", "-c", 'sleep "$1"; f="$2"; [ -f "$f" ] && [ $(( $(date +%s) - $(stat -c %Y "$f") )) -ge "$3" ] && hyprctl eval "$(cat "$f")" && rm -f "$f"', "sh", String(delay), root.undoFile, String(age)]);
     }
 
     // Files of other compositor sessions can never apply.
@@ -148,7 +148,8 @@ Singleton {
     }
 
     function apply(mode: string): void {
-        if (root.outputs.length < 2 || mode === root.mode)
+        // outputs is a cache: while a command or a read is under way it still shows the layout about to be replaced.
+        if (root.outputs.length < 2 || mode === root.mode || runner.running || reader.running || root.queued !== "")
             return;
         // Picking again while waiting still reverts to the very first state.
         if (!root.confirming)
@@ -156,7 +157,7 @@ Singleton {
         root.remaining = root.seconds;
         // FileView skips a write whose text it already holds; the stamp goes last, since hyprctl reads a leading -- as a flag.
         undo.setText(root.script(root.restorePlan(root.snapshot)) + "\n-- " + Date.now());
-        root.rescue(root.seconds);
+        root.rescue(root.seconds, root.seconds);
         root.run(root.script(root.planFor(mode)));
     }
 
@@ -172,17 +173,19 @@ Singleton {
         if (!was)
             return;
         root.snapshot = null;
-        root.forget();
         const plan = root.restorePlan(was);
+        // The file stays until the restore has run (runner.onExited): it is all that survives a shell that dies first.
         if (plan.length > 0)
             root.run(root.script(plan));
+        else
+            root.forget();
     }
 
-    // Read once at start, so the first open already knows; a revert left by a crash runs now.
+    // Read once at start, so the first open already knows; a file left by the shell that ran before is an unkept change, so it is undone now.
     Component.onCompleted: {
         root.refresh();
         root.sweep();
-        root.rescue(0);
+        root.rescue(0, 0);
     }
 
     // However it closes, a change not kept is undone.
@@ -225,6 +228,8 @@ Singleton {
                 const next = root.queued;
                 root.queued = "";
                 root.run(next);
+            } else if (!root.confirming) {
+                root.forget();
             }
         }
     }
