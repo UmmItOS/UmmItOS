@@ -34,6 +34,7 @@ Steps:
 
 ## Gotchas
 
+- `dashboard tab <n>` is not range-checked, so an index outside 0-2 leaves no tab selected; Escape does not close the dashboard (source, not driven).
 - Escape does **not** close the dashboard (proven 2026-11-04). Its keyboard focus is OnDemand and it has no Escape handler. Use `close` or a click outside the panel.
 - The dashboard has no weather. Weather is on the bar's picker, the desktop card and the lock screen.
 - The window stays mapped until its close animation ends. Wait about 1 s before checking that the layer is gone.

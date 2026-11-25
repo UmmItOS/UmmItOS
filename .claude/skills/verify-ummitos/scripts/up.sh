@@ -55,7 +55,7 @@ in_stack hyprctl eval 'hl.monitor({ output = "VERIFY", mode = "1920x1080@60", po
 in_stack hyprctl eval 'hl.monitor({ output = "WAYLAND-1", disabled = true })' >/dev/null
 # Ready 2: the shell under test has loaded its configuration.
 # Mask V4L2 nodes inside qs only: the lock's intruder alarm opens a Qt Camera, and /dev is the real one.
-mask=(); for n in /dev/video* /dev/media*; do [[ -e $n ]] && mask+=(--ro-bind /dev/null "$n"); done
+mask=(); for n in /dev/video* /dev/media*; do [[ -c $n ]] && mask+=(--ro-bind /dev/null "$n"); done
 # The inner sh records its own pid, then becomes the process-group leader (setsid) that down.sh kills; $! would be in_stack's subshell.
 # shellcheck disable=SC2016 # the inner sh expands these
 in_stack sh -c 'echo $$ > "$1/qs.pid"; shift; exec setsid "$@"' sh "$STACK" bwrap --dev-bind / / "${mask[@]}" qs -c "$CONFIG_ID" > "$STACK/qs.out" 2>&1 &

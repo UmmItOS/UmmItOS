@@ -4,10 +4,10 @@ Super+L locks the session with an ext-session-lock surface on every screen. Only
 
 ## Sub-features
 
-- `lock-preview`: `lock preview` shows the lock content in an ordinary window, and calling it again closes it. Its layer is `ummitos-lock-preview`.
-- `lock-engage`: `lock lock` takes a grim capture of the screen and then locks. `isLocked` prints `true`.
-- `lock-wrong`: a wrong password turns the field red, shakes it and shows "Wrong password · attempt 1".
-- `lock-spectrum`: while music plays, Cava's bands rise behind the clock (`lock/LockSpectrum.qml`), mirrored from the middle and coloured from the accent; with nothing playing the clock stands alone. **Not reachable in this stack**: Cava needs PipeWire (`pactl info` fails in the stack) and a playing MPRIS player. Prove it on the live session with `qs -c ummitos ipc call lock preview` while music plays, taking two `grim` shots apart to see the bars move.
+- `lock-preview`: `lock preview` shows the lock content in an ordinary window, and calling it again, or Escape on an empty field, closes it. Its layer is `ummitos-lock-preview`.
+- `lock-engage`: `lock lock` takes a grim capture of the screen (or reuses the Wake curtain's earlier picture) and then locks. `isLocked` prints `true`.
+- `lock-wrong`: a wrong password turns the field red, shakes it and shows "Wrong password · attempt 1" (the text shows only while the field is empty; seen 2026-11-25).
+- `lock-spectrum`: while music plays, Cava's bands rise behind the clock (`lock/LockSpectrum.qml`), mirrored from the middle and coloured from the accent; with nothing playing, or with reduced motion on, the clock stands alone. **Not reachable in this stack**: Cava needs PipeWire (`pactl info` fails in the stack) and a playing MPRIS player. Prove it on the live session with `qs -c ummitos ipc call lock preview` while music plays, taking two `grim` shots apart to see the bars move.
 - `lock-alarm`: the second wrong password starts the intruder alarm: overlay, siren, a live webcam and a 30 s clip. While the siren plays it unmutes the default sink every second and holds its volume at `Theme.lock.sirenVolume` (0.6) or above, because the mute and volume keys still work on the lock. **Never drive this sub-feature**; `ipc.sh lock alarm` is refused. The siren command can be proven on its own (see Steps).
 - `lock-script`: `script/hypr/lock/lock.sh` is hypridle's `lock_cmd` and what `detect_vm.sh` calls. It locks through IPC and waits for `isLocked`; when no shell is running it starts `qs -c ummitos -d` first, so a dead shell no longer leaves the desktop open.
 

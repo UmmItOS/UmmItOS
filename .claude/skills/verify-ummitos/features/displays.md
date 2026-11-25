@@ -5,8 +5,8 @@ Super+P opens a panel (`ummitos-displays`) with four mode cards: This screen onl
 ## Sub-features
 
 - `displays-open`: `displays toggle` opens the panel, with the current mode card lit and the outputs listed.
-- `displays-keys`: Left and Right move the selection and wrap around the four cards; Return applies; Escape closes.
-- `displays-apply`: applying writes the revert script to `$STACK/run/ummitos-displays-revert-<HYPRLAND_INSTANCE_SIGNATURE>.lua` and shows the confirm row with "Reverting in %1 s".
+- `displays-keys`: Left and Right move the selection and wrap around the four cards; Return applies; Escape closes. Return on the already-lit card does nothing and shows no confirm row; with one output the cards are disabled and the panel says "Only one display is connected".
+- `displays-apply`: applying writes the revert script to `$STACK/run/ummitos-displays-revert-<HYPRLAND_INSTANCE_SIGNATURE>.lua` and shows the confirm row with "Reverting in N s" (N counts down from 15).
 - `displays-revert`: 15 s without Keep restores the outputs and deletes the revert file.
 - `displays-watchdog`: if the shell dies mid-confirm, the detached watchdog restores the outputs about 15 s later.
 - `displays-menu`: right-click on empty desktop shows a "Desktop" menu with "Displays…", "Wallpaper…" and "Settings" (`background/DesktopMenu.qml`).
@@ -28,7 +28,7 @@ Steps (proven 2026-11-04):
 
 - **Open.** Run `.claude/skills/verify-ummitos/scripts/ipc.sh displays toggle`, then `.claude/skills/verify-ummitos/scripts/shot.sh displays-open`. `run.sh hyprctl -j layers` lists `ummitos-displays`; Extend is lit and the outputs are listed.
 - **Keys.** `run.sh wtype -k Left` or `-k Right` moves the selection and wraps around the four cards.
-- **Apply Duplicate.** From Extend, send Left, then `run.sh wtype -k Return`. VERIFY2 gets `mirrorOf` = the VERIFY id and position 0,0. The confirm row shows "Reverting in %1 s", and `$STACK/run/ummitos-displays-revert-<HYPRLAND_INSTANCE_SIGNATURE>.lua` exists (source `scripts/env.sh` for `$STACK`).
+- **Apply Duplicate.** From Extend, send Left, then `run.sh wtype -k Return`. VERIFY2 gets `mirrorOf` = the VERIFY id and a resolved position the shell leaves to Hyprland (`auto`). The confirm row shows "Reverting in N s", and `$STACK/run/ummitos-displays-revert-<HYPRLAND_INSTANCE_SIGNATURE>.lua` exists (source `scripts/env.sh` for `$STACK`).
 - **Second screen only.** From Extend, Right then Return: VERIFY is off, VERIFY2 on at 0,0, never both off. 15 s later both are back.
 - **Twice in a row.** A second apply after a revert writes a fresh revert file again (it carries a timestamp line at the end).
 - **Auto-revert.** Wait 15 s without Keep. VERIFY2 is back at 1920,0, `mirrorOf` is `"none"`, and the revert file is gone.

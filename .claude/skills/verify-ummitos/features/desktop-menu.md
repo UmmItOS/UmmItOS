@@ -25,7 +25,7 @@ Steps (proven 2026-11-04):
 - **Keys.** Press `run.sh wtype -k Down` four times. The focus bar sits on "Weather card". `run.sh wtype -k space` flips it: `grep weather $STACK/home/.config/ummitos/desktop.conf` changes between `1` and `0`, and the menu stays open.
 - **Action.** The seven rows wrap: from "Weather card", four more Down land on "Displays…" and five on "Wallpaper…". Return opens `ummitos-displays` or `ummitos-wallpaper-browser`, as `run.sh hyprctl -j layers` shows. Close what opened before the next journey; `wallpaper browse` toggles, so a drawer left open is shut by the next call.
 - **Escape.** With the menu open, `run.sh wtype -k Escape` closes it.
-- **Wallpaper….** Click it, about 90 px right and 107 px below the click point. The drawer opens (see wallpaper.md).
+- **Wallpaper….** Click it, about 90 px right and 130 px below (measured on screen 2026-11-25) the click point. The drawer opens (see wallpaper.md).
 
 ## Gotchas
 

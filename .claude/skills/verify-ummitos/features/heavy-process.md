@@ -1,6 +1,6 @@
 # Heavy process warning
 
-When one process keeps the CPU or GPU busy, the bar shows a warning beside the file-change label, in the warning colour: "⚠ ffmpeg CPU 65%". It shows only on the bar, never as a desktop notice, and it fades once the load drops. It only warns and never kills anything.
+When one process keeps the CPU or GPU busy, the bar shows a warning beside the file-change label, in the warning colour: a warning icon then "ffmpeg CPU 65%" (there is no ⚠ character, so match the text only). It shows only on the bar, never as a desktop notice, and it fades once the load drops. It only warns and never kills anything.
 
 ## Sub-features
 
@@ -21,7 +21,7 @@ Preconditions:
 - The shell runs `$HOME/script/misc/proc-hogs.sh`. `up.sh` copies it into the fake HOME before the shell starts.
 - `ffmpeg` is installed. The stack shares `/proc` with the host, so a host process is seen.
 
-Steps (proven 2026-11-06):
+Steps (proven 2026-11-25):
 
 - **Sampler.** Run `shellcheck script/misc/proc-hogs.sh`. While ffmpeg runs (below), `script/misc/proc-hogs.sh` prints an `ffmpeg` line.
 - **Warn.** Start `timeout 30 ffmpeg -loglevel error -f lavfi -i testsrc2=size=3840x2160:rate=60 -c:v libx264 -preset slow -f null - &`, which uses about 50 to 80% of a 20-thread machine. Take `shot.sh hog-N` at 4, 8, 12 and 16 s and crop the top 44 px. Nothing shows at 4 and 8 s; at 12 s and after, the bar reads "⚠ ffmpeg CPU NN%".

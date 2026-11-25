@@ -1,6 +1,6 @@
 # Notifications
 
-The shell is the session's notification server. A notification shows as a toast at the top right, which times out after 6 s; a critical one stays. Every non-transient notification is kept in a history panel, grouped by app. The panel opens from the bar's bell or by IPC.
+The shell is the session's notification server. A notification shows as a toast at the top right, which times out after 6 s unless the sender sets its own timeout (hovering pauses it); a critical one stays. Do-not-disturb hides toasts and mutes the chime. Every non-transient notification is kept in a history panel, grouped by app. The panel opens from the bar's bell or by IPC.
 
 ## Sub-features
 
@@ -34,5 +34,5 @@ Steps (all proven 2026-10-29):
 
 - History is only in memory, with no state file. A hot reload (any QML save) wipes it and every open toast, so wait for a new `Configuration Loaded` before you start.
 - Transient notifications (`notify-send -e`) toast but never reach the history.
-- In the test stack the health check runs at start and posts "1 things need attention" from `UmmItOS`, because the fake HOME has no `~/script`. Expect it in the panel; this run showed it twice.
+- In the test stack the health check runs at start and posts "1 things need attention" from `UmmItOS`, because the fake HOME has no `~/script`. Expect it in the panel.
 - Sounds are silent: the chime goes through `Sounds.play` (`pw-play`), and the stack has no PipeWire.

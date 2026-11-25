@@ -43,6 +43,7 @@ Steps (proven 2026-11-06):
 
 ## Gotchas
 
+- The Alt+W carousel is a folder navigator: folder cards open on Return, a "Back" card and Backspace on an empty search go up, "Shuffle from here" shuffles the shown folder, and typing filters. State lives in `wallpaper.txt` and `wallpaper-folder.txt` under the qs state dir. IPC also has `next` and `set <path>` (only paths already listed). The drawer's Shuffle does not close it, and the preview debounce is 140 ms (source, not re-timed).
 - `hyprctl dispatch hl.dsp.cursor.move` only warps the pointer. Send `wlrctl pointer move` before expecting hover or a preview, because hover is gated on real motion.
 - The tooltip under the header buttons is small. Crop the screenshot to read it.
 - The drawer is one window with no screen set, so Hyprland puts it on the focused output. Multi-monitor placement is not proven.

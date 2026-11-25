@@ -1,18 +1,18 @@
 # QR scanner
 
-Super+Shift+Q, or the bar's scan button, photographs the screen and finds every code on it with `zbarimg`. It then labels each code and shows a detail panel: kind, scheme, host, path and raw content. Open sends a web link to `xdg-open`, Copy copies the content, and a Wi-Fi code joins the network.
+Super+Shift+Q, or the bar's scan button, photographs the screen and finds every code on it with `zbarimg`. It then labels each code and shows a detail panel: kind, scheme, host, path and raw content. Open (labelled Write, Call or Map for mail, phone and map codes) sends the code to `xdg-open`, Copy copies the content, and a Wi-Fi code joins the network.
 
 ## Sub-features
 
 - `scan-find`: every code on the screen gets a chip with its title.
 - `scan-detail`: the panel shows the selected code's fields. For a web link the Host is the host the browser will open (the backslash case is fixed in v1.2.1).
 - `scan-act`: Open, Copy and Wi-Fi join. **Do not drive Open**, because it launches the user's browser.
-- `scan-none`: with no code on screen, a "No QR code on screen" notice appears.
+- `scan-none`: with no code on screen, a "No QR code on screen" toast from "QR scanner" appears and no overlay opens (seen 2026-11-25).
 - `scan-reread`: a code with non-ASCII content (zbar's XML mangles it) is read again per region, and each region comes back as one base64 line, so a code holding odd bytes such as 0x1E cannot shift data onto the next code.
 
 ## How to get to it (user POV)
 
-- Super+Shift+Q, or the scan button in the bar's tool cluster. Both call `scan toggle`.
+- Super+Shift+Q, or the scan button in the bar's tool cluster. Super+Shift+Q calls `scan toggle`; the bar button calls `Scan.start` for its own screen, so it has no IPC form.
 
 ## Driving it with verify-ummitos
 
