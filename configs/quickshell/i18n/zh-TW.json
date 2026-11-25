@@ -517,7 +517,7 @@
     "Does this machine run what the repo holds: the shell, the scripts, the keybinds and the packages.": "這部機器是否執行著 repo 的內容：shell、腳本、快速鍵與套件。",
     "Enter checks again · Esc closes": "按 Enter 重新檢查 · Esc 關閉",
     "Update ~/script": "更新 ~/script",
-    "%1 things need attention": "有 %1 項需要處理",
+    "Health check: %1 to look at": "健康檢查：有 %1 項要看看",
     "Open the health check with Super+H.": "按 Super+H 開啟健康檢查。",
     "Repository": "Repository",
     "Scripts": "Scripts",
@@ -638,6 +638,6 @@
     "%1 pictures · hover to preview, click to set": "%1 張圖片 · 移上去預覽，點一下即可設定",
     "%1, %2 pictures": "%1，%2 張圖片",
     "Warn about heavy processes": "重負載程序提醒",
-    "When one process keeps the CPU above %1% or the GPU above %2% for %3 seconds, the bar and a notice say so. It never kills anything.": "當單一程式連續 %3 秒使用超過 %1% 的 CPU 或 %2% 的 GPU，狀態列與通知會提醒你，不會結束任何程式。",
+    "When one process keeps the CPU above %1% or the GPU above %2% for %3 seconds, the bar says so. It never kills anything.": "當單一程式連續 %3 秒使用超過 %1% 的 CPU 或 %2% 的 GPU，狀態列會提醒你，不會結束任何程式。",
     "Heavy process": "重負載程式"
 }

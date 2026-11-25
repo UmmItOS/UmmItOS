@@ -14,7 +14,7 @@ This is the maintained source for verifying the user-facing behaviour of the Umm
 - Open surfaces the way a keybind does, through IPC (see `configs/hypr/hyprland/shortcuts.lua`). Type with `run.sh wtype`.
 - Close each surface after a journey (Escape or its IPC close), so the next journey starts from the baseline.
 - Wrap any call that can wait in `timeout`.
-- Wait about 8 s after `up.sh` for the start-up health check. Its "1 things need attention" toast is critical, so it stays top right until dismissed; do not wait for it to expire. Park the pointer at 960,540 before driving surfaces that light up on hover.
+- Wait about 8 s after `up.sh` for the start-up health check. Its "Health check: 1 to look at" toast is critical, so it stays top right until dismissed; do not wait for it to expire. Park the pointer at 960,540 before driving surfaces that light up on hover.
 - Drive the lock last: nothing in the stack can unlock it, so `down.sh` ends that journey.
 
 ## Proof and skip reporting

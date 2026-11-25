@@ -94,7 +94,7 @@ Singleton {
             onStreamFinished: {
                 const bad = text.split("\n").filter(l => l.startsWith("fail\t")).length;
                 if (bad > 0)
-                    Notifs.say("UmmItOS", I18n.t("%1 things need attention").arg(bad), I18n.t("Open the health check with Super+H."), "critical");
+                    Notifs.say("UmmItOS", I18n.t("Health check: %1 to look at").arg(bad), I18n.t("Open the health check with Super+H."), "critical");
             }
         }
     }

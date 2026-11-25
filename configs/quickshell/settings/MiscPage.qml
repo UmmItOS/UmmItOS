@@ -58,7 +58,7 @@ ColumnLayout {
 
     SettingRow {
         title: I18n.t("Warn about heavy processes")
-        hint: I18n.t("When one process keeps the CPU above %1% or the GPU above %2% for %3 seconds, the bar and a notice say so. It never kills anything.").arg(Theme.hog.cpu).arg(Theme.hog.gpu).arg(Theme.hog.samples * Theme.duration.hogPoll / 1000)
+        hint: I18n.t("When one process keeps the CPU above %1% or the GPU above %2% for %3 seconds, the bar says so. It never kills anything.").arg(Theme.hog.cpu).arg(Theme.hog.gpu).arg(Theme.hog.samples * Theme.duration.hogPoll / 1000)
 
         Toggle {
             onToggled: Settings.setHogWarn(!Settings.hogWarn)
