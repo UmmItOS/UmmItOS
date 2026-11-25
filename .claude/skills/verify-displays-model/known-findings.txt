@@ -1,0 +1,7 @@
+# Counterexamples check.sh treats as known: "<scope> <property>: <actions>  # <id> <summary>".
+# A counterexample matches when it starts with <actions>.
+# Each was replayed against Displays.qml and can happen in the code; see SKILL.md, Findings. Delete a line once its bug is fixed.
+childlives NeverStranded: Open Apply Close Crash  # F1 revert() deletes the undo file before its restore has run; a restore queued behind the apply is lost when the shell dies
+childdies NeverStranded: Open Apply Close RunnerDone Crash  # F2 same as F1 with the restore already started, if a reload kills that hyprctl (untested)
+childlives SnapshotIsHome: Open Apply Close Open RunnerDone Apply  # F3 apply() snapshots the cached root.outputs while a revert is still in flight
+childdies SnapshotIsHome: Open Apply Close Open RunnerDone Apply  # F3 apply() snapshots the cached root.outputs while a revert is still in flight
