@@ -50,11 +50,13 @@ Run(c) ==
     IF running = "none" THEN running' = c /\ queued' = queued
     ELSE queued' = c /\ running' = running
 
-\* revert(), Displays.qml:170: forget() removes the file, then run() starts the restore.
+\* revert(), Displays.qml:170: drop the snapshot and run() the restore. The file stays
+\* until the restore has run (RunnerDone).
 Revert ==
     IF snap
-    THEN /\ snap' = FALSE /\ fileExists' = FALSE
+    THEN /\ snap' = FALSE
          /\ Run(IF snapLayout = "orig" THEN "revorig" ELSE "revchg")
+         /\ UNCHANGED fileExists
     ELSE UNCHANGED <<snap, fileExists, running, queued>>
 
 \* onOpenChanged, Displays.qml:189: opening refreshes `seen`.
@@ -71,11 +73,13 @@ Close ==
     /\ UNCHANGED <<shellAlive, snapLayout, remaining, layout, seen, fileContent, age, wd,
                    applies, crashes, kept>>
 
-\* apply(mode), Displays.qml:150: snapshot only if none is held, write the file and
-\* start the watchdog, then run the change. (The early return for the same mode is not
-\* modelled; picking any card is allowed.)
+\* apply(mode), Displays.qml:150: ignored while a command is running or queued (or a
+\* read is under way, which RunnerDone treats as already done); otherwise snapshot only
+\* if none is held, write the file and start the watchdog, then run the change. (The
+\* early return for the same mode is not modelled; picking any card is allowed.)
 Apply ==
     /\ shellAlive /\ open /\ ~kept /\ applies < MaxApplies
+    /\ running = "none" /\ queued = "none"
     /\ snap' = TRUE
     /\ snapLayout' = IF snap THEN snapLayout ELSE seen
     /\ fileContent' = IF snap THEN snapLayout ELSE seen
@@ -92,13 +96,15 @@ Keep ==
     /\ UNCHANGED <<shellAlive, snapLayout, remaining, running, queued, layout, seen,
                    fileContent, age, wd, applies, crashes>>
 
-\* runner.onExited, Displays.qml:222: refresh `seen`, then start what was queued.
+\* runner.onExited, Displays.qml:222: refresh `seen`, then start what was queued; with
+\* nothing queued and no change being confirmed, the file is no longer needed.
 RunnerDone ==
     /\ shellAlive /\ running # "none"
     /\ layout' = IF running = "apply" THEN "chg" ELSE Effect(running)
     /\ seen' = IF running = "apply" THEN "chg" ELSE Effect(running)
     /\ running' = queued /\ queued' = "none"
-    /\ UNCHANGED <<shellAlive, open, snap, snapLayout, remaining, fileExists, fileContent,
+    /\ fileExists' = IF queued = "none" /\ ~snap THEN FALSE ELSE fileExists
+    /\ UNCHANGED <<shellAlive, open, snap, snapLayout, remaining, fileContent,
                    age, wd, applies, crashes, kept>>
 
 \* One second passes (only while no hyprctl is mid-call): the Timer at Displays.qml:200
@@ -138,10 +144,11 @@ Crash ==
     /\ crashes' = crashes + 1
     /\ UNCHANGED <<snapLayout, seen, fileExists, fileContent, age, wd, applies, kept>>
 
-\* Component.onCompleted, Displays.qml:182: refresh, then rescue(0) at once.
+\* Component.onCompleted, Displays.qml:182: refresh, then rescue(0, 0): a file left by the
+\* shell that ran before is restored at once, whatever its age.
 Restart ==
     /\ ~shellAlive /\ shellAlive' = TRUE
-    /\ IF fileExists /\ age >= Seconds
+    /\ IF fileExists
        THEN layout' = fileContent /\ fileExists' = FALSE /\ seen' = fileContent
        ELSE UNCHANGED <<layout, fileExists>> /\ seen' = layout
     /\ UNCHANGED <<open, snap, snapLayout, remaining, running, queued, fileContent, age, wd,

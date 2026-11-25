@@ -30,18 +30,18 @@ Bounds: 2 picks, 1 shell death per run, `Seconds` = 2 ticks (the code uses 15; o
 
 Covered, with the line numbers the model's comments cite:
 
-- `configs/quickshell/displays/Displays.qml`: `refresh()` (42), `run()` (49), `rescue()` (137), `sweep()` (142), `forget()` (146), `apply()` (150), `keep()` (163), `revert()` (170), `Component.onCompleted` (182), `onOpenChanged` (189), the Timer (200), `runner.onExited` (222), and the hardware-changed revert in `reader` (275).
+- `configs/quickshell/displays/Displays.qml`: `refresh()` (42), `run()` (49), `rescue()` (137), `sweep()` (142), `forget()` (146), `apply()` (150), `keep()` (164), `revert()` (171), `Component.onCompleted` (185), `onOpenChanged` (192), the Timer (203), `runner.onExited` (227), and the hardware-changed revert in `reader` (280).
 - `configs/quickshell/displays/DisplaysWindow.qml`: Escape and the outside click set `Displays.open = false` (97, 105), which reverts; Revert and Keep buttons (474, 484); card clicks and keys call `Displays.apply` (116, 189, 286).
 - `configs/quickshell/background/Background.qml:46` opens the panel.
 
-**Sync commit: `0711303`.** At that commit the model describes the files above. Move it forward only after you have read every change to them since this commit and confirmed the model still describes them.
+**Sync commit: `97a3c06`.** At that commit the model describes the files above. Move it forward only after you have read every change to them since this commit and confirmed the model still describes them.
 
 How the model maps the code:
 
 - Each action is one QML handler taken whole (QML runs one at a time). `Tick` is one second: the Timer's count-down, the file's age, and each watchdog's `sleep`.
 - `layout` is what Hyprland really has; `seen` is `root.outputs`, the shell's cached read. `snapLayout` is what `root.snapshot` holds. `fileContent` is what the revert file restores. `"orig"` is the layout before the first change, `"chg"` any changed one.
 - `running` and `queued` are the runner Process and `root.queued` (the latest queued command wins, as in `run()`). `revorig` and `revchg` are restores to those two layouts.
-- `wd` holds one entry per detached `rescue()`; a fired one restores only if the file exists and is at least `Seconds` old.
+- `wd` holds one entry per detached `rescue()`; a fired one restores only if the file exists and is at least `Seconds` old. At shell start `rescue(0, 0)` restores any file at once (`Restart`).
 - `Crash` is the shell dying or reloading: state and queue are lost, the file and the watchdogs stay.
 - Ghost variable, not in the code: `kept` (the user pressed Keep, so the change is meant to stay).
 
@@ -49,19 +49,20 @@ Assumptions (each is a way the real system could differ):
 
 - A `hyprctl` call finishes within one second (`Tick` waits for the runner to be idle).
 - The detached `rm` from `forget()` finishes before anything else happens; a new pick within milliseconds of Keep could in theory have its new file removed by the old `rm`.
-- `seen` is refreshed the moment a runner command ends and when the panel opens; the real refresh is a second process, so there is a short extra gap.
+- `seen` is refreshed the moment a runner command ends and when the panel opens. The real refresh is a second process; `apply()` ignores a pick while it runs (`reader.running`), so the gap is closed, but the model does not show it.
 - Only a pick changes the layout; the model has one changed layout, so which of the four modes was picked does not matter.
 
 Not covered: whether `planFor()` and `restorePlan()` ever produce a plan with every output off, or a mirror of an output that is off (a second target: they are pure functions that a script could lift out and run over every small set of outputs); Hyprland's own behaviour for the Lua `hl.monitor` calls; the panel's cards, animation and text.
 
 ## Findings
 
-All four were replayed step by step against `Displays.qml` and can happen. None needs more than normal use plus a shell reload, except F2. They are listed in `known-findings.txt`; delete a line once its bug is fixed. A model of the fixed design (below) holds, so the properties are reachable.
+The first version of this check (at `0711303`) found four ways the undo could fail, each replayed against `Displays.qml`. All are fixed in `97a3c06`; `known-findings.txt` is empty and every property holds in both scopes.
 
-- **F1** (`NeverStranded`). Pick a layout, then close the panel at once (Escape) while the apply `hyprctl` is still running, then the shell reloads or dies before that call ends. `revert()` has already deleted the revert file (`forget()`, line 175) and its restore is only queued behind the apply (`run()` stores it in `root.queued`, line 51). The reload loses the queued restore; the apply finishes; no file is left for the watchdog. The monitors stay changed. Window: the length of one `hyprctl` call plus a reload in it.
-- **F2** (`NeverStranded`, `childdies` only). The same, with the restore already started when the shell dies. It happens only if a reload kills a running `hyprctl`. `kill -9` does not (tested), a hot reload is untested.
-- **F3** (`SnapshotIsHome`). `apply()` takes `root.outputs` as the layout to return to (line 155), and `root.outputs` is a cache that a revert in flight has not updated. Pick, let the Timer revert (or Escape), and pick again before that restore ends and the reader refreshes: the new snapshot and revert file hold the changed layout, so after 15 s without Keep the "revert" lands in it. The same cache goes stale in two longer-lived ways, both seen as counterexamples of a fixed variant of the model: (a) after a shell reload during the 15 s, the changed layout is still on screen, and a pick before the watchdog fires snapshots it and overwrites the revert file with it; (b) the watchdog (or anything outside the runner) restores the layout under an open panel, and nothing refreshes the cache, so the next pick snapshots the old changed layout.
-- Root cause of F1 and F3: the recovery is dropped or overwritten before it has finished its job. A design that passes both properties in both scopes (checked 2026-11-25 on a scratch copy): remove the revert file only when the restore has run (in `runner.onExited`), refuse a pick while a command runs or is queued, and take the snapshot from the revert file if one exists, otherwise from a fresh read.
+- **F1** (`NeverStranded`). Pick, press Escape while the apply `hyprctl` still runs, and have the shell reload or die in that window: `revert()` had already deleted the revert file and its restore was only queued, so the monitors stayed changed. Fixed: the file is removed in `runner.onExited` once nothing is queued and nothing is being confirmed, and `revert()` no longer deletes it.
+- **F2** (`NeverStranded`, `childdies`). The same with the restore already started, if a reload kills a running `hyprctl`. Fixed by the same change, since the file now outlives the restore.
+- **F3** (`SnapshotIsHome`). `apply()` snapshots `root.outputs`, a cache. A pick while a revert was in flight, after a shell restart mid-confirm, or after the watchdog restored under an open panel snapshotted a changed layout, so "reverting" landed in it. Fixed: `apply()` returns while `runner` or `reader` runs or `root.queued` is set, and a shell that starts with a revert file restores it at once (`rescue(0, 0)`), so no changed layout survives a restart to be snapshotted.
+
+Fixes were shown on screen 2026-11-25 in the nested stack: the 15 s timer restores with the file gone; Escape right after a pick restores with no file left; killing the test shell mid-confirm and relaunching it restores within 1 s.
 
 ## When you change Displays.qml
 
@@ -79,4 +80,4 @@ For a `NEW VIOLATION`, replay each step against `Displays.qml`. If a step cannot
 
 A fixed bug leaves a known line that no longer matches: `check.sh` will then print `holds`; delete the line.
 
-A check you have never seen fail proves nothing. Proven on 2026-11-25, on a scratch copy of a model with the fixes above applied: dropping the watchdog's entry in `Apply` fails `NeverStranded` with `Open Apply Crash Restart`; not writing the file in `Apply` fails it with `Open Apply Crash`; deleting the file in `Revert` again fails it with `Open Apply Close Crash`. After a model change, repeat one of these on a scratch copy (`check.sh /tmp/x.tla`) and confirm the property still catches it.
+A check you have never seen fail proves nothing. Proven on 2026-11-25 on scratch copies of this model: dropping the watchdog's entry in `Apply` fails `NeverStranded` with `Open Apply Crash Restart`; not writing the file in `Apply` fails it with `Open Apply Crash`; deleting the file in `Revert` brings back F1 and a `SnapshotIsHome` failure; removing the idle guard from `Apply` brings back F3; making `Restart` wait for the file's age brings back `Open Apply Crash Restart Open Apply`. After a model change, repeat one of these on a scratch copy (`check.sh /tmp/x.tla`) and confirm the property still catches it.
