@@ -1,6 +1,6 @@
 # Desktop menu
 
-A right-click on the empty desktop opens a small menu titled "Desktop" at the pointer (`background/DesktopMenu.qml`, a `Flyout`). It has three actions, "Displays…", "Wallpaper…" and "Settings", and then a "Show on desktop" group of switches: Weather card, Now playing card, Activate Linux and FPS counter.
+A right-click on the empty desktop opens a small menu titled "Desktop" at the pointer (`background/DesktopMenu.qml`, a `Flyout`). It has three actions, "Displays…", "Wallpaper…" and "Settings", and then a "Show on desktop" group of switches: Weather card, Now playing card, DeepSeek balance, Activate Linux and FPS counter.
 
 ## Sub-features
 
@@ -23,7 +23,7 @@ Steps (proven 2026-11-04):
 
 - **Open.** Run `run.sh hyprctl dispatch 'hl.dsp.cursor.move({ x = 700, y = 600 })'`, then `run.sh wlrctl pointer move 5 5` and `run.sh wlrctl pointer click right`. `shot.sh menu-open` shows "Desktop" and the rows.
 - **Keys.** Press `run.sh wtype -k Down` four times. The focus bar sits on "Weather card". `run.sh wtype -k space` flips it: `grep weather $STACK/home/.config/ummitos/desktop.conf` changes between `1` and `0`, and the menu stays open.
-- **Action.** The seven rows wrap: from "Weather card", four more Down land on "Displays…" and five on "Wallpaper…". Return opens `ummitos-displays` or `ummitos-wallpaper-browser`, as `run.sh hyprctl -j layers` shows. Close what opened before the next journey; `wallpaper browse` toggles, so a drawer left open is shut by the next call.
+- **Action.** The eight rows wrap: from "Weather card", five more Down land on "Displays…" and six on "Wallpaper…". Return opens `ummitos-displays` or `ummitos-wallpaper-browser`, as `run.sh hyprctl -j layers` shows. Close what opened before the next journey; `wallpaper browse` toggles, so a drawer left open is shut by the next call.
 - **Escape.** With the menu open, `run.sh wtype -k Escape` closes it.
 - **Wallpaper….** Click it, about 90 px right and 130 px below (measured on screen 2026-11-25) the click point. The drawer opens (see wallpaper.md).
 

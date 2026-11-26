@@ -85,6 +85,8 @@ Singleton {
     property bool activateShow: true
     property bool weatherShow: true
     property bool mediaShow: true
+    // The DeepSeek balance card; off until asked for, since it needs a key.
+    property bool deepseekShow: false
     // A frame-rate counter in the corner; off until asked for.
     property bool fpsShow: false
     // The bar and a notice warn when one process keeps the CPU or GPU busy.
@@ -152,7 +154,7 @@ Singleton {
     }
 
     function writeDesktop(): void {
-        desktopConf.setText("activate=" + (activateShow ? 1 : 0) + "\nweather=" + (weatherShow ? 1 : 0) + "\nmic=" + (micListen ? 1 : 0) + "\nmedia=" + (mediaShow ? 1 : 0) + "\nfps=" + (fpsShow ? 1 : 0) + "\nhog=" + (hogWarn ? 1 : 0) + "\n");
+        desktopConf.setText("activate=" + (activateShow ? 1 : 0) + "\nweather=" + (weatherShow ? 1 : 0) + "\nmic=" + (micListen ? 1 : 0) + "\nmedia=" + (mediaShow ? 1 : 0) + "\nfps=" + (fpsShow ? 1 : 0) + "\nhog=" + (hogWarn ? 1 : 0) + "\ndeepseek=" + (deepseekShow ? 1 : 0) + "\n");
     }
 
     function setActivate(on: bool): void {
@@ -172,6 +174,11 @@ Singleton {
 
     function setMediaCard(on: bool): void {
         mediaShow = on;
+        writeDesktop();
+    }
+
+    function setDeepseekCard(on: bool): void {
+        deepseekShow = on;
         writeDesktop();
     }
 
@@ -424,6 +431,8 @@ Singleton {
                     root.fpsShow = line.slice(4) === "1";
                 else if (line.startsWith("hog="))
                     root.hogWarn = line.slice(4) !== "0";
+                else if (line.startsWith("deepseek="))
+                    root.deepseekShow = line.slice(9) === "1";
             }
         }
 

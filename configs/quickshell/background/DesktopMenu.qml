@@ -132,6 +132,14 @@ Flyout {
     }
 
     Entry {
+        onTriggered: Settings.setDeepseekCard(!Settings.deepseekShow)
+
+        label: I18n.t("DeepSeek balance")
+        checkable: true
+        ticked: Settings.deepseekShow
+    }
+
+    Entry {
         onTriggered: Settings.setActivate(!Settings.activateShow)
 
         label: I18n.t("Activate Linux")

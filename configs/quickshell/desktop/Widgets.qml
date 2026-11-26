@@ -4,7 +4,7 @@ import Quickshell.Wayland
 import QtQuick
 import ".."
 
-// Widgets on the desktop: above the wallpaper, below every window. The weather and now-playing cards stack top-right in one column that dodges the notifications so neither overflows or is covered.
+// Widgets on the desktop: above the wallpaper, below every window. The weather, now-playing and DeepSeek balance cards stack top-right in one column that dodges the notifications so none overflows or is covered.
 Variants {
     model: Quickshell.screens
 
@@ -30,7 +30,7 @@ Variants {
 
         screen: modelData
         // Stays mapped while a card fades out.
-        visible: weather.opacity > 0 || media.opacity > 0
+        visible: weather.opacity > 0 || media.opacity > 0 || deepseek.opacity > 0
         WlrLayershell.namespace: "ummitos-widgets"
         WlrLayershell.layer: WlrLayer.Bottom
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
@@ -96,6 +96,12 @@ Variants {
 
             MediaCard {
                 id: media
+
+                anchors.right: parent.right
+            }
+
+            DeepSeekCard {
+                id: deepseek
 
                 anchors.right: parent.right
             }
