@@ -11,7 +11,7 @@ UmmItOS is Arch Linux plus Hyprland, shipped as a bash installer and a dotfiles 
 
 ## Before you build
 
-Every feature, fix or change goes through the checklist: programming reviewed with `/qt-development-skills:qt-qml`, UI and UX reviewed with `/hallmark` with motion included, and nothing is done until it is checked on screen.
+Adding a feature starts by loading `/poteto-mode` and following its Feature playbook; a fix or a small change does not need it. Every feature, fix or change goes through the checklist: programming reviewed with `/qt-development-skills:qt-qml`, UI and UX reviewed with `/hallmark` with motion included, and nothing is done until it is checked on screen.
 
 @DOCS/CHECKLIST.md
 
