@@ -178,7 +178,8 @@ Singleton {
     readonly property QtObject media: QtObject {
         readonly property int art: 64
         readonly property real beat: 0.07
-        readonly property real haloScale: 1.3
+        // Under the gap to the words, so the halo never touches them.
+        readonly property real haloScale: 1.2
         readonly property int bars: 5
         readonly property int barWidth: 4
         readonly property int barMax: 26
@@ -186,6 +187,8 @@ Singleton {
         // Pixels per second the overflowing title moves, and the pause at each end.
         readonly property int scrollSpeed: 40
         readonly property int scrollPause: 1600
+        // How wide the soft edge of a scrolling title is, where text runs on beyond it.
+        readonly property int fade: 24
         readonly property int progress: 3
         // How far a new track's text rises in from.
         readonly property int rise: 10

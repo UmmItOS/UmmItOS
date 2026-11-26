@@ -191,9 +191,22 @@ Rectangle {
                 Item {
                     id: lane
 
+                    // How much of each soft edge shows: only on a side that has text running on past it.
+                    readonly property real fadeLeft: Math.min(1, Math.max(0, -title.x / Theme.media.fade))
+                    readonly property real fadeRight: Math.min(1, Math.max(0, (title.overflow + title.x) / Theme.media.fade))
+
                     Layout.fillWidth: true
                     implicitHeight: title.implicitHeight
                     clip: true
+                    layer.enabled: title.overflow > 0
+
+                    layer.effect: ShaderEffect {
+                        property real showLeft: lane.fadeLeft
+                        property real showRight: lane.fadeRight
+                        property real edge: Theme.media.fade / Math.max(1, lane.width)
+
+                        fragmentShader: Qt.resolvedUrl("fade.frag.qsb")
+                    }
 
                     Text {
                         id: title
