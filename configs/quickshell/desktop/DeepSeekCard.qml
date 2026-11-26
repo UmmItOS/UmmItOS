@@ -10,7 +10,7 @@ Rectangle {
 
     readonly property bool wanted: Settings.deepseekShow
     // Said in place of the balance when there is none to show, or under it when it is not good.
-    readonly property string note: DeepSeek.noKey ? I18n.t("Put your API key in %1").arg("~/.config/ummitos/deepseek.key") : DeepSeek.failed ? I18n.t("Can't read the balance. Check the key.") : DeepSeek.ready && !DeepSeek.usable ? I18n.t("Balance too low for API calls") : ""
+    readonly property string note: DeepSeek.noKey ? I18n.t("Add your DeepSeek API key in Settings, Misc.") : DeepSeek.failed ? I18n.t("Can't read the balance. Check the key.") : DeepSeek.ready && !DeepSeek.usable ? I18n.t("Balance too low for API calls") : DeepSeek.otherCurrency ? I18n.t("No %1 balance on this account.").arg(Settings.deepseekCurrency) : ""
 
     implicitWidth: Theme.widgetWidth
     implicitHeight: body.implicitHeight + Theme.spacing.large * 2

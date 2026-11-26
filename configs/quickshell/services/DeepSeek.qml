@@ -9,15 +9,21 @@ import ".."
 Singleton {
     id: root
 
-    // The balance entry of the last good answer; a later failure keeps it.
-    property var info: null
+    // Every currency of the last good answer; a later failure keeps them.
+    property var entries: []
+    // A key file is there and not empty; the key itself is never held here.
+    property bool keySaved: false
     // Whether the balance covers API calls, as the service says.
     property bool usable: true
     property bool failed: false
     // No key file, or an empty one.
     property bool noKey: false
 
+    // The chosen currency's entry, else whichever the account has.
+    readonly property var info: entries.find(e => e.currency === Settings.deepseekCurrency) ?? entries[0] ?? null
     readonly property bool ready: info !== null
+    // The account has no balance in the chosen currency, so the card shows another.
+    readonly property bool otherCurrency: ready && info.currency !== Settings.deepseekCurrency
     readonly property string total: info?.total_balance ?? ""
     readonly property string granted: info?.granted_balance ?? ""
     readonly property string toppedUp: info?.topped_up_balance ?? ""
@@ -31,6 +37,55 @@ Singleton {
         fetch.running = true;
     }
 
+    // The one place a key enters: only the characters a key has, so nothing else reaches curl's config line.
+    function setKey(key: string): bool {
+        const k = key.trim();
+        if (!/^[A-Za-z0-9._-]{8,200}$/.test(k))
+            return false;
+        writer.key = k;
+        writer.running = true;
+        return true;
+    }
+
+    function clearKey(): void {
+        Quickshell.execDetached(["rm", "-f", root.keyFile]);
+        root.entries = [];
+        root.noKey = true;
+        root.failed = false;
+        root.keySaved = false;
+    }
+
+    Component.onCompleted: probe.running = true
+
+    Process {
+        id: probe
+
+        onExited: code => root.keySaved = code === 0
+
+        command: ["test", "-s", root.keyFile]
+    }
+
+    // Written through stdin so no process list shows the key, and readable by this user only.
+    Process {
+        id: writer
+
+        property string key
+
+        onStarted: {
+            write(key + "\n");
+            key = "";
+            stdinEnabled = false;
+        }
+
+        onExited: {
+            probe.running = true;
+            root.refresh();
+        }
+
+        command: ["sh", "-c", 'umask 077; mkdir -p "${1%/*}"; cat > "$1" && chmod 600 "$1"', "sh", root.keyFile]
+        stdinEnabled: true
+    }
+
     Process {
         id: fetch
 
@@ -42,7 +97,7 @@ Singleton {
             root.failed = code !== 3;
             // Without a key an old balance would only mislead.
             if (code === 3)
-                root.info = null;
+                root.entries = [];
             if (code !== 3 && code !== 22)
                 retry.restart();
         }
@@ -57,10 +112,9 @@ Singleton {
                     return;
                 try {
                     const answer = JSON.parse(text);
-                    const entry = answer.balance_infos.find(b => b.currency === "CNY") ?? answer.balance_infos[0];
-                    if (!entry)
+                    if (!Array.isArray(answer.balance_infos) || answer.balance_infos.length === 0)
                         throw new Error("no balance");
-                    root.info = entry;
+                    root.entries = answer.balance_infos;
                     root.usable = answer.is_available !== false;
                     root.failed = false;
                     root.noKey = false;
