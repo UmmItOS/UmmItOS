@@ -47,11 +47,12 @@ Rectangle {
             Layout.fillWidth: true
             spacing: Theme.spacing.small
 
-            MaterialIcon {
-                text: "account_balance_wallet"
-                color: Theme.accentText
-                fill: 1
-                size: Theme.icon.small
+            Image {
+                Layout.preferredWidth: Theme.icon.small
+                Layout.preferredHeight: Theme.icon.small
+                source: Qt.resolvedUrl("deepseek.svg")
+                sourceSize: Qt.size(Theme.icon.small * 2, Theme.icon.small * 2)
+                fillMode: Image.PreserveAspectFit
             }
 
             Text {
