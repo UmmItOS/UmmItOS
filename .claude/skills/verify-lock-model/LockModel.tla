@@ -29,11 +29,11 @@ Init ==
     /\ unlocking = FALSE /\ releaseTimer = FALSE /\ checking = FALSE
     /\ subLocked = FALSE /\ authed = FALSE /\ wantLock = FALSE
 
-\* capture(then), Lock.qml:58: preparing = true, start grab with `then`.
+\* capture(then), Lock.qml:57: preparing = true, start grab with `then`.
 StartCapture(t) ==
     /\ preparing' = TRUE /\ grab' = "running" /\ then' = t
 
-\* lock(), Lock.qml:68 (IPC `lock lock`, Super+L, lock.sh, Session menu).
+\* lock(), Lock.qml:67 (IPC `lock lock`, Super+L, lock.sh, Session menu).
 Lock ==
     /\ IF locked /\ unlocking
          THEN \* mid-unlock: stop release, stay locked
@@ -49,7 +49,7 @@ Lock ==
                 /\ wantLock' = TRUE
                 /\ UNCHANGED <<locked, previewing, unlocking, releaseTimer, checking, subLocked, authed>>
 
-\* preview(), Lock.qml:93 (IPC `lock preview`, and `lock alarm`).
+\* preview(), Lock.qml:90 (IPC `lock preview`, and `lock alarm`).
 Preview ==
     AllowPreview /\
     IF previewing
@@ -60,7 +60,7 @@ Preview ==
              /\ UNCHANGED <<locked, previewing, unlocking, releaseTimer, checking, subLocked, authed, wantLock>>
         ELSE UNCHANGED vars
 
-\* release2(), Lock.qml:115: preparing = false, run then. For a lock, take() also stops release and clears unlocking.
+\* release2(), Lock.qml:112: preparing = false, run then. For a lock, take() also stops release and clears unlocking.
 Release2Body ==
     /\ preparing' = FALSE /\ grab' = "idle" /\ then' = "none"
     /\ locked' = (locked \/ then = "lock")
@@ -70,37 +70,37 @@ Release2Body ==
     /\ releaseTimer' = IF then = "lock" THEN FALSE ELSE releaseTimer
     /\ unlocking' = IF then = "lock" THEN FALSE ELSE unlocking
 
-\* grab onExited with a non-zero code, Lock.qml:170: release2() at once.
+\* grab onExited with a non-zero code, Lock.qml:167: release2() at once.
 GrabFail ==
     /\ grab = "running"
     /\ Release2Body
     /\ UNCHANGED <<checking, subLocked>>
 
-\* grab onExited with 0, Lock.qml:170: captured, waitLimit started.
+\* grab onExited with 0, Lock.qml:167: captured, waitLimit started.
 GrabOk ==
     /\ grab = "running"
     /\ grab' = "loaded"
     /\ UNCHANGED <<locked, previewing, preparing, then, unlocking, releaseTimer, checking, subLocked, authed, wantLock>>
 
-\* readyCheck() (Lock.qml:103) once the pictures load, or waitLimit (Lock.qml:202): release2().
+\* readyCheck() (Lock.qml:100) once the pictures load, or waitLimit (Lock.qml:199): release2().
 Ready ==
     /\ grab = "loaded"
     /\ Release2Body
     /\ UNCHANGED <<checking, subLocked>>
 
-\* submit(), Lock.qml:122: checkLocked = locked. From the password field of LockContent, drawn while locked or previewing.
+\* submit(), Lock.qml:119: checkLocked = locked. From the password field of LockContent, drawn while locked or previewing.
 Submit ==
     /\ (locked \/ previewing) /\ ~checking
     /\ checking' = TRUE /\ subLocked' = locked
     /\ UNCHANGED <<locked, previewing, preparing, then, grab, unlocking, releaseTimer, authed, wantLock>>
 
-\* pam onCompleted with a failure, or onError: fail(), Lock.qml:133.
+\* pam onCompleted with a failure, or onError: fail(), Lock.qml:130.
 PamFail ==
     /\ checking
     /\ checking' = FALSE
     /\ UNCHANGED <<locked, previewing, preparing, then, grab, unlocking, releaseTimer, subLocked, authed, wantLock>>
 
-\* pam onCompleted with PamResult.Success, Lock.qml:239: unlocking and release restarted, only when checkLocked matches locked.
+\* pam onCompleted with PamResult.Success, Lock.qml:236: unlocking and release restarted, only when checkLocked matches locked.
 PamSuccess ==
     /\ checking
     /\ checking' = FALSE
@@ -110,7 +110,7 @@ PamSuccess ==
          ELSE UNCHANGED <<unlocking, releaseTimer, authed>>
     /\ UNCHANGED <<locked, previewing, preparing, then, grab, subLocked, wantLock>>
 
-\* release Timer onTriggered, Lock.qml:216: unlock.
+\* release Timer onTriggered, Lock.qml:213: unlock.
 ReleaseFire ==
     /\ releaseTimer
     /\ locked' = FALSE /\ previewing' = FALSE /\ unlocking' = FALSE /\ releaseTimer' = FALSE

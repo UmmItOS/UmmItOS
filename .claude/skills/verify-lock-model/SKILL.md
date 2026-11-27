@@ -31,10 +31,10 @@ It needs `java` (any recent JRE). The first run downloads TLC (`tla2tools.jar` v
 
 Covered, with the line numbers the model's comments cite:
 
-- `configs/quickshell/lock/Lock.qml`: `lock()` (68) and its `take` callback, `capture()` (58), `preview()` (93), `readyCheck()` (103), `release2()` (115), `submit()` (122), `fail()` (133), grab `onExited` (170), `waitLimit` (202), the `release` Timer (216), PAM `onCompleted`/`onError` (239, 254), `checkLocked`, the `lock` IpcHandler.
+- `configs/quickshell/lock/Lock.qml`: `lock()` (67) and its `take` callback, `capture()` (57), `preview()` (90), `readyCheck()` (100), `release2()` (112), `submit()` (119), `fail()` (130), grab `onExited` (167), `waitLimit` (199), the `release` Timer (213), PAM `onCompleted`/`onError` (236, 251), `checkLocked`, the `lock` IpcHandler.
 - `configs/quickshell/lock/LockContent.qml`: the password field's Return calls `Lock.submit()` whenever the lock or the preview shows; nothing disables it while `unlocking`.
 
-**Sync commit: `d19ac08`.** At that commit the model describes the files above. Move it forward only after you have read every change to them since this commit and confirmed the model still describes them.
+**Sync commit: `1b2736e`.** At that commit the model describes the files above. Move it forward only after you have read every change to them since this commit and confirmed the model still describes them.
 
 How the model maps the code:
 
@@ -69,4 +69,4 @@ Read every result with the `/statechart` skill: it turns a violation into its sh
 
 For a `NEW VIOLATION`, replay each step against the code. If a step cannot happen in Lock.qml (a guard the model lacks, two handlers the model merged, an assignment it misses), the model is wrong: fix the model, not the property. If every step can happen, it is a bug: tell it as steps in the code's words, name the commit that introduced it, and do not weaken the property to make it pass. Product fixes go in their own commit.
 
-A check you have never seen fail proves nothing: after a model change, break the matching code path in a scratch copy of the model (`check.sh /tmp/x.tla`) and confirm a property catches it. Proven on 2026-11-18: removing the mid-unlock branch of `lock()` (Lock.qml:67-72) gives `NoUnlockWhileLockPending` violated by `Lock GrabFail Submit PamSuccess Lock ReleaseFire`.
+A check you have never seen fail proves nothing: after a model change, break the matching code path in a scratch copy of the model (`check.sh /tmp/x.tla`) and confirm a property catches it. Proven on 2026-11-18: removing the mid-unlock branch of `lock()` (Lock.qml:66-72) gives `NoUnlockWhileLockPending` violated by `Lock GrabFail Submit PamSuccess Lock ReleaseFire`. Re-proven 2026-11-27. Keep the ghost in the broken branch (`wantLock' = TRUE`, everything else unchanged): dropping the ghost too makes every property blind to the lost request, and the broken copy then passes.

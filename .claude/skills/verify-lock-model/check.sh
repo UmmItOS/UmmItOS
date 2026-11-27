@@ -4,7 +4,7 @@ set -uo pipefail
 here=$(cd "$(dirname "$0")" && pwd)
 spec=${1:-$here/LockModel.tla}
 version=v1.8.0
-sum=7e53aa636dac8a3cb0533f343115c0548e03fc0ce5edc7739becf58d3d0fb84f
+sum=fdffef247f563ef6edbfd44958d2a82db79e7564e07cb673262d896353fa6713  # GitHub's own digest for the v1.8.0 asset on 2026-11-25; the tag is a rolling prerelease, so a new upload means a new hash: compare with `gh api repos/tlaplus/tlaplus/releases/tags/v1.8.0` before changing it
 jar=${XDG_CACHE_HOME:-$HOME/.cache}/ummitos-tla/tla2tools-$version.jar
 properties=(NoUnauthenticatedUnlock NoUnlockWhileLockPending LockRequestHonoured)
 
