@@ -42,6 +42,7 @@ For anything larger than a small fix, run the reviews above as parallel subagent
 ## 4. Done means checked
 
 - [ ] `qs log -c ummitos` shows a fresh `Configuration Loaded` with no new warning.
+- [ ] `python3 .claude/hooks/lint.py` says `lint: ok` (the commit hook runs it for agents).
 - [ ] qmllint is clean on the touched files: no unqualified access, no unused imports. The `Theme` "member not found" warnings are known false ones.
 - [ ] The changed surface was seen in a screenshot or recording.
 - [ ] Anything that could not be clicked from a terminal is said plainly.

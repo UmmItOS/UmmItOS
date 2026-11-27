@@ -31,6 +31,7 @@ V=.claude/skills/verify-ummitos/scripts
 $V/up.sh && $V/doctor.sh          # The shell from this checkout in an isolated nested Hyprland
 $V/ipc.sh <target> <fn>           # Drive it; $V/shot.sh <name> for a screenshot; $V/down.sh to tear down
 node $V/check-scan.mjs            # The QR panel's host against WHATWG URL parsing (the one scripted test)
+python3 .claude/hooks/lint.py     # The repeated mistakes below, as checks; runs before every agent `git commit`
 ```
 
 There is no test suite, no lint config and no CI. Verification means running `shellcheck` and the shell, then reading its log and taking screenshots. `check-scan.mjs` is the only scripted test: it lifts `describe()` out of `scan/Scan.qml` and runs it in node. `/usr/lib/qt6/bin/qmllint -I /usr/lib/qt6/qml -I configs/quickshell <files>` finds unused imports and unqualified ids, but its hundreds of "member not found" warnings on `Theme.spacing.*` and friends are false: the token groups are plain `QtObject`s it cannot see into.
@@ -51,6 +52,20 @@ Each part of the repo has its own rule file in `.claude/rules/`. Claude Code loa
 | [versions.md](.claude/rules/versions.md) | When to cut a patch, minor or major | always |
 
 The checklist stays in [DOCS/CHECKLIST.md](DOCS/CHECKLIST.md) (imported above). The procedures are project skills: `/release` ([.claude/skills/release/](.claude/skills/release/SKILL.md)) cuts a version, `/full-review` ([.claude/skills/full-review/](.claude/skills/full-review/SKILL.md)) runs the five-lens review, and `verify-ummitos` checks a change on screen. Past issues with a write-up: [DOCS/RECORDING-FREEZE.md](DOCS/RECORDING-FREEZE.md) (a long wl-screenrec recording froze Hyprland when it stopped; fixed by moving to gpu-screen-recorder).
+
+## Rules and what enforces them
+
+Each rule here was broken at least twice. `.claude/hooks/lint.py` runs as a PreToolUse hook (`.claude/settings.json`) before any `git commit` an agent runs in this repo and blocks it with the file, line and the fix. There is no CI, so the hook and the command above are the only gate. An exception goes on the offending line: `lint-allow(<check>): <reason>; until YYYY-MM-DD; approved by <name>`, and fails again once the date passes.
+
+| Rule | Enforced by |
+|---|---|
+| A comment is one short line, only for a why the code cannot show | `lint.py` check `comments`, on new lines only (17 older blocks remain) |
+| Every literal `I18n.t()` key is in every language file | `lint.py` check `i18n` |
+| Sizes, spacing, radii and durations are `Theme` tokens, not numbers | `lint.py` check `tokens` |
+| Stop a process in the verify stack by name, never by matching a command line (it matched the agent's own shell three times) | `scripts/stop.sh` is the one way; `lint.py` check `kill` rejects `pkill -f` in recipes and rules |
+| Never start a second `qs -c ummitos` | the verify stack runs `qs -c ummitos-test`; otherwise this rule |
+| Hyprland's look (animations, borders, the cursor trail) is the owner's choice | judgment; five reverts so far |
+| A new feature starts with `/poteto-mode`; every change is checked on screen | judgment; `verify-ummitos` |
 
 ## Hard rules
 
