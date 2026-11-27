@@ -34,7 +34,7 @@ Covered, with the line numbers the model's comments cite:
 - `configs/quickshell/lock/Lock.qml`: `lock()` (67) and its `take` callback, `capture()` (57), `preview()` (90), `readyCheck()` (100), `release2()` (112), `submit()` (119), `fail()` (130), grab `onExited` (167), `waitLimit` (199), the `release` Timer (213), PAM `onCompleted`/`onError` (236, 251), `checkLocked`, the `lock` IpcHandler.
 - `configs/quickshell/lock/LockContent.qml`: the password field's Return calls `Lock.submit()` whenever the lock or the preview shows; nothing disables it while `unlocking`.
 
-**Sync commit: `1b2736e`.** At that commit the model describes the files above. Move it forward only after you have read every change to them since this commit and confirmed the model still describes them.
+**Sync commit: `83a89ed`.** At that commit the model describes the files above. Move it forward only after you have read every change to them since this commit and confirmed the model still describes them.
 
 How the model maps the code:
 

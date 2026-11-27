@@ -34,7 +34,7 @@ Covered, with the line numbers the model's comments cite:
 - `configs/quickshell/displays/DisplaysWindow.qml`: Escape and the outside click set `Displays.open = false` (97, 105), which reverts; Revert and Keep buttons (474, 484); card clicks and keys call `Displays.apply` (116, 189, 286).
 - `configs/quickshell/background/Background.qml:46` opens the panel.
 
-**Sync commit: `97a3c06`.** At that commit the model describes the files above. Move it forward only after you have read every change to them since this commit and confirmed the model still describes them.
+**Sync commit: `83a89ed`.** At that commit the model describes the files above. Move it forward only after you have read every change to them since this commit and confirmed the model still describes them.
 
 How the model maps the code:
 
