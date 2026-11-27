@@ -142,6 +142,20 @@ ColumnLayout {
     }
 
     SettingRow {
+        title: I18n.t("Read the balance every")
+        hint: I18n.t("How often the card asks DeepSeek again while it shows.")
+
+        Segmented {
+            onPicked: value => Settings.setDeepseekSeconds(value)
+
+            anchors.fill: parent
+            values: [15, 30, 60, 300, 600]
+            labels: [I18n.t("%1 s").arg(15), I18n.t("%1 s").arg(30), I18n.t("%1 min").arg(1), I18n.t("%1 min").arg(5), I18n.t("%1 min").arg(10)]
+            current: Settings.deepseekSeconds
+        }
+    }
+
+    SettingRow {
         title: I18n.t("Balance currency")
         hint: I18n.t("DeepSeek reports each currency the account holds. This picks which one the card shows; nothing is converted.")
 

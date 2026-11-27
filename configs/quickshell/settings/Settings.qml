@@ -89,6 +89,8 @@ Singleton {
     property bool deepseekShow: false
     // Which of the account's currencies the card shows: "CNY" or "USD".
     property string deepseekCurrency: "CNY"
+    // How often the card reads the balance again, in seconds.
+    property int deepseekSeconds: 60
     // A frame-rate counter in the corner; off until asked for.
     property bool fpsShow: false
     // The bar and a notice warn when one process keeps the CPU or GPU busy.
@@ -156,7 +158,7 @@ Singleton {
     }
 
     function writeDesktop(): void {
-        desktopConf.setText("activate=" + (activateShow ? 1 : 0) + "\nweather=" + (weatherShow ? 1 : 0) + "\nmic=" + (micListen ? 1 : 0) + "\nmedia=" + (mediaShow ? 1 : 0) + "\nfps=" + (fpsShow ? 1 : 0) + "\nhog=" + (hogWarn ? 1 : 0) + "\ndeepseek=" + (deepseekShow ? 1 : 0) + "\ndeepseekcur=" + deepseekCurrency + "\n");
+        desktopConf.setText("activate=" + (activateShow ? 1 : 0) + "\nweather=" + (weatherShow ? 1 : 0) + "\nmic=" + (micListen ? 1 : 0) + "\nmedia=" + (mediaShow ? 1 : 0) + "\nfps=" + (fpsShow ? 1 : 0) + "\nhog=" + (hogWarn ? 1 : 0) + "\ndeepseek=" + (deepseekShow ? 1 : 0) + "\ndeepseekcur=" + deepseekCurrency + "\ndeepseeksec=" + deepseekSeconds + "\n");
     }
 
     function setActivate(on: bool): void {
@@ -181,6 +183,11 @@ Singleton {
 
     function setDeepseekCard(on: bool): void {
         deepseekShow = on;
+        writeDesktop();
+    }
+
+    function setDeepseekSeconds(seconds: int): void {
+        deepseekSeconds = seconds;
         writeDesktop();
     }
 
@@ -442,6 +449,8 @@ Singleton {
                     root.deepseekShow = line.slice(9) === "1";
                 else if (line.startsWith("deepseekcur="))
                     root.deepseekCurrency = line.slice(12) === "USD" ? "USD" : "CNY";
+                else if (line.startsWith("deepseeksec=") && Number(line.slice(12)) >= 10)
+                    root.deepseekSeconds = Number(line.slice(12));
             }
         }
 

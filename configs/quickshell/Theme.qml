@@ -650,8 +650,6 @@ Singleton {
         readonly property int weatherRefresh: 1800000
         // How soon a fetch that failed for want of network is tried again.
         readonly property int weatherRetry: 60000
-        // How often the DeepSeek balance is read again while its card shows.
-        readonly property int balanceRefresh: 600000
         // How long the recorder may take to report in before its dialog opens again.
         readonly property int recordStart: 8000
         // How long the panel's "Clear all?" waits for the second click.

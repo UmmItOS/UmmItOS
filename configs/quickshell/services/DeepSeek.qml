@@ -149,10 +149,11 @@ Singleton {
         running: Settings.deepseekShow
         repeat: true
         triggeredOnStart: true
-        interval: Theme.duration.balanceRefresh
+        interval: Settings.deepseekSeconds * 1000
     }
 
     IpcHandler {
+
         function refresh(): void {
             root.refresh();
         }
