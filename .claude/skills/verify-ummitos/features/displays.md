@@ -7,7 +7,7 @@ Super+P opens a panel (`ummitos-displays`) with four mode cards: This screen onl
 - `displays-open`: `displays toggle` opens the panel, with the current mode card lit and the outputs listed.
 - `displays-keys`: Left and Right move the selection and wrap around the four cards; Return applies; Escape closes. Return on the already-lit card does nothing and shows no confirm row; with one output the cards are disabled and the panel says "Only one display is connected".
 - `displays-apply`: applying writes the revert script to `$STACK/run/ummitos-displays-revert-<HYPRLAND_INSTANCE_SIGNATURE>.lua` and shows the confirm row with "Reverting in N s" (N counts down from 15).
-- `displays-revert`: 15 s without Keep restores the outputs and deletes the revert file.
+- `displays-revert`: 15 s without Keep restores the outputs; the revert file is deleted only once the restore command has exited, so a shell that dies mid-revert still leaves it for the watchdog.
 - `displays-watchdog`: if the shell dies mid-confirm, the detached watchdog restores the outputs about 15 s later.
 - `displays-menu`: right-click on empty desktop shows a "Desktop" menu with "Displays…", "Wallpaper…" and "Settings" (`background/DesktopMenu.qml`).
 
@@ -34,10 +34,11 @@ Steps (proven 2026-11-04):
 - **Auto-revert.** Wait 15 s without Keep. VERIFY2 is back at 1920,0, `mirrorOf` is `"none"`, and the revert file is gone.
 - **Desktop menu.** Move the pointer: `run.sh hyprctl dispatch 'hl.dsp.cursor.move({ x = 700, y = 600 })'`. Run `run.sh wlrctl pointer click right`, then `shot.sh displays-menu`: a menu titled "Desktop" with "Displays…", "Wallpaper…", "Settings" and a "Show on desktop" group of four switches sits at the pointer (see desktop-menu.md). Click "Displays…" (pointer about 90 px right and 45 px below the click point), or press Down then Return, and the panel opens. A left click elsewhere closes the menu.
 - **Watchdog (last; ends the journey).** Apply Duplicate, then at once run `source .claude/skills/verify-ummitos/scripts/env.sh; kill -- -$(cat $STACK/qs.pid)`. About 15 s later the outputs are reverted and the revert file is gone. The test shell is dead afterwards: run `down.sh`, then `up.sh`.
+- **Shell killed mid-confirm** (proven 2026-11-27). After an Apply Duplicate wait 2 s, kill only the test shell (`pkill -9 -f 'qs -c ummitos-test'` from a script file, never from a command line that itself contains that text), and relaunch it with the command from `scripts/up.sh` (`in_stack sh -c 'exec setsid "$@"' sh bwrap --dev-bind / / qs -c "$CONFIG_ID"`). While it is down the change stays and the revert file exists; within about 1 s of the relaunch `mirrorOf` is `"none"` again and the file is gone.
 
 ## Gotchas
 
-- A pick is ignored while a display command or a monitor read is still running (a few tens of ms), so two quick clicks apply only the first.
+- A pick is ignored while a display command or a monitor read is running, or a command is queued (a few tens of ms), so two quick clicks apply only the first.
 - A shell restart during the confirm undoes the change at once, not after 15 s: the new shell restores any revert file the old one left (proven 2026-11-25 by killing the test shell mid-confirm and relaunching it with the command from `up.sh`).
 - With one output the cards are disabled, and Qt 6 still sends hover to disabled items: hovering one must not light it. Prove it on the live session (one monitor): open the panel, warp onto a card, send real motion with `wlrctl pointer move`, `grim`, and compare that card's background with its neighbour (equal = no hover). Proven 2026-11-04 after the owner's recording showed a disabled card lighting.
 

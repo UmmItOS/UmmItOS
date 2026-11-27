@@ -133,6 +133,7 @@ pgrep -a qs                                   # only the live "qs -c ummitos"
 | `scripts/shot.sh` | `grim -o VERIFY` into the run's evidence folder, with a 10 s timeout. |
 | `scripts/down.sh` | Tear down only what this stack started; keeps the evidence. |
 | `scripts/env.sh` | Sourced by the others: paths, IDs, and `in_stack`. |
+| `scripts/fake-mpris.py` | A fake MPRIS player (`dbus-python`) with a long title, for the Now playing card: `scripts/run.sh python3 scripts/fake-mpris.py &`. |
 
 ## Features
 

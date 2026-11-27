@@ -5,9 +5,9 @@ Super+I opens a GTA-style wheel. Pictures dropped on it can be converted to one 
 ## Sub-features
 
 - `conv-open`: the wheel (`ummitos-convert`) shows eight slots clockwise from the top: PNG, JPG, WEBP, AVIF, GIF, BMP, TIFF, ICO. The hub reads "Drop pictures here" over "From a browser or a file manager"; while a drag hovers it reads "Let go to load", and with a file loaded the subtitle is the format's own line.
-- `conv-pick`: Right, Down and Tab move the lit slot clockwise; Left, Up and Backtab move it back. PageUp and PageDown too. Hovering a slot and the scroll wheel move it as well, but hover is ignored while a conversion runs.
-- `conv-drop`: a dropped file fills the hub with its name; several files flip with PageUp and PageDown.
-- `conv-run`: clicking a slot (which picks and converts in one click), or pressing Return, Enter or Space after a drop, converts ("Converting 1 of N") and shows the banner for 4.5 s.
+- `conv-pick`: Right, Down and Tab move the lit slot clockwise; Left, Up and Backtab move it back. PageUp and PageDown too. Hovering a slot and the scroll wheel move it as well, but both are ignored while a conversion runs.
+- `conv-drop`: a dropped file, or a web link (fetched into Downloads), fills the hub with its name; several files flip with PageUp and PageDown.
+- `conv-run`: clicking a slot (which picks it, and converts at once when a picture is loaded), or pressing Return, Enter or Space after a drop, converts ("Converting 1 of N") and shows the banner for 4.5 s.
 
 ## How to get to it (user POV)
 
@@ -29,7 +29,7 @@ Steps (proven 2026-11-04):
 
 ## Gotchas
 
-- Only the lit slot carries over between opens (it resets on a fresh shell load); loaded files and their index are cleared on each toggle. Always take a shot before the key, not only after.
+- Only the lit slot carries over between opens (it resets on a fresh shell load); loaded files and their index are cleared each time `toggle` opens the wheel. Always take a shot before the key, not only after.
 - A drop needs a real Wayland drag, and `wtype` cannot drag. IPC offers only toggle and close. The ydotool + `qs -p` drag-source harness in the repo's `.claude/rules/shell-features.md` moves the user's real pointer, so `conv-drop` and `conv-run` are not provable with these helpers.
 - The conversion itself can be proven outside the shell (2026-11-18): `script/misc/img-convert.sh jpg <dir>/a.png` with a dangling symlink at `<dir>/a.jpg` writes `a-1.jpg` and leaves the link's target uncreated, and a 3.8 KB PNG declaring 60000x60000 fails at once with "cache resources exhausted" (the `-limit` flags). Use a scratch HOME.
 - `convert toggle` while a MISSION banner is up clears the banner and reopens the wheel with the picked slot kept (source: `Convert.qml` toggle). Not driven live.

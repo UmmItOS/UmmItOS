@@ -37,6 +37,7 @@ Steps:
 
 - Never type or ask for the user's real password. Unlocking cannot be proven in this stack.
 - **Never send a second wrong password, and never call `lock alarm`.** Either one sets `intruder`, and that loads a Qt `Camera` inside the test shell itself (`Lock.qml`). `ipc.sh` refuses `lock alarm`; the second wrong password is only covered by `up.sh` masking `/dev/video*` and `/dev/media*` with `/dev/null` for the test `qs` (via `bwrap`), which is unproven against a real camera node. The clip from `script/misc/intruder.sh` lands in the fake HOME and dies with `down.sh`.
+- `lock lock` while a preview's capture is still running waits for it and locks from it; a PAM success that lands after the lock state changed is ignored (`checkLocked`). `lock alarm` is a preview alarm and returns at once when already locked. When the shell never answers, `script/hypr/lock/lock.sh` sends the critical notice "Could not lock the screen" and exits 1 (source, not driven).
 - While PAM checks the password, the field is disabled, and keys typed meanwhile are dropped.
 - `isLocked` turns true when the shell sets `locked`, not when the compositor confirms the lock. Prove the lock with the screenshot.
 - The shell's PAM stack has no `pam_faillock`, so test attempts do not count against the account.

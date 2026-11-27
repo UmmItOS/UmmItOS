@@ -6,7 +6,8 @@ Super+Shift+Q, or the bar's scan button, photographs the screen and finds every 
 
 - `scan-find`: every code on the screen gets a chip with its title.
 - `scan-detail`: the panel shows the selected code's fields. For a web link the Host is the host the browser will open (the backslash case is fixed in v1.2.1).
-- `scan-act`: Open, Copy and Wi-Fi join. **Do not drive Open**, because it launches the user's browser.
+- `scan-act`: Open, Copy and Wi-Fi join; a plain text code gets only Copy. **Do not drive Open**, because it launches the user's browser.
+- `scan-failed`: when grim or zbar fails, a "Scan failed" toast from "QR scanner" shows (source only, not driven).
 - `scan-none`: with no code on screen, a "No QR code on screen" toast from "QR scanner" appears and no overlay opens (seen 2026-11-25).
 - `scan-reread`: a code with non-ASCII content (zbar's XML mangles it) is read again per region, and each region comes back as one base64 line, so a code holding odd bytes such as 0x1E cannot shift data onto the next code.
 
