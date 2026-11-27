@@ -10,7 +10,7 @@ A card in the desktop widget column (top right, under the weather card and above
 - `media-switch`: the right-click menu's "Now playing card" switch sets `media=` in `desktop.conf` and the card fades out and in.
 - `media-title`: a title wider than its lane pauses, scrolls to its end, pauses and scrolls back, at 40 px/s, only while playing and visible.
 - `media-fade`: a scrolling title fades at its edges instead of being cut. The left edge is crisp at rest and the right edge soft; at the far end the reverse; mid-scroll both are soft. A title that fits has no fade (`desktop/fade.frag`, applied as the title lane's `layer.effect`).
-- `media-halo`: the cover's breathing halo reaches `Theme.media.haloScale` (1.2) and never touches the words.
+- `media-cover`: the cover swells with the beat and has no halo or frame around it; nothing is drawn outside its rounded square.
 - `media-artist`: the artist is dim and elided on the right, and hidden when empty.
 - `media-progress`: a progress line shows only when the player reports a length.
 - `media-controls`: with the pointer over the card, previous, pause and next replace the bars.
@@ -39,5 +39,5 @@ Steps (proven 2026-11-27):
 ## Gotchas
 
 - Hovering the card swaps the bars for the controls, so park the pointer away from it first (`hyprctl dispatch 'hl.dsp.cursor.move({ x = 960, y = 540 })'`).
-- Qt 6.12.0's `MultiEffect` mask did nothing here, which is why the fade is a shader; see `.claude/rules/qml-traps.md`.
+- The cover (a `ClippingRectangle`) is not drawn in the stack at all, art or placeholder: the stack renders its hidden mask as empty (`.claude/rules/qml-traps.md`). Check that the cover has no frame by pixels instead: the band between the cover and the words matches the card's background in every shot. The look of the cover itself needs the real screen.
 - The fake player cannot be controlled: `PlayPause` does nothing and next and previous are off.

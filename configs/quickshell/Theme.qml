@@ -174,12 +174,10 @@ Singleton {
 
     // How far in from a wallpaper card's edge its picture fades out, so no edge shows.
     readonly property int cardFeather: 56
-    // The desktop now-playing card: the cover, how far it swells with the beat, its halo, the live bars and the title's scroll.
+    // The desktop now-playing card: the cover, how far it swells with the beat, the live bars and the title's scroll.
     readonly property QtObject media: QtObject {
         readonly property int art: 64
         readonly property real beat: 0.07
-        // Under the gap to the words, so the halo never touches them.
-        readonly property real haloScale: 1.2
         readonly property int bars: 5
         readonly property int barWidth: 4
         readonly property int barMax: 26

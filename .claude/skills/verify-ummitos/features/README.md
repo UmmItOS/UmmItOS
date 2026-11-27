@@ -35,7 +35,7 @@ This is the maintained source for verifying the user-facing behaviour of the Umm
 | [fps.md](fps.md) | FPS counter: on, off, saved | yes (2026-11-18) |
 | [displays.md](displays.md) | Display chooser: modes, auto-revert, watchdog, desktop right-click | yes (2026-11-27) |
 | [desktop-menu.md](desktop-menu.md) | Desktop right-click menu: actions, show-on-desktop switches, keyboard | yes (2026-11-18) |
-| [media.md](media.md) | Now playing card: show, switch, scrolling title with faded edges, halo, progress (needs a fake MPRIS player) | yes (2026-11-27) |
+| [media.md](media.md) | Now playing card: show, switch, scrolling title with faded edges, cover without a frame, progress (needs a fake MPRIS player) | yes (2026-11-27) |
 | [deepseek.md](deepseek.md) | DeepSeek balance card: switch, key field in Settings, CNY or USD, too low, refused, remove (needs a stub `curl`) | yes (2026-11-27) |
 | [wallpaper.md](wallpaper.md) | Wallpaper pickers: Alt+W carousel and the right-click drawer (chips, preview, set, shuffle) | yes (2026-11-18) |
 | [heavy-process.md](heavy-process.md) | Heavy process warning on the bar (CPU proven; GPU not drivable here) | partly (2026-11-18) |

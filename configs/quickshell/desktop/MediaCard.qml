@@ -5,7 +5,7 @@ import QtQuick
 import QtQuick.Layouts
 import ".."
 
-// The desktop "now playing" card: a cover that swells with the beat over a breathing halo, live bars, a title that scrolls when it is too long, a progress line, and the controls on hover. Same width as the weather card, so they stack in one column.
+// The desktop "now playing" card: a cover that swells with the beat, live bars, a title that scrolls when it is too long, a progress line, and the controls on hover. Same width as the weather card, so they stack in one column.
 Rectangle {
     id: card
 
@@ -86,43 +86,11 @@ Rectangle {
             Layout.fillWidth: true
             spacing: Theme.spacing.medium
 
-            // The cover, swelling with the beat over a halo that breathes out while it plays.
+            // The cover, swelling with the beat.
             Item {
                 Layout.alignment: Qt.AlignVCenter
                 implicitWidth: Theme.media.art
                 implicitHeight: Theme.media.art
-
-                Rectangle {
-                    id: halo
-
-                    anchors.fill: parent
-                    radius: Theme.rounding.large
-                    color: Theme.accentText
-                    opacity: 0
-
-                    ParallelAnimation {
-                        running: card.playing && card.visible
-                        loops: Animation.Infinite
-
-                        NumberAnimation {
-                            target: halo
-                            property: "scale"
-                            from: 1
-                            to: Theme.media.haloScale
-                            duration: Theme.duration.glow
-                            easing.type: Easing.BezierSpline
-                            easing.bezierCurve: Theme.curve.emphasizedDecel
-                        }
-
-                        NumberAnimation {
-                            target: halo
-                            property: "opacity"
-                            from: Theme.pulse.haloOpacity
-                            to: 0
-                            duration: Theme.duration.glow
-                        }
-                    }
-                }
 
                 ClippingRectangle {
                     anchors.fill: parent
