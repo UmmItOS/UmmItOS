@@ -88,6 +88,16 @@ Variants {
                 }
             }
 
+            // A card that faded out leaves its place; the ones under it slide up into it.
+            move: Transition {
+                NumberAnimation {
+                    properties: "y"
+                    duration: Theme.duration.expressiveDefaultSpatial
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.curve.emphasizedDecel
+                }
+            }
+
             WeatherCard {
                 id: weather
 

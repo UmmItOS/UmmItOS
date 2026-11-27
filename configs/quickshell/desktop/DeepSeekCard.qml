@@ -17,7 +17,8 @@ Rectangle {
     radius: Theme.rounding.extraLarge
     color: Theme.scrim(Theme.panelTint)
 
-    // Its window maps when the card has something to say, so this runs on each appearance.
+    // Its window maps when the card has something to say, so this runs on each appearance; once faded it leaves the column.
+    visible: opacity > 0
     opacity: card.wanted && (DeepSeek.ready || card.note !== "") ? 1 : 0
     layer.enabled: opacity < 1
 

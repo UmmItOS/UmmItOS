@@ -18,7 +18,8 @@ Rectangle {
     radius: Theme.rounding.extraLarge
     color: Theme.scrim(Theme.panelTint)
 
-    // Its window maps when the forecast arrives, so this runs on each appearance.
+    // Its window maps when the forecast arrives, so this runs on each appearance; once faded it leaves the column.
+    visible: opacity > 0
     opacity: Weather.ready && card.wanted ? 1 : 0
     layer.enabled: opacity < 1
 
