@@ -34,7 +34,7 @@ Steps (proven 2026-11-27):
 - **Appears.** After about 4 s `run.sh playerctl -l` lists `fake` and the card shows at the top right (crop `x 1550..1900, y 215..335` of a 1920×1080 shot): "Now playing", the placeholder cover, the artist, the dotted bars, a progress line at about 15 %.
 - **Title scroll and fade.** Take `shot.sh` every 0.7 s for about 10 s. The title moves left and back. Measure the fade by pixels, not by eye: for one shot, take the brightest value of each column of the title row; across the 24 px at the lit end of the lane it falls to 0, and where the text is cut off it must not stop at full brightness. A hard cut means `desktop/fade.frag.qsb` did not load.
 - **Switch.** Right-click the desktop, press `wtype -k Down` five times (the focus bar sits on "Now playing card"), then `wtype -k space`: `grep media= $STACK/home/.config/ummitos/desktop.conf` shows `media=0` and the card fades away.
-- Kill the fake player with `run.sh pkill -f fake-mpris.py` (from a script file, not a command line that contains that text).
+- Stop the fake player with `.claude/skills/verify-ummitos/scripts/stop.sh python3`.
 
 ## Gotchas
 
