@@ -11,6 +11,7 @@ A card in the desktop widget column (top right, under the weather card) with the
 - `ds-bad-key`: a pasted key with anything but letters, digits, `.`, `_` or `-` (or under 8 characters) is refused: the hint turns red, "That does not look like a key.", and no file is written.
 - `ds-key-save`: a good key plus Enter writes `deepseek.key` with mode `600`, clears the field (it never shows a saved key), changes the hint to "A key is saved…" and shows "Remove the key".
 - `ds-ok`: with a key and a good answer, the card shows the total ("¥110.00") and "Granted 10.00 · Topped up 100.00".
+- `ds-interval`: the "Read the balance every" row (15 s, 30 s, 1 min, 5 min, 10 min; saved as `deepseeksec=`, 60 s by default) sets how often the card reads the balance while it shows.
 - `ds-usd`: picking "USD $" on the Balance currency row (saved as `deepseekcur=USD`) shows the account's USD entry ("$15.50") without a new request.
 - `ds-no-usd`: when the account has no entry in the chosen currency, the card shows the other one and "No USD balance on this account."; nothing is converted.
 - `ds-low`: when the service says `is_available` is false, the amount stays and "Balance too low for API calls" shows under it.
@@ -32,7 +33,7 @@ S=/tmp/vu-deepseek; mkdir -p $S/bin; echo both > $S/mode
 cat > $S/bin/curl <<EOF
 #!/usr/bin/env bash
 case "\$*" in *api.deepseek.com/user/balance*) ;; *) exec /usr/bin/curl "\$@";; esac
-{ echo "ARGV: \$*"; echo "STDIN:"; cat; } > $S/last-call.txt
+date +%s.%N >> $S/calls.log; { echo "ARGV: \$*"; echo "STDIN:"; cat; } > $S/last-call.txt
 case "\$(cat $S/mode)" in
   ok)   echo '{"is_available":true,"balance_infos":[{"currency":"CNY","total_balance":"110.00","granted_balance":"10.00","topped_up_balance":"100.00"}]}' ;;
   both) echo '{"is_available":true,"balance_infos":[{"currency":"CNY","total_balance":"110.00","granted_balance":"10.00","topped_up_balance":"100.00"},{"currency":"USD","total_balance":"15.50","granted_balance":"0.50","topped_up_balance":"15.00"}]}' ;;
@@ -46,12 +47,15 @@ PATH=$S/bin:$PATH .claude/skills/verify-ummitos/scripts/up.sh
 
 Steps (proven 2026-11-27, at 1920×1080):
 
-- **Open the page.** `ipc.sh settings toggle`, then `ipc.sh settings page 10` (Misc). Click with `hyprctl dispatch 'hl.dsp.cursor.move({ x = X, y = Y })'` and `run.sh wlrctl pointer click left`. Positions: the card switch (893, 367), the key field (755, 431), "Remove the key" (850, 488, only with a key saved), USD (835, 503 without a key saved, 835, 553 with one).
-- **Switch and no key.** Click the switch: `grep deepseek $STACK/home/.config/ummitos/desktop.conf` shows `deepseek=1`, and within about 2 s the card shows the hint (`shot.sh`).
-- **Bad key.** Click the key field, `run.sh wtype 'bad"key-12345'`, `run.sh wtype -k Return`: the red hint shows and `$STACK/home/.config/ummitos/deepseek.key` does not exist.
+`C` is the stack's own config folder: `C=$(.claude/skills/verify-ummitos/scripts/run.sh sh -c 'echo "$HOME"')/.config/ummitos`.
+
+- **Open the page.** `ipc.sh settings toggle`, then `ipc.sh settings page 10` (Misc). Click with `hyprctl dispatch 'hl.dsp.cursor.move({ x = X, y = Y })'` and `run.sh wlrctl pointer click left`. Positions: the card switch (893, 367), the key field (755, 431), "Remove the key" (850, 488, only with a key saved). With no key saved, "15 s" is at (628, 487) and USD at (835, 552); a saved key adds the Remove row, so they move to (628, 537) and (835, 602).
+- **Switch and no key.** Click the switch: `grep deepseek $C/desktop.conf` shows `deepseek=1`, and within about 2 s the card shows the hint (`shot.sh`).
+- **Bad key.** Click the key field, `run.sh wtype 'bad"key-12345'`, `run.sh wtype -k Return`: the red hint shows and `$C/deepseek.key` does not exist.
 - **Good key.** `run.sh wtype -M ctrl a -m ctrl`, `-k BackSpace`, `run.sh wtype 'sk-TESTKEY-1234567890'`, `-k Return`, wait 3.5 s. `stat -c %a` on the file says `600` and it holds that line. The card shows "¥110.00".
 - **USD.** Click USD: `desktop.conf` has `deepseekcur=USD` and the card shows "$15.50".
 - **No USD entry.** `echo ok > $S/mode`, `ipc.sh deepseek refresh`, wait 3 s: "¥110.00" and the note.
+- **Interval** (proven 2026-11-27). Click "15 s", empty `$S/calls.log`, wait 50 s: `desktop.conf` has `deepseeksec=15` and the log holds 3 reads 15.0 s apart.
 - **Key private.** In `$S/last-call.txt` the `ARGV` line has no key and `STDIN` holds `header = "Authorization: Bearer sk-TESTKEY-1234567890"`; `grep -l TESTKEY /proc/[0-9]*/cmdline` finds nothing.
 - **Remove.** Click "Remove the key": the file is gone and the card shows the hint with no amount.
 
