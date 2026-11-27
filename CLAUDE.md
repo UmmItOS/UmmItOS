@@ -62,7 +62,7 @@ Each rule here was broken at least twice. `.claude/hooks/lint.py` runs as a PreT
 | A comment is one short line, only for a why the code cannot show | `lint.py` check `comments`, on new lines only (17 older blocks remain) |
 | Every literal `I18n.t()` key is in every language file | `lint.py` check `i18n` |
 | Sizes, spacing, radii and durations are `Theme` tokens, not numbers | `lint.py` check `tokens` |
-| Stop a process in the verify stack by name, never by matching a command line (it matched the agent's own shell three times) | `scripts/stop.sh` is the one way; `lint.py` check `kill` rejects `pkill -f` in recipes and rules |
+| Stop a process in the verify stack by name, never by matching a command line (it matched the agent's own shell three times) | `scripts/stop.sh` is the one way; `lint.py` check `kill` rejects `pkill` or `pgrep` with `-f` in recipes and rules |
 | Never start a second `qs -c ummitos` | the verify stack runs `qs -c ummitos-test`; otherwise this rule |
 | Hyprland's look (animations, borders, the cursor trail) is the owner's choice | judgment; five reverts so far |
 | A new feature starts with `/poteto-mode`; every change is checked on screen | judgment; `verify-ummitos` |
